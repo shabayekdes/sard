@@ -72,8 +72,13 @@ export function BrandProvider({ children, globalSettings, user }: { children: Re
       document.body.classList.toggle('dark', isDark);
 
       // Apply layout direction (RTL/LTR)
-      document.documentElement.dir = brandSettings.layoutDirection;
-      document.documentElement.setAttribute('dir', brandSettings.layoutDirection);
+      // document.documentElement.dir = brandSettings.layoutDirection;
+      // document.documentElement.setAttribute('dir', brandSettings.layoutDirection);
+      const domDirection =
+        brandSettings.layoutDirection === 'right' ? 'rtl' : brandSettings.layoutDirection === 'left' ? 'ltr' : brandSettings.layoutDirection;
+
+      document.documentElement.dir = domDirection;
+      document.documentElement.setAttribute('dir', domDirection);
 
       // Force a small repaint to ensure colors are applied
       const tempClass = 'theme-color-updating';

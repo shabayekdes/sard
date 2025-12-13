@@ -926,7 +926,7 @@ export function AppSidebar() {
     };
 
     return (
-        <Sidebar side={effectivePosition} collapsible={collapsible} variant={variant} className={style !== 'plain' ? 'sidebar-custom-style' : ''}>
+        <Sidebar side={position} collapsible={collapsible} variant={variant} className={style !== 'plain' ? 'sidebar-custom-style' : ''}>
             <SidebarHeader className={style !== 'plain' ? 'sidebar-styled' : ''} style={sidebarStyle}>
                 <div className="flex items-center justify-center p-2">
                     <Link href={getFirstAvailableHref()} className="flex items-center justify-center">
@@ -979,7 +979,7 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <div style={sidebarStyle} className={`h-full ${style !== 'plain' ? 'sidebar-styled' : ''}`}>
-                    <NavMain items={filteredNavItems} position={effectivePosition} />
+                    <NavMain items={filteredNavItems} position={position} />
                 </div>
             </SidebarContent>
 

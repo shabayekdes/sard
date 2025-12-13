@@ -67,7 +67,7 @@ export const LanguageSwitcher: React.FC = () => {
 
             // Update document direction immediately
             document.documentElement.dir = newDirection;
-            document.documentElement.setAttribute('dir', newDirection);
+            document.documentElement.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
 
             // Update layout position in context
             updatePosition(newDirection as 'left' | 'right');
@@ -129,7 +129,7 @@ export const LanguageSwitcher: React.FC = () => {
                 {isSuperAdmin && (
                     <>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                             onClick={() => setShowCreateModal(true)}
                             className="justify-center text-primary font-semibold cursor-pointer"
                         >
@@ -144,9 +144,9 @@ export const LanguageSwitcher: React.FC = () => {
                 )}
             </DropdownMenuContent>
         </DropdownMenu>
-        
-        <CreateLanguageModal 
-            open={showCreateModal} 
+
+        <CreateLanguageModal
+            open={showCreateModal}
             onOpenChange={setShowCreateModal}
         />
         </>

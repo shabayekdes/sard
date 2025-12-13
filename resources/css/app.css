@@ -3,7 +3,7 @@
 @plugin 'tailwindcss-animate';
 @plugin 'tailwind-scrollbar';
 
-@import './rtl.css';
+/*@import './rtl.css';*/
 @import './template-preview.css';
 @import './template-animations.css';
 

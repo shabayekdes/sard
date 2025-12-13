@@ -80,7 +80,7 @@ export const SidebarProvider = ({ children }: { children: ReactNode }) => {
   // Save sidebar settings to cookies (demo mode only)
   const saveSidebarSettings = () => {
     const isDemo = isDemoMode();
-    
+
     if (isDemo) {
       setCookie('sidebarSettings', JSON.stringify(settings));
     }
@@ -104,8 +104,8 @@ export const SidebarProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <SidebarContext.Provider value={{ 
-      variant: settings.variant, 
+    <SidebarContext.Provider value={{
+      variant: settings.variant,
       collapsible: settings.collapsible,
       style: settings.style,
       updateVariant,

@@ -16,53 +16,55 @@ const customBackend = {
   },
   read: function(language, namespace, callback) {
     const loadPath = window.route ? window.route('translations', language) : `/translations/${language}`;
-    
+
     fetch(loadPath)
       .then(response => response.json())
       .then(data => {
         // Extract translations from the structured response
         const translations = data.translations;
-        
+
         // Set document direction based on layoutDirection
         if (data.layoutDirection) {
-          // Use layoutDirection directly ('right'/'left') for DOM
-          const domDirection = data.layoutDirection;
-          
-          // Force direction change regardless of previous state
-          document.documentElement.dir = domDirection;
-          document.documentElement.setAttribute('dir', domDirection);
-          
-          // Store direction in localStorage for persistence
-          localStorage.setItem('layoutDirection', data.layoutDirection);
-          
-          // Also store in cookie for server-side awareness
-          document.cookie = `app_direction=${data.layoutDirection}; path=/; max-age=${60 * 60 * 24 * 30}`;
-          
-          // Force re-render of layout components
-          document.documentElement.classList.add('direction-changed');
-          
-          // Trigger a resize event to force layout recalculation
-          window.dispatchEvent(new Event('resize'));
-          
-          // Force repaint by temporarily changing a style
-          const body = document.body;
-          const originalDisplay = body.style.display;
-          body.style.display = 'none';
-          body.offsetHeight; // Trigger reflow
-          body.style.display = originalDisplay;
-          
-          setTimeout(() => {
-            document.documentElement.classList.remove('direction-changed');
-          }, 100);
+            // Use layoutDirection directly ('right'/'left') for DOM
+            // const domDirection = data.layoutDirection;
+            // Normalize layoutDirection to valid dir attribute
+            const domDirection = data.layoutDirection === 'right' ? 'rtl' : data.layoutDirection === 'left' ? 'ltr' : data.layoutDirection;
+
+            // Force direction change regardless of previous state
+            document.documentElement.dir = domDirection;
+            document.documentElement.setAttribute('dir', domDirection);
+
+            // Store direction in localStorage for persistence
+            localStorage.setItem('layoutDirection', data.layoutDirection);
+
+            // Also store in cookie for server-side awareness
+            document.cookie = `app_direction=${data.layoutDirection}; path=/; max-age=${60 * 60 * 24 * 30}`;
+
+            // Force re-render of layout components
+            document.documentElement.classList.add('direction-changed');
+
+            // Trigger a resize event to force layout recalculation
+            window.dispatchEvent(new Event('resize'));
+
+            // Force repaint by temporarily changing a style
+            const body = document.body;
+            const originalDisplay = body.style.display;
+            body.style.display = 'none';
+            body.offsetHeight; // Trigger reflow
+            body.style.display = originalDisplay;
+
+            setTimeout(() => {
+                document.documentElement.classList.remove('direction-changed');
+            }, 100);
         }
-        
+
         // Store the current locale
         if (data.locale) {
           localStorage.setItem('i18nextLng', data.locale);
           // Also store in a session cookie for server-side awareness
           document.cookie = `app_language=${data.locale}; path=/; max-age=${60 * 60 * 24}`;
         }
-        
+
         callback(null, translations);
       })
       .catch(error => {
@@ -78,7 +80,7 @@ const getInitialLanguage = () => {
   if (window.initialLocale) {
     return window.initialLocale;
   }
-  
+
   // Otherwise use browser detection with fallback to 'en'
   return null; // null will trigger language detection
 };
@@ -112,20 +114,20 @@ i18n
         fallbackLng: getInitialLanguage(),
         load: 'currentOnly',
         debug: process.env.NODE_ENV === 'development',
-        
+
         interpolation: {
             escapeValue: false,
         },
-        
+
         detection: {
           order: ['localStorage', 'cookie', 'navigator'],
           lookupCookie: 'app_language',
           caches: ['localStorage', 'cookie'],
         },
-        
+
         ns: ['translation'],
         defaultNS: 'translation',
-        
+
         partialBundledLanguages: true,
         loadOnInitialization: true
     });

@@ -129,9 +129,16 @@ createInertiaApp({
 // This will set light / dark mode on load...
 initializeTheme();
 
+// Normalize layout direction values to valid DOM dir attributes
+const normalizeDirection = (direction: string | null | undefined) => {
+    if (direction === 'right') return 'rtl';
+    if (direction === 'left') return 'ltr';
+    return direction || 'ltr';
+};
+
 // Initialize direction from cookies (demo mode) or database (live mode)
 const initializeDirection = () => {
-    let savedDirection = null;
+    let savedDirection: string | null = null;
 
     if (isDemoMode()) {
         savedDirection = getCookie('layoutDirection');
@@ -144,10 +151,14 @@ const initializeDirection = () => {
         }
     }
 
-    if (savedDirection) {
-        document.documentElement.dir = savedDirection;
-        document.documentElement.setAttribute('dir', savedDirection);
-    }
+    // if (savedDirection) {
+    //     document.documentElement.dir = savedDirection;
+    //     document.documentElement.setAttribute('dir', savedDirection);
+    // }
+    const domDirection = normalizeDirection(savedDirection);
+
+    document.documentElement.dir = domDirection;
+    document.documentElement.setAttribute('dir', domDirection);
 };
 
 // Initialize direction on page load
@@ -156,7 +167,7 @@ initializeDirection();
 // Global function to update direction
 window.updateLayoutDirection = (lng) => {
     const isRTL = ['ar', 'he'].includes(lng);
-    const direction = isRTL ? 'right' : 'left';
+    const direction = isRTL ? 'rtl' : 'ltr';
     document.documentElement.dir = direction;
     document.documentElement.setAttribute('dir', direction);
 };
