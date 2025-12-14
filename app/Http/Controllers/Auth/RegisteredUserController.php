@@ -63,11 +63,15 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'phone' => 'nullable|string|max:20',
+            'city' => 'nullable|string|max:100',
         ]);
 
         $userData = [
             'name' => $request->name,
             'email' => $request->email,
+            'phone' => $request->phone,
+            'city' => $request->city,
             'password' => Hash::make($request->password),
             'type' => 'company',
             'is_active' => 1,

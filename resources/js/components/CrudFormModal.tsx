@@ -17,6 +17,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import DependentDropdown from './DependentDropdown';
 import { log } from 'node:console';
+import { useLayout } from '@/contexts/LayoutContext';
 
 interface CrudFormModalProps {
     isOpen: boolean;
@@ -46,6 +47,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
     const [formData, setFormData] = useState<Record<string, any>>({});
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [relationOptions, setRelationOptions] = useState<Record<string, any[]>>({});
+        const { position } = useLayout();
 
     // Calculate total price for price summary
     const calculateTotal = () => {
@@ -314,7 +316,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                         value={formData[field.name] || ''}
                         onChange={(e) => handleChange(field.name, e.target.value)}
                         required={field.required}
-                        className={errors[field.name] ? 'border-red-500' : ''}
+                        className={errors[field.name] ? 'border-red-500' : position === 'right' ? 'text-end' : ''}
                         disabled={mode === 'view' || field.disabled}
                     />
                 );
@@ -830,7 +832,10 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                         }
                                         return (
                                             <div key={field.name} className="space-y-2" style={{ width: field.width || '100%' }}>
-                                                <Label htmlFor={field.name} className="text-sm font-medium">
+                                                <Label
+                                                    htmlFor={field.name}
+                                                    className={`text-sm font-medium ${position === 'right' ? 'float-end' : ''}`}
+                                                >
                                                     {field.label}{' '}
                                                     {field.required && !(field.type === 'file' && mode === 'edit') && (
                                                         <span className="text-red-500">*</span>
@@ -846,7 +851,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                         )}
                     </form>
                 </ScrollArea>
-                <DialogFooter className="sm:justify-end">
+                <DialogFooter className={position === 'right' ? 'sm:justify-start' : 'sm:justify-end'}>
                     <Button type="button" variant="outline" onClick={onClose}>
                         {t('Cancel')}
                     </Button>

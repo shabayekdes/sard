@@ -1,24 +1,12 @@
 import { usePage } from "@inertiajs/react";
 
 // Get base URL from page props or window
-const getBaseUrl = (): string => {
-  try {
-    // Try to get from page props first
-    const { base_url } = usePage().props as any;
-    if (base_url) return base_url;
-  } catch {
-    // If usePage fails, try to get from window object or use default
-  }
-
-  // Fallback to window.APP_URL if available, otherwise construct from location
-  if (typeof window !== 'undefined') {
-    // Check if APP_URL is available in window
-    if ((window as any).APP_URL) {
-      return (window as any).APP_URL;
-    }
-  }
-
-};
+export function getBaseUrl(baseUrl?: string) {
+    // priority: passed baseUrl → window origin → empty
+    if (baseUrl) return baseUrl.replace(/\/$/, '');
+    if (typeof window !== 'undefined') return window.location.origin;
+    return '';
+}
 
 // Currency formatting function
 export const formatCurrency = (amount: string | number, useSuperAdminSettings = false) => {
@@ -36,45 +24,18 @@ export const formatCurrency = (amount: string | number, useSuperAdminSettings = 
 };
 
 // Get full image path helper - consistent with reference project
-export const getImagePath = (path: string): string => {
-  if (!path) return '';
-  if (path.startsWith('http')) return path;
+export function getImagePath(path: string, baseUrl?: string) {
+    if (!path) return '';
 
-  const baseUrl = getBaseUrl();
+    // already absolute
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
 
-  // If path already contains storage/media, just prepend base URL
-  if (path.includes('storage/media')) {
-    return path.startsWith('/') ? `${baseUrl}${path}` : `${baseUrl}/${path}`;
-  }
+    const base = getBaseUrl(baseUrl);
 
-  // For paths starting with /images/, prepend the base URL
-  if (path.startsWith('/images/')) {
-    return `${baseUrl}${path}`;
-  }
-
-  // For paths starting with images/ (relative), prepend the base URL
-  if (path.startsWith('images/')) {
-    return `${baseUrl}/${path}`;
-  }
-
-  // For legacy paths like 'logo/logo-dark.png' from reference project
-  if (path.startsWith('logo/')) {
-    return `${baseUrl}/images/logos/${path.replace('logo/', '')}`;
-  }
-
-  // For legacy paths like 'logos/logo-dark.png', convert to new format
-  if (path.startsWith('logos/')) {
-    return `${baseUrl}/images/${path}`;
-  }
-
-  // For bare filenames, assume they're in the logos directory
-  if (!path.includes('/')) {
-    return `${baseUrl}/images/logos/${path}`;
-  }
-
-  // Default fallback - treat as relative path from root
-  return `${baseUrl}/${path}`;
-};
+    // normalize
+    const normalized = path.startsWith('/') ? path : `/${path}`;
+    return `${base}${normalized}`;
+}
 
 // Date formatting function
 export const formatDate = (date: string | Date) => {

@@ -15,7 +15,7 @@ const Dialog = React.forwardRef<
       onOpenChange(open);
     }
   };
-  
+
   return (
      <DialogPrimitive.Root {...props} modal={true} onOpenChange={handleOpenChange} />
   );
@@ -36,7 +36,7 @@ const DialogOverlay = React.forwardRef<
   const zIndex = modalId ? getZIndex(modalId) : 50;
   const modalIndex = modalStack.indexOf(modalId || '');
   const isFirstModal = modalIndex <= 0;
-  
+
   return (
     <DialogPrimitive.Overlay
       ref={ref}
@@ -58,14 +58,14 @@ const DialogContent = React.forwardRef<
 >(({ className, children, modalId, ...props }, ref) => {
   const { registerModal, unregisterModal, getZIndex, modalStack } = useModalStack();
   const [currentModalId] = React.useState(() => modalId || `modal-${Date.now()}-${Math.random()}`);
-  
+
   React.useEffect(() => {
     registerModal(currentModalId);
     return () => unregisterModal(currentModalId);
   }, [currentModalId, registerModal, unregisterModal]);
-  
+
   const zIndex = getZIndex(currentModalId);
-  
+
   return (
     <DialogPortal>
       <DialogOverlay modalId={currentModalId} />
@@ -107,7 +107,7 @@ const DialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col space-y-1.5 text-center sm:text-left",
+      "flex flex-col space-y-1.5 text-center",
       className
     )}
     {...props}

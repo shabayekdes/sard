@@ -1,5 +1,5 @@
 import { useForm } from '@inertiajs/react';
-import { Mail, Lock, User } from 'lucide-react';
+import { Mail, Lock, User, Phone } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
 import InputError from '@/components/input-error';
@@ -16,7 +16,9 @@ import { THEME_COLORS } from '@/hooks/use-appearance';
 
 type RegisterForm = {
     name: string;
+    phone: string;
     email: string;
+    city: string;
     password: string;
     password_confirmation: string;
     terms: boolean;
@@ -32,7 +34,9 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
     const primaryColor = themeColor === 'custom' ? customColor : THEME_COLORS[themeColor as keyof typeof THEME_COLORS];
     const { data, setData, post, processing, errors, reset } = useForm<RegisterForm>({
         name: '',
+        phone: '',
         email: '',
+        city: '',
         password: '',
         password_confirmation: '',
         terms: false,
@@ -49,16 +53,15 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
     };
 
     return (
-        <AuthLayout
-            title={t("Join Advocate today")}
-            description={t("Start managing your legal practice efficiently")}
-        >
+        <AuthLayout title={t('Join Advocate today')} description={t('Start managing your legal practice efficiently')}>
             <form className="space-y-5" onSubmit={submit}>
                 <div className="space-y-4">
                     <div className="relative">
-                        <Label htmlFor="name" className="text-gray-700 dark:text-gray-300 font-medium mb-1 block">{t("Full name")}</Label>
+                        <Label htmlFor="name" className="mb-1 block font-medium text-gray-700 dark:text-gray-300">
+                            {t('Full name')}
+                        </Label>
                         <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                 <User className="h-5 w-5 text-gray-400" />
                             </div>
                             <Input
@@ -70,18 +73,44 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
                                 autoComplete="name"
                                 value={data.name}
                                 onChange={(e) => setData('name', e.target.value)}
-                                placeholder={t("John Doe")}
-                                className="pl-10 w-full border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg transition-all duration-200"
+                                placeholder={t('John Doe')}
+                                className="w-full rounded-lg border-gray-300 bg-white pl-10 transition-all duration-200 dark:border-gray-600 dark:bg-gray-700"
                                 style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
                             />
                         </div>
                         <InputError message={errors.name} />
                     </div>
+                    <div className="relative">
+                        <Label htmlFor="phone" className="mb-1 block font-medium text-gray-700 dark:text-gray-300">
+                            {t('Phone Number')}
+                        </Label>
+                        <div className="relative">
+                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <Phone className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <Input
+                                id="phone"
+                                type="text"
+                                required
+                                autoFocus
+                                tabIndex={1}
+                                autoComplete="phone"
+                                value={data.phone}
+                                onChange={(e) => setData('phone', e.target.value)}
+                                placeholder="+966xxxxxxxxx"
+                                className="w-full rounded-lg border-gray-300 bg-white pl-10 transition-all duration-200 dark:border-gray-600 dark:bg-gray-700"
+                                style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
+                            />
+                        </div>
+                        <InputError message={errors.phone} />
+                    </div>
 
                     <div className="relative">
-                        <Label htmlFor="email" className="text-gray-700 dark:text-gray-300 font-medium mb-1 block">{t("Email address")}</Label>
+                        <Label htmlFor="email" className="mb-1 block font-medium text-gray-700 dark:text-gray-300">
+                            {t('Email address')}
+                        </Label>
                         <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                 <Mail className="h-5 w-5 text-gray-400" />
                             </div>
                             <Input
@@ -93,17 +122,40 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
                                 value={data.email}
                                 onChange={(e) => setData('email', e.target.value)}
                                 placeholder="email@example.com"
-                                className="pl-10 w-full border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg transition-all duration-200"
+                                className="w-full rounded-lg border-gray-300 bg-white pl-10 transition-all duration-200 dark:border-gray-600 dark:bg-gray-700"
                                 style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
                             />
                         </div>
                         <InputError message={errors.email} />
                     </div>
 
-                    <div>
-                        <Label htmlFor="password" className="text-gray-700 dark:text-gray-300 font-medium mb-1 block">{t("Password")}</Label>
+                    <div className="relative">
+                        <Label htmlFor="city" className="mb-1 block font-medium text-gray-700 dark:text-gray-300">
+                            {t('City')}
+                        </Label>
                         <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Input
+                                id="city"
+                                type="text"
+                                required
+                                autoFocus
+                                tabIndex={1}
+                                autoComplete="city"
+                                value={data.city}
+                                onChange={(e) => setData('city', e.target.value)}
+                                className="w-full rounded-lg border-gray-300 bg-white pl-10 transition-all duration-200 dark:border-gray-600 dark:bg-gray-700"
+                                style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
+                            />
+                        </div>
+                        <InputError message={errors.city} />
+                    </div>
+
+                    <div>
+                        <Label htmlFor="password" className="mb-1 block font-medium text-gray-700 dark:text-gray-300">
+                            {t('Password')}
+                        </Label>
+                        <div className="relative">
+                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                 <Lock className="h-5 w-5 text-gray-400" />
                             </div>
                             <Input
@@ -115,7 +167,7 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
                                 value={data.password}
                                 onChange={(e) => setData('password', e.target.value)}
                                 placeholder="••••••••"
-                                className="pl-10 w-full border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg transition-all duration-200"
+                                className="w-full rounded-lg border-gray-300 bg-white pl-10 transition-all duration-200 dark:border-gray-600 dark:bg-gray-700"
                                 style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
                             />
                         </div>
@@ -123,9 +175,11 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
                     </div>
 
                     <div>
-                        <Label htmlFor="password_confirmation" className="text-gray-700 dark:text-gray-300 font-medium mb-1 block">{t("Confirm password")}</Label>
+                        <Label htmlFor="password_confirmation" className="mb-1 block font-medium text-gray-700 dark:text-gray-300">
+                            {t('Confirm password')}
+                        </Label>
                         <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                 <Lock className="h-5 w-5 text-gray-400" />
                             </div>
                             <Input
@@ -137,7 +191,7 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
                                 value={data.password_confirmation}
                                 onChange={(e) => setData('password_confirmation', e.target.value)}
                                 placeholder="••••••••"
-                                className="pl-10 w-full border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg transition-all duration-200"
+                                className="w-full rounded-lg border-gray-300 bg-white pl-10 transition-all duration-200 dark:border-gray-600 dark:bg-gray-700"
                                 style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
                             />
                         </div>
@@ -151,41 +205,34 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
                             checked={data.terms}
                             onClick={() => setData('terms', !data.terms)}
                             tabIndex={5}
-                            className="mt-1 border-gray-300 rounded"
+                            className="mt-1 rounded border-gray-300"
                             style={{ '--tw-ring-color': primaryColor, color: primaryColor } as React.CSSProperties}
                         />
-                        <Label htmlFor="terms" className="ml-2 text-gray-600 dark:text-gray-400 text-sm">
-                            {t("I agree to the")}{' '}
+                        <Label htmlFor="terms" className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                            {t('I agree to the')}{' '}
                             <a href="#" style={{ color: primaryColor }}>
-                                {t("Terms of Service and Privacy Policy")}
+                                {t('Terms of Service and Privacy Policy')}
                             </a>
                         </Label>
                     </div>
                     <InputError message={errors.terms} />
                 </div>
 
-                <Recaptcha
-                    onVerify={setRecaptchaToken}
-                    onExpired={() => setRecaptchaToken('')}
-                    onError={() => setRecaptchaToken('')}
-                />
+                <Recaptcha onVerify={setRecaptchaToken} onExpired={() => setRecaptchaToken('')} onError={() => setRecaptchaToken('')} />
 
-                <AuthButton
-                    tabIndex={6}
-                    processing={processing}
-                >
-                    {t("Start your legal practice")}
+                <AuthButton tabIndex={6} processing={processing}>
+                    {t('Start your legal practice')}
                 </AuthButton>
 
-                <div className="text-center text-sm text-gray-600 dark:text-gray-400 mt-6">
-                    {t("Already have an account?")}{' '}
+                <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+                    {t('Already have an account?')}{' '}
                     <TextLink
                         href={route('login')}
                         className="font-medium transition-colors duration-200"
                         style={{ color: primaryColor }}
                         tabIndex={7}
                     >
-                        {t("Log in")}
+                        {t('Log in')}
                     </TextLink>
                 </div>
             </form>

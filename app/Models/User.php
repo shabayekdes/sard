@@ -25,10 +25,12 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
      */
     protected $fillable = [
         'name',
+        'phone',
         'email',
         'email_verified_at',
         'password',
         'type',
+        'city',
         'avatar',
         'lang',
         'delete_status',
@@ -110,9 +112,9 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     {
         return $this->type === 'admin';
     }
-        
+
     // Businesses relationship removed
-    
+
     /**
      * Get the plan associated with the user.
      */
@@ -120,7 +122,7 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     {
         return $this->belongsTo(Plan::class);
     }
-    
+
     /**
      * Check if user is on free plan
      */
@@ -128,7 +130,7 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     {
         return $this->plan && $this->plan->is_default;
     }
-    
+
     /**
      * Get current plan or default plan
      */
@@ -137,20 +139,20 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
         if ($this->plan) {
             return $this->plan;
         }
-        
+
         return Plan::getDefaultPlan();
     }
-    
+
     /**
      * Check if user has an active plan subscription
      */
     public function hasActivePlan()
     {
-        return $this->plan_id && 
-               $this->plan_is_active && 
+        return $this->plan_id &&
+               $this->plan_is_active &&
                ($this->plan_expire_date === null || $this->plan_expire_date > now());
     }
-    
+
     /**
      * Check if user's plan has expired
      */
@@ -158,7 +160,7 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     {
         return $this->plan_expire_date && $this->plan_expire_date < now();
     }
-    
+
     /**
      * Check if user's trial has expired
      */
@@ -166,7 +168,7 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     {
         return $this->is_trial && $this->trial_expire_date && $this->trial_expire_date < now();
     }
-    
+
     /**
      * Check if user needs to subscribe to a plan
      */
@@ -175,26 +177,26 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
         if ($this->isSuperAdmin()) {
             return false;
         }
-        
+
         if ($this->type !== 'company') {
             return false;
         }
-        
+
         // Check if user has no plan and no default plan exists
         if (!$this->plan_id) {
             return !Plan::getDefaultPlan();
         }
-        
+
         // Check if trial is expired
         if ($this->isTrialExpired()) {
             return true;
         }
-        
+
         // Check if plan is expired (but not on trial)
         if (!$this->is_trial && $this->isPlanExpired()) {
             return true;
         }
-        
+
         return false;
     }
 
@@ -247,7 +249,7 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
         $totalRequested = $this->payoutRequests()->whereIn('status', ['pending', 'approved'])->sum('amount');
         return $totalEarned - $totalRequested;
     }
-    
+
     /**
      * Send the email verification notification with dynamic config.
      */
@@ -263,7 +265,7 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     protected static function boot()
     {
         parent::boot();
-        
+
         static::created(function ($user) {
             if ($user->type === 'company' && !$user->referral_code) {
                 do {
@@ -273,7 +275,7 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
                 $user->save();
             }
         });
-        
+
         static::created(function ($user) {
             // Assign default plan to company users if no default plan exists
             if ($user->type === 'company' && !$user->plan_id) {

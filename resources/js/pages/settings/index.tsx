@@ -274,7 +274,7 @@ export default function Settings() {
             title={t('Settings')}
             url="/settings"
         >
-            <div className={`flex flex-col md:flex-row gap-8 ${position === 'right' ? 'md:flex-row-reverse' : ''}`}>
+            <div className={`flex flex-col md:flex-row gap-8 ${position === 'right' ? 'md:flex-row' : ''}`}>
                 {/* <div className="flex flex-col md:flex-row gap-8"> */}
                 {/* Sidebar Navigation */}
                 <div className="md:w-64 flex-shrink-0">
@@ -288,6 +288,7 @@ export default function Settings() {
                                         variant="ghost"
                                         className={cn('w-full justify-start', {
                                             'bg-muted font-medium': activeSection === item.href.replace('#', ''),
+                                            'flex-row-reverse': position === 'right',
                                         })}
                                         onClick={() => handleNavClick(item.href)}
                                     >
