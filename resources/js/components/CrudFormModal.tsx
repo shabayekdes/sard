@@ -831,11 +831,12 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                             return null;
                                         }
                                         return (
-                                            <div key={field.name} className="space-y-2" style={{ width: field.width || '100%' }}>
-                                                <Label
-                                                    htmlFor={field.name}
-                                                    className={`text-sm font-medium ${position === 'right' ? 'float-end' : ''}`}
-                                                >
+                                            <div
+                                                key={field.name}
+                                                className={`space-y-2 ${position === 'right' ? 'text-end' : ''}`}
+                                                style={{ width: field.width || '100%' }}
+                                            >
+                                                <Label htmlFor={field.name} className="text-sm font-medium">
                                                     {field.label}{' '}
                                                     {field.required && !(field.type === 'file' && mode === 'edit') && (
                                                         <span className="text-red-500">*</span>
@@ -851,7 +852,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                         )}
                     </form>
                 </ScrollArea>
-                <DialogFooter className={position === 'right' ? 'sm:justify-start' : 'sm:justify-end'}>
+                <DialogFooter>
                     <Button type="button" variant="outline" onClick={onClose}>
                         {t('Cancel')}
                     </Button>

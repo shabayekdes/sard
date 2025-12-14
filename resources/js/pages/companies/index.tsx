@@ -582,7 +582,7 @@ export default function Companies() {
                           <TooltipContent>{t("Upgrade Plan")}</TooltipContent>
                         </Tooltip>
 
-                  
+
 
 
 
@@ -888,7 +888,9 @@ export default function Companies() {
         formConfig={{
           fields: [
             { name: 'name', label: t('Company Name'), type: 'text', readOnly: true },
+            { name: 'phone', label: t('Phone'), type: 'text', readOnly: true },
             { name: 'email', label: t('Email'), type: 'email', readOnly: true },
+            { name: 'city', label: t('City'), type: 'text', readOnly: true },
             { name: 'status', label: t('Status'), type: 'text', readOnly: true },
             { name: 'plan_name', label: t('Plan'), type: 'text', readOnly: true },
             { name: 'created_at', label: t('Created At'), type: 'text', readOnly: true },
