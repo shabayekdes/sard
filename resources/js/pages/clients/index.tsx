@@ -199,12 +199,12 @@ export default function Clients() {
 
   const handleResetPasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (resetPasswordData.password !== resetPasswordData.password_confirmation) {
       toast.error(t('Passwords do not match'));
       return;
     }
-    
+
     if (resetPasswordData.password.length < 6) {
       toast.error(t('Password must be at least 6 characters'));
       return;
@@ -484,6 +484,18 @@ export default function Clients() {
             { name: 'address', label: t('Address'), type: 'textarea' },
             { name: 'referral_source', label: t('Referral Source'), type: 'text' },
             { name: 'notes', label: t('Notes'), type: 'textarea' },
+            {
+                name: 'type',
+                label: t('Type'),
+                type: 'radio',
+                required: true,
+                colSpan: 12,
+                options: [
+                    { value: 'b2c', label: t('Individual') },
+                    { value: 'b2b', label: t('Company') }
+                ],
+                defaultValue: 'b2c'
+            },
             {
               name: 'status',
               label: t('Status'),

@@ -2,7 +2,7 @@ import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, Sideba
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Store expanded menu state in localStorage
 const STORAGE_KEY = 'nav_expanded_items';
@@ -115,7 +115,7 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
     const renderSubMenu = (children: NavItem[], level: number = 1) => {
         return (
             <SidebarMenuSub>
-                {children.map(child => (
+                {children.map((child) => (
                     <div key={child.title}>
                         {child.children ? (
                             // Nested submenu item with children
@@ -125,13 +125,18 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
                                         isActive={isChildActive(child.children)}
                                         onClick={() => toggleExpand(`${level}-${child.title}`)}
                                     >
-                                        <div className={`flex items-center gap-2 ${effectivePosition === 'right' ? 'justify-end text-right' : 'justify-start text-left'}`}>
+                                        <div
+                                            className={`flex items-center gap-2 ${effectivePosition === 'right' ? 'justify-end text-right' : 'justify-start text-left'}`}
+                                        >
                                             <span>{child.title}</span>
-                                            {state !== "collapsed" && (
-                                                expandedItems[`${level}-${child.title}`] ?
-                                                    <ChevronDown className="h-3 w-3 ml-auto" /> :
-                                                    <ChevronRight className="h-3 w-3 ml-auto" />
-                                            )}
+                                            {state !== 'collapsed' &&
+                                                (expandedItems[`${level}-${child.title}`] ? (
+                                                    <ChevronDown className="ml-auto h-3 w-3" />
+                                                ) : position === 'right' ? (
+                                                    <ChevronLeft className="mr-auto h-3 w-3" />
+                                                ) : (
+                                                    <ChevronRight className="ml-auto h-3 w-3" />
+                                                ))}
                                         </div>
                                     </SidebarMenuSubButton>
                                 </SidebarMenuSubItem>
@@ -145,7 +150,6 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
                                 <SidebarMenuSubButton asChild isActive={isActive(child.href)}>
                                     <Link
                                         href={child.href || '#'}
-
                                         target={child.target}
                                         className={`flex items-center gap-2 ${effectivePosition === 'right' ? 'justify-end text-right' : 'justify-start text-left'}`}
                                     >
@@ -196,8 +200,17 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
                                                         )}
                                                     </div>
                                                     {state !== "collapsed" && (
-                                                        expandedItems[item.title] ? <ChevronDown className="h-3 w-3 ml-auto" /> : <ChevronRight className="h-3 w-3 ml-auto" />
+                                                        expandedItems[item.title] ? (
+                                                            <ChevronDown
+                                                                className={`h-3 w-3 ${position === "right" ? "mr-auto" : "ml-auto"}`}
+                                                            />
+                                                        ) : position === "right" ? (
+                                                            <ChevronLeft className="h-3 w-3 mr-auto" />
+                                                        ) : (
+                                                            <ChevronRight className="h-3 w-3 ml-auto" />
+                                                        )
                                                     )}
+
                                                 </>
                                             )}
                                         </div>

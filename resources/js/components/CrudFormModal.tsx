@@ -463,7 +463,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
 
                 return (
                     <Select value={currentValue} onValueChange={(value) => handleChange(field.name, value)} disabled={mode === 'view' || field.disabled}>
-                        <SelectTrigger className={errors[field.name] ? 'border-red-500' : ''}>
+                        <SelectTrigger className={errors[field.name] ? 'border-red-500' : ''} dir={position === 'right' ? 'rtl' : 'ltr'}>
                             <SelectValue placeholder={field.placeholder || `Select ${field.label}`}>
                                 {displayText || field.placeholder || `Select ${field.label}`}
                             </SelectValue>
@@ -535,6 +535,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                         value={formData[field.name] || ''}
                         onValueChange={(value) => handleChange(field.name, value)}
                         disabled={mode === 'view' || field.disabled}
+                        dir={position === 'right' ? 'rtl' : 'ltr'}
                         className="flex gap-4"
                     >
                         {field.options?.map((option) => (

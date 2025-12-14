@@ -22,7 +22,8 @@ class Client extends BaseModel
         'date_of_birth',
         'notes',
         'referral_source',
-        'created_by'
+        'created_by',
+        'type',
     ];
 
     protected $casts = [
@@ -36,13 +37,13 @@ class Client extends BaseModel
     protected static function boot()
     {
         parent::boot();
-        
+
         static::creating(function ($client) {
             if (!$client->client_id) {
                 $client->client_id = 'CL' . str_pad(
-                    (Client::max('id') ?? 0) + 1, 
-                    6, 
-                    '0', 
+                    (Client::max('id') ?? 0) + 1,
+                    6,
+                    '0',
                     STR_PAD_LEFT
                 );
             }
