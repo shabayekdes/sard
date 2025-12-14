@@ -1,150 +1,122 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getBrandSettings, type BrandSettings } from '@/pages/settings/components/brand-settings';
-import { getImagePath } from '@/utils/helpers';
-import { setCookie, getCookie } from '@/utils/cookies';
+import { getBrandSettings, type BrandSettings } from '@/utils/brandSettings';
+import { getCookie } from '@/utils/cookies';
+import { getBaseUrl, getImagePath } from '@/utils/helpers';
+import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 
 interface BrandContextType extends BrandSettings {
-  updateBrandSettings: (settings: Partial<BrandSettings>) => void;
+    updateBrandSettings: (settings: Partial<BrandSettings>) => void;
 }
 
 const BrandContext = createContext<BrandContextType | undefined>(undefined);
 
 export function BrandProvider({ children, globalSettings, user }: { children: ReactNode; globalSettings?: any; user?: any }) {
-  // Determine which settings to use based on user role and route
-  const getEffectiveSettings = () => {
-    const isDemo = globalSettings?.is_demo || false;
+    const baseUrl = getBaseUrl(globalSettings?.app_url || globalSettings?.url); // adjust key if needed
 
-    // In demo mode, prioritize cookies over database settings
-    if (isDemo) {
-      return null; // This will force getBrandSettings to use cookies
-    }
+    const getEffectiveSettings = () => {
+        const isDemo = globalSettings?.is_demo || false;
 
-    const isPublicRoute = window.location.pathname.includes('/public/') ||
-      window.location.pathname === '/' ||
-      window.location.pathname.includes('/auth/');
+        if (isDemo) return null;
 
-    // For public routes (landing page, auth pages), always use superadmin settings
-    if (isPublicRoute) {
-      return globalSettings;
-    }
+        const path = typeof window !== 'undefined' ? window.location.pathname : '';
 
-    // For authenticated routes, use user's own settings if company role
-    if (user?.role === 'company' && user?.globalSettings) {
-      return user.globalSettings;
-    }
+        const isPublicRoute = path.includes('/public/') || path === '/' || path.includes('/auth/');
 
-    // Default to global settings (superadmin)
-    return globalSettings;
-  };
+        if (isPublicRoute) return globalSettings;
 
-  const [brandSettings, setBrandSettings] = useState<BrandSettings>(() => {
-    const settings = getBrandSettings(getEffectiveSettings(), globalSettings);
-    // In demo mode, ensure we have default logos if none are set
-    const isDemo = globalSettings?.is_demo || false;
-    return {
-      ...settings,
-      logoDark: getImagePath(settings.logoDark || (isDemo ? 'images/logos/logo-dark.png' : '')),
-      logoLight: getImagePath(settings.logoLight || (isDemo ? 'images/logos/logo-light.png' : '')),
-      favicon: getImagePath(settings.favicon || (isDemo ? 'images/logos/favicon.ico' : ''))
+        if (user?.role === 'company' && user?.globalSettings) {
+            return user.globalSettings;
+        }
+
+        return globalSettings;
     };
-  });
 
-  // Apply theme settings immediately for landing page (both demo and non-demo modes)
-  useEffect(() => {
-    if (brandSettings && typeof window !== 'undefined') {
-      // Apply theme color globally
-      const color = brandSettings.themeColor === 'custom' ? brandSettings.customColor : {
-        blue: '#3b82f6',
-        green: '#10b981',
-        purple: '#8b5cf6',
-        orange: '#f97316',
-        red: '#ef4444'
-      }[brandSettings.themeColor] || '#3b82f6';
+    // ✅ keep initializer light and pure
+    const [brandSettings, setBrandSettings] = useState<BrandSettings>(() => {
+        return getBrandSettings(getEffectiveSettings(), globalSettings);
+    });
 
-      document.documentElement.style.setProperty('--theme-color', color);
-      document.documentElement.style.setProperty('--primary', color);
-      document.documentElement.style.setProperty('--chart-1', color);
+    // ✅ whenever settings change, normalize logos with baseUrl (still pure)
+    useEffect(() => {
+        const isDemo = globalSettings?.is_demo || false;
 
-      // Apply theme mode
-      const isDark = brandSettings.themeMode === 'dark' ||
-        (brandSettings.themeMode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-      document.documentElement.classList.toggle('dark', isDark);
-      document.body.classList.toggle('dark', isDark);
+        setBrandSettings((prev) => ({
+            ...prev,
+            logoDark: getImagePath(prev.logoDark || (isDemo ? 'images/logos/logo-dark.png' : ''), baseUrl),
+            logoLight: getImagePath(prev.logoLight || (isDemo ? 'images/logos/logo-light.png' : ''), baseUrl),
+            favicon: getImagePath(prev.favicon || (isDemo ? 'images/logos/favicon.ico' : ''), baseUrl),
+        }));
+    }, [baseUrl, globalSettings?.is_demo]);
 
-      // Apply layout direction (RTL/LTR)
-      // document.documentElement.dir = brandSettings.layoutDirection;
-      // document.documentElement.setAttribute('dir', brandSettings.layoutDirection);
-      const domDirection =
-        brandSettings.layoutDirection === 'right' ? 'rtl' : brandSettings.layoutDirection === 'left' ? 'ltr' : brandSettings.layoutDirection;
+    // Apply theme + direction
+    useEffect(() => {
+        if (typeof document === 'undefined') return;
 
-      document.documentElement.dir = domDirection;
-      document.documentElement.setAttribute('dir', domDirection);
+        const color =
+            brandSettings.themeColor === 'custom'
+                ? brandSettings.customColor
+                : { blue: '#3b82f6', green: '#10b981', purple: '#8b5cf6', orange: '#f97316', red: '#ef4444' }[brandSettings.themeColor] || '#3b82f6';
 
-      // Force a small repaint to ensure colors are applied
-      const tempClass = 'theme-color-updating';
-      document.documentElement.classList.add(tempClass);
-      setTimeout(() => {
-        document.documentElement.classList.remove(tempClass);
-      }, 10);
-    }
-  }, [brandSettings]);
+        document.documentElement.style.setProperty('--theme-color', color);
+        document.documentElement.style.setProperty('--primary', color);
+        document.documentElement.style.setProperty('--chart-1', color);
 
-  // Apply layout direction from cookie on initial load for demo mode (exclude landing page)
-  useEffect(() => {
-    if (globalSettings?.is_demo && typeof window !== 'undefined') {
-      const isLandingPage = window.location.pathname === '/';
-      if (!isLandingPage) {
+        const isDark =
+            brandSettings.themeMode === 'dark' ||
+            (brandSettings.themeMode === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+        document.documentElement.classList.toggle('dark', isDark);
+        document.body.classList.toggle('dark', isDark);
+
+        const domDirection =
+            brandSettings.layoutDirection === 'right' ? 'rtl' : brandSettings.layoutDirection === 'left' ? 'ltr' : brandSettings.layoutDirection;
+
+        document.documentElement.dir = domDirection;
+        document.documentElement.setAttribute('dir', domDirection);
+    }, [brandSettings]);
+
+    // Demo mode: apply layout direction from cookie on initial load (exclude landing page)
+    useEffect(() => {
+        if (!globalSettings?.is_demo) return;
+        if (typeof window === 'undefined') return;
+
+        const isLandingPage = window.location.pathname === '/';
+        if (isLandingPage) return;
+
         const layoutPosition = getCookie('layoutPosition');
         if (layoutPosition) {
-          const direction = layoutPosition === 'right' ? 'rtl' : 'ltr';
-          document.documentElement.dir = direction;
-          document.documentElement.setAttribute('dir', direction);
+            const direction = layoutPosition === 'right' ? 'rtl' : 'ltr';
+            document.documentElement.dir = direction;
+            document.documentElement.setAttribute('dir', direction);
         }
-      }
-    }
-  }, []);
+    }, [globalSettings?.is_demo]);
 
-  // Listen for changes in settings
-  useEffect(() => {
-    const effectiveSettings = getEffectiveSettings();
-    const updatedSettings = getBrandSettings(effectiveSettings, globalSettings);
-    const isDemo = globalSettings?.is_demo || false;
-    setBrandSettings({
-      ...updatedSettings,
-      logoDark: getImagePath(updatedSettings.logoDark || (isDemo ? 'images/logos/logo-dark.png' : '')),
-      logoLight: getImagePath(updatedSettings.logoLight || (isDemo ? 'images/logos/logo-light.png' : '')),
-      favicon: getImagePath(updatedSettings.favicon || (isDemo ? 'images/logos/favicon.ico' : ''))
-    });
-  }, [globalSettings, user]);
+    // Listen for changes in settings
+    useEffect(() => {
+        const effectiveSettings = getEffectiveSettings();
+        const updatedSettings = getBrandSettings(effectiveSettings, globalSettings);
+        setBrandSettings(updatedSettings);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [globalSettings, user]);
 
+    const updateBrandSettings = (newSettings: Partial<BrandSettings>) => {
+        const processedSettings = { ...newSettings };
 
+        if (newSettings.logoDark) processedSettings.logoDark = getImagePath(newSettings.logoDark, baseUrl);
+        if (newSettings.logoLight) processedSettings.logoLight = getImagePath(newSettings.logoLight, baseUrl);
+        if (newSettings.favicon) processedSettings.favicon = getImagePath(newSettings.favicon, baseUrl);
 
-  const updateBrandSettings = (newSettings: Partial<BrandSettings>) => {
-    // Convert logo paths to full URLs if they are relative paths
-    const processedSettings = { ...newSettings };
-    if (newSettings.logoDark) {
-      processedSettings.logoDark = getImagePath(newSettings.logoDark);
-    }
-    if (newSettings.logoLight) {
-      processedSettings.logoLight = getImagePath(newSettings.logoLight);
-    }
-    if (newSettings.favicon) {
-      processedSettings.favicon = getImagePath(newSettings.favicon);
-    }
-    setBrandSettings(prev => ({ ...prev, ...processedSettings }));
-  };
+        setBrandSettings((prev) => ({ ...prev, ...processedSettings }));
+    };
 
-  return (
-    <BrandContext.Provider value={{ ...brandSettings, updateBrandSettings }}>
-      {children}
-    </BrandContext.Provider>
-  );
+    const value = useMemo(() => ({ ...brandSettings, updateBrandSettings }), [brandSettings]);
+
+    return <BrandContext.Provider value={value}>{children}</BrandContext.Provider>;
 }
 
 export function useBrand() {
-  const context = useContext(BrandContext);
-  if (context === undefined) {
-    throw new Error('useBrand must be used within a BrandProvider');
-  }
-  return context;
+    const context = useContext(BrandContext);
+    if (context === undefined) {
+        throw new Error('useBrand must be used within a BrandProvider');
+    }
+    return context;
 }
