@@ -14,7 +14,7 @@ export interface PageAction {
 
 export interface PageTemplateProps {
   title: string;
-  description: string;
+  // description: string; //TODO:: NOT USED
   url: string;
   actions?: PageAction[];
   children: ReactNode;
@@ -24,7 +24,7 @@ export interface PageTemplateProps {
 
 export function PageTemplate({
   title,
-  description,
+  // description, //TODO:: NOT USED
   url,
   actions,
   children,
