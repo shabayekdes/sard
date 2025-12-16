@@ -11,10 +11,11 @@ import { useAppearance, type Appearance, type ThemeColor } from '@/hooks/use-app
 import { getCookie } from '@/utils/cookies';
 import { getImagePath } from '@/utils/helpers';
 import { router, usePage } from '@inertiajs/react';
-import { FileText, Palette, Save, Upload } from 'lucide-react';
+import { Check, FileText, Layout, Moon, Palette, Save, SidebarIcon, Upload } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { Separator } from '@/components/ui/separator';
 
 // ✅ Import the pure settings + types from the new file
 import { getBrandSettings, type BrandSettings } from '@/utils/brandSettings';
@@ -397,11 +398,255 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
                     {/* Theme Section */}
                     {activeSection === 'theme' && (
                         <div className="space-y-6">
-                            {/* ✅ Keep your existing theme UI here (unchanged)
-                  I’m not repeating the entire rest because it’s very long and unchanged.
-                  If you want, paste the remainder and I’ll return the full file 1:1. */}
-                            <div className="text-muted-foreground text-sm">
-                                {t('Theme section unchanged — keep the rest of your existing code here.')}
+                            <div className="flex flex-col space-y-8">
+                                {/* Theme Color Section */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center">
+                                        <Palette className="text-muted-foreground mr-2 h-5 w-5" />
+                                        <h3 className="text-base font-medium">{t('Theme Color')}</h3>
+                                    </div>
+                                    <Separator className="my-2" />
+
+                                    <div className="grid grid-cols-6 gap-2">
+                                        {Object.entries({
+                                            blue: '#3b82f6',
+                                            green: '#10b981',
+                                            purple: '#8b5cf6',
+                                            orange: '#f97316',
+                                            red: '#ef4444',
+                                        }).map(([color, hex]) => (
+                                            <Button
+                                                key={color}
+                                                type="button"
+                                                variant={settings.themeColor === color ? 'default' : 'outline'}
+                                                className="relative h-8 w-full p-0"
+                                                style={{ backgroundColor: settings.themeColor === color ? hex : 'transparent' }}
+                                                onClick={() => handleThemeColorChange(color as ThemeColor)}
+                                            >
+                                                <span className="absolute inset-1 rounded-sm" style={{ backgroundColor: hex }} />
+                                            </Button>
+                                        ))}
+                                        <Button
+                                            type="button"
+                                            variant={settings.themeColor === 'custom' ? 'default' : 'outline'}
+                                            className="relative h-8 w-full p-0"
+                                            style={{ backgroundColor: settings.themeColor === 'custom' ? settings.customColor : 'transparent' }}
+                                            onClick={() => handleThemeColorChange('custom')}
+                                        >
+                                            <span className="absolute inset-1 rounded-sm" style={{ backgroundColor: settings.customColor }} />
+                                        </Button>
+                                    </div>
+
+                                    {settings.themeColor === 'custom' && (
+                                        <div className="mt-4 space-y-2">
+                                            <Label htmlFor="customColor">{t('Custom Color')}</Label>
+                                            <div className="flex gap-2">
+                                                <div className="relative">
+                                                    <Input
+                                                        id="colorPicker"
+                                                        type="color"
+                                                        value={settings.customColor}
+                                                        onChange={(e) => handleCustomColorChange(e.target.value)}
+                                                        className="absolute inset-0 cursor-pointer opacity-0"
+                                                    />
+                                                    <div
+                                                        className="h-10 w-10 cursor-pointer rounded border"
+                                                        style={{ backgroundColor: settings.customColor }}
+                                                    />
+                                                </div>
+                                                <Input
+                                                    id="customColor"
+                                                    name="customColor"
+                                                    type="text"
+                                                    value={settings.customColor}
+                                                    onChange={(e) => handleCustomColorChange(e.target.value)}
+                                                    placeholder="#3b82f6"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Sidebar Section */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center">
+                                        <SidebarIcon className="text-muted-foreground mr-2 h-5 w-5" />
+                                        <h3 className="text-base font-medium">{t('Sidebar')}</h3>
+                                    </div>
+                                    <Separator className="my-2" />
+
+                                    <div className="space-y-6">
+                                        <div>
+                                            <Label className="mb-2 block">{t('Sidebar Variant')}</Label>
+                                            <div className="grid grid-cols-3 gap-3">
+                                                {['inset', 'floating', 'minimal'].map((variant) => (
+                                                    <Button
+                                                        key={variant}
+                                                        type="button"
+                                                        variant={settings.sidebarVariant === variant ? 'default' : 'outline'}
+                                                        className="h-10 justify-start"
+                                                        style={{
+                                                            backgroundColor:
+                                                                settings.sidebarVariant === variant
+                                                                    ? settings.themeColor === 'custom'
+                                                                        ? settings.customColor
+                                                                        : null
+                                                                    : 'transparent',
+                                                        }}
+                                                        onClick={() => handleSidebarVariantChange(variant)}
+                                                    >
+                                                        {variant.charAt(0).toUpperCase() + variant.slice(1)}
+                                                        {settings.sidebarVariant === variant && <Check className="ml-2 h-4 w-4" />}
+                                                    </Button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <Label className="mb-2 block">{t('Sidebar Style')}</Label>
+                                            <div className="grid grid-cols-3 gap-3">
+                                                {[
+                                                    { id: 'plain', name: 'Plain' },
+                                                    { id: 'colored', name: 'Colored' },
+                                                    { id: 'gradient', name: 'Gradient' },
+                                                ].map((style) => (
+                                                    <Button
+                                                        key={style.id}
+                                                        type="button"
+                                                        variant={settings.sidebarStyle === style.id ? 'default' : 'outline'}
+                                                        className="h-10 justify-start"
+                                                        style={{
+                                                            backgroundColor:
+                                                                settings.sidebarStyle === style.id
+                                                                    ? settings.themeColor === 'custom'
+                                                                        ? settings.customColor
+                                                                        : null
+                                                                    : 'transparent',
+                                                        }}
+                                                        onClick={() => handleSidebarStyleChange(style.id)}
+                                                    >
+                                                        {style.name}
+                                                        {settings.sidebarStyle === style.id && <Check className="ml-2 h-4 w-4" />}
+                                                    </Button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Layout Section */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center">
+                                        <Layout className="text-muted-foreground mr-2 h-5 w-5" />
+                                        <h3 className="text-base font-medium">{t('Layout')}</h3>
+                                    </div>
+                                    <Separator className="my-2" />
+
+                                    <div className="space-y-2">
+                                        <Label className="mb-2 block">{t('Layout Direction')}</Label>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <Button
+                                                type="button"
+                                                variant={settings.layoutDirection === 'left' ? 'default' : 'outline'}
+                                                className="h-10 justify-start"
+                                                style={{
+                                                    backgroundColor:
+                                                        settings.layoutDirection === 'left'
+                                                            ? settings.themeColor === 'custom'
+                                                                ? settings.customColor
+                                                                : null
+                                                            : 'transparent',
+                                                }}
+                                                onClick={() => handleLayoutDirectionChange('left')}
+                                            >
+                                                {t('Left-to-Right')}
+                                                {settings.layoutDirection === 'left' && <Check className="ml-2 h-4 w-4" />}
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant={settings.layoutDirection === 'right' ? 'default' : 'outline'}
+                                                className="h-10 justify-start"
+                                                style={{
+                                                    backgroundColor:
+                                                        settings.layoutDirection === 'right'
+                                                            ? settings.themeColor === 'custom'
+                                                                ? settings.customColor
+                                                                : null
+                                                            : 'transparent',
+                                                }}
+                                                onClick={() => handleLayoutDirectionChange('right')}
+                                            >
+                                                {t('Right-to-Left')}
+                                                {settings.layoutDirection === 'right' && <Check className="ml-2 h-4 w-4" />}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Mode Section */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center">
+                                        <Moon className="text-muted-foreground mr-2 h-5 w-5" />
+                                        <h3 className="text-base font-medium">{t('Theme Mode')}</h3>
+                                    </div>
+                                    <Separator className="my-2" />
+
+                                    <div className="space-y-2">
+                                        <div className="grid grid-cols-3 gap-2">
+                                            <Button
+                                                type="button"
+                                                variant={settings.themeMode === 'light' ? 'default' : 'outline'}
+                                                className="h-10 justify-start"
+                                                style={{
+                                                    backgroundColor:
+                                                        settings.themeMode === 'light'
+                                                            ? settings.themeColor === 'custom'
+                                                                ? settings.customColor
+                                                                : null
+                                                            : 'transparent',
+                                                }}
+                                                onClick={() => handleThemeModeChange('light')}
+                                            >
+                                                {t('Light')}
+                                                {settings.themeMode === 'light' && <Check className="ml-2 h-4 w-4" />}
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant={settings.themeMode === 'dark' ? 'default' : 'outline'}
+                                                className="h-10 justify-start"
+                                                style={{
+                                                    backgroundColor:
+                                                        settings.themeMode === 'dark'
+                                                            ? settings.themeColor === 'custom'
+                                                                ? settings.customColor
+                                                                : null
+                                                            : 'transparent',
+                                                }}
+                                                onClick={() => handleThemeModeChange('dark')}
+                                            >
+                                                {t('Dark')}
+                                                {settings.themeMode === 'dark' && <Check className="ml-2 h-4 w-4" />}
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant={settings.themeMode === 'system' ? 'default' : 'outline'}
+                                                className="h-10 justify-start"
+                                                style={{
+                                                    backgroundColor:
+                                                        settings.themeMode === 'system'
+                                                            ? settings.themeColor === 'custom'
+                                                                ? settings.customColor
+                                                                : null
+                                                            : 'transparent',
+                                                }}
+                                                onClick={() => handleThemeModeChange('system')}
+                                            >
+                                                {t('System')}
+                                                {settings.themeMode === 'system' && <Check className="ml-2 h-4 w-4" />}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}

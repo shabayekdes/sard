@@ -1,6 +1,7 @@
+import type { PageProps } from '@/types/page-props';
 import { getBrandSettings, type BrandSettings } from '@/utils/brandSettings';
-import { getCookie } from '@/utils/cookies';
 import { getBaseUrl, getImagePath } from '@/utils/helpers';
+import { usePage } from '@inertiajs/react';
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 
 interface BrandContextType extends BrandSettings {
@@ -9,35 +10,31 @@ interface BrandContextType extends BrandSettings {
 
 const BrandContext = createContext<BrandContextType | undefined>(undefined);
 
-export function BrandProvider({ children, globalSettings, user }: { children: ReactNode; globalSettings?: any; user?: any }) {
-    const baseUrl = getBaseUrl(globalSettings?.app_url || globalSettings?.url); // adjust key if needed
+export function BrandProvider({ children }: { children: ReactNode }) {
+    const { props } = usePage<PageProps>();
+    const globalSettings = props.globalSettings || {};
+    const user = props.auth?.user;
+    const baseUrl = getBaseUrl(globalSettings?.app_url || globalSettings?.url || props.base_url);
 
     const getEffectiveSettings = () => {
-        const isDemo = globalSettings?.is_demo || false;
-
+        const isDemo = globalSettings?.is_demo || props.is_demo || false;
         if (isDemo) return null;
 
         const path = typeof window !== 'undefined' ? window.location.pathname : '';
-
         const isPublicRoute = path.includes('/public/') || path === '/' || path.includes('/auth/');
 
         if (isPublicRoute) return globalSettings;
-
-        if (user?.role === 'company' && user?.globalSettings) {
-            return user.globalSettings;
-        }
+        if (user?.role === 'company' && user?.globalSettings) return user.globalSettings;
 
         return globalSettings;
     };
 
-    // ✅ keep initializer light and pure
     const [brandSettings, setBrandSettings] = useState<BrandSettings>(() => {
         return getBrandSettings(getEffectiveSettings(), globalSettings);
     });
 
-    // ✅ whenever settings change, normalize logos with baseUrl (still pure)
     useEffect(() => {
-        const isDemo = globalSettings?.is_demo || false;
+        const isDemo = globalSettings?.is_demo || props.is_demo || false;
 
         setBrandSettings((prev) => ({
             ...prev,
@@ -45,16 +42,16 @@ export function BrandProvider({ children, globalSettings, user }: { children: Re
             logoLight: getImagePath(prev.logoLight || (isDemo ? 'images/logos/logo-light.png' : ''), baseUrl),
             favicon: getImagePath(prev.favicon || (isDemo ? 'images/logos/favicon.ico' : ''), baseUrl),
         }));
-    }, [baseUrl, globalSettings?.is_demo]);
+    }, [baseUrl, globalSettings?.is_demo, props.is_demo]);
 
-    // Apply theme + direction
     useEffect(() => {
         if (typeof document === 'undefined') return;
 
         const color =
             brandSettings.themeColor === 'custom'
                 ? brandSettings.customColor
-                : { blue: '#3b82f6', green: '#10b981', purple: '#8b5cf6', orange: '#f97316', red: '#ef4444' }[brandSettings.themeColor] || '#3b82f6';
+                : ({ blue: '#3b82f6', green: '#10b981', purple: '#8b5cf6', orange: '#f97316', red: '#ef4444' } as any)[brandSettings.themeColor] ||
+                  '#3b82f6';
 
         document.documentElement.style.setProperty('--theme-color', color);
         document.documentElement.style.setProperty('--primary', color);
@@ -74,24 +71,8 @@ export function BrandProvider({ children, globalSettings, user }: { children: Re
         document.documentElement.setAttribute('dir', domDirection);
     }, [brandSettings]);
 
-    // Demo mode: apply layout direction from cookie on initial load (exclude landing page)
     useEffect(() => {
-        if (!globalSettings?.is_demo) return;
-        if (typeof window === 'undefined') return;
-
-        const isLandingPage = window.location.pathname === '/';
-        if (isLandingPage) return;
-
-        const layoutPosition = getCookie('layoutPosition');
-        if (layoutPosition) {
-            const direction = layoutPosition === 'right' ? 'rtl' : 'ltr';
-            document.documentElement.dir = direction;
-            document.documentElement.setAttribute('dir', direction);
-        }
-    }, [globalSettings?.is_demo]);
-
-    // Listen for changes in settings
-    useEffect(() => {
+        // Whenever inertia props change (navigation), refresh settings
         const effectiveSettings = getEffectiveSettings();
         const updatedSettings = getBrandSettings(effectiveSettings, globalSettings);
         setBrandSettings(updatedSettings);
@@ -115,8 +96,6 @@ export function BrandProvider({ children, globalSettings, user }: { children: Re
 
 export function useBrand() {
     const context = useContext(BrandContext);
-    if (context === undefined) {
-        throw new Error('useBrand must be used within a BrandProvider');
-    }
+    if (context === undefined) throw new Error('useBrand must be used within a BrandProvider');
     return context;
 }

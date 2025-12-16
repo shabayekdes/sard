@@ -1,32 +1,37 @@
 import '../css/app.css';
 import '../css/dark-mode.css';
+
 import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
-import { lazy, Suspense } from 'react';
+import React, { Suspense } from 'react';
+
 import { LayoutProvider } from './contexts/LayoutContext';
 import { SidebarProvider } from './contexts/SidebarContext';
 import { BrandProvider } from './contexts/BrandContext';
 import { ModalStackProvider } from './contexts/ModalStackContext';
+
 import { initializeTheme } from './hooks/use-appearance';
 import { CustomToast } from './components/custom-toast';
 import { initializeGlobalSettings } from './utils/globalSettings';
 import { initPerformanceMonitoring, lazyLoadImages } from './utils/performance';
 import { getCookie, isDemoMode } from './utils/cookies';
-import './i18n'; // Import i18n configuration
-import './utils/axios-config'; // Import axios configuration
-import i18n from './i18n'; // Import i18n instance
-// Initialize performance monitoring
+
+import './i18n';
+import './utils/axios-config';
+import i18n from './i18n';
+
+// -------------------------
+// Perf + lazy images
+// -------------------------
 initPerformanceMonitoring();
 
-// Initialize lazy loading of images when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     lazyLoadImages();
 });
 
-// Add event listener for theme changes
+// Re-apply theme when system preference changes (demo mode only)
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    // Re-apply theme when system preference changes
     let savedTheme = null;
 
     if (isDemoMode()) {
@@ -44,12 +49,36 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
-    // title: (title) => title ? `${title} - ${appName}` : appName,
-    resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
+    // title: (title) => (title ? `${title} - ${appName}` : appName),
+
+    resolve: (name) =>
+        resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')).then((module: any) => {
+            const Page = module.default;
+
+            // Attach a default layout (only if page didn't define one)
+            Page.layout =
+                Page.layout ||
+                ((page: React.ReactNode) => (
+                    <ModalStackProvider>
+                        <LayoutProvider>
+                            <SidebarProvider>
+                                {/* BrandProvider is now INSIDE Inertia context, so it can safely use usePage() */}
+                                <BrandProvider>
+                                    {page}
+                                    <CustomToast />
+                                </BrandProvider>
+                            </SidebarProvider>
+                        </LayoutProvider>
+                    </ModalStackProvider>
+                ));
+
+            return module;
+        }),
+
     setup({ el, App, props }) {
         const root = createRoot(el);
 
-        // Make page data globally available for axios interceptor
+        // Make initial page data globally available (if you still need it)
         try {
             (window as any).page = props.initialPage;
         } catch (e) {
@@ -59,113 +88,85 @@ createInertiaApp({
         // Set demo mode globally
         try {
             (window as any).isDemo = props.initialPage.props?.is_demo || false;
-        } catch (e) {
-            // Ignore errors
+        } catch {
+            // ignore
         }
+
+        // Initialize direction + global settings from initial shared props
         initializeDirection();
 
-        // Initialize global settings from shared data
         const globalSettings = props.initialPage.props.globalSettings || {};
         if (Object.keys(globalSettings).length > 0) {
             initializeGlobalSettings(globalSettings);
         }
 
-        // Create a memoized render function to prevent unnecessary re-renders
-        const renderApp = (appProps: any) => {
-            const currentGlobalSettings = appProps.initialPage.props.globalSettings || {};
-            const user = appProps.initialPage.props.auth?.user;
+        // Render ONCE — Inertia handles updates on navigation
+        root.render(
+            <Suspense fallback={<div className="flex h-screen w-full items-center justify-center">Loading...</div>}>
+                <App {...props} />
+            </Suspense>
+        );
 
-            return (
-                <ModalStackProvider>
-                    <LayoutProvider>
-                        <SidebarProvider>
-                            <BrandProvider globalSettings={currentGlobalSettings} user={user}>
-                                <Suspense fallback={<div className="flex h-screen w-full items-center justify-center">Loading...</div>}>
-                                    <App {...appProps} />
-                                </Suspense>
-                                <CustomToast />
-                            </BrandProvider>
-                        </SidebarProvider>
-                    </LayoutProvider>
-                </ModalStackProvider>
-            );
-        };
-
-        // Initial render
-        root.render(renderApp(props));
-
-        // Update global page data on navigation and re-render with new settings
+        // Side effects on navigation (NO root.render)
         router.on('navigate', (event) => {
             try {
                 (window as any).page = event.detail.page;
-                // Re-render with updated props including globalSettings
-                root.render(renderApp({ initialPage: event.detail.page }));
 
-                // Force dark mode check on navigation
-                let savedTheme = null;
-
-                if (isDemoMode()) {
-                    savedTheme = getCookie('themeSettings');
-                }
-
+                // Optional: keep theme synced in demo mode
+                const savedTheme = isDemoMode() ? getCookie('themeSettings') : null;
                 if (savedTheme) {
                     const themeSettings = JSON.parse(savedTheme);
-                    const isDark = themeSettings.appearance === 'dark' ||
-                        (themeSettings.appearance === 'system' &&
-                            window.matchMedia('(prefers-color-scheme: dark)').matches);
+                    const isDark =
+                        themeSettings.appearance === 'dark' ||
+                        (themeSettings.appearance === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
                     document.documentElement.classList.toggle('dark', isDark);
                     document.body.classList.toggle('dark', isDark);
                 }
             } catch (e) {
-                console.error('Navigation error:', e);
+                console.error('Navigation side-effect error:', e);
             }
         });
     },
+
     progress: {
         color: '#4B5563',
     },
 });
 
-// This will set light / dark mode on load...
+// Set light/dark mode on load
 initializeTheme();
 
-// Normalize layout direction values to valid DOM dir attributes
+// -------------------------
+// Direction helpers
+// -------------------------
 const normalizeDirection = (direction: string | null | undefined) => {
     if (direction === 'right') return 'rtl';
     if (direction === 'left') return 'ltr';
     return direction || 'ltr';
 };
 
-// Initialize direction from cookies (demo mode) or database (live mode)
 const initializeDirection = () => {
     let savedDirection: string | null = null;
 
     if (isDemoMode()) {
         savedDirection = getCookie('layoutDirection');
     } else {
-        // In live mode, get from globalSettings
         const globalSettings = (window as any).page?.props?.globalSettings;
-        // const globalSettings = (window as any).props.globalSettings || {};
         if (globalSettings?.layoutDirection) {
             savedDirection = globalSettings.layoutDirection;
         }
     }
 
-    // if (savedDirection) {
-    //     document.documentElement.dir = savedDirection;
-    //     document.documentElement.setAttribute('dir', savedDirection);
-    // }
     const domDirection = normalizeDirection(savedDirection);
-
     document.documentElement.dir = domDirection;
     document.documentElement.setAttribute('dir', domDirection);
 };
 
-// Initialize direction on page load
 initializeDirection();
 
 // Global function to update direction
-window.updateLayoutDirection = (lng) => {
+(window as any).updateLayoutDirection = (lng: string) => {
     const isRTL = ['ar', 'he'].includes(lng);
     const direction = isRTL ? 'rtl' : 'ltr';
     document.documentElement.dir = direction;
@@ -174,12 +175,11 @@ window.updateLayoutDirection = (lng) => {
 
 // Override i18n changeLanguage to update direction immediately
 const originalChangeLanguage = i18n.changeLanguage;
-i18n.changeLanguage = function(lng, callback) {
+i18n.changeLanguage = function (lng: any, callback?: any) {
     const result = originalChangeLanguage.call(this, lng, callback);
-    window.updateLayoutDirection(lng);
+    (window as any).updateLayoutDirection(lng);
     return result;
 };
 
-// Listen for i18n events as backup
-i18n.on('languageChanged', window.updateLayoutDirection);
-i18n.on('loaded', () => window.updateLayoutDirection(i18n.language));
+i18n.on('languageChanged', (window as any).updateLayoutDirection);
+i18n.on('loaded', () => (window as any).updateLayoutDirection(i18n.language));
