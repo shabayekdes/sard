@@ -113,6 +113,7 @@ class RegisteredUserController extends Controller
         // );
 
         // Assign role and settings to the user
+        //TODO: change default values to listener
         defaultRoleAndSetting($user);
 
         // Note: Referral record will be created when user purchases a plan

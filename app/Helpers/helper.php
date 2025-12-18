@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\ClientType;
 use App\Models\Setting;
 use App\Models\User;
 use App\Models\Coupon;
@@ -410,47 +411,73 @@ if (! function_exists('createCompanyRoles')) {
 
         $teamMember->roles()->sync([$teamRole->id]);
 
-        // Create default client user
-        $client = User::firstOrCreate([
-            'email' => 'client' . $companyUser->id . '@company.com',
-            'created_by' => $companyUser->id
-        ], [
-            'name' => 'Jane Smith',
-            'password' => \Hash::make('password'),
-            'type' => 'client',
-            'lang' => $companyUser->lang ?? 'en',
-            'status' => 'active',
-            'referral_code' => 0
-        ]);
+        $clientTypes = [
+            [
+                'name' => 'فرد',
+                'created_by' => $companyUser->id,
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'مؤسسة فردية',
+                'created_by' => $companyUser->id,
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'شركة توصية بسيطة',
+                'created_by' => $companyUser->id,
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'شركة تضامنية',
+                'created_by' => $companyUser->id,
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'شركة ذات مسئولية محدودة',
+                'created_by' => $companyUser->id,
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'شركة مساهمة عامة',
+                'created_by' => $companyUser->id,
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'شركة أجنبية',
+                'created_by' => $companyUser->id,
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'شركة خليجية',
+                'created_by' => $companyUser->id,
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'شركة مساهمة مقفلة',
+                'created_by' => $companyUser->id,
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ];
 
-        $client->roles()->sync([$clientRole->id]);
-
-        // Create default client type first
-        $defaultClientType = \App\Models\ClientType::firstOrCreate([
-            'name' => 'Individual',
-            'created_by' => $companyUser->id
-        ], [
-            'description' => 'Individual client type',
-            'status' => 'active'
-        ]);
-
-        // Create client record in clients table
-        \App\Models\Client::firstOrCreate([
-            'email' => $client->email,
-            'created_by' => $companyUser->id
-        ], [
-            'name' => $client->name,
-            'phone' => '+1 234 567 890',
-            'address' => '123 Client Street, City, State',
-            'client_type_id' => $defaultClientType->id,
-            'status' => 'active',
-            'company_name' => $companyUser->name,
-            'tax_id' => null,
-            'tax_rate' => 0.00,
-            'date_of_birth' => null,
-            'notes' => 'Default client created during company setup',
-            'referral_source' => 'System Generated'
-        ]);
+        ClientType::insert($clientTypes);
     }
 }
 

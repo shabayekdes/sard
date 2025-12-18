@@ -15,50 +15,59 @@ class ClientTypeSeeder extends Seeder
      */
     public function run(): void
     {
-        
         // Get company users
         $companyUsers = User::where('type', 'company')->get();
-        
+
         foreach ($companyUsers as $companyUser) {
             // Create default client types for each company
             $clientTypes = [
                 [
-                    'name' => 'Individual',
-                    'description' => 'Individual clients and personal customers',
+                    'name' => 'فرد',
                     'status' => 'active',
                 ],
                 [
-                    'name' => 'Small Business',
-                    'description' => 'Small business clients and startups',
+                    'name' => 'مؤسسة فردية',
                     'status' => 'active',
                 ],
                 [
-                    'name' => 'Corporate',
-                    'description' => 'Large corporate clients and enterprises',
+                    'name' => 'شركة توصية بسيطة',
                     'status' => 'active',
                 ],
                 [
-                    'name' => 'Government',
-                    'description' => 'Government agencies and public sector',
+                    'name' => 'شركة تضامنية',
                     'status' => 'active',
                 ],
                 [
-                    'name' => 'Non-Profit',
-                    'description' => 'Non-profit organizations and charities',
+                    'name' => 'شركة ذات مسئولية محدودة',
+                    'status' => 'active',
+                ],
+                [
+                    'name' => 'شركة مساهمة عامة',
+                    'status' => 'active',
+                ],
+                [
+                    'name' => 'شركة أجنبية',
+                    'status' => 'active',
+                ],
+                [
+                    'name' => 'شركة خليجية',
+                    'status' => 'active',
+                ],
+                [
+                    'name' => 'شركة مساهمة مقفلة',
                     'status' => 'active',
                 ],
             ];
-            
+
             foreach ($clientTypes as $clientTypeData) {
                 // Check if client type already exists
                 $exists = ClientType::where('name', $clientTypeData['name'])
                     ->where('created_by', $companyUser->id)
                     ->exists();
-                    
+
                 if (!$exists) {
                     ClientType::create([
                         'name' => $clientTypeData['name'],
-                        'description' => $clientTypeData['description'],
                         'status' => $clientTypeData['status'],
                         'created_by' => $companyUser->id,
                     ]);
