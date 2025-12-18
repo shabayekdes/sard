@@ -1,0 +1,133 @@
+<?php
+
+return [
+
+    'available_currencies' => [
+        [
+            'name' => 'الريال السعودي',
+            'code' => 'SAR',
+            'symbol' => 'ريال',
+            'description' => 'العملة الرسمية للمملكة العربية السعودية',
+            'is_default' => false,
+        ],
+        [
+            'name' => 'الدرهم الإماراتي',
+            'code' => 'AED',
+            'symbol' => 'د.إ',
+            'description' => 'العملة الرسمية لدولة الإمارات',
+            'is_default' => false,
+        ],
+        [
+            'name' => 'الدينار الكويتي',
+            'code' => 'KWD',
+            'symbol' => 'د.ك',
+            'description' => 'من أعلى العملات قيمة في العالم',
+            'is_default' => false,
+        ],
+        [
+            'name' => 'الدينار البحريني',
+            'code' => 'BHD',
+            'symbol' => 'د.ب',
+            'description' => 'العملة الرسمية لمملكة البحرين',
+            'is_default' => false,
+        ],
+        [
+            'name' => 'الريال القطري',
+            'code' => 'QAR',
+            'symbol' => 'ر.ق',
+            'description' => 'العملة الرسمية لدولة قطر',
+            'is_default' => false,
+        ],
+        [
+            'name' => 'الريال العُماني',
+            'code' => 'OMR',
+            'symbol' => 'ر.ع',
+            'description' => 'العملة الرسمية لسلطنة عُمان',
+            'is_default' => false,
+        ],
+        [
+            'name' => 'الدينار الأردني',
+            'code' => 'JOD',
+            'symbol' => 'د.أ',
+            'description' => 'العملة الرسمية للمملكة الأردنية الهاشمية',
+            'is_default' => false,
+        ],
+        [
+            'name' => 'الجنيه المصري',
+            'code' => 'EGP',
+            'symbol' => 'ج.م',
+            'description' => 'العملة الرسمية لجمهورية مصر العربية',
+            'is_default' => false,
+        ],
+        [
+            'name' => 'الدينار التونسي',
+            'code' => 'TND',
+            'symbol' => 'د.ت',
+            'description' => 'العملة الرسمية للجمهورية التونسية',
+            'is_default' => false,
+        ],
+        [
+            'name' => 'الدينار الجزائري',
+            'code' => 'DZD',
+            'symbol' => 'د.ج',
+            'description' => 'العملة الرسمية للجزائر',
+            'is_default' => false,
+        ],
+        [
+            'name' => 'الدينار العراقي',
+            'code' => 'IQD',
+            'symbol' => 'د.ع',
+            'description' => 'العملة الرسمية للعراق',
+            'is_default' => false,
+        ],
+        [
+            'name' => 'الليرة اللبنانية',
+            'code' => 'LBP',
+            'symbol' => 'ل.ل',
+            'description' => 'العملة الرسمية للبنان',
+            'is_default' => false,
+        ],
+        [
+            'name' => 'الدرهم المغربي',
+            'code' => 'MAD',
+            'symbol' => 'د.م',
+            'description' => 'العملة الرسمية للمملكة المغربية',
+            'is_default' => false,
+        ],
+        [
+            'name' => 'الريال اليمني',
+            'code' => 'YER',
+            'symbol' => 'ر.ي',
+            'description' => 'العملة الرسمية للجمهورية اليمنية',
+            'is_default' => false,
+        ],
+        [
+            'name' => 'الريال السوري',
+            'code' => 'SYP',
+            'symbol' => 'ل.س',
+            'description' => 'العملة الرسمية للجمهورية العربية السورية',
+            'is_default' => false,
+        ],
+        [
+            'name' => 'الدينار الليبي',
+            'code' => 'LYD',
+            'symbol' => 'د.ل',
+            'description' => 'العملة الرسمية لدولة ليبيا',
+            'is_default' => false,
+        ],
+        [
+            'name' => 'الدولار الأمريكي',
+            'code' => 'USD',
+            'symbol' => '$',
+            'description' => 'العملة الأكثر استخدامًا عالميًا',
+            'is_default' => true,
+        ],
+        [
+            'name' => 'اليورو',
+            'code' => 'EUR',
+            'symbol' => '€',
+            'description' => 'العملة الموحدة للاتحاد الأوروبي',
+            'is_default' => false,
+        ],
+    ]
+];

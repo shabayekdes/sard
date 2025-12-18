@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -287,5 +288,10 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
                 }
             }
         });
+    }
+
+    public function clientBillingCurrencies(): HasMany
+    {
+        return $this->hasMany(ClientBillingCurrency::class, 'created_by');
     }
 }

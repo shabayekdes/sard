@@ -184,7 +184,7 @@ if (! function_exists('defaultRoleAndSetting')) {
 }
 
 if (! function_exists('createCompanyRoles')) {
-    function createCompanyRoles($companyUser)
+    function createCompanyRoles(\App\Models\User $companyUser)
     {
         // Create client role
         $clientRole = Role::firstOrCreate([
@@ -477,7 +477,8 @@ if (! function_exists('createCompanyRoles')) {
             ],
         ];
 
-        ClientType::insert($clientTypes);
+        \App\Models\ClientType::insert($clientTypes);
+        $companyUser->clientBillingCurrencies()->createMany(config('currencies.available_currencies', []));
     }
 }
 
