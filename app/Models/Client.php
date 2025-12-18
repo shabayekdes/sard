@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Client extends BaseModel
 {
@@ -66,7 +67,7 @@ class Client extends BaseModel
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function cases()
+    public function cases(): HasMany
     {
         return $this->hasMany(CaseModel::class);
     }

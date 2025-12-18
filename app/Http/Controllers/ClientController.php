@@ -16,7 +16,8 @@ class ClientController extends Controller
     {
         $user = auth()->user();
         $query = Client::withPermissionCheck()
-            ->with(['clientType', 'creator']);
+            ->with(['clientType', 'creator'])
+            ->withCount('cases');
 
         // Handle search
         if ($request->has('search') && !empty($request->search)) {

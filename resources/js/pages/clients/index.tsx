@@ -1,19 +1,19 @@
-import { useState } from 'react';
-import { PageTemplate } from '@/components/page-template';
-import { usePage, router } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
-import { hasPermission } from '@/utils/authorization';
-import { CrudTable } from '@/components/CrudTable';
+import { CrudDeleteModal } from '@/components/CrudDeleteModal';
 import { CrudFormModal } from '@/components/CrudFormModal';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { CrudTable } from '@/components/CrudTable';
+import { toast } from '@/components/custom-toast';
+import { PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CrudDeleteModal } from '@/components/CrudDeleteModal';
-import { toast } from '@/components/custom-toast';
-import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
+import { hasPermission } from '@/utils/authorization';
+import { router, usePage } from '@inertiajs/react';
+import { Plus } from 'lucide-react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function Clients() {
   const { t } = useTranslation();
@@ -48,27 +48,35 @@ export default function Clients() {
   };
 
   const applyFilters = () => {
-    router.get(route('clients.index'), {
-      page: 1,
-      search: searchTerm || undefined,
-      client_type_id: selectedClientType !== 'all' ? selectedClientType : undefined,
-      status: selectedStatus !== 'all' ? selectedStatus : undefined,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+      route('clients.index'),
+      {
+        page: 1,
+        search: searchTerm || undefined,
+        client_type_id: selectedClientType !== 'all' ? selectedClientType : undefined,
+        status: selectedStatus !== 'all' ? selectedStatus : undefined,
+        per_page: pageFilters.per_page,
+      },
+      { preserveState: true, preserveScroll: true },
+    );
   };
 
   const handleSort = (field: string) => {
     const direction = pageFilters.sort_field === field && pageFilters.sort_direction === 'asc' ? 'desc' : 'asc';
 
-    router.get(route('clients.index'), {
-      sort_field: field,
-      sort_direction: direction,
-      page: 1,
-      search: searchTerm || undefined,
-      client_type_id: selectedClientType !== 'all' ? selectedClientType : undefined,
-      status: selectedStatus !== 'all' ? selectedStatus : undefined,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+      route('clients.index'),
+      {
+        sort_field: field,
+        sort_direction: direction,
+        page: 1,
+        search: searchTerm || undefined,
+        client_type_id: selectedClientType !== 'all' ? selectedClientType : undefined,
+        status: selectedStatus !== 'all' ? selectedStatus : undefined,
+        per_page: pageFilters.per_page,
+      },
+      { preserveState: true, preserveScroll: true },
+    );
   };
 
   const handleAction = (action: string, item: any) => {
@@ -122,7 +130,7 @@ export default function Clients() {
           } else {
             toast.error(`Failed to create client: ${Object.values(errors).join(', ')}`);
           }
-        }
+        },
       });
     } else if (formMode === 'edit') {
       toast.loading(t('Updating client...'));
@@ -144,7 +152,7 @@ export default function Clients() {
           } else {
             toast.error(`Failed to update client: ${Object.values(errors).join(', ')}`);
           }
-        }
+        },
       });
     }
   };
@@ -169,7 +177,7 @@ export default function Clients() {
         } else {
           toast.error(`Failed to delete client: ${Object.values(errors).join(', ')}`);
         }
-      }
+      },
     });
   };
 
@@ -177,24 +185,28 @@ export default function Clients() {
     const newStatus = client.status === 'active' ? 'inactive' : 'active';
     toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} client...`);
 
-    router.put(route('clients.toggle-status', client.id), {}, {
-      onSuccess: (page) => {
-        toast.dismiss();
-        if (page.props.flash.success) {
-          toast.success(page.props.flash.success);
-        } else if (page.props.flash.error) {
-          toast.error(page.props.flash.error);
-        }
+    router.put(
+      route('clients.toggle-status', client.id),
+      {},
+      {
+        onSuccess: (page) => {
+          toast.dismiss();
+          if (page.props.flash.success) {
+            toast.success(page.props.flash.success);
+          } else if (page.props.flash.error) {
+            toast.error(page.props.flash.error);
+          }
+        },
+        onError: (errors) => {
+          toast.dismiss();
+          if (typeof errors === 'string') {
+            toast.error(errors);
+          } else {
+            toast.error(`Failed to update client status: ${Object.values(errors).join(', ')}`);
+          }
+        },
       },
-      onError: (errors) => {
-        toast.dismiss();
-        if (typeof errors === 'string') {
-          toast.error(errors);
-        } else {
-          toast.error(`Failed to update client status: ${Object.values(errors).join(', ')}`);
-        }
-      }
-    });
+    );
   };
 
   const handleResetPasswordSubmit = (e: React.FormEvent) => {
@@ -230,7 +242,7 @@ export default function Clients() {
         } else {
           toast.error(`Failed to reset password: ${Object.values(errors).join(', ')}`);
         }
-      }
+      },
     });
   };
 
@@ -240,10 +252,14 @@ export default function Clients() {
     setSelectedStatus('all');
     setShowFilters(false);
 
-    router.get(route('clients.index'), {
-      page: 1,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+      route('clients.index'),
+      {
+        page: 1,
+        per_page: pageFilters.per_page,
+      },
+      { preserveState: true, preserveScroll: true },
+    );
   };
 
   // Define page actions
@@ -253,18 +269,26 @@ export default function Clients() {
   if (hasPermission(permissions, 'create-clients')) {
     const canCreate = !planLimits || planLimits.can_create;
     pageActions.push({
-      label: planLimits && !canCreate ? t('Client Limit Reached ({{current}}/{{max}})', { current: planLimits.current_clients, max: planLimits.max_clients }) : t('Add Client'),
-      icon: <Plus className="h-4 w-4 mr-2" />,
+      label:
+        planLimits && !canCreate
+          ? t('Client Limit Reached ({{current}}/{{max}})', { current: planLimits.current_clients, max: planLimits.max_clients })
+          : t('Add Client'),
+      icon: <Plus className="mr-2 h-4 w-4" />,
       variant: canCreate ? 'default' : 'outline',
-      onClick: canCreate ? () => handleAddNew() : () => toast.error(t('Client limit exceeded. Your plan allows maximum {{max}} clients. Please upgrade your plan.', { max: planLimits.max_clients })),
-      disabled: !canCreate
+      onClick: canCreate
+        ? () => handleAddNew()
+        : () =>
+            toast.error(
+              t('Client limit exceeded. Your plan allows maximum {{max}} clients. Please upgrade your plan.', { max: planLimits.max_clients }),
+            ),
+      disabled: !canCreate,
     });
   }
 
   const breadcrumbs = [
     { title: t('Dashboard'), href: route('dashboard') },
     { title: t('Client Management'), href: route('clients.index') },
-    { title: t('Clients') }
+    { title: t('Clients') },
   ];
 
   // Define table columns
@@ -272,50 +296,58 @@ export default function Clients() {
     {
       key: 'client_id',
       label: t('Client ID'),
-      sortable: true
+      sortable: true,
     },
     {
       key: 'name',
       label: t('Name'),
-      sortable: true
+      sortable: true,
     },
     {
       key: 'email',
       label: t('Email'),
-      render: (value: string) => value || '-'
+      render: (value: string) => value || '-',
     },
     {
       key: 'phone',
       label: t('Phone'),
-      render: (value: string) => value || '-'
+      render: (value: number) => value || '-',
     },
     {
       key: 'client_type',
       label: t('Type'),
       render: (value: any, row: any) => {
         return row.client_type?.name || '-';
-      }
+      },
+    },
+    {
+      key: 'cases_count',
+      label: t('Cases Count'),
+      render: (value: string) => value || 0,
     },
     {
       key: 'status',
       label: t('Status'),
       render: (value: string) => {
         return (
-          <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'active'
-            ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
-            : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
-            }`}>
+          <span
+            className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${
+              value === 'active'
+                ? 'bg-green-50 text-green-700 ring-1 ring-green-600/20 ring-inset'
+                : 'bg-red-50 text-red-700 ring-1 ring-red-600/20 ring-inset'
+            }`}
+          >
             {value === 'active' ? t('Active') : t('Inactive')}
           </span>
         );
-      }
+      },
     },
     {
       key: 'created_at',
       label: t('Created At'),
       sortable: true,
-        type: 'date',
-    }
+      type: 'date',
+    },
   ];
 
   // Define table actions
@@ -326,36 +358,36 @@ export default function Clients() {
       action: 'view',
       className: 'text-blue-500',
       requiredPermission: 'view-clients',
-      href: (row: any) => route('clients.show', row.id)
+      href: (row: any) => route('clients.show', row.id),
     },
     {
       label: t('Edit'),
       icon: 'Edit',
       action: 'edit',
       className: 'text-amber-500',
-      requiredPermission: 'edit-clients'
+      requiredPermission: 'edit-clients',
     },
     {
       label: t('Toggle Status'),
       icon: 'Lock',
       action: 'toggle-status',
       className: 'text-amber-500',
-      requiredPermission: 'edit-clients'
+      requiredPermission: 'edit-clients',
     },
     {
       label: t('Reset Password'),
       icon: 'Key',
       action: 'reset-password',
       className: 'text-purple-500',
-      requiredPermission: 'reset-client-password'
+      requiredPermission: 'reset-client-password',
     },
     {
       label: t('Delete'),
       icon: 'Trash2',
       action: 'delete',
       className: 'text-red-500',
-      requiredPermission: 'delete-clients'
-    }
+      requiredPermission: 'delete-clients',
+    },
   ];
 
   // Prepare client type options for filter and form
@@ -363,27 +395,21 @@ export default function Clients() {
     { value: 'all', label: t('All Types') },
     ...(clientTypes || []).map((type: any) => ({
       value: type.id.toString(),
-      label: type.name
-    }))
+      label: type.name,
+    })),
   ];
 
   // Prepare status options for filter
   const statusOptions = [
     { value: 'all', label: t('All Statuses') },
     { value: 'active', label: t('Active') },
-    { value: 'inactive', label: t('Inactive') }
+    { value: 'inactive', label: t('Inactive') },
   ];
 
   return (
-    <PageTemplate
-      title={t("Client Management")}
-      url="/clients"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
+    <PageTemplate title={t('Client Management')} url="/clients" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
       {/* Search and filters section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
+      <div className="mb-4 rounded-lg bg-white p-4 shadow dark:bg-gray-900">
         <SearchAndFilterBar
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -395,7 +421,7 @@ export default function Clients() {
               type: 'select',
               value: selectedClientType,
               onChange: setSelectedClientType,
-              options: clientTypeOptions
+              options: clientTypeOptions,
             },
             {
               name: 'status',
@@ -403,8 +429,8 @@ export default function Clients() {
               type: 'select',
               value: selectedStatus,
               onChange: setSelectedStatus,
-              options: statusOptions
-            }
+              options: statusOptions,
+            },
           ]}
           showFilters={showFilters}
           setShowFilters={setShowFilters}
@@ -412,21 +438,25 @@ export default function Clients() {
           activeFilterCount={activeFilterCount}
           onResetFilters={handleResetFilters}
           onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
+          currentPerPage={pageFilters.per_page?.toString() || '10'}
           onPerPageChange={(value) => {
-            router.get(route('clients.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              client_type_id: selectedClientType !== 'all' ? selectedClientType : undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined
-            }, { preserveState: true, preserveScroll: true });
+            router.get(
+              route('clients.index'),
+              {
+                page: 1,
+                per_page: parseInt(value),
+                search: searchTerm || undefined,
+                client_type_id: selectedClientType !== 'all' ? selectedClientType : undefined,
+                status: selectedStatus !== 'all' ? selectedStatus : undefined,
+              },
+              { preserveState: true, preserveScroll: true },
+            );
           }}
         />
       </div>
 
       {/* Content section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
+      <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
         <CrudTable
           columns={columns}
           actions={actions}
@@ -441,7 +471,7 @@ export default function Clients() {
             view: 'view-clients',
             create: 'create-clients',
             edit: 'edit-clients',
-            delete: 'delete-clients'
+            delete: 'delete-clients',
           }}
         />
 
@@ -451,7 +481,7 @@ export default function Clients() {
           to={clients?.to || 0}
           total={clients?.total || 0}
           links={clients?.links}
-          entityName={t("clients")}
+          entityName={t('clients')}
           onPageChange={(url) => router.get(url)}
         />
       </div>
@@ -472,10 +502,12 @@ export default function Clients() {
               label: t('Client Type'),
               type: 'select',
               required: true,
-              options: clientTypes ? clientTypes.map((type: any) => ({
-                value: type.id.toString(),
-                label: type.name
-              })) : []
+              options: clientTypes
+                ? clientTypes.map((type: any) => ({
+                    value: type.id.toString(),
+                    label: type.name,
+                  }))
+                : [],
             },
             { name: 'company_name', label: t('Company Name'), type: 'text' },
             { name: 'tax_id', label: t('Tax ID'), type: 'text' },
@@ -485,16 +517,16 @@ export default function Clients() {
             { name: 'referral_source', label: t('Referral Source'), type: 'text' },
             { name: 'notes', label: t('Notes'), type: 'textarea' },
             {
-                name: 'type',
-                label: t('Type'),
-                type: 'radio',
-                required: true,
-                colSpan: 12,
-                options: [
-                    { value: 'b2c', label: t('Individual') },
-                    { value: 'b2b', label: t('Company') }
-                ],
-                defaultValue: 'b2c'
+              name: 'type',
+              label: t('Type'),
+              type: 'radio',
+              required: true,
+              colSpan: 12,
+              options: [
+                { value: 'b2c', label: t('Individual') },
+                { value: 'b2b', label: t('Company') },
+              ],
+              defaultValue: 'b2c',
             },
             {
               name: 'status',
@@ -502,21 +534,15 @@ export default function Clients() {
               type: 'select',
               options: [
                 { value: 'active', label: 'Active' },
-                { value: 'inactive', label: 'Inactive' }
+                { value: 'inactive', label: 'Inactive' },
               ],
-              defaultValue: 'active'
-            }
+              defaultValue: 'active',
+            },
           ],
-          modalSize: 'xl'
+          modalSize: 'xl',
         }}
         initialData={currentItem}
-        title={
-          formMode === 'create'
-            ? t('Add New Client')
-            : formMode === 'edit'
-              ? t('Edit Client')
-              : t('View Client')
-        }
+        title={formMode === 'create' ? t('Add New Client') : formMode === 'edit' ? t('Edit Client') : t('View Client')}
         mode={formMode}
       />
 
@@ -534,9 +560,13 @@ export default function Clients() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{t('Reset Client Password')}</DialogTitle>
-            <div className="text-sm text-muted-foreground">
-              <p><strong>{t('Client')}:</strong> {currentItem?.name}</p>
-              <p><strong>{t('Email')}:</strong> {currentItem?.email}</p>
+            <div className="text-muted-foreground text-sm">
+              <p>
+                <strong>{t('Client')}:</strong> {currentItem?.name}
+              </p>
+              <p>
+                <strong>{t('Email')}:</strong> {currentItem?.email}
+              </p>
             </div>
           </DialogHeader>
           <form onSubmit={handleResetPasswordSubmit} className="space-y-4">
@@ -546,7 +576,7 @@ export default function Clients() {
                 id="password"
                 type="password"
                 value={resetPasswordData.password}
-                onChange={(e) => setResetPasswordData(prev => ({ ...prev, password: e.target.value }))}
+                onChange={(e) => setResetPasswordData((prev) => ({ ...prev, password: e.target.value }))}
                 required
                 minLength={6}
               />
@@ -557,7 +587,7 @@ export default function Clients() {
                 id="password_confirmation"
                 type="password"
                 value={resetPasswordData.password_confirmation}
-                onChange={(e) => setResetPasswordData(prev => ({ ...prev, password_confirmation: e.target.value }))}
+                onChange={(e) => setResetPasswordData((prev) => ({ ...prev, password_confirmation: e.target.value }))}
                 required
                 minLength={6}
               />
@@ -573,9 +603,7 @@ export default function Clients() {
               >
                 {t('Cancel')}
               </Button>
-              <Button type="submit">
-                {t('Reset Password')}
-              </Button>
+              <Button type="submit">{t('Reset Password')}</Button>
             </div>
           </form>
         </DialogContent>
