@@ -24,11 +24,21 @@ class Client extends BaseModel
         'notes',
         'referral_source',
         'created_by',
-        'type',
+        'business_type',
+        'nationality',
+        'id_number',
+        'gender',
+        'unified_number',
+        'cr_number',
+        'cr_issuance_date',
+        'vat_number',
+        'country',
+        'city',
     ];
 
     protected $casts = [
         'date_of_birth' => 'date',
+        'cr_issuance_date' => 'date',
         'tax_rate' => 'decimal:2',
     ];
 

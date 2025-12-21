@@ -3008,5 +3008,14 @@
     "User created successfully, but ": "User created successfully, but ",
     "I agree to the": "I agree to the",
     "Individual": "Individual",
-    "Cases Count" : "Cases Count"
+    "Cases Count": "Cases Count",
+    "Nationality": "Nationality",
+    "ID Number": "ID Number",
+    "Gender": "Gender",
+    "Unified Number": "Unified Number",
+    "CR Number": "CR Number",
+    "CR Issuance Date": "CR Issuance Date",
+    "VAT Number": "VAT Number",
+    "Male": "Male",
+    "Female": "Female"
 }

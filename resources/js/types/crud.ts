@@ -73,6 +73,7 @@ export interface FormField {
     label: string;
     type:
         | 'text'
+        | 'time'
         | 'email'
         | 'password'
         | 'select'

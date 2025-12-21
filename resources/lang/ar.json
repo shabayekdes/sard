@@ -2989,5 +2989,14 @@
     "User created successfully, but ": "تم إنشاء المستخدم بنجاح، ولكن",
     "I agree to the": "أوافق على",
     "Individual": "فردي",
-    "Cases Count": "عدد القضايا"
+    "Cases Count": "عدد القضايا",
+    "Nationality": "الجنسية",
+    "ID Number": "رقم الهوية",
+    "Gender": "الجنس",
+    "Unified Number": "الرقم الموحد",
+    "CR Number": "رقم السجل التجاري",
+    "CR Issuance Date": "تاريخ إصدار السجل التجاري",
+    "VAT Number": "الرقم الضريبي",
+    "Male": "ذكر",
+    "Female": "أنثى"
 }
