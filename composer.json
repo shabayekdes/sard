@@ -29,6 +29,7 @@
         "razorpay/razorpay": "^2.8",
         "spatie/laravel-medialibrary": "^11.13",
         "spatie/laravel-permission": "^6.18",
+        "spatie/laravel-translatable": "^6.12",
         "stripe/stripe-php": "^17.3",
         "tightenco/ziggy": "^2.4",
         "twilio/sdk": "^8.8",

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
@@ -21,6 +21,27 @@ export default function ClientBillingCurrencies() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<any>(null);
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
+
+  // Reload data when language changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      router.get(route('client-billing-currencies.index'), {
+        page: pageFilters.page || 1,
+        search: searchTerm || undefined,
+        sort_field: pageFilters.sort_field,
+        sort_direction: pageFilters.sort_direction,
+        per_page: pageFilters.per_page
+      }, {
+        preserveState: false,
+        preserveScroll: false
+      });
+    };
+
+    window.addEventListener('languageChanged', handleLanguageChange);
+    return () => {
+      window.removeEventListener('languageChanged', handleLanguageChange);
+    };
+  }, [searchTerm, pageFilters]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,9 +146,8 @@ export default function ClientBillingCurrencies() {
       key: 'is_default',
       label: t('Default'),
       render: (value: boolean) => (
-        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${
-          value ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20' : 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20'
-        }`}>
+        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20' : 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20'
+          }`}>
           {value ? t('Yes') : t('No')}
         </span>
       )
@@ -167,14 +187,14 @@ export default function ClientBillingCurrencies() {
           onSearch={handleSearch}
           filters={[]}
           showFilters={false}
-          setShowFilters={() => {}}
+          setShowFilters={() => { }}
           hasActiveFilters={() => searchTerm !== ''}
           activeFilterCount={() => searchTerm ? 1 : 0}
           onResetFilters={() => {
             setSearchTerm('');
             router.get(route('client-billing-currencies.index'), { page: 1, per_page: pageFilters.per_page });
           }}
-          onApplyFilters={() => {}}
+          onApplyFilters={() => { }}
           currentPerPage={pageFilters.per_page?.toString() || "10"}
           onPerPageChange={(value) => {
             router.get(route('client-billing-currencies.index'), {

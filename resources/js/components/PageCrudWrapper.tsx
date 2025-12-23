@@ -36,9 +36,9 @@ interface PageCrudWrapperProps {
   breadcrumbs?: BreadcrumbItem[];
 }
 
-export function PageCrudWrapper({ 
-  config, 
-  title, 
+export function PageCrudWrapper({
+  config,
+  title,
   url,
   buttons = [],
   breadcrumbs
@@ -47,11 +47,11 @@ export function PageCrudWrapper({
   const { entity, table, filters = [], form, hooks } = config;
   const { auth, ...pageProps } = usePage().props as any;
   const permissions = auth?.permissions || [];
-  
+
   // Get data from page props using entity name
   const data = pageProps[entity.name] || { data: [], links: [] };
   const pageFilters = pageProps.filters || {};
-  
+
   // State
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
   const [filterValues, setFilterValues] = useState<Record<string, any>>({});
@@ -60,7 +60,7 @@ export function PageCrudWrapper({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<any>(null);
   const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
-  
+
   // Initialize filter values from URL
   useEffect(() => {
     const initialFilters: Record<string, any> = {};
@@ -70,57 +70,103 @@ export function PageCrudWrapper({
     });
     setFilterValues(initialFilters);
   }, []);
-  
+
+  // Reload data when language changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Reload the current page with current filters to get translated data
+      const params: any = { page: pageFilters.page || 1 };
+
+      if (searchTerm) {
+        params.search = searchTerm;
+      }
+
+      // Add filter values to params
+      Object.entries(filterValues).forEach(([key, value]) => {
+        if (value && value !== '') {
+          params[key] = value;
+        }
+      });
+
+      // Add sorting params
+      if (pageFilters.sort_field) {
+        params.sort_field = pageFilters.sort_field;
+      }
+      if (pageFilters.sort_direction) {
+        params.sort_direction = pageFilters.sort_direction;
+      }
+
+      // Add per_page if it exists
+      if (pageFilters.per_page) {
+        params.per_page = pageFilters.per_page;
+      }
+
+      router.get(entity.endpoint, params, {
+        preserveState: false,
+        preserveScroll: false,
+        only: [entity.name, 'filters']
+      });
+    };
+
+    // Listen for language change event
+    window.addEventListener('languageChanged', handleLanguageChange);
+
+    // Cleanup listener on unmount
+    return () => {
+      window.removeEventListener('languageChanged', handleLanguageChange);
+    };
+  }, [searchTerm, filterValues, pageFilters, entity.endpoint, entity.name, filters]);
+
   // Check if any filters are active
   const hasActiveFilters = () => {
     return Object.entries(filterValues).some(([key, value]) => {
       return value && value !== '';
     }) || searchTerm !== '';
   };
-  
+
   // Count active filters
   const activeFilterCount = () => {
     return Object.entries(filterValues).filter(([key, value]) => {
       return value && value !== '';
     }).length + (searchTerm ? 1 : 0);
   };
-  
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     applyFilters();
   };
-  
+
   const applyFilters = () => {
     const params: any = { page: 1 };
-    
+
     if (searchTerm) {
       params.search = searchTerm;
     }
-    
+
     // Add filter values to params
     Object.entries(filterValues).forEach(([key, value]) => {
       if (value && value !== '') {
         params[key] = value;
       }
     });
-    
+
     // Add per_page if it exists
     if (pageFilters.per_page) {
       params.per_page = pageFilters.per_page;
     }
-    
+
     router.get(entity.endpoint, params, { preserveState: true, preserveScroll: true });
   };
-  
+
   const handleFilterChange = (key: string, value: any) => {
     setFilterValues(prev => ({ ...prev, [key]: value }));
-    
+
     const params: any = { page: 1 };
-    
+
     if (searchTerm) {
       params.search = searchTerm;
     }
-    
+
     // Add all current filter values
     const newFilters = { ...filterValues, [key]: value };
     Object.entries(newFilters).forEach(([k, v]) => {
@@ -128,46 +174,60 @@ export function PageCrudWrapper({
         params[k] = v;
       }
     });
-    
+
     // Add per_page if it exists
     if (pageFilters.per_page) {
       params.per_page = pageFilters.per_page;
     }
-    
+
     router.get(entity.endpoint, params, { preserveState: true, preserveScroll: true });
   };
-  
+
   const handleSort = (field: string) => {
     const direction = pageFilters.sort_field === field && pageFilters.sort_direction === 'asc' ? 'desc' : 'asc';
-    
-    const params: any = { 
-      sort_field: field, 
-      sort_direction: direction, 
-      page: 1 
+
+    const params: any = {
+      sort_field: field,
+      sort_direction: direction,
+      page: 1
     };
-    
+
     // Add search and filters
     if (searchTerm) {
       params.search = searchTerm;
     }
-    
+
     Object.entries(filterValues).forEach(([key, value]) => {
       if (value && value !== '') {
         params[key] = value;
       }
     });
-    
+
     // Add per_page if it exists
     if (pageFilters.per_page) {
       params.per_page = pageFilters.per_page;
     }
-    
+
     router.get(entity.endpoint, params, { preserveState: true, preserveScroll: true });
   };
-  
+
   const handleAction = (action: string, item: any) => {
-    setCurrentItem(item);
-    
+    // Transform translatable fields for currencies
+    let transformedItem = { ...item };
+    if (entity.name === 'currencies') {
+      // Convert translation objects to flat structure for form fields
+      if (item.name_translations) {
+        transformedItem['name.en'] = item.name_translations.en || '';
+        transformedItem['name.ar'] = item.name_translations.ar || '';
+      }
+      if (item.description_translations) {
+        transformedItem['description.en'] = item.description_translations.en || '';
+        transformedItem['description.ar'] = item.description_translations.ar || '';
+      }
+    }
+
+    setCurrentItem(transformedItem);
+
     switch (action) {
       case 'view':
         setFormMode('view');
@@ -184,17 +244,17 @@ export function PageCrudWrapper({
         break;
     }
   };
-  
+
   const handleAddNew = () => {
     setCurrentItem(null);
     setFormMode('create');
     setIsFormModalOpen(true);
   };
-  
+
   const handleFormSubmit = (formData: any) => {
     // Make a copy of the form data to avoid modifying the original
     const processedFormData = { ...formData };
-    
+
     // For roles, create a simplified object with only the required fields
     if (entity.name === 'roles') {
       // Extract permission names from the permissions array if they're objects
@@ -207,19 +267,19 @@ export function PageCrudWrapper({
         });
         processedFormData.permissions = permissionNames;
       }
-      
+
       // Reset the object with only the fields we need
       const cleanData = {
         label: processedFormData.label,
         description: processedFormData.description || '',
         permissions: processedFormData.permissions || []
       };
-      
+
       // Replace all properties
       Object.keys(processedFormData).forEach(key => {
         delete processedFormData[key];
       });
-      
+
       Object.assign(processedFormData, cleanData);
     }
     // Fix permissions format for other entities
@@ -230,24 +290,24 @@ export function PageCrudWrapper({
       });
       processedFormData.permissions = permissionsObj;
     }
-    
+
     // Ensure we're not sending the name field for permissions as it's auto-generated
     if (entity.name === 'permissions' && formMode === 'edit') {
       delete processedFormData.name;
     }
-    
+
     // Check if this entity has file uploads
     const hasFileFields = form.fields.some(field => field.type === 'file');
-    
+
     if (hasFileFields) {
       // Get file field names
       const fileFields = form.fields
         .filter(field => field.type === 'file')
         .map(field => field.name);
-      
+
       // Use FormData for file uploads
       const formDataObj = new FormData();
-      
+
       // Add all fields to FormData
       Object.keys(processedFormData).forEach(key => {
         // For file fields in edit mode
@@ -261,11 +321,11 @@ export function PageCrudWrapper({
         }
         formDataObj.append(key, processedFormData[key]);
       });
-      
+
       if (formMode === 'create') {
         // Show loading toast
         toast.loading(t('Creating...'));
-        
+
         router.post(entity.endpoint, formDataObj, {
           onSuccess: (page) => {
             setIsFormModalOpen(false);
@@ -283,7 +343,7 @@ export function PageCrudWrapper({
       } else if (formMode === 'edit') {
         // Show loading toast
         toast.loading(t('Updating...'));
-        
+
         router.post(`${entity.endpoint}/${currentItem.id}?_method=PUT`, formDataObj, {
           onSuccess: (page) => {
             setIsFormModalOpen(false);
@@ -301,11 +361,11 @@ export function PageCrudWrapper({
       }
       return;
     }
-    
+
     if (formMode === 'create') {
       // Show loading toast
       toast.loading(t('Creating...'));
-      
+
       router.post(entity.endpoint, processedFormData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
@@ -323,7 +383,7 @@ export function PageCrudWrapper({
     } else if (formMode === 'edit') {
       // Show loading toast
       toast.loading(t('Updating...'));
-      
+
       router.put(`${entity.endpoint}/${currentItem.id}`, processedFormData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
@@ -340,11 +400,11 @@ export function PageCrudWrapper({
       });
     }
   };
-  
+
   const handleDeleteConfirm = () => {
     // Show loading toast
     toast.loading(t('Deleting...'));
-    
+
     router.delete(`${entity.endpoint}/${currentItem.id}`, {
       onSuccess: () => {
         setIsDeleteModalOpen(false);
@@ -360,21 +420,21 @@ export function PageCrudWrapper({
       }
     });
   };
-  
+
   const handleResetFilters = () => {
     // Reset all filters to default values
     const resetFilters: Record<string, any> = {};
     filters.forEach(filter => {
       resetFilters[filter.key] = filter.type === 'select' ? 'all' : '';
     });
-    
+
     setFilterValues(resetFilters);
     setSearchTerm('');
     setShowFilters(false);
-    
-    router.get(entity.endpoint, { 
-      page: 1, 
-      per_page: pageFilters.per_page 
+
+    router.get(entity.endpoint, {
+      page: 1,
+      per_page: pageFilters.per_page
     }, { preserveState: true, preserveScroll: true });
   };
 
@@ -383,7 +443,7 @@ export function PageCrudWrapper({
 
   // Define page actions
   const pageActions: PageAction[] = [];
-  
+
   // Add custom buttons with permission check
   buttons.forEach(button => {
     if (!button.permission || hasPermission(permissions, button.permission)) {
@@ -417,8 +477,8 @@ export function PageCrudWrapper({
   const pageBreadcrumbs = breadcrumbs || defaultBreadcrumbs;
 
   return (
-    <PageTemplate 
-      title={pageTitle} 
+    <PageTemplate
+      title={pageTitle}
       url={url}
       actions={pageActions}
       breadcrumbs={pageBreadcrumbs}
@@ -444,12 +504,12 @@ export function PageCrudWrapper({
                   {t("Search")}
                 </Button>
               </form>
-              
+
               {filters.length > 0 && (
                 <div className="ml-2">
-                  <Button 
+                  <Button
                     variant={hasActiveFilters() ? "default" : "outline"}
-                    size="sm" 
+                    size="sm"
                     className="h-8 px-2 py-1"
                     onClick={() => setShowFilters(!showFilters)}
                   >
@@ -464,24 +524,24 @@ export function PageCrudWrapper({
                 </div>
               )}
             </div>
-            
+
             <div className="flex items-center gap-2">
               <Label className="text-xs text-muted-foreground">{t("Per Page")}:</Label>
-              <Select 
-                value={pageFilters.per_page?.toString() || "10"} 
+              <Select
+                value={pageFilters.per_page?.toString() || "10"}
                 onValueChange={(value) => {
                   const params: any = { page: 1, per_page: parseInt(value) };
-                  
+
                   if (searchTerm) {
                     params.search = searchTerm;
                   }
-                  
+
                   Object.entries(filterValues).forEach(([key, val]) => {
                     if (val && val !== '') {
                       params[key] = val;
                     }
                   });
-                  
+
                   router.get(entity.endpoint, params, { preserveState: true, preserveScroll: true });
                 }}
               >
@@ -497,7 +557,7 @@ export function PageCrudWrapper({
               </Select>
             </div>
           </div>
-          
+
           {showFilters && filters.length > 0 && (
             <div className="w-full mt-3 p-4 bg-gray-50 dark:bg-gray-800 border dark:border-gray-700 rounded-md">
               <div className="flex flex-wrap gap-4 items-end">
@@ -507,8 +567,8 @@ export function PageCrudWrapper({
                     <div key={filterKey} className="space-y-2">
                       <Label>{filter.label}</Label>
                       {filter.type === 'select' && (
-                        <Select 
-                          value={filterValues[filterKey] || ''} 
+                        <Select
+                          value={filterValues[filterKey] || ''}
                           onValueChange={(value) => handleFilterChange(filterKey, value)}
                         >
                           <SelectTrigger className="w-40">
@@ -526,9 +586,9 @@ export function PageCrudWrapper({
                     </div>
                   );
                 })}
-                
-                <Button 
-                  variant="outline" 
+
+                <Button
+                  variant="outline"
                   size="sm"
                   className="h-9"
                   onClick={handleResetFilters}
@@ -579,10 +639,10 @@ export function PageCrudWrapper({
         }}
         initialData={currentItem}
         title={
-          formMode === 'create' 
-            ? `Add New ${entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)}` 
-            : formMode === 'edit' 
-              ? `Edit ${entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)}` 
+          formMode === 'create'
+            ? `Add New ${entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)}`
+            : formMode === 'edit'
+              ? `Edit ${entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)}`
               : `View ${entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)}`
         }
         mode={formMode}
