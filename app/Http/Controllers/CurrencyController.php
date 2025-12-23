@@ -14,26 +14,53 @@ class CurrencyController extends Controller
     public function index(Request $request)
     {
         $query = Currency::query();
-        
-        // Handle search
+
+        // Handle search - search in translatable fields
         if ($request->has('search')) {
             $searchTerm = $request->search;
-            $query->where(function($q) use ($searchTerm) {
-                $q->where('name', 'like', "%{$searchTerm}%")
-                  ->orWhere('code', 'like', "%{$searchTerm}%")
-                  ->orWhere('symbol', 'like', "%{$searchTerm}%");
+            $locale = app()->getLocale();
+            $query->where(function ($q) use ($searchTerm, $locale) {
+                // Search in JSON translatable fields
+                $q->whereRaw("JSON_EXTRACT(name, '$.{$locale}') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(name, '$.en') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(name, '$.ar') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhere('code', 'like', "%{$searchTerm}%")
+                    ->orWhere('symbol', 'like', "%{$searchTerm}%");
             });
         }
-        
+
         // Handle sorting
         $sortField = $request->input('sort_field', 'created_at');
         $sortDirection = $request->input('sort_direction', 'desc');
-        $query->orderBy($sortField, $sortDirection);
-        
+
+        // For translatable fields, sort by the current locale
+        if (in_array($sortField, ['name', 'description'])) {
+            $locale = app()->getLocale();
+            $query->orderByRaw("JSON_EXTRACT({$sortField}, '$.{$locale}') {$sortDirection}");
+        } else {
+            $query->orderBy($sortField, $sortDirection);
+        }
+
         // Pagination
         $perPage = $request->input('per_page', 10);
         $currencies = $query->paginate($perPage)->withQueryString();
-        
+
+        // Transform the data to include translated values
+        $currencies->getCollection()->transform(function ($currency) {
+            return [
+                'id' => $currency->id,
+                'name' => $currency->name, // Spatie will automatically return translated value for display
+                'name_translations' => $currency->getTranslations('name'), // Full translations for editing
+                'code' => $currency->code,
+                'symbol' => $currency->symbol,
+                'description' => $currency->description, // Spatie will automatically return translated value for display
+                'description_translations' => $currency->getTranslations('description'), // Full translations for editing
+                'is_default' => $currency->is_default,
+                'created_at' => $currency->created_at,
+                'updated_at' => $currency->updated_at,
+            ];
+        });
+
         return Inertia::render('currencies/index', [
             'currencies' => $currencies,
             'filters' => $request->all(['search', 'sort_field', 'sort_direction', 'per_page']),
@@ -46,20 +73,24 @@ class CurrencyController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|array',
+            'name.en' => 'required|string|max:255',
+            'name.ar' => 'required|string|max:255',
             'code' => 'required|string|max:10|unique:currencies',
             'symbol' => 'required|string|max:10',
-            'description' => 'nullable|string',
+            'description' => 'nullable|array',
+            'description.en' => 'nullable|string',
+            'description.ar' => 'nullable|string',
             'is_default' => 'boolean',
         ]);
-        
+
         // If this is set as default, unset all other defaults
         if ($request->input('is_default')) {
             Currency::where('is_default', true)->update(['is_default' => false]);
         }
-        
+
         Currency::create($validated);
-        
+
         return redirect()->back();
     }
 
@@ -69,22 +100,26 @@ class CurrencyController extends Controller
     public function update(Request $request, Currency $currency)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'code' => 'required|string|max:10|unique:currencies,code,' . $currency->id,
+            'name' => 'required|array',
+            'name.en' => 'required|string|max:255',
+            'name.ar' => 'required|string|max:255',
+            'code' => 'required|string|max:10|unique:currencies,code,'.$currency->id,
             'symbol' => 'required|string|max:10',
-            'description' => 'nullable|string',
+            'description' => 'nullable|array',
+            'description.en' => 'nullable|string',
+            'description.ar' => 'nullable|string',
             'is_default' => 'boolean',
         ]);
-        
+
         // If this is set as default, unset all other defaults
         if ($request->input('is_default')) {
             Currency::where('id', '!=', $currency->id)
-                  ->where('is_default', true)
-                  ->update(['is_default' => false]);
+                ->where('is_default', true)
+                ->update(['is_default' => false]);
         }
-        
+
         $currency->update($validated);
-        
+
         return redirect()->back();
     }
 
@@ -97,18 +132,19 @@ class CurrencyController extends Controller
         if ($currency->is_default) {
             return redirect()->back()->with('error', __('Cannot delete the default currency.'));
         }
-        
+
         $currency->delete();
-        
+
         return redirect()->back();
     }
-    
+
     /**
      * Get all currencies for settings page.
      */
     public function getAllCurrencies()
     {
         $currencies = Currency::all();
+
         return response()->json($currencies);
     }
 }

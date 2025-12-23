@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('currencies', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->json('name');
             $table->string('code', 10)->unique();
             $table->string('symbol', 10)->nullable();
-            $table->text('description')->nullable();
+            $table->json('description')->nullable();
             $table->boolean('is_default')->default(false);
             $table->timestamps();
         });
