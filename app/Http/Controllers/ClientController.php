@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\NewClientCreated;
 use App\Models\Client;
 use App\Models\ClientType;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class ClientController extends Controller
@@ -20,28 +18,28 @@ class ClientController extends Controller
             ->withCount('cases');
 
         // Handle search
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                    ->orWhere('email', 'like', '%' . $request->search . '%')
-                    ->orWhere('phone', 'like', '%' . $request->search . '%')
-                    ->orWhere('client_id', 'like', '%' . $request->search . '%')
-                    ->orWhere('company_name', 'like', '%' . $request->search . '%');
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('email', 'like', '%'.$request->search.'%')
+                    ->orWhere('phone', 'like', '%'.$request->search.'%')
+                    ->orWhere('client_id', 'like', '%'.$request->search.'%')
+                    ->orWhere('company_name', 'like', '%'.$request->search.'%');
             });
         }
 
         // Handle client type filter
-        if ($request->has('client_type_id') && !empty($request->client_type_id) && $request->client_type_id !== 'all') {
+        if ($request->has('client_type_id') && ! empty($request->client_type_id) && $request->client_type_id !== 'all') {
             $query->where('client_type_id', $request->client_type_id);
         }
 
         // Handle status filter
-        if ($request->has('status') && !empty($request->status) && $request->status !== 'all') {
+        if ($request->has('status') && ! empty($request->status) && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
 
         // Handle sorting
-        if ($request->has('sort_field') && !empty($request->sort_field)) {
+        if ($request->has('sort_field') && ! empty($request->sort_field)) {
             $query->orderBy($request->sort_field, $request->sort_direction ?? 'asc');
         } else {
             $query->orderBy('created_at', 'desc');
@@ -62,17 +60,16 @@ class ClientController extends Controller
             $planLimits = [
                 'current_clients' => $currentClients,
                 'max_clients' => $authUser->plan->max_clients,
-                'can_create' => $currentClients < $authUser->plan->max_clients
+                'can_create' => $currentClients < $authUser->plan->max_clients,
             ];
-        }
-        elseif ($authUser->type !== 'superadmin' && $authUser->created_by) {
+        } elseif ($authUser->type !== 'superadmin' && $authUser->created_by) {
             $companyUser = User::find($authUser->created_by);
             if ($companyUser && $companyUser->type === 'company' && $companyUser->plan) {
                 $currentClients = Client::where('created_by', $companyUser->id)->count();
                 $planLimits = [
                     'current_clients' => $currentClients,
                     'max_clients' => $companyUser->plan->max_clients,
-                    'can_create' => $currentClients < $companyUser->plan->max_clients
+                    'can_create' => $currentClients < $companyUser->plan->max_clients,
                 ];
             }
         }
@@ -96,8 +93,7 @@ class ClientController extends Controller
             if ($currentClients >= $maxClients) {
                 return redirect()->back()->with('error', __('Client limit exceeded. Your plan allows maximum :max clients. Please upgrade your plan.', ['max' => $maxClients]));
             }
-        }
-        elseif ($authUser->type !== 'superadmin' && $authUser->created_by) {
+        } elseif ($authUser->type !== 'superadmin' && $authUser->created_by) {
             $companyUser = User::find($authUser->created_by);
             if ($companyUser && $companyUser->type === 'company' && $companyUser->plan) {
                 $currentClients = Client::where('created_by', $companyUser->id)->count();
@@ -143,12 +139,12 @@ class ClientController extends Controller
             ->where('created_by', createdBy())
             ->first();
 
-        if (!$clientType) {
+        if (! $clientType) {
             return redirect()->back()->with('error', 'Invalid client type selected.');
         }
 
         // Check if client with same email already exists for this company
-        if (!empty($validated['email'])) {
+        if (! empty($validated['email'])) {
             $exists = Client::where('email', $validated['email'])
                 ->where('created_by', createdBy())
                 ->exists();
@@ -161,13 +157,13 @@ class ClientController extends Controller
         $client = Client::create($validated);
 
         // Create user account for client if email and password provided
-        if (!empty($validated['email']) && !empty($validated['password'])) {
+        if (! empty($validated['email']) && ! empty($validated['password'])) {
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
                 'type' => 'client',
-                'created_by' => createdBy()
+                'created_by' => createdBy(),
             ]);
 
             // Assign client role
@@ -178,7 +174,7 @@ class ClientController extends Controller
         }
 
         // Trigger notifications
-        if ($client && !IsDemo()) {
+        if ($client && ! IsDemo()) {
             event(new \App\Events\NewClientCreated($client, $request->all()));
         }
 
@@ -189,17 +185,18 @@ class ClientController extends Controller
 
         $errors = [];
         if ($emailError) {
-            $errors[] = __('Email send failed: ') . $emailError;
+            $errors[] = __('Email send failed: ').$emailError;
         }
         if ($slackError) {
-            $errors[] = __('Slack send failed: ') . $slackError;
+            $errors[] = __('Slack send failed: ').$slackError;
         }
         if ($twilioError) {
-            $errors[] = __('SMS send failed: ') . $twilioError;
+            $errors[] = __('SMS send failed: ').$twilioError;
         }
 
-        if (!empty($errors)) {
-            $message = __('Client created successfully, but ') . implode(', ', $errors);
+        if (! empty($errors)) {
+            $message = __('Client created successfully, but ').implode(', ', $errors);
+
             return redirect()->back()->with('warning', $message);
         }
 
@@ -244,12 +241,12 @@ class ClientController extends Controller
                     ->where('id', $validated['client_type_id'])
                     ->first();
 
-                if (!$clientType) {
+                if (! $clientType) {
                     return redirect()->back()->with('error', 'Invalid client type selected.');
                 }
 
                 // Check if client with same email already exists for this company (excluding current)
-                if (!empty($validated['email'])) {
+                if (! empty($validated['email'])) {
                     $exists = Client::where('email', $validated['email'])
                         ->where('created_by', createdBy())
                         ->where('id', '!=', $clientId)
@@ -271,7 +268,7 @@ class ClientController extends Controller
         }
     }
 
-    public function show($clientId)
+    public function show(Request $request, $clientId)
     {
         $client = Client::withPermissionCheck()
             ->with(['clientType', 'creator', 'billingInfo'])
@@ -291,9 +288,37 @@ class ClientController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        // Handle cases with pagination and search
+        $casesQuery = \App\Models\CaseModel::withPermissionCheck()
+            ->with(['caseType', 'caseStatus', 'client'])
+            ->where('client_id', $clientId);
+
+        // Apply search filter
+        if ($request->has('search') && ! empty($request->search)) {
+            $casesQuery->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%'.$request->search.'%')
+                    ->orWhere('case_id', 'like', '%'.$request->search.'%')
+                    ->orWhere('description', 'like', '%'.$request->search.'%')
+                    ->orWhereHas('client', function ($clientQuery) use ($request) {
+                        $clientQuery->where('name', 'like', '%'.$request->search.'%');
+                    });
+            });
+        }
+
+        // Apply sorting
+        if ($request->has('sort_field') && ! empty($request->sort_field)) {
+            $casesQuery->orderBy($request->sort_field, $request->sort_direction ?? 'asc');
+        } else {
+            $casesQuery->orderBy('created_at', 'desc');
+        }
+
+        $cases = $casesQuery->paginate($request->per_page ?? 10);
+
         return Inertia::render('clients/show', [
             'client' => $client,
             'documents' => $documents,
+            'cases' => $cases,
+            'filters' => $request->all(['search', 'sort_field', 'sort_direction', 'per_page']),
         ]);
     }
 
@@ -306,6 +331,7 @@ class ClientController extends Controller
         if ($client) {
             try {
                 $client->delete();
+
                 return redirect()->back()->with('success', 'Client deleted successfully');
             } catch (\Exception $e) {
                 return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to delete client');
@@ -338,7 +364,7 @@ class ClientController extends Controller
     public function resetPassword(Request $request, $clientId)
     {
         // Check permission
-        if (!auth()->user()->can('reset-client-password')) {
+        if (! auth()->user()->can('reset-client-password')) {
             return redirect()->back()->with('error', 'You do not have permission to reset client passwords.');
         }
 
@@ -350,7 +376,7 @@ class ClientController extends Controller
             ->where('id', $clientId)
             ->first();
 
-        if (!$client) {
+        if (! $client) {
             return redirect()->back()->with('error', 'Client not found.');
         }
 
@@ -364,7 +390,7 @@ class ClientController extends Controller
             ->where('created_by', createdBy())
             ->first();
 
-        if (!$user) {
+        if (! $user) {
             return redirect()->back()->with('error', 'No user account found for this client.');
         }
 
