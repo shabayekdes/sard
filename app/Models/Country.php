@@ -9,10 +9,11 @@ class Country extends Model
 {
     use HasTranslations;
 
-    public array $translatable = ['name'];
+    public array $translatable = ['name', 'nationality_name'];
 
     protected $fillable = [
         'name',
+        'nationality_name',
         'is_active',
     ];
 

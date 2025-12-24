@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('countries', function (Blueprint $table) {
             $table->id();
             $table->json('name');
+            $table->json('nationality_name');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

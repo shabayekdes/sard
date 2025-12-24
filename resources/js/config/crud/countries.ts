@@ -26,6 +26,11 @@ export const countriesConfig: CrudConfig = {
                 sortable: true,
             },
             {
+                key: 'nationality_name',
+                label: t('Nationality Name'),
+                sortable: true,
+            },
+            {
                 key: 'is_active',
                 label: t('Active'),
                 type: 'boolean',
@@ -64,6 +69,16 @@ export const countriesConfig: CrudConfig = {
                 required: true,
             },
             {
+                name: 'nationality_name.en',
+                label: t('Nationality Name (English)'),
+                type: 'text',
+            },
+            {
+                name: 'nationality_name.ar',
+                label: t('Nationality Name (Arabic)'),
+                type: 'text',
+            },
+            {
                 name: 'is_active',
                 label: t('Active'),
                 type: 'checkbox',
@@ -81,6 +96,16 @@ export const countriesConfig: CrudConfig = {
                 };
                 delete transformed['name.en'];
                 delete transformed['name.ar'];
+            }
+
+            // Handle nationality_name field
+            if (transformed['nationality_name.en'] || transformed['nationality_name.ar']) {
+                transformed.nationality_name = {
+                    en: transformed['nationality_name.en'] || '',
+                    ar: transformed['nationality_name.ar'] || '',
+                };
+                delete transformed['nationality_name.en'];
+                delete transformed['nationality_name.ar'];
             }
 
             return transformed;

@@ -23,7 +23,10 @@ class CountryController extends Controller
                 // Search in JSON translatable fields
                 $q->whereRaw("JSON_EXTRACT(name, '$.{$locale}') LIKE ?", ["%{$searchTerm}%"])
                     ->orWhereRaw("JSON_EXTRACT(name, '$.en') LIKE ?", ["%{$searchTerm}%"])
-                    ->orWhereRaw("JSON_EXTRACT(name, '$.ar') LIKE ?", ["%{$searchTerm}%"]);
+                    ->orWhereRaw("JSON_EXTRACT(name, '$.ar') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(nationality_name, '$.{$locale}') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(nationality_name, '$.en') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(nationality_name, '$.ar') LIKE ?", ["%{$searchTerm}%"]);
             });
         }
 
@@ -32,7 +35,7 @@ class CountryController extends Controller
         $sortDirection = $request->input('sort_direction', 'desc');
 
         // For translatable fields, sort by the current locale
-        if (in_array($sortField, ['name'])) {
+        if (in_array($sortField, ['name', 'nationality_name'])) {
             $locale = app()->getLocale();
             $query->orderByRaw("JSON_EXTRACT({$sortField}, '$.{$locale}') {$sortDirection}");
         } else {
@@ -49,6 +52,8 @@ class CountryController extends Controller
                 'id' => $country->id,
                 'name' => $country->name, // Spatie will automatically return translated value for display
                 'name_translations' => $country->getTranslations('name'), // Full translations for editing
+                'nationality_name' => $country->nationality_name, // Spatie will automatically return translated value for display
+                'nationality_name_translations' => $country->getTranslations('nationality_name'), // Full translations for editing
                 'is_active' => $country->is_active,
                 'created_at' => $country->created_at,
                 'updated_at' => $country->updated_at,
@@ -70,6 +75,9 @@ class CountryController extends Controller
             'name' => 'required|array',
             'name.en' => 'required|string|max:255',
             'name.ar' => 'required|string|max:255',
+            'nationality_name' => 'nullable|array',
+            'nationality_name.en' => 'nullable|string|max:255',
+            'nationality_name.ar' => 'nullable|string|max:255',
             'is_active' => 'boolean',
         ]);
 
@@ -87,6 +95,9 @@ class CountryController extends Controller
             'name' => 'required|array',
             'name.en' => 'required|string|max:255',
             'name.ar' => 'required|string|max:255',
+            'nationality_name' => 'nullable|array',
+            'nationality_name.en' => 'nullable|string|max:255',
+            'nationality_name.ar' => 'nullable|string|max:255',
             'is_active' => 'boolean',
         ]);
 
