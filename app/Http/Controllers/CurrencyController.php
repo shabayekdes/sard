@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\CurrencyResource;
 use App\Models\Currency;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -45,20 +46,9 @@ class CurrencyController extends Controller
         $perPage = $request->input('per_page', 10);
         $currencies = $query->paginate($perPage)->withQueryString();
 
-        // Transform the data to include translated values
-        $currencies->getCollection()->transform(function ($currency) {
-            return [
-                'id' => $currency->id,
-                'name' => $currency->name, // Spatie will automatically return translated value for display
-                'name_translations' => $currency->getTranslations('name'), // Full translations for editing
-                'code' => $currency->code,
-                'symbol' => $currency->symbol,
-                'description' => $currency->description, // Spatie will automatically return translated value for display
-                'description_translations' => $currency->getTranslations('description'), // Full translations for editing
-                'is_default' => $currency->is_default,
-                'created_at' => $currency->created_at,
-                'updated_at' => $currency->updated_at,
-            ];
+        // Transform the data using CurrencyResource while preserving pagination structure
+        $currencies->through(function ($currency) {
+            return (new CurrencyResource($currency))->resolve();
         });
 
         return Inertia::render('currencies/index', [
@@ -145,6 +135,6 @@ class CurrencyController extends Controller
     {
         $currencies = Currency::all();
 
-        return response()->json($currencies);
+        return response()->json(CurrencyResource::collection($currencies)->resolve());
     }
 }

@@ -14,6 +14,7 @@ use App\Models\EmailTemplate;
 use App\Models\NotificationTemplate;
 use App\Models\User;
 use App\Models\UserEmailTemplate;
+use App\Http\Resources\CurrencyResource;
 use Illuminate\Http\Request;
 
 class SettingsController extends Controller
@@ -27,7 +28,7 @@ class SettingsController extends Controller
     {
         // Get system settings using helper function
         $systemSettings = settings();
-        $currencies = Currency::all();
+        $currencies = CurrencyResource::collection(Currency::all())->resolve();
         $paymentSettings = PaymentSetting::getUserSettings(auth()->id());
         $webhooks = Webhook::where('user_id', auth()->id())->get();
         $companySettings = CompanySetting::where('created_by', createdBy())->get();
