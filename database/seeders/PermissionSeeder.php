@@ -70,7 +70,6 @@ class PermissionSeeder extends Seeder
             ['name' => 'trial-plans', 'module' => 'plans', 'label' => 'Trial Plans', 'description' => 'Can start trial for subscription plans'],
             ['name' => 'subscribe-plans', 'module' => 'plans', 'label' => 'Subscribe Plans', 'description' => 'Can subscribe to subscription plans'],
 
-
             // Coupon management
             ['name' => 'manage-coupons', 'module' => 'coupons', 'label' => 'Manage Coupons', 'description' => 'Can manage subscription Coupons'],
             ['name' => 'manage-any-coupons', 'module' => 'coupons', 'label' => 'Manage All Coupons', 'description' => 'Manage Any Coupons'],
@@ -103,7 +102,6 @@ class PermissionSeeder extends Seeder
             ['name' => 'approve-plan-orders', 'module' => 'plan_orders', 'label' => 'Approve Plan Orders', 'description' => 'Can approve plan orders'],
             ['name' => 'reject-plan-orders', 'module' => 'plan_orders', 'label' => 'Reject Plan Orders', 'description' => 'Can reject plan orders'],
 
-
             // Settings
             ['name' => 'manage-settings', 'module' => 'settings', 'label' => 'Manage Settings', 'description' => 'Can manage All settings'],
             ['name' => 'manage-system-settings', 'module' => 'settings', 'label' => 'Manage System Settings', 'description' => 'Can manage system settings'],
@@ -120,7 +118,6 @@ class PermissionSeeder extends Seeder
             ['name' => 'manage-cache-settings', 'module' => 'settings', 'label' => 'Manage Cache Settings', 'description' => 'Can manage cache settings'],
             ['name' => 'manage-account-settings', 'module' => 'settings', 'label' => 'Manage Account Settings', 'description' => 'Can manage account settings'],
 
-
             // Contact Us management
             ['name' => 'manage-contact-us', 'module' => 'contact-us', 'label' => 'Manage Contact Us', 'description' => 'Can manage contact us messages'],
             ['name' => 'view-contact-us', 'module' => 'contact-us', 'label' => 'View Contact Us', 'description' => 'View Contact Us messages'],
@@ -134,6 +131,15 @@ class PermissionSeeder extends Seeder
             ['name' => 'edit-currencies', 'module' => 'currencies', 'label' => 'Edit Currencies', 'description' => 'Can edit currencies'],
             ['name' => 'delete-currencies', 'module' => 'currencies', 'label' => 'Delete Currencies', 'description' => 'Can delete currencies'],
 
+            // Country management
+            ['name' => 'manage-countries', 'module' => 'countries', 'label' => 'Manage Countries', 'description' => 'Can manage countries'],
+            ['name' => 'manage-any-countries', 'module' => 'countries', 'label' => 'Manage All Countries', 'description' => 'Manage Any Countries'],
+            ['name' => 'manage-own-countries', 'module' => 'countries', 'label' => 'Manage Own Countries', 'description' => 'Manage Limited Countries that is created by own'],
+            ['name' => 'view-countries', 'module' => 'countries', 'label' => 'View Countries', 'description' => 'View Countries'],
+            ['name' => 'create-countries', 'module' => 'countries', 'label' => 'Create Countries', 'description' => 'Can create countries'],
+            ['name' => 'edit-countries', 'module' => 'countries', 'label' => 'Edit Countries', 'description' => 'Can edit countries'],
+            ['name' => 'delete-countries', 'module' => 'countries', 'label' => 'Delete Countries', 'description' => 'Can delete countries'],
+
             // Client Billing Currency management
             ['name' => 'manage-client-billing-currencies', 'module' => 'client_billing_currencies', 'label' => 'Manage Client Billing Currencies', 'description' => 'Can manage client billing currencies'],
             ['name' => 'manage-any-client-billing-currencies', 'module' => 'client_billing_currencies', 'label' => 'Manage All Client Billing Currencies', 'description' => 'Manage Any Client Billing Currencies'],
@@ -142,8 +148,6 @@ class PermissionSeeder extends Seeder
             ['name' => 'create-client-billing-currencies', 'module' => 'client_billing_currencies', 'label' => 'Create Client Billing Currencies', 'description' => 'Can create client billing currencies'],
             ['name' => 'edit-client-billing-currencies', 'module' => 'client_billing_currencies', 'label' => 'Edit Client Billing Currencies', 'description' => 'Can edit client billing currencies'],
             ['name' => 'delete-client-billing-currencies', 'module' => 'client_billing_currencies', 'label' => 'Delete Client Billing Currencies', 'description' => 'Can delete client billing currencies'],
-
-
 
             // Referral management
             ['name' => 'manage-referral', 'module' => 'referral', 'label' => 'Manage Referral', 'description' => 'Can manage referral program'],
@@ -181,8 +185,6 @@ class PermissionSeeder extends Seeder
             ['name' => 'view-landing-page', 'module' => 'landing_page', 'label' => 'View Landing Page', 'description' => 'View landing page'],
             ['name' => 'edit-landing-page', 'module' => 'landing_page', 'label' => 'Edit Landing Page', 'description' => 'Edit landing page'],
 
-
-
             // Client Type management
             ['name' => 'manage-client-types', 'module' => 'client_types', 'label' => 'Manage Client Types', 'description' => 'Can manage client types'],
             ['name' => 'manage-any-client-types', 'module' => 'client_types', 'label' => 'Manage All Client Types', 'description' => 'Manage Any Client Types'],
@@ -205,7 +207,6 @@ class PermissionSeeder extends Seeder
             ['name' => 'reset-client-password', 'module' => 'clients', 'label' => 'Reset Client Password', 'description' => 'Can reset client passwords'],
 
             // Client Communication management
-
 
             // Client Document management
             ['name' => 'manage-client-documents', 'module' => 'client_documents', 'label' => 'Manage Client Documents', 'description' => 'Can manage client documents'],
@@ -409,8 +410,6 @@ class PermissionSeeder extends Seeder
             ['name' => 'download-documents', 'module' => 'documents', 'label' => 'Download Documents', 'description' => 'Can download documents'],
             ['name' => 'toggle-status-documents', 'module' => 'documents', 'label' => 'Toggle Status Documents', 'description' => 'Can toggle status of documents'],
 
-
-
             // Document Versions
             ['name' => 'manage-document-versions', 'module' => 'document_versions', 'label' => 'Manage Document Versions', 'description' => 'Can manage document versions'],
             ['name' => 'manage-any-document-versions', 'module' => 'document_versions', 'label' => 'Manage All Document Versions', 'description' => 'Manage Any Document Versions'],
@@ -439,8 +438,6 @@ class PermissionSeeder extends Seeder
             ['name' => 'create-document-permissions', 'module' => 'document_permissions', 'label' => 'Create Document Permissions', 'description' => 'Can create document permissions'],
             ['name' => 'edit-document-permissions', 'module' => 'document_permissions', 'label' => 'Edit Document Permissions', 'description' => 'Can edit document permissions'],
             ['name' => 'delete-document-permissions', 'module' => 'document_permissions', 'label' => 'Delete Document Permissions', 'description' => 'Can delete document permissions'],
-
-
 
             // Research Projects
             ['name' => 'manage-research-projects', 'module' => 'research_projects', 'label' => 'Manage Research Projects', 'description' => 'Can manage research projects'],
@@ -752,11 +749,6 @@ class PermissionSeeder extends Seeder
 
             // Task Dependencies
 
-
-
-
-
-
             // Task Comments
             ['name' => 'manage-task-comments', 'module' => 'task_comments', 'label' => 'Manage Task Comments', 'description' => 'Can manage task comments'],
             ['name' => 'manage-any-task-comments', 'module' => 'task_comments', 'label' => 'Manage All Task Comments', 'description' => 'Manage Any Task Comments'],
@@ -786,7 +778,7 @@ class PermissionSeeder extends Seeder
         $taskPermissions = [
             'tasks',
             'task_types',
-            'task_statuses'
+            'task_statuses',
         ];
 
         foreach ($permissions as $permission) {

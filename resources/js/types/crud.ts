@@ -72,22 +72,22 @@ export interface FormField {
     name: string;
     label: string;
     type:
-        | 'text'
-        | 'time'
-        | 'email'
-        | 'password'
-        | 'select'
-        | 'textarea'
-        | 'radio'
-        | 'checkbox'
-        | 'switch'
-        | 'file'
-        | 'date'
-        | 'number'
-        | 'multi-select'
-        | 'media-picker'
-        | 'custom'
-        | 'dependent-dropdown';
+    | 'text'
+    | 'time'
+    | 'email'
+    | 'password'
+    | 'select'
+    | 'textarea'
+    | 'radio'
+    | 'checkbox'
+    | 'switch'
+    | 'file'
+    | 'date'
+    | 'number'
+    | 'multi-select'
+    | 'media-picker'
+    | 'custom'
+    | 'dependent-dropdown';
     placeholder?: string;
     required?: boolean;
     multiple?: boolean; // For media-picker and multi-select fields
@@ -128,6 +128,7 @@ export interface FormConfig {
     columns?: number; // Number of columns in the form grid (default: 1)
     layout?: 'grid' | 'flex' | 'default'; // Layout type
     column?: number;
+    transformData?: (data: any) => any;
 }
 
 export interface CrudHooks {

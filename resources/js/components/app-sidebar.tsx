@@ -19,6 +19,7 @@ import {
     DollarSign,
     FileText,
     Gift,
+    Globe,
     Image,
     LayoutGrid,
     Mail,
@@ -98,6 +99,11 @@ export function AppSidebar() {
             title: t('Currencies'),
             href: route('currencies.index'),
             icon: DollarSign,
+        },
+        {
+            title: t('Countries'),
+            href: route('countries.index'),
+            icon: Globe,
         },
         {
             title: t('Referral Program'),

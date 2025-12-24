@@ -12,6 +12,7 @@ return [
         'plan_orders',
         'domain_requests',
         'currencies',
+        'countries',
         'referral',
         'coupons',
         'appointments',
