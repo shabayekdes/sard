@@ -147,22 +147,35 @@ const normalizeDirection = (direction: string | null | undefined) => {
 };
 
 const initializeDirection = () => {
-    let savedDirection: string | null = null;
+    // First, check the current language to determine direction
+    // This takes priority over stored settings
+    const currentLang = i18n.language || (window as any).initialLocale || getCookie('app_language');
+    let domDirection: string;
 
-    if (isDemoMode()) {
-        savedDirection = getCookie('layoutDirection');
+    if (currentLang && ['ar', 'he'].includes(currentLang)) {
+        // Language requires RTL - always set to RTL regardless of stored settings
+        domDirection = 'rtl';
     } else {
-        const globalSettings = (window as any).page?.props?.globalSettings;
-        if (globalSettings?.layoutDirection) {
-            savedDirection = globalSettings.layoutDirection;
+        // For non-RTL languages, check stored settings
+        let savedDirection: string | null = null;
+
+        if (isDemoMode()) {
+            savedDirection = getCookie('layoutDirection');
+        } else {
+            const globalSettings = (window as any).page?.props?.globalSettings;
+            if (globalSettings?.layoutDirection) {
+                savedDirection = globalSettings.layoutDirection;
+            }
         }
+
+        domDirection = normalizeDirection(savedDirection);
     }
 
-    const domDirection = normalizeDirection(savedDirection);
     document.documentElement.dir = domDirection;
     document.documentElement.setAttribute('dir', domDirection);
 };
 
+// Initialize direction immediately
 initializeDirection();
 
 // Global function to update direction

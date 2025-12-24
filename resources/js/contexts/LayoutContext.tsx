@@ -1,4 +1,5 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import i18n from '../i18n';
 
 export type LayoutPosition = 'left' | 'right';
 
@@ -17,52 +18,63 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
 
     useEffect(() => {
         const isDemo = (window as any).page?.props?.globalSettings?.is_demo || false;
-        let storedPosition: LayoutPosition | null = null;
 
-        if (isDemo) {
-            // In demo mode, use cookies
-            const getCookie = (name: string): string | null => {
-                if (typeof document === 'undefined') return null;
-                const value = `; ${document.cookie}`;
-                const parts = value.split(`; ${name}=`);
-                if (parts.length === 2) {
-                    const cookieValue = parts.pop()?.split(';').shift();
-                    return cookieValue ? decodeURIComponent(cookieValue) : null;
-                }
-                return null;
-            };
-            storedPosition = getCookie('layoutPosition') as LayoutPosition;
-        } else {
-            // In normal mode, get from database via globalSettings
-            const globalSettings = (window as any).page?.props?.globalSettings;
-            storedPosition = globalSettings?.layoutDirection as LayoutPosition;
-        }
-
-        if (storedPosition === 'left' || storedPosition === 'right') {
-            setPosition(storedPosition);
-        }
-
-        // Check if the document is in RTL mode
-        const checkRtl = () => {
-            const rtl = document.documentElement.dir === 'rtl';
-            setIsRtl(rtl);
+        const getStoredPosition = (): LayoutPosition | null => {
+            if (isDemo) {
+                // In demo mode, use cookies
+                const getCookie = (name: string): string | null => {
+                    if (typeof document === 'undefined') return null;
+                    const value = `; ${document.cookie}`;
+                    const parts = value.split(`; ${name}=`);
+                    if (parts.length === 2) {
+                        const cookieValue = parts.pop()?.split(';').shift();
+                        return cookieValue ? decodeURIComponent(cookieValue) : null;
+                    }
+                    return null;
+                };
+                return getCookie('layoutPosition') as LayoutPosition;
+            } else {
+                // In normal mode, get from database via globalSettings
+                const globalSettings = (window as any).page?.props?.globalSettings;
+                return globalSettings?.layoutDirection as LayoutPosition;
+            }
         };
 
-        // Initial check
-        checkRtl();
+        // Function to update position and isRtl based on current language
+        const updatePositionFromLanguage = () => {
+            const currentLang = i18n.language || (window as any).initialLocale;
+            const isRtlLang = currentLang && ['ar', 'he'].includes(currentLang);
+            const storedPosition = getStoredPosition();
 
-        // Set up a mutation observer to detect changes to the dir attribute
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.attributeName === 'dir') {
-                    checkRtl();
+            // Update isRtl state directly from language
+            setIsRtl(isRtlLang);
+
+            if (isRtlLang) {
+                // For RTL languages, sidebar should be on the right side
+                setPosition('right');
+            } else {
+                // For non-RTL languages, use stored position or default to 'left'
+                if (storedPosition === 'left' || storedPosition === 'right') {
+                    setPosition(storedPosition);
+                } else {
+                    setPosition('left');
                 }
-            });
-        });
+            }
+        };
 
-        observer.observe(document.documentElement, { attributes: true });
+        // Initial position update
+        updatePositionFromLanguage();
 
-        return () => observer.disconnect();
+        // Listen for language changes
+        i18n.on('languageChanged', updatePositionFromLanguage);
+        i18n.on('loaded', updatePositionFromLanguage);
+        i18n.on('initialized', updatePositionFromLanguage);
+
+        return () => {
+            i18n.off('languageChanged', updatePositionFromLanguage);
+            i18n.off('loaded', updatePositionFromLanguage);
+            i18n.off('initialized', updatePositionFromLanguage);
+        };
     }, []);
 
     const updatePosition = (val: LayoutPosition) => {
@@ -87,7 +99,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         (position === 'left' ? 'right' : 'left') :
         position;
 
-    return <LayoutContext.Provider value={{ position, effectivePosition, updatePosition, saveLayoutPosition, isRtl }}>{children}</LayoutContext.Provider>;
+    return <LayoutContext.Provider value={{ position, effectivePosition, updatePosition, isRtl }}>{children}</LayoutContext.Provider>;
 };
 
 export const useLayout = () => {

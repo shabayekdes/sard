@@ -63,18 +63,18 @@ export const LanguageSwitcher: React.FC = () => {
 
             // Determine if the new language is RTL
             const isRtl = rtlLanguages.includes(languageCode);
-            const newDirection = isRtl ? 'right' : 'left';
 
-            // Update document direction immediately
-            document.documentElement.dir = newDirection;
+            // Update document direction immediately (RTL for Arabic/Hebrew, LTR for others)
+            document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
             document.documentElement.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
 
-            // Update layout position in context
-            updatePosition(newDirection as 'left' | 'right');
+            // Update sidebar position: 'right' for RTL languages, 'left' for others
+            const newPosition = isRtl ? 'right' : 'left';
+            updatePosition(newPosition as 'left' | 'right');
 
             // Force a re-render by dispatching a custom event
             window.dispatchEvent(new CustomEvent('languageChanged', {
-                detail: { language: languageCode, direction: newDirection }
+                detail: { language: languageCode, direction: isRtl ? 'rtl' : 'ltr' }
             }));
 
             // Force layout recalculation
@@ -87,68 +87,68 @@ export const LanguageSwitcher: React.FC = () => {
 
     return (
         <>
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 h-8 rounded-md">
-                    <Globe className="h-4 w-4" />
-                    <span className="text-sm font-medium hidden md:inline-block">
-                        {currentLanguage.name}
-                    </span>
-                    <ReactCountryFlag
-                        countryCode={currentLanguage.countryCode}
-                        svg
-                        style={{
-                            width: '1.2em',
-                            height: '1.2em',
-                        }}
-                    />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuGroup>
-                    {languageData
-                        .filter((language: any) => language.enabled !== false)
-                        .map((language) => (
-                        <DropdownMenuItem
-                            key={language.code}
-                            onClick={() => handleLanguageChange(language.code)}
-                            className="flex items-center gap-2"
-                        >
-                            <ReactCountryFlag
-                                countryCode={language.countryCode}
-                                svg
-                                style={{
-                                    width: '1.2em',
-                                    height: '1.2em',
-                                }}
-                            />
-                            <span>{language.name}</span>
-                        </DropdownMenuItem>
-                    ))}
-                </DropdownMenuGroup>
-                {isSuperAdmin && (
-                    <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            onClick={() => setShowCreateModal(true)}
-                            className="justify-center text-primary font-semibold cursor-pointer"
-                        >
-                            Create Language
-                        </DropdownMenuItem>
-                         <DropdownMenuItem asChild className="justify-center text-primary font-semibold cursor-pointer">
-                            <a href={route('manage-language')} rel="noopener noreferrer">
-                                Manage Language
-                            </a>
-                        </DropdownMenuItem>
-                    </>
-                )}
-            </DropdownMenuContent>
-        </DropdownMenu>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="flex items-center gap-2 h-8 rounded-md">
+                        <Globe className="h-4 w-4" />
+                        <span className="text-sm font-medium hidden md:inline-block">
+                            {currentLanguage.name}
+                        </span>
+                        <ReactCountryFlag
+                            countryCode={currentLanguage.countryCode}
+                            svg
+                            style={{
+                                width: '1.2em',
+                                height: '1.2em',
+                            }}
+                        />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuGroup>
+                        {languageData
+                            .filter((language: any) => language.enabled !== false)
+                            .map((language) => (
+                                <DropdownMenuItem
+                                    key={language.code}
+                                    onClick={() => handleLanguageChange(language.code)}
+                                    className="flex items-center gap-2"
+                                >
+                                    <ReactCountryFlag
+                                        countryCode={language.countryCode}
+                                        svg
+                                        style={{
+                                            width: '1.2em',
+                                            height: '1.2em',
+                                        }}
+                                    />
+                                    <span>{language.name}</span>
+                                </DropdownMenuItem>
+                            ))}
+                    </DropdownMenuGroup>
+                    {isSuperAdmin && (
+                        <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => setShowCreateModal(true)}
+                                className="justify-center text-primary font-semibold cursor-pointer"
+                            >
+                                Create Language
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild className="justify-center text-primary font-semibold cursor-pointer">
+                                <a href={route('manage-language')} rel="noopener noreferrer">
+                                    Manage Language
+                                </a>
+                            </DropdownMenuItem>
+                        </>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
 
-        <CreateLanguageModal
-            open={showCreateModal}
-            onOpenChange={setShowCreateModal}
-        />
+            <CreateLanguageModal
+                open={showCreateModal}
+                onOpenChange={setShowCreateModal}
+            />
         </>
     );
 };

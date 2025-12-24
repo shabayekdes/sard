@@ -3,6 +3,7 @@ import { getBrandSettings, type BrandSettings } from '@/utils/brandSettings';
 import { getBaseUrl, getImagePath } from '@/utils/helpers';
 import { usePage } from '@inertiajs/react';
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
+import i18n from '../i18n';
 
 interface BrandContextType extends BrandSettings {
     updateBrandSettings: (settings: Partial<BrandSettings>) => void;
@@ -51,7 +52,7 @@ export function BrandProvider({ children }: { children: ReactNode }) {
             brandSettings.themeColor === 'custom'
                 ? brandSettings.customColor
                 : ({ blue: '#3b82f6', green: '#10b981', purple: '#8b5cf6', orange: '#f97316', red: '#ef4444' } as any)[brandSettings.themeColor] ||
-                  '#3b82f6';
+                '#3b82f6';
 
         document.documentElement.style.setProperty('--theme-color', color);
         document.documentElement.style.setProperty('--primary', color);
@@ -64,8 +65,19 @@ export function BrandProvider({ children }: { children: ReactNode }) {
         document.documentElement.classList.toggle('dark', isDark);
         document.body.classList.toggle('dark', isDark);
 
-        const domDirection =
-            brandSettings.layoutDirection === 'right' ? 'rtl' : brandSettings.layoutDirection === 'left' ? 'ltr' : brandSettings.layoutDirection;
+        // Determine direction: prioritize language code over stored layoutDirection
+        let domDirection: string;
+        const currentLang = i18n.language || (window as any).initialLocale;
+        if (currentLang && ['ar', 'he'].includes(currentLang)) {
+            // Language requires RTL - always set to RTL regardless of stored layoutDirection
+            domDirection = 'rtl';
+        } else if (brandSettings.layoutDirection === 'right') {
+            domDirection = 'rtl';
+        } else if (brandSettings.layoutDirection === 'left') {
+            domDirection = 'ltr';
+        } else {
+            domDirection = brandSettings.layoutDirection || 'ltr';
+        }
 
         document.documentElement.dir = domDirection;
         document.documentElement.setAttribute('dir', domDirection);
@@ -78,6 +90,38 @@ export function BrandProvider({ children }: { children: ReactNode }) {
         setBrandSettings(updatedSettings);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [globalSettings, user]);
+
+    // Update direction when language changes
+    useEffect(() => {
+        const updateDirectionFromLanguage = () => {
+            const currentLang = i18n.language || (window as any).initialLocale;
+            if (currentLang && ['ar', 'he'].includes(currentLang)) {
+                document.documentElement.dir = 'rtl';
+                document.documentElement.setAttribute('dir', 'rtl');
+            } else if (currentLang) {
+                // Only set to LTR if we're sure it's not an RTL language
+                const currentDir = document.documentElement.getAttribute('dir');
+                if (currentDir === 'rtl' && !['ar', 'he'].includes(currentLang)) {
+                    document.documentElement.dir = 'ltr';
+                    document.documentElement.setAttribute('dir', 'ltr');
+                }
+            }
+        };
+
+        // Initial check
+        updateDirectionFromLanguage();
+
+        // Listen for language changes
+        i18n.on('languageChanged', updateDirectionFromLanguage);
+        i18n.on('loaded', updateDirectionFromLanguage);
+        i18n.on('initialized', updateDirectionFromLanguage);
+
+        return () => {
+            i18n.off('languageChanged', updateDirectionFromLanguage);
+            i18n.off('loaded', updateDirectionFromLanguage);
+            i18n.off('initialized', updateDirectionFromLanguage);
+        };
+    }, []);
 
     const updateBrandSettings = (newSettings: Partial<BrandSettings>) => {
         const processedSettings = { ...newSettings };
