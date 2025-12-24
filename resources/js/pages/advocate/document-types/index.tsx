@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
@@ -12,9 +12,10 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 export default function DocumentTypes() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { auth, documentTypes, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
+  const currentLocale = i18n.language || 'en';
 
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
   const [selectedStatus, setSelectedStatus] = useState(pageFilters.status || 'all');
@@ -23,6 +24,48 @@ export default function DocumentTypes() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<any>(null);
   const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
+
+  // Reload data when language changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Build params object
+      const params: any = {
+        page: pageFilters.page || 1,
+      };
+
+      if (searchTerm) {
+        params.search = searchTerm;
+      }
+
+      if (selectedStatus !== 'all') {
+        params.status = selectedStatus;
+      }
+
+      // Only include sort parameters if sort_field has a value
+      if (pageFilters.sort_field) {
+        params.sort_field = pageFilters.sort_field;
+        params.sort_direction = pageFilters.sort_direction || 'desc';
+      }
+
+      if (pageFilters.per_page) {
+        params.per_page = pageFilters.per_page;
+      }
+
+      // Reload the current page with current filters to get translated data
+      router.get(route('advocate.document-types.index'), params, {
+        preserveState: false,
+        preserveScroll: false
+      });
+    };
+
+    // Listen for language change event
+    window.addEventListener('languageChanged', handleLanguageChange);
+
+    // Cleanup listener on unmount
+    return () => {
+      window.removeEventListener('languageChanged', handleLanguageChange);
+    };
+  }, [searchTerm, selectedStatus, pageFilters]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -172,14 +215,35 @@ export default function DocumentTypes() {
   ];
 
   const columns = [
-    { key: 'name', label: t('Name'), sortable: true },
-    { key: 'description', label: t('Description') },
+    {
+      key: 'name',
+      label: t('Name'),
+      sortable: true,
+      render: (value: any, row: any) => {
+        // Handle both string (legacy) and object (translatable) formats
+        if (typeof value === 'object' && value !== null) {
+          return value[currentLocale] || value.en || value.ar || '';
+        }
+        return value || '';
+      }
+    },
+    {
+      key: 'description',
+      label: t('Description'),
+      render: (value: any, row: any) => {
+        // Handle both string (legacy) and object (translatable) formats
+        if (typeof value === 'object' && value !== null) {
+          return value[currentLocale] || value.en || value.ar || '';
+        }
+        return value || '';
+      }
+    },
     {
       key: 'color',
       label: t('Color'),
       render: (value: string) => (
         <div className="flex items-center gap-2">
-          <div 
+          <div
             className="w-4 h-4 rounded border"
             style={{ backgroundColor: value }}
           />
@@ -203,7 +267,7 @@ export default function DocumentTypes() {
       key: 'created_at',
       label: t('Created At'),
       sortable: true,
-        type: 'date',
+      type: 'date',
     }
   ];
 
@@ -283,8 +347,28 @@ export default function DocumentTypes() {
         onSubmit={handleFormSubmit}
         formConfig={{
           fields: [
-            { name: 'name', label: t('Name'), type: 'text', required: true },
-            { name: 'description', label: t('Description'), type: 'textarea' },
+            {
+              name: 'name.en',
+              label: t('Name (English)'),
+              type: 'text',
+              required: true
+            },
+            {
+              name: 'name.ar',
+              label: t('Name (Arabic)'),
+              type: 'text',
+              required: true
+            },
+            {
+              name: 'description.en',
+              label: t('Description (English)'),
+              type: 'textarea'
+            },
+            {
+              name: 'description.ar',
+              label: t('Description (Arabic)'),
+              type: 'textarea'
+            },
             { name: 'color', label: t('Color'), type: 'color', required: true, defaultValue: '#3B82F6' },
             {
               name: 'status',
@@ -297,9 +381,49 @@ export default function DocumentTypes() {
               defaultValue: 'active'
             }
           ],
-          modalSize: 'lg'
+          modalSize: 'lg',
+          transformData: (data: any) => {
+            // Transform flat structure to nested structure for translatable fields
+            const transformed: any = { ...data };
+
+            // Handle name field
+            if (transformed['name.en'] || transformed['name.ar']) {
+              transformed.name = {
+                en: transformed['name.en'] || '',
+                ar: transformed['name.ar'] || '',
+              };
+              delete transformed['name.en'];
+              delete transformed['name.ar'];
+            }
+
+            // Handle description field
+            if (transformed['description.en'] || transformed['description.ar']) {
+              transformed.description = {
+                en: transformed['description.en'] || '',
+                ar: transformed['description.ar'] || '',
+              };
+              delete transformed['description.en'];
+              delete transformed['description.ar'];
+            }
+
+            return transformed;
+          }
         }}
-        initialData={currentItem}
+        initialData={
+          currentItem
+            ? {
+              ...currentItem,
+              'name.en': currentItem.name_translations?.en ||
+                (typeof currentItem.name === 'object' ? currentItem.name?.en : '') || '',
+              'name.ar': currentItem.name_translations?.ar ||
+                (typeof currentItem.name === 'object' ? currentItem.name?.ar : '') || '',
+              'description.en': currentItem.description_translations?.en ||
+                (typeof currentItem.description === 'object' ? currentItem.description?.en : '') || '',
+              'description.ar': currentItem.description_translations?.ar ||
+                (typeof currentItem.description === 'object' ? currentItem.description?.ar : '') || '',
+            }
+            : {}
+        }
         title={
           formMode === 'create'
             ? t('Add New Document Type')
@@ -314,7 +438,13 @@ export default function DocumentTypes() {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.name || ''}
+        itemName={
+          currentItem?.name
+            ? (typeof currentItem.name === 'object'
+              ? (currentItem.name[currentLocale] || currentItem.name.en || currentItem.name.ar || '')
+              : currentItem.name)
+            : ''
+        }
         entityName="document type"
       />
     </PageTemplate>

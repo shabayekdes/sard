@@ -3,18 +3,20 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Spatie\Translatable\HasTranslations;
 
 class DocumentType extends BaseModel
 {
-    use HasFactory;
+    use HasFactory, HasTranslations;
+
+    public array $translatable = ['name', 'description'];
 
     protected $fillable = [
         'name',
         'description',
         'color',
         'status',
-        'created_by'
+        'created_by',
     ];
 
     public function creator()
