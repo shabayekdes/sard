@@ -27,7 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
             ShareGlobalSettings::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
-            DemoModeMiddleware::class,
+            // DemoModeMiddleware::class,
         ]);
 
         $middleware->alias([

@@ -7,7 +7,6 @@ use App\Models\Plan;
 use App\Models\Setting;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Carbon\Carbon;
 
 class UserSeeder extends Seeder
 {
@@ -21,11 +20,11 @@ class UserSeeder extends Seeder
         // Create Super Admin User
         
         $superAdmin = User::firstOrCreate(
-            ['email' => 'admin@gamil.com'],
+            ['email' => 'esmail@sard.app'],
             [
                 'name' => 'Super Admin',
                 'email_verified_at' => now(),
-                'password' => Hash::make('12345678'),
+                'password' => bcrypt('12345678'),
                 'type' => 'superadmin',
                 'lang' => 'en'
             ]

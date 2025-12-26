@@ -24,55 +24,69 @@ class ClientTypeSeeder extends Seeder
                 [
                     'name' => 'فرد',
                     'status' => 'active',
+                    'created_by' => $companyUser->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ],
                 [
                     'name' => 'مؤسسة فردية',
                     'status' => 'active',
+                    'created_by' => $companyUser->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ],
                 [
                     'name' => 'شركة توصية بسيطة',
                     'status' => 'active',
+                    'created_by' => $companyUser->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ],
                 [
                     'name' => 'شركة تضامنية',
                     'status' => 'active',
+                    'created_by' => $companyUser->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ],
                 [
                     'name' => 'شركة ذات مسئولية محدودة',
                     'status' => 'active',
+                    'created_by' => $companyUser->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ],
                 [
                     'name' => 'شركة مساهمة عامة',
                     'status' => 'active',
+                    'created_by' => $companyUser->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ],
                 [
                     'name' => 'شركة أجنبية',
                     'status' => 'active',
+                    'created_by' => $companyUser->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ],
                 [
                     'name' => 'شركة خليجية',
                     'status' => 'active',
+                    'created_by' => $companyUser->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ],
                 [
                     'name' => 'شركة مساهمة مقفلة',
                     'status' => 'active',
+                    'created_by' => $companyUser->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ],
             ];
 
-            foreach ($clientTypes as $clientTypeData) {
-                // Check if client type already exists
-                $exists = ClientType::where('name', $clientTypeData['name'])
-                    ->where('created_by', $companyUser->id)
-                    ->exists();
-
-                if (!$exists) {
-                    ClientType::create([
-                        'name' => $clientTypeData['name'],
-                        'status' => $clientTypeData['status'],
-                        'created_by' => $companyUser->id,
-                    ]);
-                }
-            }
+            ClientType::insert($clientTypes);
         }
     }
 }

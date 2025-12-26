@@ -49,7 +49,7 @@ class HandleInertiaRequests extends Middleware
                 'currencyNname' => 'US Dollar',
                 'base_url' => config('app.url'),
                 'image_url' => config('app.url'),
-                'is_demo' => config('app.is_demo', false),
+                'is_demo' => false,//config('app.is_demo', false),
             ];
             $storageSettings = [
                 'allowed_file_types' => 'jpg,png,webp,gif',
@@ -122,7 +122,7 @@ class HandleInertiaRequests extends Middleware
             $globalSettings = array_merge($settings, $currencySettings, $superAdminCurrencySettings);
             $globalSettings['base_url'] = config('app.url');
             $globalSettings['image_url'] = config('app.url');
-            $globalSettings['is_demo'] = config('app.is_demo', false);
+            $globalSettings['is_demo'] = false; //config('app.is_demo', false);
 
         //     // Add cookie consent setting
         //     $cookieSetting = Setting::where('key', 'strictlyNecessaryCookies')->first();
@@ -153,7 +153,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'globalSettings' => $globalSettings,
             'storageSettings' => $storageSettings,
-            'is_demo' => config('app.is_demo')
+            'is_demo' => false, // config('app.is_demo')
         ];
     }
 }

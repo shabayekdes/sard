@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use App\Models\ClientType;
+use App\Models\Country;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -52,6 +53,18 @@ class ClientController extends Controller
             ->where('status', 'active')
             ->get(['id', 'name']);
 
+        // Get countries for nationality dropdown
+        $countries = Country::where('is_active', true)
+            ->orderByRaw("JSON_EXTRACT(name, '$.en')")
+            ->get(['id', 'name', 'nationality_name'])
+            ->map(function ($country) {
+                return [
+                    'value' => $country->id,
+                    'name' => $country->name, // Spatie automatically returns translated value
+                    'label' => $country->nationality_name, // Spatie automatically returns translated value
+                ];
+            });
+
         // Get plan limits for clients (same pattern as UserController)
         $authUser = auth()->user();
         $planLimits = null;
@@ -77,6 +90,7 @@ class ClientController extends Controller
         return Inertia::render('clients/index', [
             'clients' => $clients,
             'clientTypes' => $clientTypes,
+            'countries' => $countries,
             'planLimits' => $planLimits,
             'filters' => $request->all(['search', 'client_type_id', 'status', 'sort_field', 'sort_direction', 'per_page']),
         ]);
@@ -107,24 +121,21 @@ class ClientController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'password' => 'nullable|string|min:6',
-            'phone' => 'nullable|string|max:20',
+            'email' => 'required|email|max:255',
+            'password' => 'required|string|min:6',
+            'phone' => 'required|string|max:20',
             'business_type' => 'required|string|in:b2c,b2b',
             'nationality' => 'required_if:business_type,b2c|string|max:100',
-            'gender' => 'required_if:business_type,b2c|string|in:male,female,other',
+            'gender' => 'required_if:business_type,b2c|string|in:male,female',
             'id_number' => 'required_if:business_type,b2c|string|max:100',
             'unified_number' => 'required_if:business_type,b2b|string|max:100',
             'cr_number' => 'required_if:business_type,b2b|string|max:100',
             'cr_issuance_date' => 'required_if:business_type,b2b|date',
-            'vat_number' => 'required_if:business_type,b2b|string|max:100',
+            'tax_id' => 'required_if:business_type,b2b|string|max:100',
             'address' => 'nullable|string',
-            'country' => 'nullable|string',
-            'city' => 'nullable|string',
             'client_type_id' => 'required|exists:client_types,id',
             'status' => 'nullable|in:active,inactive',
-            'company_name' => 'nullable|string|max:255',
-            'tax_id' => 'nullable|string|max:50',
+            'company_name' => 'required_if:business_type,b2b|string|max:255',
             'tax_rate' => 'nullable|numeric|min:0|max:100',
             'date_of_birth' => 'nullable|date',
             'notes' => 'nullable|string',
@@ -213,23 +224,20 @@ class ClientController extends Controller
             try {
                 $validated = $request->validate([
                     'name' => 'required|string|max:255',
-                    'email' => 'nullable|email|max:255',
-                    'phone' => 'nullable|string|max:20',
+                    'email' => 'required|email|max:255',
+                    'phone' => 'required|string|max:20',
                     'business_type' => 'required|string|in:b2c,b2b',
                     'nationality' => 'nullable|string|max:100',
-                    'gender' => 'nullable|string|in:male,female,other',
+                    'gender' => 'nullable|string|in:male,female',
                     'id_number' => 'nullable|string|max:100',
                     'unified_number' => 'nullable|string|max:100',
                     'cr_number' => 'nullable|string|max:100',
                     'cr_issuance_date' => 'nullable|date',
-                    'vat_number' => 'nullable|string|max:100',
+                    'tax_id' => 'nullable|string|max:100',
                     'address' => 'nullable|string',
-                    'country' => 'nullable|string',
-                    'city' => 'nullable|string',
                     'client_type_id' => 'required|exists:client_types,id',
                     'status' => 'nullable|in:active,inactive',
                     'company_name' => 'nullable|string|max:255',
-                    'tax_id' => 'nullable|string|max:50',
                     'tax_rate' => 'nullable|numeric|min:0|max:100',
                     'date_of_birth' => 'nullable|date',
                     'notes' => 'nullable|string',

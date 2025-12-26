@@ -30,7 +30,7 @@
                 <div class="space-y-1 text-sm">
                     <div class="flex justify-between">
                         <span class="text-gray-600">Email:</span>
-                        <code class="bg-gray-100 px-2 py-1 rounded text-xs">admin@gmail.com</code>
+                        <code class="bg-gray-100 px-2 py-1 rounded text-xs">esmail@sard.app</code>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Password:</span>

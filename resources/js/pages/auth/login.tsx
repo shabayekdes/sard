@@ -180,7 +180,7 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
                                         onClick={() => {
                                             // Use Inertia router to handle CSRF token automatically
                                             router.post(route('login'), {
-                                                email: 'admin@gmail.com',
+                                                email: 'esmail@sard.app',
                                                 password: '12345678',
                                                 remember: false,
                                                 recaptcha_token: recaptchaToken

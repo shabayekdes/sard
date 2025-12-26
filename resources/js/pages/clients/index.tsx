@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 
 export default function Clients() {
     const { t } = useTranslation();
-    const { auth, clients, clientTypes, planLimits, filters: pageFilters = {} } = usePage().props as any;
+    const { auth, clients, clientTypes, countries, planLimits, filters: pageFilters = {} } = usePage().props as any;
     const permissions = auth?.permissions || [];
 
     // State
@@ -278,11 +278,11 @@ export default function Clients() {
             onClick: canCreate
                 ? () => handleAddNew()
                 : () =>
-                      toast.error(
-                          t('Client limit exceeded. Your plan allows maximum {{max}} clients. Please upgrade your plan.', {
-                              max: planLimits.max_clients,
-                          }),
-                      ),
+                    toast.error(
+                        t('Client limit exceeded. Your plan allows maximum {{max}} clients. Please upgrade your plan.', {
+                            max: planLimits.max_clients,
+                        }),
+                    ),
             disabled: !canCreate,
         });
     }
@@ -333,11 +333,10 @@ export default function Clients() {
             render: (value: string) => {
                 return (
                     <span
-                        className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${
-                            value === 'active'
-                                ? 'bg-green-50 text-green-700 ring-1 ring-green-600/20 ring-inset'
-                                : 'bg-red-50 text-red-700 ring-1 ring-red-600/20 ring-inset'
-                        }`}
+                        className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'active'
+                            ? 'bg-green-50 text-green-700 ring-1 ring-green-600/20 ring-inset'
+                            : 'bg-red-50 text-red-700 ring-1 ring-red-600/20 ring-inset'
+                            }`}
                     >
                         {value === 'active' ? t('Active') : t('Inactive')}
                     </span>
@@ -496,10 +495,9 @@ export default function Clients() {
                 formConfig={{
                     fields: [
                         { name: 'name', label: t('Client Name'), type: 'text', required: true },
-                        { name: 'phone', label: t('Phone'), type: 'text' },
-                        { name: 'email', label: t('Email'), type: 'email' },
+                        { name: 'phone', label: t('Phone Number'), type: 'text', required: true },
+                        { name: 'email', label: t('Email'), type: 'email', required: true },
                         ...(formMode === 'create' ? [{ name: 'password', label: t('Password'), type: 'password', required: true }] : []),
-
                         {
                             name: 'client_type_id',
                             label: t('Client Type'),
@@ -507,9 +505,9 @@ export default function Clients() {
                             required: true,
                             options: clientTypes
                                 ? clientTypes.map((type: any) => ({
-                                      value: type.id.toString(),
-                                      label: type.name,
-                                  }))
+                                    value: type.id.toString(),
+                                    label: type.name,
+                                }))
                                 : [],
                         },
                         {
@@ -520,19 +518,45 @@ export default function Clients() {
                             colSpan: 12,
                             options: [
                                 { value: 'b2c', label: t('Individual') },
-                                { value: 'b2b', label: t('Company') },
+                                { value: 'b2b', label: t('Business') },
                             ],
                             defaultValue: 'b2c',
                         },
+                        // Individual fields
                         {
                             name: 'nationality',
                             label: t('Nationality'),
                             type: 'select',
-                            defaultValue: 'saudi',
-                            options: [
-                                { value: 'saudi', label: t('Saudi') },
-                                { value: 'other', label: t('Other') },
-                            ],
+                            required: true,
+                            options: countries,
+                                // ? countries.map((country: any) => {
+                                //     // Handle both string and object formats
+                                //     let nationalityName = '';
+                                //     if (typeof country.nationality_name === 'string') {
+                                //         nationalityName = country.nationality_name;
+                                //     } else if (country.nationality_name && typeof country.nationality_name === 'object') {
+                                //         // If it's an object with ar/en keys, use the current locale or fallback to en
+                                //         const locale = document.documentElement.lang || 'en';
+                                //         nationalityName = country.nationality_name[locale] || country.nationality_name.en || country.nationality_name.ar || '';
+                                //     }
+
+                                //     // Fallback to name if nationality_name is empty
+                                //     if (!nationalityName) {
+                                //         if (typeof country.name === 'string') {
+                                //             nationalityName = country.name;
+                                //         } else if (country.name && typeof country.name === 'object') {
+                                //             const locale = document.documentElement.lang || 'en';
+                                //             nationalityName = country.name[locale] || country.name.en || country.name.ar || '';
+                                //         }
+                                //     }
+
+                                //     return {
+                                //         value: nationalityName,
+                                //         label: nationalityName,
+                                //     };
+                                // })
+                                // : [],
+                            defaultValue: countries[0] ? countries[0].value : '',
                             conditional: (_, data) => data?.business_type === 'b2c',
                         },
                         {
@@ -540,28 +564,38 @@ export default function Clients() {
                             label: t('ID Number'),
                             type: 'text',
                             required: true,
-                            validation: {
-                                pattern: '^\\d{10}$',
-                                minLength: 10,
-                                maxLength: 10,
-                            },
                             conditional: (_, data) => data?.business_type === 'b2c',
                         },
                         {
                             name: 'gender',
                             label: t('Gender'),
                             type: 'select',
+                            required: true,
                             options: [
                                 { value: 'male', label: t('Male') },
                                 { value: 'female', label: t('Female') },
                             ],
                             conditional: (_, data) => data?.business_type === 'b2c',
                         },
-                        { name: 'date_of_birth', label: t('Date of Birth'), type: 'date', conditional: (_, data) => data?.business_type === 'b2c' },
+                        {
+                            name: 'date_of_birth',
+                            label: t('Date of Birth'),
+                            type: 'date',
+                            conditional: (_, data) => data?.business_type === 'b2c',
+                        },
+                        // Business fields
+                        {
+                            name: 'company_name',
+                            label: t('Company Name'),
+                            type: 'text',
+                            required: true,
+                            conditional: (_, data) => data?.business_type === 'b2b',
+                        },
                         {
                             name: 'unified_number',
                             label: t('Unified Number'),
                             type: 'text',
+                            required: true,
                             conditional: (_, data) => data?.business_type === 'b2b',
                         },
                         {
@@ -575,38 +609,35 @@ export default function Clients() {
                             name: 'cr_issuance_date',
                             label: t('CR Issuance Date'),
                             type: 'date',
+                            required: true,
                             conditional: (_, data) => data?.business_type === 'b2b',
                         },
                         {
-                            name: 'vat_number',
-                            label: t('VAT Number'),
+                            name: 'tax_id',
+                            label: t('Tax ID'),
                             type: 'text',
                             required: true,
                             conditional: (_, data) => data?.business_type === 'b2b',
                         },
-                        { name: 'country', label: t('Country'), type: 'text' },
-                        { name: 'city', label: t('City'), type: 'text' },
                         { name: 'address', label: t('Address'), type: 'textarea' },
-
-                        { name: 'street', label: t('Street'), type: 'text' },
-                        { name: 'building_number', label: t('Building Number'), type: 'text' },
-                        { name: 'district', label: t('District'), type: 'text' },
-                        { name: 'additional_number', label: t('Additional Number'), type: 'text' },
-                        { name: 'postal_code', label: t('Postal Code'), type: 'text' },
-
-                        { name: 'tax_id', label: t('Tax ID'), type: 'text' },
-                        { name: 'tax_rate', label: t('Tax Rate (%)'), type: 'number', step: '0.01', min: '0', max: '100', defaultValue: 0 },
-
-                        // { name: 'company_name', label: t('Company Name'), type: 'text' },
-                        // { name: 'referral_source', label: t('Referral Source'), type: 'text' },
-                        { name: 'notes', label: t('Notes'), type: 'textarea' },
+                        {
+                            name: 'tax_rate',
+                            label: t('Tax Rate') + ' (%)',
+                            type: 'number',
+                            step: '0.01',
+                            min: '0',
+                            max: '100',
+                            defaultValue: 0,
+                        },
+                        { name: 'referral_source', label: t('Referral Source'), type: 'text' },
+                        { name: 'notes', label: t('Note'), type: 'textarea' },
                         {
                             name: 'status',
                             label: t('Status'),
                             type: 'select',
                             options: [
-                                { value: 'active', label: 'Active' },
-                                { value: 'inactive', label: 'Inactive' },
+                                { value: 'active', label: t('Active') },
+                                { value: 'inactive', label: t('Inactive') },
                             ],
                             defaultValue: 'active',
                         },
