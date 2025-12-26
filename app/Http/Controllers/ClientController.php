@@ -125,7 +125,7 @@ class ClientController extends Controller
             'password' => 'required|string|min:6',
             'phone' => 'required|string|max:20',
             'business_type' => 'required|string|in:b2c,b2b',
-            'nationality' => 'required_if:business_type,b2c|string|max:100',
+            'nationality_id' => 'required_if:business_type,b2c|exists:countries,id',
             'gender' => 'required_if:business_type,b2c|string|in:male,female',
             'id_number' => 'required_if:business_type,b2c|string|max:100',
             'unified_number' => 'required_if:business_type,b2b|string|max:100',
@@ -227,7 +227,7 @@ class ClientController extends Controller
                     'email' => 'required|email|max:255',
                     'phone' => 'required|string|max:20',
                     'business_type' => 'required|string|in:b2c,b2b',
-                    'nationality' => 'nullable|string|max:100',
+                    'nationality_id' => 'nullable|exists:countries,id',
                     'gender' => 'nullable|string|in:male,female',
                     'id_number' => 'nullable|string|max:100',
                     'unified_number' => 'nullable|string|max:100',
@@ -279,7 +279,7 @@ class ClientController extends Controller
     public function show(Request $request, $clientId)
     {
         $client = Client::withPermissionCheck()
-            ->with(['clientType', 'creator', 'billingInfo'])
+            ->with(['clientType', 'creator', 'billingInfo', 'nationality'])
             ->where('id', $clientId)
             ->first();
 
@@ -302,13 +302,13 @@ class ClientController extends Controller
             ->where('client_id', $clientId);
 
         // Apply search filter
-        if ($request->has('search') && ! empty($request->search)) {
-            $casesQuery->where(function ($q) use ($request) {
-                $q->where('title', 'like', '%'.$request->search.'%')
-                    ->orWhere('case_id', 'like', '%'.$request->search.'%')
-                    ->orWhere('description', 'like', '%'.$request->search.'%')
-                    ->orWhereHas('client', function ($clientQuery) use ($request) {
-                        $clientQuery->where('name', 'like', '%'.$request->search.'%');
+        if ($caseSearch = $request->get('search')) {
+            $casesQuery->where(function ($q) use ($caseSearch) {
+                $q->where('title', 'like', "%{$caseSearch}%")
+                    ->orWhere('case_id', 'like', "%{$caseSearch}%")
+                    ->orWhere('description', 'like', "%{$caseSearch}%")
+                    ->orWhereHas('client', function ($clientQuery) use ($caseSearch) {
+                        $clientQuery->where('name', 'like', "%{$caseSearch}%");
                     });
             });
         }
@@ -317,7 +317,7 @@ class ClientController extends Controller
         if ($request->has('sort_field') && ! empty($request->sort_field)) {
             $casesQuery->orderBy($request->sort_field, $request->sort_direction ?? 'asc');
         } else {
-            $casesQuery->orderBy('created_at', 'desc');
+            $casesQuery->latest();
         }
 
         $cases = $casesQuery->paginate($request->per_page ?? 10);

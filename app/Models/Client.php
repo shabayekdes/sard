@@ -25,7 +25,7 @@ class Client extends BaseModel
         'referral_source',
         'created_by',
         'business_type',
-        'nationality',
+        'nationality_id',
         'id_number',
         'gender',
         'unified_number',
@@ -90,5 +90,13 @@ class Client extends BaseModel
     public function billingInfo()
     {
         return $this->hasOne(ClientBillingInfo::class);
+    }
+
+    /**
+     * Get the nationality (country) that owns the client.
+     */
+    public function nationality()
+    {
+        return $this->belongsTo(Country::class, 'nationality_id');
     }
 }

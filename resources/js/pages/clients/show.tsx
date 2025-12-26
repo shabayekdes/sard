@@ -9,13 +9,25 @@ import { Pagination } from '@/components/ui/pagination';
 import { ArrowLeft, FileText, Briefcase } from 'lucide-react';
 import { formatCurrency } from '@/utils/helpers';
 import { useLayout } from '@/contexts/LayoutContext';
+
 export default function ClientShow() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { client, documents, cases, filters = {} } = usePage().props as any;
     const { position } = useLayout();
     const [activeTab, setActiveTab] = useState('cases');
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
     const [showFilters, setShowFilters] = useState(false);
+
+    // Helper function to get translated value from translation object
+    const getTranslatedValue = (value: any): string => {
+        if (!value) return '-';
+        if (typeof value === 'string') return value;
+        if (typeof value === 'object' && value !== null) {
+            const locale = i18n.language || document.documentElement.lang || 'en';
+            return value[locale] || value.en || value.ar || '-';
+        }
+        return '-';
+    };
 
     const breadcrumbs = [
         { title: t('Dashboard'), href: route('dashboard') },
@@ -75,78 +87,149 @@ export default function ClientShow() {
             <div className="space-y-6">
                 {/* Client Details Card */}
                 <Card className="p-6">
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        <div>
-                            <h3 className="mb-4 text-lg font-semibold">{t('Basic Information')}</h3>
-                            <div className="space-y-2">
-                                <div>
-                                    <strong>{t('Client ID')}:</strong> {client.client_id}
-                                </div>
-                                <div>
-                                    <strong>{t('Name')}:</strong> {client.name}
-                                </div>
-                                <div>
-                                    <strong>{t('Type')}:</strong> {client.type === 'b2c' ? t('Individual') : t('Company')}
-                                </div>
-                                <div>
-                                    <strong>{t('Email')}:</strong> {client.email || '-'}
-                                </div>
-                                <div>
-                                    <strong>{t('Phone')}:</strong> {client.phone || '-'}
-                                </div>
-                                <div>
-                                    <strong>{t('Type')}:</strong> {client.client_type?.name || '-'}
-                                </div>
-                                <div>
-                                    <strong>{t('Status')}:</strong>
-                                    <Badge className="ml-2" variant={client.status === 'active' ? 'default' : 'secondary'}>
-                                        {client.status === 'active' ? t('Active') : t('Inactive')}
-                                    </Badge>
+                    {(client.business_type === 'b2c' || !client.business_type) ? (
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                            <div>
+                                <h3 className="mb-4 text-lg font-semibold">{t('Basic Info')}</h3>
+                                <div className="space-y-2">
+                                    <div>
+                                        <strong>{t('Client ID')}:</strong> {client.client_id}
+                                    </div>
+                                    <div>
+                                        <strong>{t('Name')}:</strong> {client.name}
+                                        <Badge className="ml-2" variant="outline">{t('Individual')}</Badge>
+                                    </div>
+                                    <div>
+                                        <strong>{t('Type')}:</strong> {client.client_type?.name || '-'}
+                                    </div>
+                                    <div>
+                                        <strong>{t('Nationality')}:</strong> {getTranslatedValue(client.nationality?.nationality_name)}
+                                    </div>
+                                    <div>
+                                        <strong>{t('ID')}:</strong> {client.id_number || '-'}
+                                    </div>
+                                    <div>
+                                        <strong>{t('Gender')}:</strong> {client.gender ? t(client.gender.charAt(0).toUpperCase() + client.gender.slice(1)) : '-'}
+                                    </div>
+                                    <div>
+                                        <strong>{t('Date of Birth')}:</strong>{' '}
+                                        {client.date_of_birth
+                                            ? window.appSettings?.formatDate(client.date_of_birth) || new Date(client.date_of_birth).toLocaleDateString()
+                                            : '-'}
+                                    </div>
+                                    <div>
+                                        <strong>{t('Status')}:</strong>
+                                        <Badge className="ml-2" variant={client.status === 'active' ? 'default' : 'secondary'}>
+                                            {client.status === 'active' ? t('Active') : t('Inactive')}
+                                        </Badge>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div>
-                            <h3 className="mb-4 text-lg font-semibold">{t('Contact Information')}</h3>
-                            <div className="space-y-2">
-                                <div>
-                                    <strong>{t('Address')}:</strong> {client.address || '-'}
-                                </div>
-                                <div>
-                                    <strong>{t('Company')}:</strong> {client.company_name || '-'}
-                                </div>
-                                <div>
-                                    <strong>{t('Tax ID')}:</strong> {client.tax_id || '-'}
-                                </div>
-                                <div>
-                                    <strong>{t('Tax Rate')}:</strong> {client.tax_rate ? `${client.tax_rate}%` : '0%'}
-                                </div>
-                                <div>
-                                    <strong>{t('Date of Birth')}:</strong>{' '}
-                                    {client.date_of_birth
-                                        ? window.appSettings?.formatDate(client.date_of_birth) || new Date(client.date_of_birth).toLocaleDateString()
-                                        : '-'}
-                                </div>
-                                <div>
-                                    <strong>{t('Referral Source')}:</strong> {client.referral_source || '-'}
+                            <div>
+                                <h3 className="mb-4 text-lg font-semibold">{t('Contact Info')}</h3>
+                                <div className="space-y-2">
+                                    <div>
+                                        <strong>{t('Email')}:</strong> {client.email || '-'}
+                                    </div>
+                                    <div>
+                                        <strong>{t('Phone')}:</strong> {client.phone || '-'}
+                                    </div>
+                                    <div>
+                                        <strong>{t('Address')}:</strong> {client.address || '-'}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div>
-                            <h3 className="mb-4 text-lg font-semibold">{t('Additional Information')}</h3>
-                            <div className="space-y-2">
-                                <div>
-                                    <strong>{t('Notes')}:</strong>
-                                </div>
-                                <div className="rounded bg-gray-50 p-3 text-sm text-gray-600">{client.notes || t('No notes available')}</div>
-                                <div>
-                                    <strong>{t('Created')}:</strong>{' '}
-                                    {window.appSettings?.formatDate(client.created_at) || new Date(client.created_at).toLocaleDateString()}
+                            <div>
+                                <h3 className="mb-4 text-lg font-semibold">{t('Additional Info')}</h3>
+                                <div className="space-y-2">
+                                    <div>
+                                        <strong>{t('Tax Rate')}:</strong> {client.tax_rate ? `${client.tax_rate}%` : '0%'}
+                                    </div>
+                                    <div>
+                                        <strong>{t('Notes')}:</strong>
+                                    </div>
+                                    <div className="rounded bg-gray-50 p-3 text-sm text-gray-600 dark:bg-gray-800 dark:text-gray-300">{client.notes || t('No notes available')}</div>
+                                    <div>
+                                        <strong>{t('Referral Source')}:</strong> {client.referral_source || '-'}
+                                    </div>
+                                    <div>
+                                        <strong>{t('Created')}:</strong>{' '}
+                                        {window.appSettings?.formatDate(client.created_at) || new Date(client.created_at).toLocaleDateString()}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                            <div>
+                                <h3 className="mb-4 text-lg font-semibold">{t('Basic Info')}</h3>
+                                <div className="space-y-2">
+                                    <div>
+                                        <strong>{t('Client ID')}:</strong> {client.client_id}
+                                    </div>
+                                    <div>
+                                        <strong>{t('Name')}:</strong> {client.name}
+                                        <Badge className="ml-2" variant="outline">{t('Business')}</Badge>
+                                    </div>
+                                    <div>
+                                        <strong>{t('Type')}:</strong> {client.client_type?.name || '-'}
+                                    </div>
+                                    <div>
+                                        <strong>{t('Unified Number')}:</strong> {client.unified_number || '-'}
+                                    </div>
+                                    <div>
+                                        <strong>{t('CR Number')}:</strong> {client.cr_number || '-'}
+                                    </div>
+                                    <div>
+                                        <strong>{t('CR Issuance Date')}:</strong>{' '}
+                                        {client.cr_issuance_date
+                                            ? window.appSettings?.formatDate(client.cr_issuance_date) || new Date(client.cr_issuance_date).toLocaleDateString()
+                                            : '-'}
+                                    </div>
+                                    <div>
+                                        <strong>{t('Tax ID')}:</strong> {client.tax_id || '-'}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 className="mb-4 text-lg font-semibold">{t('Contact Info')}</h3>
+                                <div className="space-y-2">
+                                    <div>
+                                        <strong>{t('Email')}:</strong> {client.email || '-'}
+                                    </div>
+                                    <div>
+                                        <strong>{t('Phone')}:</strong> {client.phone || '-'}
+                                    </div>
+                                    <div>
+                                        <strong>{t('Address')}:</strong> {client.address || '-'}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 className="mb-4 text-lg font-semibold">{t('Additional Info')}</h3>
+                                <div className="space-y-2">
+                                    <div>
+                                        <strong>{t('Tax Rate')}:</strong> {client.tax_rate ? `${client.tax_rate}%` : '0%'}
+                                    </div>
+                                    <div>
+                                        <strong>{t('Notes')}:</strong>
+                                    </div>
+                                    <div className="rounded bg-gray-50 p-3 text-sm text-gray-600 dark:bg-gray-800 dark:text-gray-300">{client.notes || t('No notes available')}</div>
+                                    <div>
+                                        <strong>{t('Referral Source')}:</strong> {client.referral_source || '-'}
+                                    </div>
+                                    <div>
+                                        <strong>{t('Created')}:</strong>{' '}
+                                        {window.appSettings?.formatDate(client.created_at) || new Date(client.created_at).toLocaleDateString()}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </Card>
 
                 {/* Tabs */}

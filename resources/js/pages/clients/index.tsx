@@ -524,38 +524,11 @@ export default function Clients() {
                         },
                         // Individual fields
                         {
-                            name: 'nationality',
+                            name: 'nationality_id',
                             label: t('Nationality'),
                             type: 'select',
                             required: true,
                             options: countries,
-                                // ? countries.map((country: any) => {
-                                //     // Handle both string and object formats
-                                //     let nationalityName = '';
-                                //     if (typeof country.nationality_name === 'string') {
-                                //         nationalityName = country.nationality_name;
-                                //     } else if (country.nationality_name && typeof country.nationality_name === 'object') {
-                                //         // If it's an object with ar/en keys, use the current locale or fallback to en
-                                //         const locale = document.documentElement.lang || 'en';
-                                //         nationalityName = country.nationality_name[locale] || country.nationality_name.en || country.nationality_name.ar || '';
-                                //     }
-
-                                //     // Fallback to name if nationality_name is empty
-                                //     if (!nationalityName) {
-                                //         if (typeof country.name === 'string') {
-                                //             nationalityName = country.name;
-                                //         } else if (country.name && typeof country.name === 'object') {
-                                //             const locale = document.documentElement.lang || 'en';
-                                //             nationalityName = country.name[locale] || country.name.en || country.name.ar || '';
-                                //         }
-                                //     }
-
-                                //     return {
-                                //         value: nationalityName,
-                                //         label: nationalityName,
-                                //     };
-                                // })
-                                // : [],
                             defaultValue: countries[0] ? countries[0].value : '',
                             conditional: (_, data) => data?.business_type === 'b2c',
                         },
