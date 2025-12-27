@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
@@ -12,9 +12,10 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 export default function ExpenseCategories() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { auth, expenseCategories, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
+  const currentLocale = i18n.language || 'en';
 
   // State
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
@@ -26,6 +27,50 @@ export default function ExpenseCategories() {
   const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
   const [sortField, setSortField] = useState(pageFilters.sort_field || '');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>(pageFilters.sort_direction || 'asc');
+
+  // Reload data when language changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Build params object
+      const params: any = {
+        page: pageFilters.page || 1,
+      };
+
+      if (searchTerm) {
+        params.search = searchTerm;
+      }
+
+      if (selectedStatus !== 'all') {
+        params.status = selectedStatus;
+      }
+
+      // Only include sort parameters if sort_field has a value
+      if (sortField) {
+        params.sort_field = sortField;
+        params.sort_direction = sortDirection || 'asc';
+      }
+
+      if (pageFilters.per_page) {
+        params.per_page = pageFilters.per_page;
+      }
+
+      // Reload the current page with current filters to get translated data
+      router.get(route('billing.expense-categories.index'), params, {
+        preserveState: false,
+        preserveScroll: false
+      });
+    };
+
+    // Listen for both window custom event and i18n language change event
+    window.addEventListener('languageChanged', handleLanguageChange);
+    i18n.on('languageChanged', handleLanguageChange);
+
+    // Cleanup listeners on unmount
+    return () => {
+      window.removeEventListener('languageChanged', handleLanguageChange);
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [searchTerm, selectedStatus, sortField, sortDirection, pageFilters, i18n]);
 
   // Check if any filters are active
   const hasActiveFilters = () => {
@@ -135,7 +180,7 @@ export default function ExpenseCategories() {
     const newDirection = sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
     setSortField(field);
     setSortDirection(newDirection);
-    
+
     router.get(route('billing.expense-categories.index'), {
       page: 1,
       search: searchTerm || undefined,
@@ -183,22 +228,35 @@ export default function ExpenseCategories() {
     {
       key: 'name',
       label: t('Name'),
-      sortable: true
+      sortable: true,
+      render: (value: any, row: any) => {
+        // Handle both string (legacy) and object (translatable) formats
+        if (typeof value === 'object' && value !== null) {
+          return value[currentLocale] || value.en || value.ar || '';
+        }
+        return value || '';
+      }
     },
     {
       key: 'description',
       label: t('Description'),
-      render: (value: string) => value || '-'
+      render: (value: any, row: any) => {
+        // Handle both string (legacy) and object (translatable) formats
+        if (typeof value === 'object' && value !== null) {
+          const desc = value[currentLocale] || value.en || value.ar || '';
+          return desc || '-';
+        }
+        return value || '-';
+      }
     },
     {
       key: 'status',
       label: t('Status'),
       render: (value: string) => (
-        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${
-          value === 'active'
+        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'active'
             ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
             : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
-        }`}>
+          }`}>
           {value === 'active' ? t('Active') : t('Inactive')}
         </span>
       )
@@ -207,7 +265,7 @@ export default function ExpenseCategories() {
       key: 'created_at',
       label: t('Created'),
       sortable: true,
-        type: 'date',
+      type: 'date',
     }
   ];
 
@@ -325,8 +383,28 @@ export default function ExpenseCategories() {
         onSubmit={handleFormSubmit}
         formConfig={{
           fields: [
-            { name: 'name', label: t('Name'), type: 'text', required: true },
-            { name: 'description', label: t('Description'), type: 'textarea' },
+            {
+              name: 'name.en',
+              label: t('Name (English)'),
+              type: 'text',
+              required: true
+            },
+            {
+              name: 'name.ar',
+              label: t('Name (Arabic)'),
+              type: 'text',
+              required: true
+            },
+            {
+              name: 'description.en',
+              label: t('Description (English)'),
+              type: 'textarea'
+            },
+            {
+              name: 'description.ar',
+              label: t('Description (Arabic)'),
+              type: 'textarea'
+            },
             {
               name: 'status',
               label: t('Status'),
@@ -338,9 +416,49 @@ export default function ExpenseCategories() {
               defaultValue: 'active'
             }
           ],
-          modalSize: 'lg'
+          modalSize: 'lg',
+          transformData: (data: any) => {
+            // Transform flat structure to nested structure for translatable fields
+            const transformed: any = { ...data };
+
+            // Handle name field
+            if (transformed['name.en'] || transformed['name.ar']) {
+              transformed.name = {
+                en: transformed['name.en'] || '',
+                ar: transformed['name.ar'] || '',
+              };
+              delete transformed['name.en'];
+              delete transformed['name.ar'];
+            }
+
+            // Handle description field
+            if (transformed['description.en'] || transformed['description.ar']) {
+              transformed.description = {
+                en: transformed['description.en'] || '',
+                ar: transformed['description.ar'] || '',
+              };
+              delete transformed['description.en'];
+              delete transformed['description.ar'];
+            }
+
+            return transformed;
+          }
         }}
-        initialData={currentItem}
+        initialData={
+          currentItem
+            ? {
+              ...currentItem,
+              'name.en': currentItem.name_translations?.en ||
+                (typeof currentItem.name === 'object' ? currentItem.name?.en : '') || '',
+              'name.ar': currentItem.name_translations?.ar ||
+                (typeof currentItem.name === 'object' ? currentItem.name?.ar : '') || '',
+              'description.en': currentItem.description_translations?.en ||
+                (typeof currentItem.description === 'object' ? currentItem.description?.en : '') || '',
+              'description.ar': currentItem.description_translations?.ar ||
+                (typeof currentItem.description === 'object' ? currentItem.description?.ar : '') || '',
+            }
+            : {}
+        }
         title={
           formMode === 'create'
             ? t('Add New Expense Category')
@@ -356,7 +474,13 @@ export default function ExpenseCategories() {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.name || ''}
+        itemName={
+          currentItem?.name
+            ? typeof currentItem.name === 'object'
+              ? currentItem.name[currentLocale] || currentItem.name.en || currentItem.name.ar || ''
+              : currentItem.name
+            : ''
+        }
         entityName="expense category"
       />
     </PageTemplate>

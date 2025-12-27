@@ -11,14 +11,20 @@ class ExpenseCategoryController extends Controller
     public function index(Request $request)
     {
         $query = ExpenseCategory::withPermissionCheck()
-            ->with(['creator'])
-            ->where('created_by', createdBy());
+            ->with(['creator']);
 
-        // Handle search
+        // Handle search - search in translatable fields
         if ($request->has('search') && !empty($request->search)) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                    ->orWhere('description', 'like', '%' . $request->search . '%');
+            $searchTerm = $request->search;
+            $locale = app()->getLocale();
+            $query->where(function ($q) use ($searchTerm, $locale) {
+                // Search in JSON translatable fields
+                $q->whereRaw("JSON_EXTRACT(name, '$.{$locale}') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(name, '$.en') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(name, '$.ar') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(description, '$.{$locale}') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(description, '$.en') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(description, '$.ar') LIKE ?", ["%{$searchTerm}%"]);
             });
         }
 
@@ -28,13 +34,43 @@ class ExpenseCategoryController extends Controller
         }
 
         // Handle sorting
-        if ($request->has('sort_field') && !empty($request->sort_field)) {
-            $query->orderBy($request->sort_field, $request->sort_direction ?? 'asc');
+        $sortField = $request->input('sort_field');
+        $sortDirection = $request->input('sort_direction', 'desc');
+
+        if (!empty($sortField)) {
+            // Validate sort direction
+            if (!in_array($sortDirection, ['asc', 'desc'])) {
+                $sortDirection = 'desc';
+            }
+
+            // For translatable fields, sort by the current locale
+            if (in_array($sortField, ['name', 'description'])) {
+                $locale = app()->getLocale();
+                $query->orderByRaw("JSON_EXTRACT({$sortField}, '$.{$locale}') {$sortDirection}");
+            } else {
+                $query->orderBy($sortField, $sortDirection);
+            }
         } else {
             $query->orderBy('created_at', 'desc');
         }
 
         $expenseCategories = $query->paginate($request->per_page ?? 10);
+
+        // Transform the data to include translated values
+        $expenseCategories->getCollection()->transform(function ($expenseCategory) {
+            return [
+                'id' => $expenseCategory->id,
+                'name' => $expenseCategory->name, // Spatie will automatically return translated value for display
+                'name_translations' => $expenseCategory->getTranslations('name'), // Full translations for editing
+                'description' => $expenseCategory->description, // Spatie will automatically return translated value for display
+                'description_translations' => $expenseCategory->getTranslations('description'), // Full translations for editing
+                'status' => $expenseCategory->status,
+                'created_by' => $expenseCategory->created_by,
+                'creator' => $expenseCategory->creator,
+                'created_at' => $expenseCategory->created_at,
+                'updated_at' => $expenseCategory->updated_at,
+            ];
+        });
 
         return Inertia::render('billing/expense-categories/index', [
             'expenseCategories' => $expenseCategories,
@@ -45,8 +81,12 @@ class ExpenseCategoryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'name' => 'required|array',
+            'name.en' => 'required|string|max:255',
+            'name.ar' => 'required|string|max:255',
+            'description' => 'nullable|array',
+            'description.en' => 'nullable|string',
+            'description.ar' => 'nullable|string',
             'status' => 'nullable|in:active,inactive',
         ]);
 
@@ -54,8 +94,8 @@ class ExpenseCategoryController extends Controller
         $validated['status'] = $validated['status'] ?? 'active';
 
         // Check if expense category with same name already exists for this company
-        $exists = ExpenseCategory::where('name', $validated['name'])
-            ->where('created_by', createdBy())
+        $exists = ExpenseCategory::where('created_by', createdBy())
+            ->whereRaw("JSON_EXTRACT(name, '$.ar') = ?", [$validated['name']['ar']])
             ->exists();
 
         if ($exists) {
@@ -76,14 +116,18 @@ class ExpenseCategoryController extends Controller
         if ($expenseCategory) {
             try {
                 $validated = $request->validate([
-                    'name' => 'required|string|max:255',
-                    'description' => 'nullable|string',
+                    'name' => 'required|array',
+                    'name.en' => 'required|string|max:255',
+                    'name.ar' => 'required|string|max:255',
+                    'description' => 'nullable|array',
+                    'description.en' => 'nullable|string',
+                    'description.ar' => 'nullable|string',
                     'status' => 'nullable|in:active,inactive',
                 ]);
 
                 // Check if expense category with same name already exists for this company (excluding current)
-                $exists = ExpenseCategory::where('name', $validated['name'])
-                    ->where('created_by', createdBy())
+                $exists = ExpenseCategory::where('created_by', createdBy())
+                    ->whereRaw("JSON_EXTRACT(name, '$.ar') = ?", [$validated['name']['ar']])
                     ->where('id', '!=', $expenseCategoryId)
                     ->exists();
 

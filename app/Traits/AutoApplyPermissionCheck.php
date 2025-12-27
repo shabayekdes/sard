@@ -50,7 +50,8 @@ trait AutoApplyPermissionCheck
                 return $query->whereIn('created_by', $allowedCreators);
             }
             if (Schema::hasColumn($query->getModel()->getTable(), 'created_by')) {
-                return $query->where('created_by', $user->id);
+                return $query->where(fn ($query) => $query->where('created_by', $user->id)
+                    ->orWhereNull('created_by'));
             }
         }
         // For clients, apply client-specific filtering
