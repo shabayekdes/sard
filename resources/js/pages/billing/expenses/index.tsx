@@ -274,23 +274,12 @@ export default function Expenses() {
       key: 'expense_category',
       label: t('Category'),
       render: (value: any, row: any) => {
-        // First try to use category_name from the row (translated by backend)
-        if (row.category_name) {
-          return typeof row.category_name === 'object' && row.category_name !== null
-            ? row.category_name[i18n.language] || row.category_name.en || row.category_name.ar || ''
-            : row.category_name;
-        }
-
         // Fallback to finding in categories list
         const category = (categories || []).find((cat: any) => cat.id === row.expense_category_id);
         if (!category) return '-';
 
-        // Handle translatable name field (object with ar/en) or string
-        const categoryName = typeof category.name === 'object' && category.name !== null
-          ? category.name[i18n.language] || category.name.en || category.name.ar || ''
-          : category.name || '';
 
-        return categoryName;
+        return category.name || '';
       }
     },
     {

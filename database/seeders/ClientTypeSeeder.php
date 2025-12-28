@@ -15,78 +15,63 @@ class ClientTypeSeeder extends Seeder
      */
     public function run(): void
     {
-        // Get company users
-        $companyUsers = User::where('type', 'company')->get();
+        $clientTypes = [
+            [
+                'name' => json_encode(['en' => 'Individual', 'ar' => 'فرد']),
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => json_encode(['en' => 'Sole Proprietorship', 'ar' => 'مؤسسة فردية']),
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => json_encode(['en' => 'Simple Partnership', 'ar' => 'شركة توصية بسيطة']),
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => json_encode(['en' => 'Partnership', 'ar' => 'شركة تضامنية']),
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => json_encode(['en' => 'Limited Liability Company', 'ar' => 'شركة ذات مسئولية محدودة']),
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => json_encode(['en' => 'Public Joint Stock Company', 'ar' => 'شركة مساهمة عامة']),
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => json_encode(['en' => 'Foreign Company', 'ar' => 'شركة أجنبية']),
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => json_encode(['en' => 'Gulf Company', 'ar' => 'شركة خليجية']),
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => json_encode(['en' => 'Closed Joint Stock Company', 'ar' => 'شركة مساهمة مقفلة']),
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ];
 
-        foreach ($companyUsers as $companyUser) {
-            // Create default client types for each company
-            $clientTypes = [
-                [
-                    'name' => 'فرد',
-                    'status' => 'active',
-                    'created_by' => $companyUser->id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'name' => 'مؤسسة فردية',
-                    'status' => 'active',
-                    'created_by' => $companyUser->id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'name' => 'شركة توصية بسيطة',
-                    'status' => 'active',
-                    'created_by' => $companyUser->id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'name' => 'شركة تضامنية',
-                    'status' => 'active',
-                    'created_by' => $companyUser->id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'name' => 'شركة ذات مسئولية محدودة',
-                    'status' => 'active',
-                    'created_by' => $companyUser->id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'name' => 'شركة مساهمة عامة',
-                    'status' => 'active',
-                    'created_by' => $companyUser->id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'name' => 'شركة أجنبية',
-                    'status' => 'active',
-                    'created_by' => $companyUser->id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'name' => 'شركة خليجية',
-                    'status' => 'active',
-                    'created_by' => $companyUser->id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'name' => 'شركة مساهمة مقفلة',
-                    'status' => 'active',
-                    'created_by' => $companyUser->id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-            ];
-
-            ClientType::insert($clientTypes);
-        }
+        ClientType::insert($clientTypes);
     }
 }

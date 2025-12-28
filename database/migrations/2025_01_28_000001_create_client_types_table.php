@@ -13,14 +13,11 @@ return new class extends Migration
     {
         Schema::create('client_types', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
+            $table->json('name');
+            $table->json('description')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
-            
-            // Unique constraint for client type name within a company
-            $table->unique(['name', 'created_by']);
         });
     }
 

@@ -12,9 +12,10 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 export default function ClientTypes() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { auth, clientTypes, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
+  const currentLocale = i18n.language || 'en';
 
   // State
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
@@ -220,12 +221,27 @@ export default function ClientTypes() {
     {
       key: 'name',
       label: t('Name'),
-      sortable: true
+      sortable: true,
+      render: (value: any, row: any) => {
+        // Use name_translations if available (full translations object)
+        const translations = row.name_translations || (typeof value === 'object' ? value : null);
+        if (translations && typeof translations === 'object') {
+          return translations[currentLocale] || translations.en || translations.ar || '-';
+        }
+        // Fallback to value if it's a string
+        return value || '-';
+      }
     },
     {
       key: 'description',
       label: t('Description'),
-      render: (value: string) => {
+      render: (value: any, row: any) => {
+        // Use description_translations if available (full translations object)
+        const translations = row.description_translations || (typeof value === 'object' ? value : null);
+        if (translations && typeof translations === 'object') {
+          return translations[currentLocale] || translations.en || translations.ar || '-';
+        }
+        // Fallback to value if it's a string
         return value || '-';
       }
     },
@@ -247,7 +263,7 @@ export default function ClientTypes() {
       key: 'created_at',
       label: t('Created At'),
       sortable: true,
-        type: 'date',
+      type: 'date',
     }
   ];
 
@@ -370,22 +386,82 @@ export default function ClientTypes() {
         onSubmit={handleFormSubmit}
         formConfig={{
           fields: [
-            { name: 'name', label: t('Client Type Name'), type: 'text', required: true },
-            { name: 'description', label: t('Description'), type: 'textarea' },
+            {
+              name: 'name.en',
+              label: t('Client Type Name (English)'),
+              type: 'text',
+              required: true
+            },
+            {
+              name: 'name.ar',
+              label: t('Client Type Name (Arabic)'),
+              type: 'text',
+              required: true
+            },
+            {
+              name: 'description.en',
+              label: t('Description (English)'),
+              type: 'textarea'
+            },
+            {
+              name: 'description.ar',
+              label: t('Description (Arabic)'),
+              type: 'textarea'
+            },
             {
               name: 'status',
               label: t('Status'),
               type: 'select',
               options: [
-                { value: 'active', label: 'Active' },
-                { value: 'inactive', label: 'Inactive' }
+                { value: 'active', label: t('Active') },
+                { value: 'inactive', label: t('Inactive') }
               ],
               defaultValue: 'active'
             }
           ],
-          modalSize: 'lg'
+          modalSize: 'lg',
+          transformData: (data: any) => {
+            // Transform flat structure to nested structure for translatable fields
+            const transformed: any = { ...data };
+
+            // Handle name field
+            if (transformed['name.en'] || transformed['name.ar']) {
+              transformed.name = {
+                en: transformed['name.en'] || '',
+                ar: transformed['name.ar'] || '',
+              };
+              delete transformed['name.en'];
+              delete transformed['name.ar'];
+            }
+
+            // Handle description field
+            if (transformed['description.en'] || transformed['description.ar']) {
+              transformed.description = {
+                en: transformed['description.en'] || '',
+                ar: transformed['description.ar'] || '',
+              };
+              delete transformed['description.en'];
+              delete transformed['description.ar'];
+            }
+
+            return transformed;
+          }
         }}
-        initialData={currentItem}
+        initialData={
+          currentItem
+            ? {
+              ...currentItem,
+              'name.en': currentItem.name_translations?.en ||
+                (typeof currentItem.name === 'object' ? currentItem.name?.en : '') || '',
+              'name.ar': currentItem.name_translations?.ar ||
+                (typeof currentItem.name === 'object' ? currentItem.name?.ar : '') || '',
+              'description.en': currentItem.description_translations?.en ||
+                (typeof currentItem.description === 'object' ? currentItem.description?.en : '') || '',
+              'description.ar': currentItem.description_translations?.ar ||
+                (typeof currentItem.description === 'object' ? currentItem.description?.ar : '') || '',
+            }
+            : {}
+        }
         title={
           formMode === 'create'
             ? t('Add New Client Type')
@@ -401,7 +477,15 @@ export default function ClientTypes() {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.name || ''}
+        itemName={
+          currentItem?.name_translations
+            ? (currentItem.name_translations[currentLocale] || currentItem.name_translations.en || currentItem.name_translations.ar || '')
+            : (currentItem?.name
+              ? (typeof currentItem.name === 'object'
+                ? (currentItem.name[currentLocale] || currentItem.name.en || currentItem.name.ar || '')
+                : currentItem.name)
+              : '')
+        }
         entityName="client type"
       />
     </PageTemplate>

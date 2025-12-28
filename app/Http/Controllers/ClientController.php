@@ -48,10 +48,26 @@ class ClientController extends Controller
 
         $clients = $query->paginate($request->per_page ?? 10);
 
+        // Transform clients to include client_type translations
+        $clients->getCollection()->transform(function ($client) {
+            if ($client->clientType) {
+                $client->clientType->name_translations = $client->clientType->getTranslations('name');
+                $client->clientType->description_translations = $client->clientType->getTranslations('description');
+            }
+            return $client;
+        });
+
         // Get client types for filter dropdown
         $clientTypes = ClientType::withPermissionCheck()
             ->where('status', 'active')
-            ->get(['id', 'name']);
+            ->get(['id', 'name'])
+            ->map(function ($clientType) {
+                return [
+                    'id' => $clientType->id,
+                    'name' => $clientType->name, // Translated value for current locale
+                    'name_translations' => $clientType->getTranslations('name'), // Full translations
+                ];
+            });
 
         // Get countries for nationality dropdown
         $countries = Country::where('is_active', true)
@@ -282,6 +298,12 @@ class ClientController extends Controller
             ->with(['clientType', 'creator', 'billingInfo', 'nationality'])
             ->where('id', $clientId)
             ->first();
+
+        // Add translations for client_type if it exists
+        if ($client && $client->clientType) {
+            $client->clientType->name_translations = $client->clientType->getTranslations('name');
+            $client->clientType->description_translations = $client->clientType->getTranslations('description');
+        }
 
         // Load currency name if billing info exists
         if ($client && $client->billingInfo && $client->billingInfo->currency) {

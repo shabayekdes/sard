@@ -16,9 +16,10 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export default function Clients() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { auth, clients, clientTypes, countries, planLimits, filters: pageFilters = {} } = usePage().props as any;
     const permissions = auth?.permissions || [];
+    const currentLocale = i18n.language || 'en';
 
     // State
     const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
@@ -319,7 +320,15 @@ export default function Clients() {
             key: 'client_type',
             label: t('Type'),
             render: (value: any, row: any) => {
-                return row.client_type?.name || '-';
+                const clientType = row.client_type;
+                if (!clientType) return '-';
+                // Use name_translations if available (full translations object)
+                const translations = clientType.name_translations || (typeof clientType.name === 'object' ? clientType.name : null);
+                if (translations && typeof translations === 'object') {
+                    return translations[currentLocale] || translations.en || translations.ar || '-';
+                }
+                // Fallback to name if it's a string
+                return clientType.name || '-';
             },
         },
         {
@@ -504,10 +513,20 @@ export default function Clients() {
                             type: 'select',
                             required: true,
                             options: clientTypes
-                                ? clientTypes.map((type: any) => ({
-                                    value: type.id.toString(),
-                                    label: type.name,
-                                }))
+                                ? clientTypes.map((type: any) => {
+                                    // Use name_translations if available, otherwise fallback to name
+                                    const translations = type.name_translations || (typeof type.name === 'object' ? type.name : null);
+                                    let displayName = type.name;
+                                    if (translations && typeof translations === 'object') {
+                                        displayName = translations[currentLocale] || translations.en || translations.ar || type.name || '';
+                                    } else if (typeof type.name === 'object') {
+                                        displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+                                    }
+                                    return {
+                                        value: type.id.toString(),
+                                        label: displayName,
+                                    };
+                                })
                                 : [],
                         },
                         {

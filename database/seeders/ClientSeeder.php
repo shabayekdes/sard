@@ -115,26 +115,26 @@ class ClientSeeder extends Seeder
             ]);
 
             // Get client types for this company
-            $clientTypes = ClientType::where('created_by', $companyUser->id)->get();
-
-            // Create default client types if none exist
-            if ($clientTypes->count() === 0) {
-                $defaultTypes = [
-                    ['name' => 'Individual', 'description' => 'Individual clients'],
-                    ['name' => 'Corporate', 'description' => 'Corporate clients']
-                ];
-
-                foreach ($defaultTypes as $typeData) {
-                    ClientType::create([
-                        'name' => $typeData['name'],
-                        'description' => $typeData['description'],
-                        'status' => 'active',
-                        'created_by' => $companyUser->id
-                    ]);
-                }
-
-                $clientTypes = ClientType::where('created_by', $companyUser->id)->get();
-            }
+            $clientTypes = ClientType::all();
+            //
+            // // Create default client types if none exist
+            // if ($clientTypes->count() === 0) {
+            //     $defaultTypes = [
+            //         ['name' => 'Individual', 'description' => 'Individual clients'],
+            //         ['name' => 'Corporate', 'description' => 'Corporate clients']
+            //     ];
+            //
+            //     foreach ($defaultTypes as $typeData) {
+            //         ClientType::create([
+            //             'name' => $typeData['name'],
+            //             'description' => $typeData['description'],
+            //             'status' => 'active',
+            //             'created_by' => $companyUser->id
+            //         ]);
+            //     }
+            //
+            //     $clientTypes = ClientType::where('created_by', $companyUser->id)->get();
+            // }
 
             if ($clientTypes->count() > 0) {
                 // Create 3-5 clients for each company
@@ -154,7 +154,7 @@ class ClientSeeder extends Seeder
 
                 for ($i = 1; $i <= $clientCount; $i++) {
                     $clientType = $clientTypes->random();
-                    $isCorporate = $clientType->name === 'Corporate';
+                    $isCorporate = fake()->randomElement(['b2c', 'b2b']) === 'b2b'; // 30% chance of being corporate
                     $clientName = $clientNames[($companyUser->id + $i - 1) % count($clientNames)];
 
                     $email = strtolower(str_replace(' ', '_', $clientName)) . '_' . $companyUser->id . '@example.com';

@@ -100,7 +100,7 @@ export default function ClientShow() {
                                         <Badge className="ml-2" variant="outline">{t('Individual')}</Badge>
                                     </div>
                                     <div>
-                                        <strong>{t('Type')}:</strong> {client.client_type?.name || '-'}
+                                        <strong>{t('Type')}:</strong> {getTranslatedValue(client.client_type?.name_translations || client.client_type?.name) || '-'}
                                     </div>
                                     <div>
                                         <strong>{t('Nationality')}:</strong> {getTranslatedValue(client.nationality?.nationality_name)}
@@ -174,7 +174,7 @@ export default function ClientShow() {
                                         <Badge className="ml-2" variant="outline">{t('Business')}</Badge>
                                     </div>
                                     <div>
-                                        <strong>{t('Type')}:</strong> {client.client_type?.name || '-'}
+                                        <strong>{t('Type')}:</strong> {getTranslatedValue(client.client_type?.name_translations || client.client_type?.name) || '-'}
                                     </div>
                                     <div>
                                         <strong>{t('Unified Number')}:</strong> {client.unified_number || '-'}

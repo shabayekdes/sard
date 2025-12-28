@@ -12,9 +12,10 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 export default function ExpenseCategories() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { auth, expenseCategories, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
+  const currentLocale = i18n.language || 'en';
 
   // State
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
@@ -183,20 +184,37 @@ export default function ExpenseCategories() {
     {
       key: 'name',
       label: t('Name'),
-      sortable: true
+      sortable: true,
+      render: (value: any, row: any) => {
+        // Use name_translations if available (full translations object)
+        const translations = row.name_translations || (typeof value === 'object' ? value : null);
+        if (translations && typeof translations === 'object') {
+          return translations[currentLocale] || translations.en || translations.ar || '-';
+        }
+        // Fallback to value if it's a string
+        return value || '-';
+      }
     },
     {
       key: 'description',
       label: t('Description'),
-      render: (value: string) => value || '-'
+      render: (value: any, row: any) => {
+        // Use description_translations if available (full translations object)
+        const translations = row.description_translations || (typeof value === 'object' ? value : null);
+        if (translations && typeof translations === 'object') {
+          return translations[currentLocale] || translations.en || translations.ar || '-';
+        }
+        // Fallback to value if it's a string
+        return value || '-';
+      }
     },
     {
       key: 'status',
       label: t('Status'),
       render: (value: string) => (
         <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'active'
-            ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
-            : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
+          ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
+          : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
           }`}>
           {value === 'active' ? t('Active') : t('Inactive')}
         </span>
@@ -355,7 +373,15 @@ export default function ExpenseCategories() {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.name || ''}
+        itemName={
+          currentItem?.name_translations
+            ? (currentItem.name_translations[currentLocale] || currentItem.name_translations.en || currentItem.name_translations.ar || '')
+            : (currentItem?.name
+              ? (typeof currentItem.name === 'object'
+                ? (currentItem.name[currentLocale] || currentItem.name.en || currentItem.name.ar || '')
+                : currentItem.name)
+              : '')
+        }
         entityName="expense category"
       />
     </PageTemplate>
