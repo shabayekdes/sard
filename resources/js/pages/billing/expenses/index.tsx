@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
@@ -13,7 +13,7 @@ import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { formatCurrency } from '@/utils/helpers';
 
 export default function Expenses() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { auth, expenses, categories, cases, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
 
@@ -29,6 +29,58 @@ export default function Expenses() {
   const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
   const [sortField, setSortField] = useState(pageFilters.sort_field || '');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>(pageFilters.sort_direction || 'asc');
+
+  // Reload data when language changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Build params object
+      const params: any = {
+        page: pageFilters.page || 1,
+      };
+
+      if (searchTerm) {
+        params.search = searchTerm;
+      }
+
+      if (selectedCategory !== 'all') {
+        params.expense_category_id = selectedCategory;
+      }
+
+      if (selectedBillable !== 'all') {
+        params.is_billable = selectedBillable;
+      }
+
+      if (selectedApproved !== 'all') {
+        params.is_approved = selectedApproved;
+      }
+
+      // Only include sort parameters if sort_field has a value
+      if (sortField) {
+        params.sort_field = sortField;
+        params.sort_direction = sortDirection || 'asc';
+      }
+
+      if (pageFilters.per_page) {
+        params.per_page = pageFilters.per_page;
+      }
+
+      // Reload the current page with current filters to get translated data
+      router.get(route('billing.expenses.index'), params, {
+        preserveState: false,
+        preserveScroll: false
+      });
+    };
+
+    // Listen for both window custom event and i18n language change event
+    window.addEventListener('languageChanged', handleLanguageChange);
+    i18n.on('languageChanged', handleLanguageChange);
+
+    // Cleanup listeners on unmount
+    return () => {
+      window.removeEventListener('languageChanged', handleLanguageChange);
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [searchTerm, selectedCategory, selectedBillable, selectedApproved, sortField, sortDirection, pageFilters, i18n]);
 
   // Check if any filters are active
   const hasActiveFilters = () => {
@@ -161,7 +213,7 @@ export default function Expenses() {
     const newDirection = sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
     setSortField(field);
     setSortDirection(newDirection);
-    
+
     router.get(route('billing.expenses.index'), {
       page: 1,
       search: searchTerm || undefined,
@@ -222,8 +274,23 @@ export default function Expenses() {
       key: 'expense_category',
       label: t('Category'),
       render: (value: any, row: any) => {
+        // First try to use category_name from the row (translated by backend)
+        if (row.category_name) {
+          return typeof row.category_name === 'object' && row.category_name !== null
+            ? row.category_name[i18n.language] || row.category_name.en || row.category_name.ar || ''
+            : row.category_name;
+        }
+
+        // Fallback to finding in categories list
         const category = (categories || []).find((cat: any) => cat.id === row.expense_category_id);
-        return category?.name || '-';
+        if (!category) return '-';
+
+        // Handle translatable name field (object with ar/en) or string
+        const categoryName = typeof category.name === 'object' && category.name !== null
+          ? category.name[i18n.language] || category.name.en || category.name.ar || ''
+          : category.name || '';
+
+        return categoryName;
       }
     },
     {
@@ -252,11 +319,10 @@ export default function Expenses() {
       key: 'is_billable',
       label: t('Billable'),
       render: (value: boolean) => (
-        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${
-          value 
-            ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
-            : 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20'
-        }`}>
+        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value
+          ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
+          : 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20'
+          }`}>
           {value ? t('Yes') : t('No')}
         </span>
       )
@@ -265,11 +331,10 @@ export default function Expenses() {
       key: 'is_approved',
       label: t('Status'),
       render: (value: boolean) => (
-        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${
-          value 
-            ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
-            : 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20'
-        }`}>
+        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value
+          ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
+          : 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20'
+          }`}>
           {value ? t('Approved') : t('Pending')}
         </span>
       )
@@ -482,7 +547,7 @@ export default function Expenses() {
       <CrudFormModal
         isOpen={isFormModalOpen && formMode === 'view'}
         onClose={() => setIsFormModalOpen(false)}
-        onSubmit={() => {}}
+        onSubmit={() => { }}
         formConfig={{
           fields: [
             {

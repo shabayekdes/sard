@@ -14,10 +14,15 @@ class ExpenseController extends BaseController
         $query = Expense::withPermissionCheck()->with(['category', 'creator', 'case']);
 
         if ($request->search) {
-            $query->where(function ($q) use ($request) {
-                $q->where('description', 'like', '%' . $request->search . '%')
-                  ->orWhereHas('category', function ($categoryQuery) use ($request) {
-                      $categoryQuery->where('name', 'like', '%' . $request->search . '%');
+            $searchTerm = $request->search;
+            $locale = app()->getLocale();
+            $query->where(function ($q) use ($searchTerm, $locale) {
+                $q->where('description', 'like', '%' . $searchTerm . '%')
+                  ->orWhereHas('category', function ($categoryQuery) use ($searchTerm, $locale) {
+                      // Search in translatable name field
+                      $categoryQuery->whereRaw("JSON_EXTRACT(name, '$.{$locale}') LIKE ?", ["%{$searchTerm}%"])
+                          ->orWhereRaw("JSON_EXTRACT(name, '$.en') LIKE ?", ["%{$searchTerm}%"])
+                          ->orWhereRaw("JSON_EXTRACT(name, '$.ar') LIKE ?", ["%{$searchTerm}%"]);
                   });
             });
         }
@@ -35,7 +40,36 @@ class ExpenseController extends BaseController
         }
 
         $expenses = $query->orderBy('expense_date', 'desc')->paginate(10);
-        $categories = ExpenseCategory::select('id', 'name')->get();
+        
+        // Transform expenses to include translated category names
+        $expenses->getCollection()->transform(function ($expense) {
+            $expenseData = $expense->toArray();
+            
+            // Add translated category name - ensure it's a string, not an object
+            if ($expense->category) {
+                $categoryName = $expense->category->name;
+                // If it's still an array/object (shouldn't happen with Spatie, but just in case), get the current locale
+                if (is_array($categoryName)) {
+                    $locale = app()->getLocale();
+                    $expenseData['category_name'] = $categoryName[$locale] ?? $categoryName['en'] ?? $categoryName['ar'] ?? '';
+                } else {
+                    $expenseData['category_name'] = $categoryName;
+                }
+            }
+            
+            return $expenseData;
+        });
+        
+        // Get categories with translated names
+        $categories = ExpenseCategory::withPermissionCheck()
+            ->get()
+            ->map(function ($category) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name, // Spatie will automatically return translated value
+                ];
+            });
+        
         $cases = \App\Models\CaseModel::withPermissionCheck()->select('id', 'case_id', 'title')->get();
 
         return Inertia::render('billing/expenses/index', [
