@@ -12,9 +12,10 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 export default function ClientDocuments() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { auth, documents, clients, documentTypes, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
+  const currentLocale = i18n.language || 'en';
 
   // State
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
@@ -97,7 +98,7 @@ export default function ClientDocuments() {
   };
 
   const handleDownload = (doc: any) => {
-      const link = document.createElement('a');
+    const link = document.createElement('a');
     link.href = route('clients.documents.download', doc.id);
     link.download = doc.course_name || 'certificate';
     link.click();
@@ -230,7 +231,17 @@ export default function ClientDocuments() {
       label: t('Type'),
       render: (value: string, row: any) => {
         const docType = row.document_type;
-        return docType ? (
+        if (!docType) return '-';
+
+        // Handle translatable name
+        let displayName = docType.name;
+        if (typeof docType.name === 'object' && docType.name !== null) {
+          displayName = docType.name[currentLocale] || docType.name.en || docType.name.ar || '';
+        } else if (docType.name_translations && typeof docType.name_translations === 'object') {
+          displayName = docType.name_translations[currentLocale] || docType.name_translations.en || docType.name_translations.ar || '';
+        }
+
+        return (
           <span
             className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
             style={{
@@ -238,9 +249,9 @@ export default function ClientDocuments() {
               color: docType.color
             }}
           >
-            {docType.name}
+            {displayName}
           </span>
-        ) : '-';
+        );
       }
     },
 
@@ -436,10 +447,19 @@ export default function ClientDocuments() {
               label: t('Document Type'),
               type: 'select',
               required: true,
-              options: documentTypes ? documentTypes.map((type: any) => ({
-                value: type.id.toString(),
-                label: type.name
-              })) : []
+              options: documentTypes ? documentTypes.map((type: any) => {
+                // Handle translatable name
+                let displayName = type.name;
+                if (typeof type.name === 'object' && type.name !== null) {
+                  displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+                } else if (type.name_translations && typeof type.name_translations === 'object') {
+                  displayName = type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
+                }
+                return {
+                  value: type.id.toString(),
+                  label: displayName
+                };
+              }) : []
             },
             {
               name: 'file',
@@ -477,7 +497,7 @@ export default function ClientDocuments() {
       <CrudFormModal
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}
-        onSubmit={() => {}}
+        onSubmit={() => { }}
         formConfig={{
           fields: [
             {
@@ -494,10 +514,19 @@ export default function ClientDocuments() {
               name: 'document_type_id',
               label: t('Document Type'),
               type: 'select',
-              options: documentTypes ? documentTypes.map((type: any) => ({
-                value: type.id.toString(),
-                label: type.name
-              })) : []
+              options: documentTypes ? documentTypes.map((type: any) => {
+                // Handle translatable name
+                let displayName = type.name;
+                if (typeof type.name === 'object' && type.name !== null) {
+                  displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+                } else if (type.name_translations && typeof type.name_translations === 'object') {
+                  displayName = type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
+                }
+                return {
+                  value: type.id.toString(),
+                  label: displayName
+                };
+              }) : []
             },
             { name: 'description', label: t('Description'), type: 'textarea' },
             {
@@ -516,7 +545,16 @@ export default function ClientDocuments() {
         initialData={{
           ...currentItem,
           client_id: currentItem?.client?.name || '',
-          document_type_id: currentItem?.document_type?.name || '',
+          document_type_id: (() => {
+            const docType = currentItem?.document_type;
+            if (!docType) return '';
+            if (typeof docType.name === 'object' && docType.name !== null) {
+              return docType.name[currentLocale] || docType.name.en || docType.name.ar || '';
+            } else if (docType.name_translations && typeof docType.name_translations === 'object') {
+              return docType.name_translations[currentLocale] || docType.name_translations.en || docType.name_translations.ar || '';
+            }
+            return docType.name || '';
+          })(),
           created_at: currentItem?.created_at ? (window.appSettings?.formatDate(currentItem.created_at) || new Date(currentItem.created_at).toLocaleDateString()) : ''
         }}
         title={t('View Document')}

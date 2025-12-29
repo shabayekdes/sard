@@ -12,9 +12,10 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 export default function CaseDocuments() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { auth, caseDocuments, documentTypes, filters: pageFilters = {} } = usePage().props as any;
     const permissions = auth?.permissions || [];
+    const currentLocale = i18n.language || 'en';
 
     const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
     const [selectedDocType, setSelectedDocType] = useState(pageFilters.document_type || 'all');
@@ -207,7 +208,17 @@ export default function CaseDocuments() {
             label: t('Type'),
             render: (value: string, row: any) => {
                 const docType = row.document_type;
-                return docType ? (
+                if (!docType) return '-';
+
+                // Handle translatable name
+                let displayName = docType.name;
+                if (typeof docType.name === 'object' && docType.name !== null) {
+                    displayName = docType.name[currentLocale] || docType.name.en || docType.name.ar || '';
+                } else if (docType.name_translations && typeof docType.name_translations === 'object') {
+                    displayName = docType.name_translations[currentLocale] || docType.name_translations.en || docType.name_translations.ar || '';
+                }
+
+                return (
                     <span
                         className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
                         style={{
@@ -215,9 +226,9 @@ export default function CaseDocuments() {
                             color: docType.color
                         }}
                     >
-                        {docType.name}
+                        {displayName}
                     </span>
-                ) : '-';
+                );
             }
         },
         {
@@ -267,10 +278,19 @@ export default function CaseDocuments() {
 
     const docTypeOptions = [
         { value: 'all', label: t('All Types') },
-        ...(documentTypes || []).map((type: any) => ({
-            value: type.id.toString(),
-            label: type.name
-        }))
+        ...(documentTypes || []).map((type: any) => {
+            // Handle translatable name
+            let displayName = type.name;
+            if (typeof type.name === 'object' && type.name !== null) {
+                displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+            } else if (type.name_translations && typeof type.name_translations === 'object') {
+                displayName = type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
+            }
+            return {
+                value: type.id.toString(),
+                label: displayName
+            };
+        })
     ];
 
     const confidentialityOptions = [
@@ -360,10 +380,19 @@ export default function CaseDocuments() {
                             label: t('Document Type'),
                             type: 'select',
                             required: true,
-                            options: documentTypes ? documentTypes.map((type: any) => ({
-                                value: type.id.toString(),
-                                label: type.name
-                            })) : []
+                            options: documentTypes ? documentTypes.map((type: any) => {
+                                // Handle translatable name
+                                let displayName = type.name;
+                                if (typeof type.name === 'object' && type.name !== null) {
+                                    displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+                                } else if (type.name_translations && typeof type.name_translations === 'object') {
+                                    displayName = type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
+                                }
+                                return {
+                                    value: type.id.toString(),
+                                    label: displayName
+                                };
+                            }) : []
                         },
                         {
                             name: 'confidentiality',

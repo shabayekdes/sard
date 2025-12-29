@@ -85,7 +85,7 @@ class ClientDocumentController extends BaseController
         $validated['status'] = $validated['status'] ?? 'active';
         $validated['file_path'] = $validated['file'];
 
-  if (!empty($validated['file_path'])) {
+        if (!empty($validated['file_path'])) {
             $validated['file_path'] = $this->convertToRelativePath($validated['file_path']);
         }
         unset($validated['file']);
@@ -103,7 +103,8 @@ class ClientDocumentController extends BaseController
 
         return redirect()->back()->with('success', 'Document uploaded successfully.');
     }
-  private function convertToRelativePath(string $url): string
+
+    private function convertToRelativePath(string $url): string
     {
         if (!$url) return $url;
 
@@ -124,8 +125,8 @@ class ClientDocumentController extends BaseController
     public function update(Request $request, $documentId)
     {
         $document = ClientDocument::whereHas('client', function ($q) {
-                $q->where('created_by', createdBy());
-            })
+            $q->where('created_by', createdBy());
+        })
             ->where('id', $documentId)
             ->first();
 
@@ -148,12 +149,12 @@ class ClientDocumentController extends BaseController
                 if (!$client) {
                     return redirect()->back()->with('error', 'Invalid client selected.');
                 }
-                  $validated['file_path'] = $validated['file'];
+                $validated['file_path'] = $validated['file'];
 
-  if (!empty($validated['file_path'])) {
-            $validated['file_path'] = $this->convertToRelativePath($validated['file_path']);
-        }
-        unset($validated['file']);
+                if (!empty($validated['file_path'])) {
+                    $validated['file_path'] = $this->convertToRelativePath($validated['file_path']);
+                }
+                unset($validated['file']);
 
                 $document->update($validated);
 
@@ -169,8 +170,8 @@ class ClientDocumentController extends BaseController
     public function destroy($documentId)
     {
         $document = ClientDocument::whereHas('client', function ($q) {
-                $q->where('created_by', createdBy());
-            })
+            $q->where('created_by', createdBy());
+        })
             ->where('id', $documentId)
             ->first();
 
@@ -194,8 +195,8 @@ class ClientDocumentController extends BaseController
     public function download($documentId)
     {
         $document = ClientDocument::whereHas('client', function ($q) {
-                $q->where('created_by', createdBy());
-            })
+            $q->where('created_by', createdBy());
+        })
             ->where('id', $documentId)
             ->first();
 
@@ -204,7 +205,7 @@ class ClientDocumentController extends BaseController
         }
 
         $originalPath = $document->file_path;
-        
+
         // Handle full URLs (like DemoMedia files)
         if (str_starts_with($originalPath, 'http')) {
             $parsedUrl = parse_url($originalPath);
@@ -215,7 +216,7 @@ class ClientDocumentController extends BaseController
                 }
             }
         }
-        
+
         // Handle /storage/ paths (Laravel storage)
         if (str_starts_with($originalPath, '/storage/')) {
             $storagePath = str_replace('/storage/', '', $originalPath);
@@ -223,7 +224,7 @@ class ClientDocumentController extends BaseController
                 return response()->download(storage_path('app/public/' . $storagePath), $document->document_name);
             }
         }
-        
+
         // Try as direct storage path
         if (Storage::disk('public')->exists($originalPath)) {
             return response()->download(storage_path('app/public/' . $originalPath), $document->document_name);

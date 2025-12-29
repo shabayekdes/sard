@@ -4,7 +4,7 @@ import { ArrowLeft, Download, FileText, MessageSquare, Shield, CheckCircle, XCir
 import { useTranslation } from 'react-i18next';
 
 export default function DocumentShow() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { document: documentData, latestVersion, comments, permissions } = usePage().props as any;
 
 
@@ -36,22 +36,34 @@ export default function DocumentShow() {
                             </div>
                             <div>
                                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">{documentData.name}</h1>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">{documentData.document_type?.name}</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    {(() => {
+                                        const docType = documentData.document_type;
+                                        if (!docType) return '-';
+                                        if (typeof docType.name === 'object' && docType.name !== null) {
+                                            const locale = i18n?.language || 'en';
+                                            return docType.name[locale] || docType.name.en || docType.name.ar || '';
+                                        } else if (docType.name_translations && typeof docType.name_translations === 'object') {
+                                            const locale = i18n?.language || 'en';
+                                            return docType.name_translations[locale] || docType.name_translations.en || docType.name_translations.ar || '';
+                                        }
+                                        return docType.name || '-';
+                                    })()}
+                                </p>
                             </div>
                         </div>
                         <div className="flex items-center space-x-3">
                             <span
-                                className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${
-                                    documentData.status === 'draft'
+                                className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${documentData.status === 'draft'
                                         ? 'bg-gray-50 text-gray-700 ring-gray-600/20'
                                         : documentData.status === 'review'
-                                          ? 'bg-yellow-50 text-yellow-700 ring-yellow-600/20'
-                                          : documentData.status === 'final'
-                                            ? 'bg-green-50 text-green-700 ring-green-600/20'
-                                            : documentData.status === 'archived'
-                                              ? 'bg-red-50 text-red-700 ring-red-600/20'
-                                              : 'bg-gray-50 text-gray-700 ring-gray-600/20'
-                                }`}
+                                            ? 'bg-yellow-50 text-yellow-700 ring-yellow-600/20'
+                                            : documentData.status === 'final'
+                                                ? 'bg-green-50 text-green-700 ring-green-600/20'
+                                                : documentData.status === 'archived'
+                                                    ? 'bg-red-50 text-red-700 ring-red-600/20'
+                                                    : 'bg-gray-50 text-gray-700 ring-gray-600/20'
+                                    }`}
                             >
                                 {t(documentData.status?.charAt(0).toUpperCase() + documentData.status?.slice(1))}
                             </span>
@@ -87,21 +99,20 @@ export default function DocumentShow() {
                         <div>
                             <span className="font-medium text-gray-500 dark:text-gray-400">{t('Confidentiality')}:</span>
                             <p>
-                              <span
-                                className={`ml-2 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${
-                                    documentData.confidentiality === 'public'
-                                        ? 'bg-blue-50 text-blue-700 ring-blue-600/20'
-                                        : documentData.confidentiality === 'internal'
-                                          ? 'bg-gray-50 text-gray-700 ring-gray-600/20'
-                                          : documentData.confidentiality === 'confidential'
-                                            ? 'bg-orange-50 text-orange-700 ring-orange-600/20'
-                                            : documentData.confidentiality === 'restricted'
-                                              ? 'bg-red-50 text-red-700 ring-red-600/20'
-                                              : 'bg-gray-50 text-gray-700 ring-gray-600/20'
-                                }`}
-                            >
-                                {t(documentData.confidentiality?.charAt(0).toUpperCase() + documentData.confidentiality?.slice(1))}
-                            </span>
+                                <span
+                                    className={`ml-2 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${documentData.confidentiality === 'public'
+                                            ? 'bg-blue-50 text-blue-700 ring-blue-600/20'
+                                            : documentData.confidentiality === 'internal'
+                                                ? 'bg-gray-50 text-gray-700 ring-gray-600/20'
+                                                : documentData.confidentiality === 'confidential'
+                                                    ? 'bg-orange-50 text-orange-700 ring-orange-600/20'
+                                                    : documentData.confidentiality === 'restricted'
+                                                        ? 'bg-red-50 text-red-700 ring-red-600/20'
+                                                        : 'bg-gray-50 text-gray-700 ring-gray-600/20'
+                                        }`}
+                                >
+                                    {t(documentData.confidentiality?.charAt(0).toUpperCase() + documentData.confidentiality?.slice(1))}
+                                </span>
                             </p>
                         </div>
                     </div>
@@ -128,7 +139,7 @@ export default function DocumentShow() {
                                 <p className="text-sm text-gray-600 dark:text-gray-400">{permissions.length} {t('users have access')}</p>
                             </div>
                         </div>
-                        
+
                         <div className="space-y-3">
                             {permissions.map((permission: any) => (
                                 <div key={permission.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
@@ -174,7 +185,7 @@ export default function DocumentShow() {
                                 <p className="text-sm text-gray-600 dark:text-gray-400">{comments.length} {t('recent comments')}</p>
                             </div>
                         </div>
-                        
+
                         <div className="space-y-4">
                             {comments.map((comment: any) => (
                                 <div key={comment.id} className="border-l-4 border-gray-200 dark:border-gray-700 pl-4">

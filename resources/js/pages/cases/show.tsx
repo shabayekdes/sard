@@ -13,7 +13,8 @@ import { useTranslation } from 'react-i18next';
 import GoogleCalendarModal from '@/components/GoogleCalendarModal';
 
 export default function CaseShow() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const currentLocale = i18n.language || 'en';
     const {
         auth,
         case: caseData,
@@ -653,8 +654,8 @@ export default function CaseShow() {
             render: (value: string) => (
                 <span
                     className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'active'
-                            ? 'bg-green-50 text-green-700 ring-1 ring-green-600/20 ring-inset'
-                            : 'bg-red-50 text-red-700 ring-1 ring-red-600/20 ring-inset'
+                        ? 'bg-green-50 text-green-700 ring-1 ring-green-600/20 ring-inset'
+                        : 'bg-red-50 text-red-700 ring-1 ring-red-600/20 ring-inset'
                         }`}
                 >
                     {value === 'active' ? t('Active') : t('Inactive')}
@@ -755,8 +756,8 @@ export default function CaseShow() {
                             <p className="text-gray-900 dark:text-white mt-1">
                                 <span
                                     className={`inline-flex items-center rounded px-2 py-1 text-xs font-medium ${caseData.status === 'active'
-                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                                         }`}
                                 >
                                     {caseData.status === 'active' ? t('Active') : t('Inactive')}
@@ -768,10 +769,10 @@ export default function CaseShow() {
                             <p className="text-gray-900 dark:text-white mt-1">
                                 <span
                                     className={`inline-flex items-center rounded px-2 py-1 text-xs font-medium ${caseData.priority === 'high'
-                                            ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                            : caseData.priority === 'medium'
-                                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                                : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                        : caseData.priority === 'medium'
+                                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                            : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                                         }`}
                                 >
                                     {t(caseData.priority?.charAt(0).toUpperCase() + caseData.priority?.slice(1))}
@@ -863,8 +864,8 @@ export default function CaseShow() {
                                     router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'timelines'
-                                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                                     }`}
                             >
                                 <div className="flex items-center space-x-2">
@@ -880,8 +881,8 @@ export default function CaseShow() {
                                     router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'team'
-                                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                                     }`}
                             >
                                 <div className="flex items-center space-x-2">
@@ -897,8 +898,8 @@ export default function CaseShow() {
                                     router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'documents'
-                                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                                     }`}
                             >
                                 <div className="flex items-center space-x-2">
@@ -914,8 +915,8 @@ export default function CaseShow() {
                                     router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'notes'
-                                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                                     }`}
                             >
                                 <div className="flex items-center space-x-2">
@@ -931,8 +932,8 @@ export default function CaseShow() {
                                     router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'tasks'
-                                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                                     }`}
                             >
                                 <div className="flex items-center space-x-2">
@@ -948,8 +949,8 @@ export default function CaseShow() {
                                     router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'research-projects'
-                                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                                     }`}
                             >
                                 <div className="flex items-center space-x-2">
@@ -1283,7 +1284,17 @@ export default function CaseShow() {
                                             const docType = documentTypes?.find(
                                                 (type: any) => type.id.toString() === row.document_type_id?.toString(),
                                             );
-                                            return docType?.name ? (
+                                            if (!docType) return '-';
+
+                                            // Handle translatable name
+                                            let displayName = docType.name;
+                                            if (typeof docType.name === 'object' && docType.name !== null) {
+                                                displayName = docType.name[currentLocale] || docType.name.en || docType.name.ar || '';
+                                            } else if (docType.name_translations && typeof docType.name_translations === 'object') {
+                                                displayName = docType.name_translations[currentLocale] || docType.name_translations.en || docType.name_translations.ar || '';
+                                            }
+
+                                            return (
                                                 <span
                                                     className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
                                                     style={{
@@ -1291,10 +1302,8 @@ export default function CaseShow() {
                                                         color: docType.color || '#3B82F6',
                                                     }}
                                                 >
-                                                    {docType.name}
+                                                    {displayName}
                                                 </span>
-                                            ) : (
-                                                '-'
                                             );
                                         },
                                     },
@@ -1809,12 +1818,12 @@ export default function CaseShow() {
                                                     render: (value: string) => (
                                                         <span
                                                             className={`inline-flex items-center rounded px-2 py-1 text-xs font-medium ${value === 'urgent'
-                                                                    ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                                                    : value === 'high'
-                                                                        ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
-                                                                        : value === 'medium'
-                                                                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                                                                            : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                                                                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                                : value === 'high'
+                                                                    ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                                                                    : value === 'medium'
+                                                                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                                                        : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
                                                                 }`}
                                                         >
                                                             {t(value?.charAt(0).toUpperCase() + value?.slice(1))}
@@ -1827,12 +1836,12 @@ export default function CaseShow() {
                                                     render: (value: string) => (
                                                         <span
                                                             className={`inline-flex items-center rounded px-2 py-1 text-xs font-medium ${value === 'active'
-                                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                                    : value === 'completed'
-                                                                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                                                                        : value === 'on_hold'
-                                                                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                                                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                                : value === 'completed'
+                                                                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                                                    : value === 'on_hold'
+                                                                        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                                                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                                                                 }`}
                                                         >
                                                             {t(value?.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase()))}
@@ -1889,12 +1898,12 @@ export default function CaseShow() {
                                                 <span className="font-medium text-gray-500 dark:text-gray-400">{t('Priority')}:</span>
                                                 <span
                                                     className={`ml-2 inline-flex items-center rounded px-2 py-1 text-xs font-medium ${selectedProject.priority === 'urgent'
-                                                            ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                                            : selectedProject.priority === 'high'
-                                                                ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
-                                                                : selectedProject.priority === 'medium'
-                                                                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                                                                    : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                                                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                        : selectedProject.priority === 'high'
+                                                            ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                                                            : selectedProject.priority === 'medium'
+                                                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                                                : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
                                                         }`}
                                                 >
                                                     {t(selectedProject.priority?.charAt(0).toUpperCase() + selectedProject.priority?.slice(1))}
@@ -1904,12 +1913,12 @@ export default function CaseShow() {
                                                 <span className="font-medium text-gray-500 dark:text-gray-400">{t('Status')}:</span>
                                                 <span
                                                     className={`ml-2 inline-flex items-center rounded px-2 py-1 text-xs font-medium ${selectedProject.status === 'active'
-                                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                            : selectedProject.status === 'completed'
-                                                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                                                                : selectedProject.status === 'on_hold'
-                                                                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                        : selectedProject.status === 'completed'
+                                                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                                            : selectedProject.status === 'on_hold'
+                                                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                                                         }`}
                                                 >
                                                     {t(selectedProject.status?.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase()))}
@@ -1932,8 +1941,8 @@ export default function CaseShow() {
                                                 <button
                                                     onClick={() => setProjectSubTab('notes')}
                                                     className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${projectSubTab === 'notes'
-                                                            ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                                            : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                                                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                                                         }`}
                                                 >
                                                     <div className="flex items-center space-x-2">
@@ -1946,8 +1955,8 @@ export default function CaseShow() {
                                                 <button
                                                     onClick={() => setProjectSubTab('citations')}
                                                     className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${projectSubTab === 'citations'
-                                                            ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                                            : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                                                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                                                         }`}
                                                 >
                                                     <div className="flex items-center space-x-2">
@@ -2014,16 +2023,16 @@ export default function CaseShow() {
                                                                 render: (value: string) => (
                                                                     <span
                                                                         className={`inline-flex items-center rounded px-2 py-1 text-xs font-medium ${value === 'case'
-                                                                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                                                                                : value === 'statute'
-                                                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                                                    : value === 'article'
-                                                                                        ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
-                                                                                        : value === 'book'
-                                                                                            ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
-                                                                                            : value === 'website'
-                                                                                                ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200'
-                                                                                                : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                                                                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                                                            : value === 'statute'
+                                                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                                                : value === 'article'
+                                                                                    ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                                                                                    : value === 'book'
+                                                                                        ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                                                                                        : value === 'website'
+                                                                                            ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200'
+                                                                                            : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
                                                                             }`}
                                                                     >
                                                                         {t(value?.charAt(0).toUpperCase() + value?.slice(1))}
@@ -2180,7 +2189,7 @@ export default function CaseShow() {
                 <CrudFormModal
                     isOpen={isViewTeamModalOpen}
                     onClose={() => setIsViewTeamModalOpen(false)}
-                    onSubmit={() => {}}
+                    onSubmit={() => { }}
                     formConfig={{
                         fields: [
                             {
@@ -2226,7 +2235,8 @@ export default function CaseShow() {
                     initialData={{
                         ...currentItem,
                         user_id: currentItem?.user?.id,
-                        created_at: currentItem?.created_at ? (window.appSettings?.formatDate(currentItem.created_at) || new Date(currentItem.created_at).toLocaleDateString()) : ''                    }}
+                        created_at: currentItem?.created_at ? (window.appSettings?.formatDate(currentItem.created_at) || new Date(currentItem.created_at).toLocaleDateString()) : ''
+                    }}
                     title={t('View Team Member')}
                     mode="view"
                 />
@@ -2248,45 +2258,53 @@ export default function CaseShow() {
                                 type: 'select',
                                 required: true,
                                 options: documentTypes
-                                    ? documentTypes.map((type: any) => ({
-                                        value: type.id.toString(),
-                                        label: type.name,
-                                    }))
+                                    ? documentTypes.map((type: any) => {
+                                        // Handle translatable name
+                                        let displayName = type.name;
+                                        if (typeof type.name === 'object' && type.name !== null) {
+                                            displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+                                        } else if (type.name_translations && typeof type.name_translations === 'object') {
+                                            displayName = type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
+                                        }
+                                        return {
+                                            value: type.id.toString(),
+                                            label: type.name,
+                                        }))
                                     : [],
                             },
-                            {
-                                name: 'confidentiality',
-                                label: t('Confidentiality Level'),
-                                type: 'select',
-                                required: true,
-                                options: [
-                                    { value: 'public', label: t('Public') },
-                                    { value: 'confidential', label: t('Confidential') },
-                                    { value: 'privileged', label: t('Privileged') },
-                                ],
+            {
+                name: 'confidentiality',
+            label: t('Confidentiality Level'),
+            type: 'select',
+            required: true,
+            options: [
+            {value: 'public', label: t('Public') },
+            {value: 'confidential', label: t('Confidential') },
+            {value: 'privileged', label: t('Privileged') },
+            ],
                             },
-                            { name: 'document_date', label: t('Document Date'), type: 'date' },
-                            { name: 'description', label: t('Description'), type: 'textarea' },
-                            {
-                                name: 'status',
-                                label: t('Status'),
-                                type: 'select',
-                                options: [
-                                    { value: 'active', label: t('Active') },
-                                    { value: 'archived', label: t('Archived') },
-                                ],
-                                defaultValue: 'active',
+            {name: 'document_date', label: t('Document Date'), type: 'date' },
+            {name: 'description', label: t('Description'), type: 'textarea' },
+            {
+                name: 'status',
+            label: t('Status'),
+            type: 'select',
+            options: [
+            {value: 'active', label: t('Active') },
+            {value: 'archived', label: t('Archived') },
+            ],
+            defaultValue: 'active',
                             },
-                        ],
-                        modalSize: 'xl',
+            ],
+            modalSize: 'xl',
                     }}
-                    initialData={{
-                        ...currentItem,
-                        document_type_id: currentItem?.document_type_id,
-                        file: currentItem?.file_path
-                    }}
-                    title={formMode === 'create' ? t('Add Case Document') : t('Edit Case Document')}
-                    mode={formMode}
+            initialData={{
+                ...currentItem,
+                document_type_id: currentItem?.document_type_id,
+                file: currentItem?.file_path
+            }}
+            title={formMode === 'create' ? t('Add Case Document') : t('Edit Case Document')}
+            mode={formMode}
                 />
             )}
 
@@ -2295,7 +2313,7 @@ export default function CaseShow() {
                 <CrudFormModal
                     isOpen={isDocumentViewModalOpen}
                     onClose={() => setIsDocumentViewModalOpen(false)}
-                    onSubmit={() => {}}
+                    onSubmit={() => { }}
                     formConfig={{
                         fields: [
                             { name: 'document_name', label: t('Document Name'), type: 'text' },
@@ -2311,7 +2329,16 @@ export default function CaseShow() {
                     }}
                     initialData={{
                         ...currentItem,
-                        document_type_name: documentTypes?.find((type: any) => type.id.toString() === currentItem?.document_type_id?.toString())?.name || '-',
+                        document_type_name: (() => {
+                            const docType = documentTypes?.find((type: any) => type.id.toString() === currentItem?.document_type_id?.toString());
+                            if (!docType) return '-';
+                            if (typeof docType.name === 'object' && docType.name !== null) {
+                                return docType.name[currentLocale] || docType.name.en || docType.name.ar || '-';
+                            } else if (docType.name_translations && typeof docType.name_translations === 'object') {
+                                return docType.name_translations[currentLocale] || docType.name_translations.en || docType.name_translations.ar || '-';
+                            }
+                            return docType.name || '-';
+                        })(),
                         document_date: currentItem?.document_date ? new Date(currentItem.document_date).toLocaleDateString() : '-',
                         created_at: currentItem?.created_at ? new Date(currentItem.created_at).toLocaleDateString() : '-',
                         updated_at: currentItem?.updated_at ? new Date(currentItem.updated_at).toLocaleDateString() : '-'
@@ -2427,7 +2454,7 @@ export default function CaseShow() {
                             },
                             { name: 'notes', label: t('Notes'), type: 'textarea' },
                         ].concat(googleCalendarEnabled ? [{
-                        name: 'sync_with_google_calendar',
+                            name: 'sync_with_google_calendar',
                             label: t('Synchronize in Google Calendar'),
                             type: 'switch',
                             defaultValue: false
@@ -2445,7 +2472,7 @@ export default function CaseShow() {
                 <CrudFormModal
                     isOpen={isTaskViewModalOpen}
                     onClose={() => setIsTaskViewModalOpen(false)}
-                    onSubmit={() => {}}
+                    onSubmit={() => { }}
                     formConfig={{
                         fields: [
                             { name: 'task_id', label: t('Task ID'), type: 'text' },
