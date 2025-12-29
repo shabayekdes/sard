@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { Plus, FileText, File } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
 import { CrudFormModal } from '@/components/CrudFormModal';
@@ -111,7 +111,12 @@ export default function Expenses() {
   };
 
   const handleAction = (action: string, item: any) => {
-    setCurrentItem(item);
+    // Convert receipt_file array to comma-separated string for MediaPicker
+    const processedItem = { ...item };
+    if (processedItem.receipt_file && Array.isArray(processedItem.receipt_file)) {
+      processedItem.receipt_file = processedItem.receipt_file.filter(Boolean).join(',');
+    }
+    setCurrentItem(processedItem);
 
     switch (action) {
       case 'view':
@@ -519,7 +524,14 @@ export default function Expenses() {
               ],
               defaultValue: '0'
             },
-            { name: 'notes', label: t('Notes'), type: 'textarea' }
+            { name: 'notes', label: t('Notes'), type: 'textarea' },
+            {
+              name: 'receipt_file',
+              label: t('Files'),
+              type: 'media-picker',
+              multiple: true,
+              placeholder: t('Select files...')
+            }
           ],
           modalSize: 'lg'
         }}
@@ -585,7 +597,125 @@ export default function Expenses() {
                 </div>;
               }
             },
-            { name: 'notes', label: t('Notes'), type: 'textarea' }
+            { name: 'notes', label: t('Notes'), type: 'textarea' },
+            {
+              name: 'receipt_file',
+              label: t('Files'),
+              type: 'custom',
+              render: (field, formData) => {
+                const files = formData[field.name];
+                if (!files) {
+                  return <div className="rounded-md border bg-gray-50 p-2">-</div>;
+                }
+
+                // Handle both comma-separated string and array
+                const fileList = typeof files === 'string'
+                  ? files.split(',').filter(Boolean).map(f => f.trim())
+                  : Array.isArray(files)
+                    ? files.filter(Boolean)
+                    : [];
+
+                if (fileList.length === 0) {
+                  return <div className="rounded-md border bg-gray-50 p-2">-</div>;
+                }
+
+                // Get display URL helper
+                const getDisplayUrl = (url: string) => {
+                  if (!url) return '';
+                  if (url.startsWith('http')) return url;
+                  if (url.startsWith('/')) {
+                    return `${window.appSettings?.imageUrl || window.location.origin}${url}`;
+                  }
+                  return `${window.appSettings?.imageUrl || window.location.origin}/${url}`;
+                };
+
+                // Get file extension
+                const getFileExtension = (path: string) => {
+                  const filename = path.split('/').pop() || path;
+                  return filename.split('.').pop()?.toLowerCase() || '';
+                };
+
+                // Check file type
+                const isImage = (path: string) => {
+                  const ext = getFileExtension(path);
+                  return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext);
+                };
+
+                const isPdf = (path: string) => {
+                  return getFileExtension(path) === 'pdf';
+                };
+
+                const isDoc = (path: string) => {
+                  const ext = getFileExtension(path);
+                  return ['doc', 'docx'].includes(ext);
+                };
+
+                return (
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {fileList.map((filePath, index) => {
+                        const displayUrl = getDisplayUrl(filePath);
+                        const filename = filePath.split('/').pop() || filePath;
+
+                        return (
+                          <div key={index} className="relative group">
+                            <a
+                              href={displayUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block"
+                            >
+                              {isImage(filePath) ? (
+                                <div className="relative aspect-square bg-gray-50 rounded border overflow-hidden">
+                                  <img
+                                    src={displayUrl}
+                                    alt={filename}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement;
+                                      target.style.display = 'none';
+                                      const fallback = target.nextElementSibling as HTMLElement;
+                                      if (fallback) fallback.style.display = 'flex';
+                                    }}
+                                  />
+                                  <div className="hidden w-full h-full bg-gray-100 rounded flex-col items-center justify-center">
+                                    <span className="text-xs text-gray-600">Image</span>
+                                  </div>
+                                </div>
+                              ) : isPdf(filePath) ? (
+                                <div className="relative aspect-square bg-red-50 border border-red-200 rounded flex flex-col items-center justify-center">
+                                  <div className="w-8 h-8 bg-red-100 rounded flex items-center justify-center mb-1">
+                                    <FileText className="h-5 w-5 text-red-600" />
+                                  </div>
+                                  <span className="text-xs text-red-600 font-medium">PDF</span>
+                                </div>
+                              ) : isDoc(filePath) ? (
+                                <div className="relative aspect-square bg-blue-50 border border-blue-200 rounded flex flex-col items-center justify-center">
+                                  <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center mb-1">
+                                    <FileText className="h-5 w-5 text-blue-600" />
+                                  </div>
+                                  <span className="text-xs text-blue-600 font-medium">DOC</span>
+                                </div>
+                              ) : (
+                                <div className="relative aspect-square bg-gray-50 border border-gray-200 rounded flex flex-col items-center justify-center">
+                                  <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center mb-1">
+                                    <File className="h-5 w-5 text-gray-600" />
+                                  </div>
+                                  <span className="text-xs text-gray-600 font-medium">FILE</span>
+                                </div>
+                              )}
+                            </a>
+                            <div className="mt-1 text-xs text-gray-600 truncate" title={filename}>
+                              {filename}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              }
+            }
           ],
           modalSize: 'lg'
         }}

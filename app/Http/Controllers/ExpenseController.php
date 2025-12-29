@@ -41,7 +41,7 @@ class ExpenseController extends BaseController
 
         $expenses = $query->orderBy('expense_date', 'desc')->paginate(10);
         
-        // Transform expenses to include translated category names
+        // Transform expenses to include translated category names and convert receipt_file array to comma-separated string
         $expenses->getCollection()->transform(function ($expense) {
             $expenseData = $expense->toArray();
             
@@ -55,6 +55,11 @@ class ExpenseController extends BaseController
                 } else {
                     $expenseData['category_name'] = $categoryName;
                 }
+            }
+            
+            // Convert receipt_file array to comma-separated string for frontend MediaPicker
+            if (isset($expenseData['receipt_file']) && is_array($expenseData['receipt_file'])) {
+                $expenseData['receipt_file'] = implode(',', array_filter($expenseData['receipt_file']));
             }
             
             return $expenseData;
@@ -90,7 +95,30 @@ class ExpenseController extends BaseController
             'expense_date' => 'required|date',
             'is_billable' => 'boolean',
             'notes' => 'nullable|string|max:1000',
+            'receipt_file' => 'nullable',
         ]);
+
+        // Convert receipt_file from comma-separated string to array and extract storage paths
+        $receiptFiles = null;
+        if ($request->has('receipt_file') && $request->receipt_file) {
+            if (is_string($request->receipt_file)) {
+                $receiptFiles = array_filter(array_map('trim', explode(',', $request->receipt_file)));
+            } elseif (is_array($request->receipt_file)) {
+                $receiptFiles = array_filter($request->receipt_file);
+            }
+            
+            // Extract storage path from full URLs (store only path from /storage/ onwards)
+            if ($receiptFiles) {
+                $receiptFiles = array_map(function ($file) {
+                    return $this->extractStoragePath($file);
+                }, $receiptFiles);
+            }
+            
+            // Convert empty array to null
+            if (empty($receiptFiles)) {
+                $receiptFiles = null;
+            }
+        }
 
         Expense::create([
             'created_by' => createdBy(),
@@ -102,6 +130,7 @@ class ExpenseController extends BaseController
             'is_billable' => $request->boolean('is_billable', true),
             'is_approved' => false,
             'notes' => $request->notes,
+            'receipt_file' => $receiptFiles,
         ]);
 
         return redirect()->back()->with('success', 'Expense created successfully.');
@@ -117,7 +146,30 @@ class ExpenseController extends BaseController
             'expense_date' => 'required|date',
             'is_billable' => 'required|in:true,false,1,0',
             'notes' => 'nullable|string|max:1000',
+            'receipt_file' => 'nullable',
         ]);
+
+        // Convert receipt_file from comma-separated string to array and extract storage paths
+        $receiptFiles = null;
+        if ($request->has('receipt_file') && $request->receipt_file) {
+            if (is_string($request->receipt_file)) {
+                $receiptFiles = array_filter(array_map('trim', explode(',', $request->receipt_file)));
+            } elseif (is_array($request->receipt_file)) {
+                $receiptFiles = array_filter($request->receipt_file);
+            }
+            
+            // Extract storage path from full URLs (store only path from /storage/ onwards)
+            if ($receiptFiles) {
+                $receiptFiles = array_map(function ($file) {
+                    return $this->extractStoragePath($file);
+                }, $receiptFiles);
+            }
+            
+            // Convert empty array to null
+            if (empty($receiptFiles)) {
+                $receiptFiles = null;
+            }
+        }
 
         $expense->update([
             'case_id' => $request->case_id,
@@ -127,6 +179,7 @@ class ExpenseController extends BaseController
             'expense_date' => $request->expense_date,
             'is_billable' => filter_var($request->is_billable, FILTER_VALIDATE_BOOLEAN),
             'notes' => $request->notes,
+            'receipt_file' => $receiptFiles,
         ]);
 
         return redirect()->back()->with('success', 'Expense updated successfully.');
@@ -142,5 +195,41 @@ class ExpenseController extends BaseController
     {
         $expense->update(['is_approved' => !$expense->is_approved]);
         return redirect()->back()->with('success', 'Expense approval status updated successfully.');
+    }
+
+    /**
+     * Extract storage path from full URL or return path as is
+     * Converts full URLs like "https://example.com/storage/app/public/files/image.jpg"
+     * to "/storage/app/public/files/image.jpg" or "storage/app/public/files/image.jpg"
+     * 
+     * @param string $filePath
+     * @return string
+     */
+    private function extractStoragePath($filePath)
+    {
+        if (empty($filePath)) {
+            return $filePath;
+        }
+
+        // If it's already a relative path starting with /storage/, return as is
+        if (str_starts_with($filePath, '/storage/')) {
+            return $filePath;
+        }
+
+        // If it's a relative path starting with storage/ (without leading slash), return as is
+        if (str_starts_with($filePath, 'storage/')) {
+            return '/' . $filePath;
+        }
+
+        // If it's a full URL, extract the path from /storage/ onwards
+        if (str_starts_with($filePath, 'http://') || str_starts_with($filePath, 'https://')) {
+            $storageIndex = strpos($filePath, '/storage/');
+            if ($storageIndex !== false) {
+                return substr($filePath, $storageIndex);
+            }
+        }
+
+        // If it doesn't contain /storage/, return as is (might be a different path format)
+        return $filePath;
     }
 }

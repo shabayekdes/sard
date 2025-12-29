@@ -587,6 +587,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                         onChange={(value) => handleChange(field.name, value)}
                         placeholder={field.placeholder || `Select ${field.label}`}
                         showPreview={true}
+                        multiple={field.multiple || false}
                     />
                 );
 

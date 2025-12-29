@@ -18,7 +18,7 @@ return new class extends Migration
             $table->date('expense_date');
             $table->boolean('is_billable')->default(true);
             $table->boolean('is_approved')->default(false);
-            $table->string('receipt_file')->nullable();
+            $table->json('receipt_file')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
 

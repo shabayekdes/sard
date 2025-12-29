@@ -30,6 +30,7 @@ class Expense extends BaseModel
         'expense_date' => 'date',
         'is_billable' => 'boolean',
         'is_approved' => 'boolean',
+        'receipt_file' => 'array',
     ];
 
     protected static function booted()
