@@ -16,7 +16,7 @@ class InvoiceController extends BaseController
 {
     public function index(Request $request)
     {
-        $query = Invoice::withPermissionCheck()->with(['client', 'creator']);
+        $query = Invoice::withPermissionCheck()->with(['client', 'creator', 'payments']);
 
         if ($request->search) {
             $query->where(function ($q) use ($request) {
@@ -43,6 +43,14 @@ class InvoiceController extends BaseController
         }
 
         $invoices = $query->paginate($request->per_page ?? 10);
+        
+        // Calculate and append remaining_amount to each invoice
+        $invoices->getCollection()->transform(function ($invoice) {
+            $totalPaid = $invoice->payments->sum('amount');
+            $invoice->remaining_amount = max(0, $invoice->total_amount - $totalPaid);
+            return $invoice;
+        });
+        
         $clients = Client::withPermissionCheck()->select('id', 'name')->get();
 
         return Inertia::render('billing/invoices/index', [

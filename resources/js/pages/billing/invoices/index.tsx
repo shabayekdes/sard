@@ -235,6 +235,14 @@ export default function Invoices() {
       }
     },
     {
+      key: 'remaining_amount',
+      label: t('Due'),
+      render: (value: any) => {
+        const amount = parseFloat(value);
+        return isNaN(amount) ? `${formatCurrency(0.00)}` : `${formatCurrency(amount)}`;
+      }
+    },
+    {
       key: 'invoice_date',
       label: t('Invoice Date'),
       render: (value: string) => window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()
