@@ -17,6 +17,7 @@ return new class extends Migration
             $table->date('payment_date');
 
             $table->text('notes')->nullable();
+            $table->json('attachment')->nullable();
             $table->timestamps();
 
             $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');

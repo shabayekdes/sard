@@ -33,6 +33,19 @@ class PaymentController extends Controller
         }
 
         $payments = $query->orderBy('payment_date', 'desc')->paginate(10);
+        
+        // Transform payments to convert attachment array to comma-separated string for frontend MediaPicker
+        $payments->getCollection()->transform(function ($payment) {
+            $paymentData = $payment->toArray();
+            
+            // Convert attachment array to comma-separated string for frontend MediaPicker
+            if (isset($paymentData['attachment']) && is_array($paymentData['attachment'])) {
+                $paymentData['attachment'] = implode(',', array_filter($paymentData['attachment']));
+            }
+            
+            return $paymentData;
+        });
+        
         $invoices = Invoice::withPermissionCheck()->with('client')->select('id', 'invoice_number', 'client_id')->get();
 
         return Inertia::render('billing/payments/index', [
@@ -53,7 +66,30 @@ class PaymentController extends Controller
             'amount' => 'required|numeric|min:0.01|max:' . $maxAmount,
             'payment_date' => 'required|date',
             'notes' => 'nullable|string|max:1000',
+            'attachment' => 'nullable',
         ]);
+
+        // Convert attachment from comma-separated string to array and extract storage paths
+        $attachmentFiles = null;
+        if ($request->has('attachment') && $request->attachment) {
+            if (is_string($request->attachment)) {
+                $attachmentFiles = array_filter(array_map('trim', explode(',', $request->attachment)));
+            } elseif (is_array($request->attachment)) {
+                $attachmentFiles = array_filter($request->attachment);
+            }
+            
+            // Extract storage path from full URLs (store only path from /storage/ onwards)
+            if ($attachmentFiles) {
+                $attachmentFiles = array_map(function ($file) {
+                    return $this->extractStoragePath($file);
+                }, $attachmentFiles);
+            }
+            
+            // Convert empty array to null
+            if (empty($attachmentFiles)) {
+                $attachmentFiles = null;
+            }
+        }
 
         Payment::create([
             'created_by' => createdBy(),
@@ -62,6 +98,7 @@ class PaymentController extends Controller
             'amount' => $request->amount,
             'payment_date' => $request->payment_date,
             'notes' => $request->notes,
+            'attachment' => $attachmentFiles,
         ]);
 
         return redirect()->back()->with('success', 'Payment recorded successfully.');
@@ -79,7 +116,30 @@ class PaymentController extends Controller
             'amount' => 'required|numeric|min:0.01|max:' . $maxAmount,
             'payment_date' => 'required|date',
             'notes' => 'nullable|string|max:1000',
+            'attachment' => 'nullable',
         ]);
+
+        // Convert attachment from comma-separated string to array and extract storage paths
+        $attachmentFiles = null;
+        if ($request->has('attachment') && $request->attachment) {
+            if (is_string($request->attachment)) {
+                $attachmentFiles = array_filter(array_map('trim', explode(',', $request->attachment)));
+            } elseif (is_array($request->attachment)) {
+                $attachmentFiles = array_filter($request->attachment);
+            }
+            
+            // Extract storage path from full URLs (store only path from /storage/ onwards)
+            if ($attachmentFiles) {
+                $attachmentFiles = array_map(function ($file) {
+                    return $this->extractStoragePath($file);
+                }, $attachmentFiles);
+            }
+            
+            // Convert empty array to null
+            if (empty($attachmentFiles)) {
+                $attachmentFiles = null;
+            }
+        }
 
         $payment->update([
             'invoice_id' => $request->invoice_id,
@@ -87,6 +147,7 @@ class PaymentController extends Controller
             'amount' => $request->amount,
             'payment_date' => $request->payment_date,
             'notes' => $request->notes,
+            'attachment' => $attachmentFiles,
         ]);
 
         return redirect()->back()->with('success', 'Payment updated successfully.');
@@ -96,5 +157,41 @@ class PaymentController extends Controller
     {
         $payment->delete();
         return redirect()->back()->with('success', 'Payment deleted successfully.');
+    }
+
+    /**
+     * Extract storage path from full URL or return path as is
+     * Converts full URLs like "https://example.com/storage/app/public/files/image.jpg"
+     * to "/storage/app/public/files/image.jpg" or "storage/app/public/files/image.jpg"
+     * 
+     * @param string $filePath
+     * @return string
+     */
+    private function extractStoragePath($filePath)
+    {
+        if (empty($filePath)) {
+            return $filePath;
+        }
+
+        // If it's already a relative path starting with /storage/, return as is
+        if (str_starts_with($filePath, '/storage/')) {
+            return $filePath;
+        }
+
+        // If it's a relative path starting with storage/ (without leading slash), return as is
+        if (str_starts_with($filePath, 'storage/')) {
+            return '/' . $filePath;
+        }
+
+        // If it's a full URL, extract the path from /storage/ onwards
+        if (str_starts_with($filePath, 'http://') || str_starts_with($filePath, 'https://')) {
+            $storageIndex = strpos($filePath, '/storage/');
+            if ($storageIndex !== false) {
+                return substr($filePath, $storageIndex);
+            }
+        }
+
+        // If it doesn't contain /storage/, return as is (might be a different path format)
+        return $filePath;
     }
 }

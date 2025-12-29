@@ -377,8 +377,93 @@ export default function Payments() {
             },
             { name: 'amount', label: t('Amount'), type: 'number', step: '0.01', required: true, min: '0', disabled: isAutoOpen },
             { name: 'payment_date', label: t('Payment Date'), type: 'date', required: true, disabled: isAutoOpen },
+            { name: 'notes', label: t('Notes'), type: 'textarea' },
+            {
+              name: 'attachment',
+              label: t('Attachment'),
+              type: formMode === 'view' ? 'custom' : 'media-picker',
+              multiple: true,
+              placeholder: t('Select files...'),
+              render: formMode === 'view' ? (field, formData) => {
+                const files = formData[field.name];
+                if (!files) {
+                  return <div className="rounded-md border bg-gray-50 p-2">-</div>;
+                }
 
-            { name: 'notes', label: t('Notes'), type: 'textarea' }
+                // Handle both comma-separated string and array
+                const fileList = typeof files === 'string'
+                  ? files.split(',').filter(Boolean).map(f => f.trim())
+                  : Array.isArray(files)
+                    ? files.filter(Boolean)
+                    : [];
+
+                if (fileList.length === 0) {
+                  return <div className="rounded-md border bg-gray-50 p-2">-</div>;
+                }
+
+                // Get display URL helper
+                const getDisplayUrl = (url: string) => {
+                  if (!url) return '';
+                  if (url.startsWith('http')) return url;
+                  if (url.startsWith('/')) {
+                    return `${window.appSettings?.imageUrl || window.location.origin}${url}`;
+                  }
+                  return `${window.appSettings?.imageUrl || window.location.origin}/${url}`;
+                };
+
+                // Get file extension
+                const getFileExtension = (path: string) => {
+                  const filename = path.split('/').pop() || path;
+                  return filename.split('.').pop()?.toLowerCase() || '';
+                };
+
+                // Check file type
+                const isImage = (path: string) => {
+                  const ext = getFileExtension(path);
+                  return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext);
+                };
+
+                return (
+                  <div className="space-y-2">
+                    {fileList.map((file, index) => {
+                      const displayUrl = getDisplayUrl(file);
+                      const isImg = isImage(file);
+                      const fileName = file.split('/').pop() || file;
+
+                      return (
+                        <div key={index} className="flex items-center gap-2 p-2 border rounded-md bg-gray-50">
+                          {isImg ? (
+                            <img
+                              src={displayUrl}
+                              alt={fileName}
+                              className="w-16 h-16 object-cover rounded"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            <div className="w-16 h-16 flex items-center justify-center bg-gray-200 rounded">
+                              <span className="text-xs text-gray-500">{getFileExtension(file).toUpperCase()}</span>
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">{fileName}</p>
+                            <a
+                              href={displayUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-blue-600 hover:text-blue-800"
+                            >
+                              {t('View')}
+                            </a>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              } : undefined
+            }
           ],
           modalSize: 'lg'
         }}

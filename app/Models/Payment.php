@@ -19,11 +19,13 @@ class Payment extends BaseModel
         'payment_date',
         'transaction_id',
         'notes',
+        'attachment',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
         'payment_date' => 'date',
+        'attachment' => 'array',
     ];
 
     protected static function booted()

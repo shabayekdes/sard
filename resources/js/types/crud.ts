@@ -91,6 +91,10 @@ export interface FormField {
     placeholder?: string;
     required?: boolean;
     multiple?: boolean; // For media-picker and multi-select fields
+    disabled?: boolean; // For disabling fields
+    step?: string | number; // For number input step
+    min?: string | number; // For number input min
+    max?: string | number; // For number input max
     options?: FilterOption[];
     relation?: {
         endpoint: string;

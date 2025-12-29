@@ -29,6 +29,8 @@ export default function Invoices() {
   const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
   const [sortField, setSortField] = useState(pageFilters.sort_field || '');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>(pageFilters.sort_direction || 'asc');
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [selectedInvoiceForPayment, setSelectedInvoiceForPayment] = useState<any>(null);
 
   // Check if any filters are active
   const hasActiveFilters = () => {
@@ -78,6 +80,10 @@ export default function Invoices() {
         break;
       case 'payment_link':
         handleCopyPaymentLink(item);
+        break;
+      case 'record_payment':
+        setSelectedInvoiceForPayment(item);
+        setIsPaymentModalOpen(true);
         break;
     }
   };
@@ -166,11 +172,30 @@ export default function Invoices() {
     });
   };
 
+  const handlePaymentSubmit = (formData: any) => {
+    toast.loading(t('Recording payment...'));
+
+    router.post(route('billing.payments.store'), formData, {
+      onSuccess: (page) => {
+        setIsPaymentModalOpen(false);
+        setSelectedInvoiceForPayment(null);
+        toast.dismiss();
+        if (page.props.flash.success) {
+          toast.success(page.props.flash.success);
+        }
+      },
+      onError: (errors) => {
+        toast.dismiss();
+        toast.error(`Failed to record payment: ${Object.values(errors).join(', ')}`);
+      }
+    });
+  };
+
   const handleSort = (field: string) => {
     const newDirection = sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
     setSortField(field);
     setSortDirection(newDirection);
-    
+
     router.get(route('billing.invoices.index'), {
       page: 1,
       search: searchTerm || undefined,
@@ -284,11 +309,12 @@ export default function Invoices() {
       requiredPermission: 'view-invoices'
     },
     {
-      label: t('Generate Invoice'),
-      icon: 'FileText',
-      action: 'generate',
-      className: 'text-purple-500',
-      requiredPermission: 'view-invoices'
+      label: t('Record New Payment'),
+      icon: 'DollarSign',
+      action: 'record_payment',
+      className: 'text-green-500',
+      requiredPermission: 'create-payments',
+      condition: (row: any) => row.status !== 'paid'
     },
     {
       label: t('Edit'),
@@ -483,6 +509,63 @@ export default function Invoices() {
         onConfirm={handleDeleteConfirm}
         itemName={currentItem?.invoice_number || ''}
         entityName="invoice"
+      />
+
+      {/* Payment Modal */}
+      <CrudFormModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => {
+          setIsPaymentModalOpen(false);
+          setSelectedInvoiceForPayment(null);
+        }}
+        onSubmit={handlePaymentSubmit}
+        formConfig={{
+          fields: [
+            {
+              name: 'invoice_id',
+              label: t('Invoice'),
+              type: 'select',
+              required: true,
+              disabled: true,
+              options: selectedInvoiceForPayment ? [{
+                value: selectedInvoiceForPayment.id.toString(),
+                label: `${selectedInvoiceForPayment.invoice_number} - ${selectedInvoiceForPayment.client?.name}`
+              }] : []
+            },
+            {
+              name: 'payment_method',
+              label: t('Payment Method'),
+              type: 'select',
+              required: true,
+              options: [
+                { value: 'cash', label: t('Cash') },
+                { value: 'check', label: t('Check') },
+                { value: 'credit_card', label: t('Credit Card') },
+                { value: 'bank_transfer', label: t('Bank Transfer') },
+                { value: 'online', label: t('Online Payment') }
+              ]
+            },
+            { name: 'amount', label: t('Amount'), type: 'number', step: '0.01', required: true, min: '0' },
+            { name: 'payment_date', label: t('Payment Date'), type: 'date', required: true },
+            { name: 'notes', label: t('Notes'), type: 'textarea' },
+            {
+              name: 'attachment',
+              label: t('Attachment'),
+              type: 'media-picker',
+              multiple: true,
+              placeholder: t('Select files...')
+            }
+          ],
+          modalSize: 'lg'
+        }}
+        initialData={selectedInvoiceForPayment ? {
+          invoice_id: selectedInvoiceForPayment.id.toString(),
+          amount: selectedInvoiceForPayment.remaining_amount || selectedInvoiceForPayment.total_amount,
+          payment_date: new Date().toISOString().split('T')[0],
+          payment_method: 'cash'
+        } : null}
+        title={t('Record New Payment')}
+        mode="create"
       />
     </PageTemplate>
   );
