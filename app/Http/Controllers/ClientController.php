@@ -344,11 +344,105 @@ class ClientController extends Controller
 
         $cases = $casesQuery->paginate($request->per_page ?? 10);
 
+        // Load invoices for this client
+        $invoicesQuery = \App\Models\Invoice::withPermissionCheck()
+            ->with(['client', 'case', 'currency', 'payments'])
+            ->where('client_id', $clientId);
+
+        // Apply search filter for invoices
+        if ($invoiceSearch = $request->get('invoice_search')) {
+            $invoicesQuery->where(function ($q) use ($invoiceSearch) {
+                $q->where('invoice_number', 'like', "%{$invoiceSearch}%")
+                    ->orWhere('notes', 'like', "%{$invoiceSearch}%");
+            });
+        }
+
+        // Apply sorting for invoices
+        if ($request->has('invoice_sort_field') && ! empty($request->invoice_sort_field)) {
+            $invoicesQuery->orderBy($request->invoice_sort_field, $request->invoice_sort_direction ?? 'asc');
+        } else {
+            $invoicesQuery->latest('invoice_date');
+        }
+
+        $invoices = $invoicesQuery->paginate($request->invoice_per_page ?? 10, ['*'], 'invoice_page');
+        
+        // Calculate and append remaining_amount to each invoice
+        $invoices->getCollection()->transform(function ($invoice) {
+            $totalPaid = $invoice->payments->sum('amount');
+            $invoice->remaining_amount = max(0, $invoice->total_amount - $totalPaid);
+            return $invoice;
+        });
+
+        // Load payments for this client (through invoices)
+        $paymentsQuery = \App\Models\Payment::withPermissionCheck()
+            ->with(['invoice.client', 'creator'])
+            ->whereHas('invoice', function ($q) use ($clientId) {
+                $q->where('client_id', $clientId);
+            });
+
+        // Apply search filter for payments
+        if ($paymentSearch = $request->get('payment_search')) {
+            $paymentsQuery->where(function ($q) use ($paymentSearch) {
+                $q->where('transaction_id', 'like', "%{$paymentSearch}%")
+                    ->orWhere('notes', 'like', "%{$paymentSearch}%")
+                    ->orWhereHas('invoice', function ($invoiceQuery) use ($paymentSearch) {
+                        $invoiceQuery->where('invoice_number', 'like', "%{$paymentSearch}%");
+                    });
+            });
+        }
+
+        // Apply sorting for payments
+        if ($request->has('payment_sort_field') && ! empty($request->payment_sort_field)) {
+            $paymentsQuery->orderBy($request->payment_sort_field, $request->payment_sort_direction ?? 'asc');
+        } else {
+            $paymentsQuery->latest('payment_date');
+        }
+
+        $payments = $paymentsQuery->paginate($request->payment_per_page ?? 10, ['*'], 'payment_page');
+        
+        // Transform payments to convert attachment array to comma-separated string for frontend
+        $payments->getCollection()->transform(function ($payment) {
+            $paymentData = $payment->toArray();
+            
+            // Convert attachment array to comma-separated string for frontend
+            if (isset($paymentData['attachment']) && is_array($paymentData['attachment'])) {
+                $paymentData['attachment'] = implode(',', array_filter($paymentData['attachment']));
+            }
+            
+            // Ensure invoice_id is included and invoice relationship is preserved
+            if (!isset($paymentData['invoice_id']) && $payment->invoice_id) {
+                $paymentData['invoice_id'] = $payment->invoice_id;
+            }
+            
+            // Ensure invoice relationship is properly included
+            if ($payment->invoice) {
+                $paymentData['invoice'] = [
+                    'id' => $payment->invoice->id,
+                    'invoice_number' => $payment->invoice->invoice_number,
+                    'client' => $payment->invoice->client ? [
+                        'id' => $payment->invoice->client->id,
+                        'name' => $payment->invoice->client->name,
+                    ] : null,
+                ];
+            }
+            
+            return $paymentData;
+        });
+
+        // Get all invoices for payment modal (needed for select field)
+        $allInvoices = \App\Models\Invoice::withPermissionCheck()
+            ->with('client')
+            ->select('id', 'invoice_number', 'client_id')
+            ->get();
+
         return Inertia::render('clients/show', [
             'client' => $client,
             'documents' => $documents,
             'cases' => $cases,
-            'filters' => $request->all(['search', 'sort_field', 'sort_direction', 'per_page']),
+            'invoices' => $invoices,
+            'payments' => $payments,
+            'allInvoices' => $allInvoices,
+            'filters' => $request->all(['search', 'sort_field', 'sort_direction', 'per_page', 'invoice_search', 'invoice_sort_field', 'invoice_sort_direction', 'invoice_per_page', 'payment_search', 'payment_sort_field', 'payment_sort_direction', 'payment_per_page']),
         ]);
     }
 

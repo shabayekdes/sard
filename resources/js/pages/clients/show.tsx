@@ -6,17 +6,24 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { Pagination } from '@/components/ui/pagination';
-import { ArrowLeft, FileText, Briefcase } from 'lucide-react';
+import { CrudFormModal } from '@/components/CrudFormModal';
+import { toast } from '@/components/custom-toast';
+import { ArrowLeft, FileText, Briefcase, Receipt, CreditCard } from 'lucide-react';
 import { formatCurrency } from '@/utils/helpers';
 import { useLayout } from '@/contexts/LayoutContext';
 
 export default function ClientShow() {
     const { t, i18n } = useTranslation();
-    const { client, documents, cases, filters = {} } = usePage().props as any;
+    const { client, documents, cases, invoices, payments, allInvoices, filters = {} } = usePage().props as any;
     const { position } = useLayout();
     const [activeTab, setActiveTab] = useState('cases');
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
+    const [invoiceSearchTerm, setInvoiceSearchTerm] = useState(filters.invoice_search || '');
+    const [paymentSearchTerm, setPaymentSearchTerm] = useState(filters.payment_search || '');
     const [showFilters, setShowFilters] = useState(false);
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [currentPayment, setCurrentPayment] = useState<any>(null);
+    const [paymentFormMode, setPaymentFormMode] = useState<'create' | 'edit' | 'view'>('view');
 
     // Helper function to get translated value from translation object
     const getTranslatedValue = (value: any): string => {
@@ -80,6 +87,10 @@ export default function ClientShow() {
 
     const casesData = cases?.data || cases || [];
     const casesTotal = cases?.total || casesData.length;
+    const invoicesData = invoices?.data || invoices || [];
+    const invoicesTotal = invoices?.total || invoicesData.length;
+    const paymentsData = payments?.data || payments || [];
+    const paymentsTotal = payments?.total || paymentsData.length;
 
 
     return (
@@ -246,6 +257,18 @@ export default function ClientShow() {
                                 <div className="flex items-center space-x-2">
                                     <Briefcase className="h-4 w-4" />
                                     <span>{t('Cases')} ({casesTotal})</span>
+                                </div>
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('invoices-payments')}
+                                className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'invoices-payments'
+                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                                    }`}
+                            >
+                                <div className="flex items-center space-x-2">
+                                    <Receipt className="h-4 w-4" />
+                                    <span>{t('Invoices & Payments')}</span>
                                 </div>
                             </button>
                             <button
@@ -417,6 +440,275 @@ export default function ClientShow() {
                             </div>
                         )}
 
+                        {activeTab === 'invoices-payments' && (
+                            <div>
+                                {/* Invoices Section */}
+                                <div className="mb-6">
+                                    <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">{t('Invoices')} ({invoicesTotal})</h3>
+                                </div>
+                                <div className="mb-8">
+                                    <div className="mb-6">
+                                        <SearchAndFilterBar
+                                            searchTerm={invoiceSearchTerm}
+                                            onSearchChange={setInvoiceSearchTerm}
+                                            onSearch={(e) => {
+                                                e.preventDefault();
+                                                router.get(route('clients.show', client.id), {
+                                                    invoice_page: 1,
+                                                    invoice_search: invoiceSearchTerm || undefined,
+                                                    invoice_per_page: filters.invoice_per_page || 10
+                                                }, { preserveState: true, preserveScroll: true });
+                                            }}
+                                            filters={[]}
+                                            showFilters={false}
+                                            setShowFilters={() => { }}
+                                            hasActiveFilters={() => invoiceSearchTerm !== ''}
+                                            activeFilterCount={() => invoiceSearchTerm ? 1 : 0}
+                                            onResetFilters={() => {
+                                                setInvoiceSearchTerm('');
+                                                router.get(route('clients.show', client.id), {
+                                                    invoice_page: 1,
+                                                    invoice_per_page: filters.invoice_per_page || 10
+                                                }, { preserveState: true, preserveScroll: true });
+                                            }}
+                                            onApplyFilters={() => { }}
+                                            currentPerPage={filters.invoice_per_page?.toString() || '10'}
+                                            onPerPageChange={(value) => {
+                                                router.get(route('clients.show', client.id), {
+                                                    invoice_page: 1,
+                                                    invoice_per_page: parseInt(value),
+                                                    invoice_search: invoiceSearchTerm || undefined
+                                                }, { preserveState: true, preserveScroll: true });
+                                            }}
+                                        />
+                                    </div>
+                                    {invoicesData && invoicesData.length > 0 ? (
+                                        <>
+                                            <div className="overflow-x-auto">
+                                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                                    <thead className="bg-gray-50 dark:bg-gray-800">
+                                                        <tr>
+                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                                {t('Invoice #')}
+                                                            </th>
+                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                                {t('Case')}
+                                                            </th>
+                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                                {t('Total')}
+                                                            </th>
+                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                                {t('Invoice Date')}
+                                                            </th>
+                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                                {t('Due Date')}
+                                                            </th>
+                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                                {t('Status')}
+                                                            </th>
+                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                                {t('Action')}
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
+                                                        {invoicesData.map((invoice: any) => (
+                                                            <tr key={invoice.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-white">
+                                                                    {invoice.invoice_number}
+                                                                </td>
+                                                                <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                                                                    {invoice.case ? (
+                                                                        <div className="flex flex-col">
+                                                                            <span className="font-medium">{invoice.case.case_id || '-'}</span>
+                                                                            <span className="text-xs text-gray-500 dark:text-gray-400">{invoice.case.title || '-'}</span>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <span className="text-gray-500">-</span>
+                                                                    )}
+                                                                </td>
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-white">
+                                                                    {formatCurrency(invoice.total_amount || 0)}
+                                                                </td>
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                                                    {invoice.invoice_date
+                                                                        ? (window.appSettings?.formatDate(invoice.invoice_date) || new Date(invoice.invoice_date).toLocaleDateString())
+                                                                        : '-'}
+                                                                </td>
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                                                    {invoice.due_date
+                                                                        ? (window.appSettings?.formatDate(invoice.due_date) || new Date(invoice.due_date).toLocaleDateString())
+                                                                        : '-'}
+                                                                </td>
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                                                                    {invoice.status ? (
+                                                                        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${invoice.status === 'paid' ? 'bg-green-50 text-green-700 ring-green-600/20' :
+                                                                            invoice.status === 'sent' ? 'bg-blue-50 text-blue-700 ring-blue-600/20' :
+                                                                                invoice.status === 'partial_paid' || invoice.status === 'partial' ? 'bg-yellow-50 text-yellow-700 ring-yellow-600/20' :
+                                                                                    invoice.status === 'overdue' ? 'bg-red-50 text-red-700 ring-red-600/20' :
+                                                                                        invoice.status === 'cancelled' ? 'bg-gray-50 text-gray-700 ring-gray-600/20' :
+                                                                                            'bg-gray-50 text-gray-700 ring-gray-600/20'
+                                                                            }`}>
+                                                                            {t(invoice.status === 'partial_paid' ? 'Partial Paid' : invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1).replace('_', ' '))}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="text-gray-500">-</span>
+                                                                    )}
+                                                                </td>
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
+                                                                    <a
+                                                                        href={route('billing.invoices.show', invoice.id)}
+                                                                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                                                                    >
+                                                                        {t('View Invoice')}
+                                                                    </a>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            {invoices?.links && (
+                                                <div className="mt-4">
+                                                    <Pagination
+                                                        from={invoices?.from || 0}
+                                                        to={invoices?.to || 0}
+                                                        total={invoices?.total || 0}
+                                                        links={invoices?.links}
+                                                        entityName={t('invoices')}
+                                                        onPageChange={(url) => router.get(url)}
+                                                    />
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div className="py-8 text-center text-gray-500">{t('No invoices found for this client')}</div>
+                                    )}
+                                </div>
+
+                                {/* Payments Section */}
+                                <div className="mt-8 border-t border-gray-200 pt-8 dark:border-gray-700">
+                                    <h3 className="mb-6 text-lg font-semibold text-gray-900 dark:text-white">{t('Payments')}</h3>
+                                    <div className="mb-6">
+                                        <SearchAndFilterBar
+                                            searchTerm={paymentSearchTerm}
+                                            onSearchChange={setPaymentSearchTerm}
+                                            onSearch={(e) => {
+                                                e.preventDefault();
+                                                router.get(route('clients.show', client.id), {
+                                                    payment_page: 1,
+                                                    payment_search: paymentSearchTerm || undefined,
+                                                    payment_per_page: filters.payment_per_page || 10
+                                                }, { preserveState: true, preserveScroll: true });
+                                            }}
+                                            filters={[]}
+                                            showFilters={false}
+                                            setShowFilters={() => { }}
+                                            hasActiveFilters={() => paymentSearchTerm !== ''}
+                                            activeFilterCount={() => paymentSearchTerm ? 1 : 0}
+                                            onResetFilters={() => {
+                                                setPaymentSearchTerm('');
+                                                router.get(route('clients.show', client.id), {
+                                                    payment_page: 1,
+                                                    payment_per_page: filters.payment_per_page || 10
+                                                }, { preserveState: true, preserveScroll: true });
+                                            }}
+                                            onApplyFilters={() => { }}
+                                            currentPerPage={filters.payment_per_page?.toString() || '10'}
+                                            onPerPageChange={(value) => {
+                                                router.get(route('clients.show', client.id), {
+                                                    payment_page: 1,
+                                                    payment_per_page: parseInt(value),
+                                                    payment_search: paymentSearchTerm || undefined
+                                                }, { preserveState: true, preserveScroll: true });
+                                            }}
+                                        />
+                                    </div>
+                                    {paymentsData && paymentsData.length > 0 ? (
+                                        <>
+                                            <div className="overflow-x-auto">
+                                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                                    <thead className="bg-gray-50 dark:bg-gray-800">
+                                                        <tr>
+                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                                {t('Invoice #')}
+                                                            </th>
+                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                                {t('Amount')}
+                                                            </th>
+                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                                {t('Payment Method')}
+                                                            </th>
+                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                                {t('Payment Date')}
+                                                            </th>
+                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                                {t('Action')}
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
+                                                        {paymentsData.map((payment: any) => (
+                                                            <tr key={payment.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-white">
+                                                                    {payment.invoice?.invoice_number || '-'}
+                                                                </td>
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-white">
+                                                                    {formatCurrency(payment.amount || 0)}
+                                                                </td>
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                                                                    <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                                                        {t(payment.payment_method ? payment.payment_method.charAt(0).toUpperCase() + payment.payment_method.slice(1).replace('_', ' ') : '-')}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                                                    {payment.payment_date
+                                                                        ? (window.appSettings?.formatDate(payment.payment_date) || new Date(payment.payment_date).toLocaleDateString())
+                                                                        : '-'}
+                                                                </td>
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            // Ensure invoice_id is a string for the select field and preserve invoice relationship
+                                                                            const paymentData = {
+                                                                                ...payment,
+                                                                                invoice_id: payment.invoice_id ? String(payment.invoice_id) : (payment.invoice?.id ? String(payment.invoice.id) : ''),
+                                                                                invoice: payment.invoice // Preserve invoice relationship
+                                                                            };
+                                                                            setCurrentPayment(paymentData);
+                                                                            setPaymentFormMode('view');
+                                                                            setIsPaymentModalOpen(true);
+                                                                        }}
+                                                                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                                                                    >
+                                                                        {t('View Payment')}
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            {payments?.links && (
+                                                <div className="mt-4">
+                                                    <Pagination
+                                                        from={payments?.from || 0}
+                                                        to={payments?.to || 0}
+                                                        total={payments?.total || 0}
+                                                        links={payments?.links}
+                                                        entityName={t('payments')}
+                                                        onPageChange={(url) => router.get(url)}
+                                                    />
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div className="py-8 text-center text-gray-500">{t('No payments found for this client')}</div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
                         {activeTab === 'documents' && (
                             <div>
                                 <div className="mb-6 flex items-center justify-between">
@@ -549,6 +841,152 @@ export default function ClientShow() {
                     </div>
                 </div>
             </div>
+
+            {/* Payment Modal */}
+            <CrudFormModal
+                isOpen={isPaymentModalOpen}
+                onClose={() => {
+                    setIsPaymentModalOpen(false);
+                    setCurrentPayment(null);
+                }}
+                onSubmit={() => {
+                    // View mode - no submit action needed
+                    setIsPaymentModalOpen(false);
+                }}
+                formConfig={{
+                    fields: [
+                        {
+                            name: 'invoice_id',
+                            label: t('Invoice'),
+                            type: 'select',
+                            required: true,
+                            disabled: true,
+                            options: (() => {
+                                // Get all invoices and ensure the payment's invoice is included
+                                const invoiceOptions = (allInvoices || []).map((invoice: any) => ({
+                                    value: invoice.id.toString(),
+                                    label: `${invoice.invoice_number} - ${invoice.client?.name}`
+                                }));
+
+                                // If currentPayment has an invoice that's not in allInvoices, add it
+                                if (currentPayment?.invoice && !invoiceOptions.find((opt: any) => opt.value === String(currentPayment.invoice.id))) {
+                                    invoiceOptions.push({
+                                        value: String(currentPayment.invoice.id),
+                                        label: `${currentPayment.invoice.invoice_number} - ${currentPayment.invoice.client?.name || ''}`
+                                    });
+                                }
+
+                                return invoiceOptions;
+                            })()
+                        },
+                        {
+                            name: 'payment_method',
+                            label: t('Payment Method'),
+                            type: 'select',
+                            required: true,
+                            disabled: true,
+                            options: [
+                                { value: 'cash', label: t('Cash') },
+                                { value: 'check', label: t('Check') },
+                                { value: 'credit_card', label: t('Credit Card') },
+                                { value: 'bank_transfer', label: t('Bank Transfer') },
+                                { value: 'online', label: t('Online Payment') }
+                            ]
+                        },
+                        { name: 'amount', label: t('Amount'), type: 'number', step: '0.01', required: true, min: '0', disabled: true },
+                        { name: 'payment_date', label: t('Payment Date'), type: 'date', required: true, disabled: true },
+                        { name: 'notes', label: t('Notes'), type: 'textarea', disabled: true },
+                        {
+                            name: 'attachment',
+                            label: t('Attachment'),
+                            type: 'custom',
+                            render: (field: any, formData: any) => {
+                                const files = formData[field.name];
+                                if (!files) {
+                                    return <div className="rounded-md border bg-gray-50 p-2">-</div>;
+                                }
+
+                                // Handle both comma-separated string and array
+                                const fileList = typeof files === 'string'
+                                    ? files.split(',').filter(Boolean).map(f => f.trim())
+                                    : Array.isArray(files)
+                                        ? files.filter(Boolean)
+                                        : [];
+
+                                if (fileList.length === 0) {
+                                    return <div className="rounded-md border bg-gray-50 p-2">-</div>;
+                                }
+
+                                // Get display URL helper
+                                const getDisplayUrl = (url: string) => {
+                                    if (!url) return '';
+                                    if (url.startsWith('http')) return url;
+                                    if (url.startsWith('/')) {
+                                        return `${window.appSettings?.imageUrl || window.location.origin}${url}`;
+                                    }
+                                    return `${window.appSettings?.imageUrl || window.location.origin}/${url}`;
+                                };
+
+                                // Get file extension
+                                const getFileExtension = (path: string) => {
+                                    const filename = path.split('/').pop() || path;
+                                    return filename.split('.').pop()?.toLowerCase() || '';
+                                };
+
+                                // Check file type
+                                const isImage = (path: string) => {
+                                    const ext = getFileExtension(path);
+                                    return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext);
+                                };
+
+                                return (
+                                    <div className="space-y-2">
+                                        {fileList.map((file: string, index: number) => {
+                                            const displayUrl = getDisplayUrl(file);
+                                            const isImg = isImage(file);
+                                            const fileName = file.split('/').pop() || file;
+
+                                            return (
+                                                <div key={index} className="flex items-center gap-2 p-2 border rounded-md bg-gray-50">
+                                                    {isImg ? (
+                                                        <img
+                                                            src={displayUrl}
+                                                            alt={fileName}
+                                                            className="w-16 h-16 object-cover rounded"
+                                                            onError={(e) => {
+                                                                (e.target as HTMLImageElement).style.display = 'none';
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <div className="w-16 h-16 flex items-center justify-center bg-gray-200 rounded">
+                                                            <span className="text-xs text-gray-500">{getFileExtension(file).toUpperCase()}</span>
+                                                        </div>
+                                                    )}
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-sm font-medium text-gray-900 truncate">{fileName}</p>
+                                                        <a
+                                                            href={displayUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-xs text-blue-600 hover:text-blue-800"
+                                                        >
+                                                            {t('View')}
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                );
+                            }
+                        }
+                    ],
+                    modalSize: 'lg'
+                }}
+                initialData={currentPayment}
+                title={t('View Payment')}
+                mode={paymentFormMode}
+            />
         </PageTemplate>
     );
 }
