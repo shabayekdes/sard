@@ -11,7 +11,6 @@ import {
     Bell,
     BookOpen,
     Briefcase,
-    Building2,
     Calendar,
     CalendarDays,
     CheckSquare,
@@ -28,12 +27,13 @@ import {
     Settings,
     UserCheck,
     Users,
+    Wrench,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export function AppSidebar() {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const { auth } = usePage().props as any;
     const userRole = auth.user?.type || auth.user?.role;
     const permissions = auth?.permissions || [];
@@ -182,25 +182,8 @@ export function AppSidebar() {
             });
         }
 
-        // 3. Advocate
-        const advocateChildren = [];
-        if (
-            hasPermission(permissions, 'manage-company-profiles') ||
-            hasPermission(permissions, 'manage-any-company-profiles') ||
-            hasPermission(permissions, 'manage-own-company-profiles')
-        ) {
-            advocateChildren.push({
-                title: t('Company Profiles'),
-                href: route('advocate.company-profiles.index'),
-            });
-        }
-        if (advocateChildren.length > 0) {
-            items.push({
-                title: t('Advocate'),
-                icon: Building2,
-                children: advocateChildren,
-            });
-        }
+        // 3. Advocate (Company Profiles moved to Setup)
+        // Note: Company Profiles has been moved to Setup section
 
         // 4. Case Management
         const caseChildren = [];
@@ -883,12 +866,29 @@ export function AppSidebar() {
             });
         }
 
-        // 18. Settings
+        // 18. Setup
+        const setupMenuChildren = [];
         if (hasPermission(permissions, 'manage-settings')) {
-            items.push({
+            setupMenuChildren.push({
                 title: t('Settings'),
                 href: route('settings'),
-                icon: Settings,
+            });
+        }
+        if (
+            hasPermission(permissions, 'manage-company-profiles') ||
+            hasPermission(permissions, 'manage-any-company-profiles') ||
+            hasPermission(permissions, 'manage-own-company-profiles')
+        ) {
+            setupMenuChildren.push({
+                title: t('Company Profiles'),
+                href: route('advocate.company-profiles.index'),
+            });
+        }
+        if (setupMenuChildren.length > 0) {
+            items.push({
+                title: t('Setup'),
+                icon: Wrench,
+                children: setupMenuChildren,
             });
         }
 
@@ -897,7 +897,7 @@ export function AppSidebar() {
 
     const mainNavItems = userRole === 'superadmin' ? getSuperAdminNavItems() : getCompanyNavItems();
 
-    const { position, effectivePosition } = useLayout();
+    const { position } = useLayout();
     const { variant, collapsible, style } = useSidebarSettings();
     const { logoLight, logoDark, favicon, updateBrandSettings } = useBrand();
     const [sidebarStyle, setSidebarStyle] = useState({});
