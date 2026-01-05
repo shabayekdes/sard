@@ -31,10 +31,7 @@ class ExpenseCategory extends BaseModel
         static::addGlobalScope('company', function ($builder) {
             if (auth()->check() && auth()->user()->type !== 'super admin') {
                 $companyId = createdBy();
-                $builder->where(function ($q) use ($companyId) {
-                    $q->where('created_by', $companyId)
-                      ->orWhereNull('created_by');
-                });
+                $builder->where('created_by', $companyId);
             }
         });
     }
