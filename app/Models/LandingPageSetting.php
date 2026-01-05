@@ -47,7 +47,7 @@ class LandingPageSetting extends BaseModel
                         'announcement_text' => '⚖️ New: Advanced Court Calendar Integration',
                         'primary_button_text' => 'Start Free Trial',
                         'secondary_button_text' => 'Login',
-                        'image' => '/public/screenshots/a-advocate-saas-pic.png',
+                        'image' => '/screenshots/a-advocate-saas-pic.png',
                         'background_color' => '#f1f5f9',
                         'text_color' => '#1f2937',
                         'layout' => 'image-right',
@@ -85,37 +85,37 @@ class LandingPageSetting extends BaseModel
                         'subtitle' => 'Explore our intuitive interface designed to streamline your legal practice operations.',
                         'screenshots_list' => [
                             [
-                                'src' => '/public/screenshots/a-advocate-saas-pic.png',
+                                'src' => '/screenshots/a-advocate-saas-pic.png',
                                 'alt' => 'Advocate SaaS Dashboard Overview',
                                 'title' => 'Dashboard Overview',
                                 'description' => 'Complete legal practice management dashboard with case overview and analytics'
                             ],
                             [
-                                'src' => '/public/screenshots/client-advocate-saas-pic.png',
+                                'src' => '/screenshots/client-advocate-saas-pic.png',
                                 'alt' => 'Advocate SaaS Client Management',
                                 'title' => 'Client Management',
                                 'description' => 'Comprehensive client database with contact information and case history'
                             ],
                             [
-                                'src' => '/public/screenshots/b-advocate-saas-pic.png',
+                                'src' => '/screenshots/b-advocate-saas-pic.png',
                                 'alt' => 'Advocate SaaS Superadmin Plan Management Interface',
                                 'title' => 'Plan Management',
                                 'description' => 'Comprehensive subscription plan management from superadmin dashboard'
                             ],
                             [
-                                'src' => '/public/screenshots/c-advocate-saas-pic.png',
+                                'src' => '/screenshots/c-advocate-saas-pic.png',
                                 'alt' => 'Advocate SaaS Multi-Language Management Interface',
                                 'title' => 'Language Management',
                                 'description' => 'Comprehensive multi-language support and localization settings'
                             ],
                             [
-                                'src' => '/public/screenshots/j-advocate-saas-pic.png',
+                                'src' => '/screenshots/j-advocate-saas-pic.png',
                                 'alt' => 'Advocate SaaS Company Settings Interface',
                                 'title' => 'Company Settings',
                                 'description' => 'Comprehensive company configuration and system settings management'
                             ],
                             [
-                                'src' => '/public/screenshots/g-advocate-saas-pic.png',
+                                'src' => '/screenshots/g-advocate-saas-pic.png',
                                 'alt' => 'Advocate SaaS Invoice Management System',
                                 'title' => 'Invoice Management',
                                 'description' => 'Professional invoice generation and billing management system'
@@ -269,10 +269,10 @@ class LandingPageSetting extends BaseModel
             ];
 
             $settings = self::create([
-                'company_name'    => 'Advocate SaaS',
-                'contact_email'   => 'support@advocate.com',
-                'contact_phone'   => '+1 234 567 890',
-                'contact_address' => '123 Main Street, New York, USA',
+                'company_name'    => 'Sard App',
+                'contact_email'   => 'support@sard.app',
+                'contact_phone'   => '+966 57 360 6423',
+                'contact_address' => 'Saudi Arabia',
                 'config_sections' => $defaultConfig
             ]);
         }
