@@ -293,6 +293,16 @@ class PermissionSeeder extends Seeder
             ['name' => 'delete-case-types', 'module' => 'case_types', 'label' => 'Delete Case Types', 'description' => 'Can delete case types'],
             ['name' => 'toggle-status-case-types', 'module' => 'case_types', 'label' => 'Toggle Status Case Types', 'description' => 'Can toggle status of case types'],
 
+            // Case Categories
+            ['name' => 'manage-case-categories', 'module' => 'case_categories', 'label' => 'Manage Case Categories', 'description' => 'Can manage case categories'],
+            ['name' => 'manage-any-case-categories', 'module' => 'case_categories', 'label' => 'Manage All Case Categories', 'description' => 'Manage Any Case Categories'],
+            ['name' => 'manage-own-case-categories', 'module' => 'case_categories', 'label' => 'Manage Own Case Categories', 'description' => 'Manage Limited Case Categories that is created by own'],
+            ['name' => 'view-case-categories', 'module' => 'case_categories', 'label' => 'View Case Categories', 'description' => 'View Case Categories'],
+            ['name' => 'create-case-categories', 'module' => 'case_categories', 'label' => 'Create Case Categories', 'description' => 'Can create case categories'],
+            ['name' => 'edit-case-categories', 'module' => 'case_categories', 'label' => 'Edit Case Categories', 'description' => 'Can edit case categories'],
+            ['name' => 'delete-case-categories', 'module' => 'case_categories', 'label' => 'Delete Case Categories', 'description' => 'Can delete case categories'],
+            ['name' => 'toggle-status-case-categories', 'module' => 'case_categories', 'label' => 'Toggle Status Case Categories', 'description' => 'Can toggle status of case categories'],
+
             // Case Statuses
             ['name' => 'manage-case-statuses', 'module' => 'case_statuses', 'label' => 'Manage Case Statuses', 'description' => 'Can manage case statuses'],
             ['name' => 'manage-any-case-statuses', 'module' => 'case_statuses', 'label' => 'Manage All Case Statuses', 'description' => 'Manage Any Case Statuses'],

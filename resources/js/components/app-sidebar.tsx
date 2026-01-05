@@ -199,6 +199,16 @@ export function AppSidebar() {
             });
         }
         if (
+            hasPermission(permissions, 'manage-case-categories') ||
+            hasPermission(permissions, 'manage-any-case-categories') ||
+            hasPermission(permissions, 'manage-own-case-categories')
+        ) {
+            caseSetupChildren.push({
+                title: t('Case Categories'),
+                href: route('cases.case-categories.index'),
+            });
+        }
+        if (
             hasPermission(permissions, 'manage-case-statuses') ||
             hasPermission(permissions, 'manage-any-case-statuses') ||
             hasPermission(permissions, 'manage-own-case-statuses')

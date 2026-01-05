@@ -236,6 +236,16 @@ class RoleSeeder extends Seeder
             'delete-case-types',
             'toggle-status-case-types',
 
+            // Case Categories permissions
+            'manage-case-categories',
+            'manage-any-case-categories',
+            'manage-own-case-categories',
+            'view-case-categories',
+            'create-case-categories',
+            'edit-case-categories',
+            'delete-case-categories',
+            'toggle-status-case-categories',
+
             // Case Statuses permissions
             'manage-case-statuses',
             'manage-any-case-statuses',

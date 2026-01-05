@@ -65,6 +65,7 @@ return [
         'client_billing_currencies',
         'cases',
         'case_types',
+        'case_categories',
         'case_statuses',
         'case_timelines',
         'case_team_members',
