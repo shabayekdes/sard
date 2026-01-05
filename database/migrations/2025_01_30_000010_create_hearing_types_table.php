@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('hearing_types', function (Blueprint $table) {
             $table->id();
             $table->string('type_id')->unique(); // Auto-generated type ID
-            $table->string('name');
-            $table->text('description')->nullable();
+            $table->json('name');
+            $table->json('description')->nullable();
             $table->integer('duration_estimate')->nullable(); // Duration in minutes
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->text('requirements')->nullable(); // JSON field for requirements
-            $table->text('notes')->nullable();
+            $table->json('notes')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();
             

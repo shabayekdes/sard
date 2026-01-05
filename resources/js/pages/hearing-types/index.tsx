@@ -12,9 +12,10 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 export default function HearingTypes() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { auth, hearingTypes, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
+  const currentLocale = i18n.language || 'en';
 
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
   const [selectedStatus, setSelectedStatus] = useState(pageFilters.status || 'all');
@@ -194,10 +195,36 @@ export default function HearingTypes() {
     { title: t('Hearing Types') }
   ];
 
+  // Helper function to get translated value from JSON object
+  const getTranslatedValue = (value: any, maxLength?: number): string => {
+    if (!value) return '-';
+    if (typeof value === 'string') {
+      const result = maxLength && value.length > maxLength ? value.substring(0, maxLength) + '...' : value;
+      return result;
+    }
+    if (typeof value === 'object' && value !== null) {
+      const text = value[currentLocale] || value.en || value.ar || '-';
+      if (maxLength && text.length > maxLength) {
+        return text.substring(0, maxLength) + '...';
+      }
+      return text;
+    }
+    return '-';
+  };
+
   const columns = [
     { key: 'type_id', label: t('Type ID'), sortable: true },
-    { key: 'name', label: t('Hearing Type'), sortable: true },
-    { key: 'description', label: t('Description'), render: (value: string) => value ? (value.length > 50 ? value.substring(0, 50) + '...' : value) : '-' },
+    { 
+      key: 'name', 
+      label: t('Hearing Type'), 
+      sortable: true,
+      render: (value: any) => getTranslatedValue(value)
+    },
+    { 
+      key: 'description', 
+      label: t('Description'), 
+      render: (value: any) => getTranslatedValue(value, 50)
+    },
     { key: 'duration_estimate', label: t('Duration (min)'), render: (value: number) => value ? `${value} min` : '-' },
     {
       key: 'status',
@@ -289,15 +316,88 @@ export default function HearingTypes() {
         onSubmit={handleFormSubmit}
         formConfig={{
           fields: [
-            { name: 'name', label: t('Hearing Type Name'), type: 'text', required: true },
-            { name: 'description', label: t('Description'), type: 'textarea' },
+            {
+              name: 'name.en',
+              label: t('Hearing Type Name (English)'),
+              type: 'text',
+              required: true
+            },
+            {
+              name: 'name.ar',
+              label: t('Hearing Type Name (Arabic)'),
+              type: 'text',
+              required: true
+            },
+            {
+              name: 'description.en',
+              label: t('Description (English)'),
+              type: 'textarea'
+            },
+            {
+              name: 'description.ar',
+              label: t('Description (Arabic)'),
+              type: 'textarea'
+            },
             { name: 'duration_estimate', label: t('Duration Estimate (minutes)'), type: 'number' },
-            { name: 'notes', label: t('Notes'), type: 'textarea' },
+            {
+              name: 'notes.en',
+              label: t('Notes (English)'),
+              type: 'textarea'
+            },
+            {
+              name: 'notes.ar',
+              label: t('Notes (Arabic)'),
+              type: 'textarea'
+            },
             { name: 'status', label: t('Status'), type: 'select', options: [{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }], defaultValue: 'active' }
           ],
-          modalSize: 'xl'
+          modalSize: 'xl',
+          transformData: (data: any) => {
+            // Transform flat structure to nested structure for translatable fields
+            const transformed: any = { ...data };
+
+            // Handle name field
+            if (transformed['name.en'] || transformed['name.ar']) {
+              transformed.name = {
+                en: transformed['name.en'] || '',
+                ar: transformed['name.ar'] || '',
+              };
+              delete transformed['name.en'];
+              delete transformed['name.ar'];
+            }
+
+            // Handle description field
+            if (transformed['description.en'] || transformed['description.ar']) {
+              transformed.description = {
+                en: transformed['description.en'] || '',
+                ar: transformed['description.ar'] || '',
+              };
+              delete transformed['description.en'];
+              delete transformed['description.ar'];
+            }
+
+            // Handle notes field
+            if (transformed['notes.en'] || transformed['notes.ar']) {
+              transformed.notes = {
+                en: transformed['notes.en'] || '',
+                ar: transformed['notes.ar'] || '',
+              };
+              delete transformed['notes.en'];
+              delete transformed['notes.ar'];
+            }
+
+            return transformed;
+          }
         }}
-        initialData={currentItem}
+        initialData={currentItem ? {
+          ...currentItem,
+          'name.en': typeof currentItem.name === 'object' && currentItem.name !== null ? currentItem.name.en : '',
+          'name.ar': typeof currentItem.name === 'object' && currentItem.name !== null ? currentItem.name.ar : '',
+          'description.en': typeof currentItem.description === 'object' && currentItem.description !== null ? currentItem.description.en : '',
+          'description.ar': typeof currentItem.description === 'object' && currentItem.description !== null ? currentItem.description.ar : '',
+          'notes.en': typeof currentItem.notes === 'object' && currentItem.notes !== null ? currentItem.notes.en : '',
+          'notes.ar': typeof currentItem.notes === 'object' && currentItem.notes !== null ? currentItem.notes.ar : '',
+        } : {}}
         title={formMode === 'create' ? t('Add New Hearing Type') : formMode === 'edit' ? t('Edit Hearing Type') : t('View Hearing Type')}
         mode={formMode}
       />
@@ -306,7 +406,7 @@ export default function HearingTypes() {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.name || ''}
+        itemName={getTranslatedValue(currentItem?.name) || ''}
         entityName="hearing type"
       />
 
@@ -318,15 +418,56 @@ export default function HearingTypes() {
         formConfig={{
           fields: [
             { name: 'type_id', label: t('Type ID'), type: 'text', readOnly: true },
-            { name: 'name', label: t('Hearing Type Name'), type: 'text', readOnly: true },
-            { name: 'description', label: t('Description'), type: 'textarea', readOnly: true },
+            {
+              name: 'name.en',
+              label: t('Hearing Type Name (English)'),
+              type: 'text',
+              readOnly: true
+            },
+            {
+              name: 'name.ar',
+              label: t('Hearing Type Name (Arabic)'),
+              type: 'text',
+              readOnly: true
+            },
+            {
+              name: 'description.en',
+              label: t('Description (English)'),
+              type: 'textarea',
+              readOnly: true
+            },
+            {
+              name: 'description.ar',
+              label: t('Description (Arabic)'),
+              type: 'textarea',
+              readOnly: true
+            },
             { name: 'duration_estimate', label: t('Duration Estimate (minutes)'), type: 'number', readOnly: true },
-            { name: 'notes', label: t('Notes'), type: 'textarea', readOnly: true },
+            {
+              name: 'notes.en',
+              label: t('Notes (English)'),
+              type: 'textarea',
+              readOnly: true
+            },
+            {
+              name: 'notes.ar',
+              label: t('Notes (Arabic)'),
+              type: 'textarea',
+              readOnly: true
+            },
             { name: 'status', label: t('Status'), type: 'text', readOnly: true }
           ],
           modalSize: 'xl'
         }}
-        initialData={currentItem}
+        initialData={currentItem ? {
+          ...currentItem,
+          'name.en': typeof currentItem.name === 'object' && currentItem.name !== null ? currentItem.name.en : '',
+          'name.ar': typeof currentItem.name === 'object' && currentItem.name !== null ? currentItem.name.ar : '',
+          'description.en': typeof currentItem.description === 'object' && currentItem.description !== null ? currentItem.description.en : '',
+          'description.ar': typeof currentItem.description === 'object' && currentItem.description !== null ? currentItem.description.ar : '',
+          'notes.en': typeof currentItem.notes === 'object' && currentItem.notes !== null ? currentItem.notes.en : '',
+          'notes.ar': typeof currentItem.notes === 'object' && currentItem.notes !== null ? currentItem.notes.ar : '',
+        } : {}}
         title={t('View Hearing Type Details')}
         mode='view'
       />

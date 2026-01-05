@@ -18,9 +18,11 @@ class HearingTypeController extends Controller
         // Handle search
         if ($request->has('search') && !empty($request->search)) {
             $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                    ->orWhere('type_id', 'like', '%' . $request->search . '%')
-                    ->orWhere('description', 'like', '%' . $request->search . '%');
+                $q->where('type_id', 'like', '%' . $request->search . '%')
+                    ->orWhereJsonContains('name->en', $request->search)
+                    ->orWhereJsonContains('name->ar', $request->search)
+                    ->orWhereJsonContains('description->en', $request->search)
+                    ->orWhereJsonContains('description->ar', $request->search);
             });
         }
 
@@ -47,19 +49,25 @@ class HearingTypeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'name' => 'required|array',
+            'name.en' => 'required|string|max:255',
+            'name.ar' => 'required|string|max:255',
+            'description' => 'nullable|array',
+            'description.en' => 'nullable|string',
+            'description.ar' => 'nullable|string',
             'duration_estimate' => 'nullable|integer|min:1',
             'status' => 'nullable|in:active,inactive',
             'requirements' => 'nullable|array',
-            'notes' => 'nullable|string',
+            'notes' => 'nullable|array',
+            'notes.en' => 'nullable|string',
+            'notes.ar' => 'nullable|string',
         ]);
 
         $validated['created_by'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         // Check if hearing type with same name already exists for this company
-        $exists = HearingType::where('name', $validated['name'])
+        $exists = HearingType::whereJsonContains('name->en', $validated['name']['en'])
             ->where('created_by', createdBy())
             ->exists();
 
@@ -81,16 +89,22 @@ class HearingTypeController extends Controller
         if ($hearingType) {
             try {
                 $validated = $request->validate([
-                    'name' => 'required|string|max:255',
-                    'description' => 'nullable|string',
+                    'name' => 'required|array',
+                    'name.en' => 'required|string|max:255',
+                    'name.ar' => 'required|string|max:255',
+                    'description' => 'nullable|array',
+                    'description.en' => 'nullable|string',
+                    'description.ar' => 'nullable|string',
                     'duration_estimate' => 'nullable|integer|min:1',
                     'status' => 'nullable|in:active,inactive',
                     'requirements' => 'nullable|array',
-                    'notes' => 'nullable|string',
+                    'notes' => 'nullable|array',
+                    'notes.en' => 'nullable|string',
+                    'notes.ar' => 'nullable|string',
                 ]);
 
                 // Check if hearing type with same name already exists for this company (excluding current)
-                $exists = HearingType::where('name', $validated['name'])
+                $exists = HearingType::whereJsonContains('name->en', $validated['name']['en'])
                     ->where('created_by', createdBy())
                     ->where('id', '!=', $hearingTypeId)
                     ->exists();

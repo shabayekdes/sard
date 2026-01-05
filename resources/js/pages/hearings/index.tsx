@@ -13,9 +13,20 @@ import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { capitalize } from '@/utils/helpers';
 
 export default function Hearings() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { auth, hearings, cases, courts, judges, hearingTypes, googleCalendarEnabled, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
+  const currentLocale = i18n.language || 'en';
+
+  // Helper function to get translated value from JSON object
+  const getTranslatedValue = (value: any): string => {
+    if (!value) return '-';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'object' && value !== null) {
+      return value[currentLocale] || value.en || value.ar || '-';
+    }
+    return '-';
+  };
 
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
   const [selectedStatus, setSelectedStatus] = useState(pageFilters.status || 'all');
@@ -328,7 +339,10 @@ console.log({currentItem});
               name: 'hearing_type_id', 
               label: t('Hearing Type'), 
               type: 'select', 
-              options: [{ value: 'none', label: t('Select Type') }, ...(hearingTypes ? hearingTypes.map((ht: any) => ({ value: ht.id.toString(), label: ht.name })) : [])]
+              options: [{ value: 'none', label: t('Select Type') }, ...(hearingTypes ? hearingTypes.map((ht: any) => ({ 
+                value: ht.id.toString(), 
+                label: getTranslatedValue(ht.name)
+              })) : [])]
             },
             { name: 'title', label: t('Title'), type: 'text', required: true },
             { name: 'description', label: t('Description'), type: 'textarea' },
@@ -387,7 +401,7 @@ console.log({currentItem});
           case: currentItem?.case ? `${currentItem.case.case_id} - ${currentItem.case.title}` : '-',
           court: currentItem?.court?.name || '-',
           judge: currentItem?.judge?.name || '-',
-          hearing_type: currentItem?.hearing_type?.name || '-',
+          hearing_type: getTranslatedValue(currentItem?.hearing_type?.name) || '-',
           hearing_date: currentItem?.hearing_date ? (window.appSettings?.formatDate(currentItem.hearing_date) || new Date(currentItem.hearing_date).toLocaleDateString()) : '-',
           hearing_time: currentItem?.hearing_time || '-',
           duration_minutes: currentItem?.duration_minutes ? `${currentItem.duration_minutes} minutes` : '-',
