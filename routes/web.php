@@ -762,6 +762,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('case/case-categories/{caseCategory}', [\App\Http\Controllers\CaseCategoryController::class, 'update'])->middleware('permission:edit-case-categories')->name('cases.case-categories.update');
             Route::delete('case/case-categories/{caseCategory}', [\App\Http\Controllers\CaseCategoryController::class, 'destroy'])->middleware('permission:delete-case-categories')->name('cases.case-categories.destroy');
             Route::put('case/case-categories/{caseCategory}/toggle-status', [\App\Http\Controllers\CaseCategoryController::class, 'toggleStatus'])->middleware('permission:edit-case-categories')->name('cases.case-categories.toggle-status');
+            Route::get('case/case-categories/{categoryId}/subcategories', [\App\Http\Controllers\CaseCategoryController::class, 'getSubcategories'])->name('cases.case-categories.subcategories');
         });
 
         // Case Statuses routes

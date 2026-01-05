@@ -17,6 +17,8 @@ class CaseModel extends BaseModel
         'description',
         'client_id',
         'case_type_id',
+        'case_category_id',
+        'case_subcategory_id',
         'case_status_id',
         'court_id',
         'priority',
@@ -60,6 +62,16 @@ class CaseModel extends BaseModel
     public function caseType()
     {
         return $this->belongsTo(CaseType::class);
+    }
+
+    public function caseCategory()
+    {
+        return $this->belongsTo(CaseCategory::class, 'case_category_id');
+    }
+
+    public function caseSubcategory()
+    {
+        return $this->belongsTo(CaseCategory::class, 'case_subcategory_id');
     }
 
     public function caseStatus()

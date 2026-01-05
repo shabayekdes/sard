@@ -232,5 +232,36 @@ class CaseCategoryController extends Controller
         }
         return $ids;
     }
+
+    /**
+     * Get subcategories (children) of a category
+     */
+    public function getSubcategories(Request $request, $categoryId)
+    {
+        $category = CaseCategory::where('id', $categoryId)
+            ->where('created_by', createdBy())
+            ->first();
+
+        if (!$category) {
+            return response()->json([]);
+        }
+
+        $subcategories = CaseCategory::where('parent_id', $categoryId)
+            ->where('created_by', createdBy())
+            ->where('status', 'active')
+            ->get(['id', 'name']);
+
+        // Transform for frontend
+        $locale = app()->getLocale();
+        $subcategories->transform(function ($subcategory) use ($locale) {
+            return [
+                'id' => $subcategory->id,
+                'name' => $subcategory->name, // Spatie will automatically return translated value
+                'name_translations' => $subcategory->getTranslations('name'),
+            ];
+        });
+
+        return response()->json($subcategories);
+    }
 }
 

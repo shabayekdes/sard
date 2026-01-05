@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\NewCaseCreated;
 use App\Models\CaseModel;
 use App\Models\CaseType;
+use App\Models\CaseCategory;
 use App\Models\CaseStatus;
 use App\Models\Client;
 use App\Models\Court;
@@ -70,6 +71,10 @@ class CaseController extends BaseController
         $cases = $query->paginate($request->per_page ?? 10);
 
         $caseTypes = CaseType::where('created_by', createdBy())->where('status', 'active')->get(['id', 'name']);
+        $caseCategories = CaseCategory::where('created_by', createdBy())
+            ->where('status', 'active')
+            ->whereNull('parent_id')
+            ->get(['id', 'name']);
         $caseStatuses = CaseStatus::where('created_by', createdBy())->where('status', 'active')->get(['id', 'name']);
         $clients = Client::where('created_by', createdBy())->where('status', 'active')->get(['id', 'name']);
         $courts = Court::where('created_by', createdBy())->where('status', 'active')->get(['id', 'name']);
@@ -105,6 +110,7 @@ class CaseController extends BaseController
         return Inertia::render('cases/index', [
             'cases' => $cases,
             'caseTypes' => $caseTypes,
+            'caseCategories' => $caseCategories,
             'caseStatuses' => $caseStatuses,
             'clients' => $clients,
             'courts' => $courts,
@@ -374,6 +380,8 @@ class CaseController extends BaseController
             'description' => 'nullable|string',
             'client_id' => 'required|exists:clients,id',
             'case_type_id' => 'required|exists:case_types,id',
+            'case_category_id' => 'nullable|exists:case_categories,id',
+            'case_subcategory_id' => 'nullable|exists:case_categories,id',
             'case_status_id' => 'required|exists:case_statuses,id',
             'court_id' => 'required|exists:courts,id',
             'priority' => 'required|in:low,medium,high',
@@ -448,6 +456,8 @@ class CaseController extends BaseController
             'description' => 'nullable|string',
             'client_id' => 'required|exists:clients,id',
             'case_type_id' => 'required|exists:case_types,id',
+            'case_category_id' => 'nullable|exists:case_categories,id',
+            'case_subcategory_id' => 'nullable|exists:case_categories,id',
             'case_status_id' => 'required|exists:case_statuses,id',
             'court_id' => 'required|exists:courts,id',
             'priority' => 'required|in:low,medium,high',

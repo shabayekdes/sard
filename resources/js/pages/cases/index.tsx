@@ -12,8 +12,8 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 export default function Cases() {
-  const { t } = useTranslation();
-  const { auth, cases, caseTypes, caseStatuses, clients, courts, googleCalendarEnabled, planLimits, filters: pageFilters = {} } = usePage().props as any;
+  const { t, i18n } = useTranslation();
+  const { auth, cases, caseTypes, caseCategories, caseStatuses, clients, courts, googleCalendarEnabled, planLimits, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
 
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
@@ -101,6 +101,14 @@ export default function Cases() {
   };
 
   const handleFormSubmit = (formData: any) => {
+    // Convert 'none' to null for category and subcategory
+    if (formData.case_category_id === 'none' || formData.case_category_id === '') {
+      formData.case_category_id = null;
+    }
+    if (formData.case_subcategory_id === 'none' || formData.case_subcategory_id === '') {
+      formData.case_subcategory_id = null;
+    }
+
     if (formMode === 'create') {
       toast.loading(t('Creating case...'));
 
@@ -516,6 +524,38 @@ export default function Cases() {
               })) : []
             },
             {
+              name: 'case_category_subcategory',
+              type: 'dependent-dropdown',
+              dependentConfig: [
+                {
+                  name: 'case_category_id',
+                  label: t('Case Category'),
+                  options: caseCategories ? [
+                    { value: 'none', label: t('None') },
+                    ...caseCategories.map((cat: any) => {
+                      // Handle translatable name
+                      let displayName = cat.name;
+                      if (typeof cat.name === 'object' && cat.name !== null) {
+                        displayName = cat.name[i18n.language] || cat.name.en || cat.name.ar || '';
+                      } else if (cat.name_translations && typeof cat.name_translations === 'object') {
+                        displayName = cat.name_translations[i18n.language] || cat.name_translations.en || cat.name_translations.ar || '';
+                      }
+                      return {
+                        value: cat.id.toString(),
+                        label: displayName
+                      };
+                    })
+                  ] : [{ value: 'none', label: t('None') }]
+                },
+                {
+                  name: 'case_subcategory_id',
+                  label: t('Case Subcategory'),
+                  apiEndpoint: '/case/case-categories/{case_category_id}/subcategories',
+                  showCurrentValue: true
+                }
+              ]
+            },
+            {
               name: 'case_status_id',
               label: t('Case Status'),
               type: 'select',
@@ -571,7 +611,15 @@ export default function Cases() {
           }] : []),
           modalSize: 'xl',
         }}
-        initialData={currentItem}
+        initialData={
+          currentItem
+            ? {
+              ...currentItem,
+              'case_category_id': currentItem.case_category_id ? currentItem.case_category_id.toString() : 'none',
+              'case_subcategory_id': currentItem.case_subcategory_id ? currentItem.case_subcategory_id.toString() : 'none',
+            }
+            : { case_category_id: 'none', case_subcategory_id: 'none' }
+        }
         title={
           formMode === 'create'
             ? t('Add New Case')
