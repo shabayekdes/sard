@@ -737,7 +737,13 @@ export default function CaseShow() {
                         </div>
                         <div>
                             <span className="font-medium text-gray-500 dark:text-gray-400">{t('Case Type')}:</span>
-                            <p className="text-gray-900 dark:text-white">{caseData.case_type?.name}</p>
+                            <p className="text-gray-900 dark:text-white">
+                                {caseData.case_type?.name
+                                    ? (typeof caseData.case_type.name === 'object' && caseData.case_type.name !== null
+                                        ? (caseData.case_type.name[i18n.language] || caseData.case_type.name.en || caseData.case_type.name.ar || '-')
+                                        : caseData.case_type.name)
+                                    : '-'}
+                            </p>
                         </div>
                         <div>
                             <span className="font-medium text-gray-500 dark:text-gray-400">{t('Filing Date')}:</span>

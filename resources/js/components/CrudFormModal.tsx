@@ -47,7 +47,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
     const [formData, setFormData] = useState<Record<string, any>>({});
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [relationOptions, setRelationOptions] = useState<Record<string, any[]>>({});
-        const { position } = useLayout();
+    const { position } = useLayout();
 
     // Calculate total price for price summary
     const calculateTotal = () => {
@@ -147,7 +147,15 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
             // Check if field is conditionally required based on other field values
             const isConditionallyRequired = field.conditional ? field.conditional(mode, formData) : true;
 
-            if (field.required && isConditionallyRequired && !formData[field.name]) {
+            // Special handling for dependent-dropdown fields
+            if (field.type === 'dependent-dropdown' && field.required && isConditionallyRequired) {
+                // Validate all dependent fields are filled
+                field.dependentConfig?.forEach((depField) => {
+                    if (!formData[depField.name] || formData[depField.name] === '' || formData[depField.name] === 'none') {
+                        newErrors[depField.name] = `${depField.label} is required`;
+                    }
+                });
+            } else if (field.required && isConditionallyRequired && !formData[field.name]) {
                 newErrors[field.name] = `${field.label} is required`;
             }
 
@@ -331,6 +339,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                     <DependentDropdown
                         fields={field.dependentConfig || []}
                         values={dependentValues}
+                        errors={errors}
                         onChange={(fieldName, value, additionalData) => {
                             setFormData((prev) => {
                                 const newData = { ...prev, [fieldName]: value };
@@ -342,6 +351,17 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                         newData[depField.name] = '';
                                     });
                                 }
+
+                                // Clear errors for dependent fields when parent changes
+                                setErrors((prev) => {
+                                    const newErrors = { ...prev };
+                                    if (fieldIndex !== -1 && field.dependentConfig) {
+                                        field.dependentConfig.slice(fieldIndex + 1).forEach((depField) => {
+                                            delete newErrors[depField.name];
+                                        });
+                                    }
+                                    return newErrors;
+                                });
 
                                 return newData;
                             });

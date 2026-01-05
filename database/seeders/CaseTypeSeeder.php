@@ -11,39 +11,116 @@ class CaseTypeSeeder extends Seeder
 {
     public function run(): void
     {
-        
         $companyUsers = User::where('type', 'company')->get();
         
         foreach ($companyUsers as $companyUser) {
-            // Create 2-3 case types per company
-            $caseTypeCount = rand(8, 10);
             $availableCaseTypes = [
-                ['name' => 'Criminal Law', 'description' => 'Criminal defense and prosecution cases', 'color' => '#EF4444'],
-                ['name' => 'Civil Law', 'description' => 'Civil litigation and disputes', 'color' => '#3B82F6'],
-                ['name' => 'Corporate Law', 'description' => 'Business and corporate legal matters', 'color' => '#10B981'],
-                ['name' => 'Family Law', 'description' => 'Divorce, custody, and family matters', 'color' => '#F59E0B'],
-                ['name' => 'Real Estate', 'description' => 'Property and real estate transactions', 'color' => '#8B5CF6'],
-                ['name' => 'Employment Law', 'description' => 'Workplace and employment issues', 'color' => '#06B6D4'],
-                ['name' => 'Personal Injury', 'description' => 'Personal injury and accident cases', 'color' => '#DC2626'],
-                ['name' => 'Immigration Law', 'description' => 'Immigration and visa matters', 'color' => '#059669'],
-                ['name' => 'Intellectual Property', 'description' => 'Patents, trademarks, and IP disputes', 'color' => '#F97316'],
-                ['name' => 'Tax Law', 'description' => 'Tax disputes and compliance', 'color' => '#84CC16'],
-                ['name' => 'Environmental Law', 'description' => 'Environmental regulations and compliance', 'color' => '#6B7280'],
+                [
+                    'name' => [
+                        'en' => 'Case Registration',
+                        'ar' => 'تسجيل قضية'
+                    ],
+                    'description' => [
+                        'en' => 'Formally creating and registering the case',
+                        'ar' => 'إنشاء وقيد القضية رسميًا'
+                    ],
+                    'color' => '#3B82F6'
+                ],
+                [
+                    'name' => [
+                        'en' => 'Case Filing',
+                        'ar' => 'قيد الدعوى'
+                    ],
+                    'description' => [
+                        'en' => 'Accepting the case and assigning it an official number',
+                        'ar' => 'قبول الدعوى وإعطاؤها رقم رسمي'
+                    ],
+                    'color' => '#10B981'
+                ],
+                [
+                    'name' => [
+                        'en' => 'Session Scheduled',
+                        'ar' => 'تحديد جلسة'
+                    ],
+                    'description' => [
+                        'en' => 'Setting a date for a court session',
+                        'ar' => 'تحديد موعد جلسة قضائية'
+                    ],
+                    'color' => '#F59E0B'
+                ],
+                [
+                    'name' => [
+                        'en' => 'Session Held',
+                        'ar' => 'انعقاد جلسة'
+                    ],
+                    'description' => [
+                        'en' => 'Holding the session',
+                        'ar' => 'عقد الجلسة'
+                    ],
+                    'color' => '#8B5CF6'
+                ],
+                [
+                    'name' => [
+                        'en' => 'Deadline',
+                        'ar' => 'موعد نهائي'
+                    ],
+                    'description' => [
+                        'en' => 'Mandatory date for submitting an action (memorandum / document)',
+                        'ar' => 'تاريخ إلزامي لتقديم إجراء (مذكرة / مستند)'
+                    ],
+                    'color' => '#EF4444'
+                ],
+                [
+                    'name' => [
+                        'en' => 'Memorandum Submitted',
+                        'ar' => 'تقديم مذكرة'
+                    ],
+                    'description' => [
+                        'en' => 'Submitting a memorandum or response',
+                        'ar' => 'تقديم مذكرة أو رد'
+                    ],
+                    'color' => '#06B6D4'
+                ],
+                [
+                    'name' => [
+                        'en' => 'Judgment Issued',
+                        'ar' => 'نطق بالحكم'
+                    ],
+                    'description' => [
+                        'en' => 'Issuing the judgment',
+                        'ar' => 'صدور الحكم'
+                    ],
+                    'color' => '#059669'
+                ],
+                [
+                    'name' => [
+                        'en' => 'Meeting',
+                        'ar' => 'اجتماع'
+                    ],
+                    'description' => [
+                        'en' => 'Internal meeting or with the client regarding the case',
+                        'ar' => 'اجتماع داخلي أو مع العميل بخصوص القضية'
+                    ],
+                    'color' => '#84CC16'
+                ],
             ];
             
-            // Randomly select case types for this company
-            $selectedTypes = collect($availableCaseTypes)->random($caseTypeCount);
-            
-            foreach ($selectedTypes as $caseTypeData) {
-                CaseType::firstOrCreate(
-                    ['name' => $caseTypeData['name'], 'created_by' => $companyUser->id],
-                    [
+            // Create all case types for this company
+            foreach ($availableCaseTypes as $caseTypeData) {
+                // Check if case type already exists for this user
+                $existing = CaseType::where('created_by', $companyUser->id)
+                    ->whereRaw("JSON_EXTRACT(name, '$.en') = ?", [$caseTypeData['name']['en']])
+                    ->first();
+
+                if (! $existing) {
+                    CaseType::create([
+                        'name' => $caseTypeData['name'],
                         'description' => $caseTypeData['description'],
                         'color' => $caseTypeData['color'],
                         'status' => 'active',
-                        'created_by' => $companyUser->id
-                    ]
-                );
+                        'created_by' => $companyUser->id,
+                    ]);
+                }
             }
         }
     }

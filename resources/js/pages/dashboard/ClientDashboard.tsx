@@ -59,7 +59,7 @@ interface Props {
 }
 
 export default function ClientDashboard({ client, myCases, upcomingHearings, recentDocuments, stats }: Props) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
 
     return (
         <PageTemplate 
@@ -174,7 +174,13 @@ export default function ClientDashboard({ client, myCases, upcomingHearings, rec
                                         <div className="flex-1 min-w-0">
                                             <p className="font-medium text-sm truncate">{case_.title}</p>
                                             <p className="text-xs text-muted-foreground">Case ID: {case_.case_id}</p>
-                                            <p className="text-xs text-muted-foreground">{case_.case_type?.name}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {case_.case_type?.name
+                                                    ? (typeof case_.case_type.name === 'object' && case_.case_type.name !== null
+                                                        ? (case_.case_type.name[i18n.language] || case_.case_type.name.en || case_.case_type.name.ar || '-')
+                                                        : case_.case_type.name)
+                                                    : '-'}
+                                            </p>
                                         </div>
                                         <Badge variant={case_.case_status?.is_closed ? "secondary" : "default"} className="text-xs">
                                             {case_.case_status?.name || 'Active'}

@@ -370,7 +370,11 @@ export default function ClientShow() {
                                                                             color: caseItem.case_type.color
                                                                         }}
                                                                     >
-                                                                        {caseItem.case_type.name}
+                                                                        {caseItem.case_type.name
+                                                                            ? (typeof caseItem.case_type.name === 'object' && caseItem.case_type.name !== null
+                                                                                ? (caseItem.case_type.name[i18n.language] || caseItem.case_type.name.en || caseItem.case_type.name.ar || '-')
+                                                                                : caseItem.case_type.name)
+                                                                            : '-'}
                                                                     </span>
                                                                 ) : (
                                                                     <span className="text-gray-500">-</span>

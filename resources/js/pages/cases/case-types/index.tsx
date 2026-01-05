@@ -12,8 +12,8 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 export default function CaseTypes() {
-  const { t } = useTranslation();
-  const { auth, caseTypes, filters: pageFilters = {} } = usePage().props as any;
+  const { t, i18n } = useTranslation();
+  const { auth, caseTypes, caseCategories, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
 
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
@@ -23,7 +23,7 @@ export default function CaseTypes() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<any>(null);
   const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
-console.log('ENTER.......')
+  console.log('ENTER.......')
   const hasActiveFilters = () => {
     return searchTerm !== '' || selectedStatus !== 'all';
   };
@@ -87,6 +87,17 @@ console.log('ENTER.......')
   };
 
   const handleFormSubmit = (formData: any) => {
+    // Validate that subcategory is selected (required field)
+    if (!formData.case_subcategory_id || formData.case_subcategory_id === '' || formData.case_subcategory_id === 'none') {
+      toast.error(t('Please select a case subcategory.'));
+      return;
+    }
+
+    // Save subcategory_id as case_category_id (required field)
+    formData.case_category_id = formData.case_subcategory_id;
+    // Remove the temporary case_subcategory_id field
+    delete formData.case_subcategory_id;
+
     if (formMode === 'create') {
       toast.loading(t('Creating case type...'));
 
@@ -194,23 +205,44 @@ console.log('ENTER.......')
     { title: t('Case Types') }
   ];
 
+  const currentLocale = i18n.language || 'en';
+
   const columns = [
     {
       key: 'name',
       label: t('Name'),
-      sortable: true
+      sortable: true,
+      render: (value: any, row: any) => {
+        // Check for name_translations first, then name object, then string
+        if (row.name_translations && typeof row.name_translations === 'object') {
+          return row.name_translations[currentLocale] || row.name_translations.en || row.name_translations.ar || '-';
+        }
+        if (typeof value === 'object' && value !== null) {
+          return value[currentLocale] || value.en || value.ar || '-';
+        }
+        return value || '-';
+      }
     },
     {
       key: 'description',
       label: t('Description'),
-      render: (value: string) => value || '-'
+      render: (value: any, row: any) => {
+        // Check for description_translations first, then description object, then string
+        if (row.description_translations && typeof row.description_translations === 'object') {
+          return row.description_translations[currentLocale] || row.description_translations.en || row.description_translations.ar || '-';
+        }
+        if (typeof value === 'object' && value !== null) {
+          return value[currentLocale] || value.en || value.ar || '-';
+        }
+        return value || '-';
+      }
     },
     {
       key: 'color',
       label: t('Color'),
       render: (value: string) => (
         <div className="flex items-center gap-2">
-          <div 
+          <div
             className="w-4 h-4 rounded border"
             style={{ backgroundColor: value }}
           ></div>
@@ -226,7 +258,7 @@ console.log('ENTER.......')
         <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'active'
           ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
           : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
-        }`}>
+          }`}>
           {value === 'active' ? t('Active') : t('Inactive')}
         </span>
       )
@@ -344,8 +376,59 @@ console.log('ENTER.......')
         onSubmit={handleFormSubmit}
         formConfig={{
           fields: [
-            { name: 'name', label: t('Name'), type: 'text', required: true },
-            { name: 'description', label: t('Description'), type: 'textarea' },
+            {
+              name: 'name.en',
+              label: t('Name (English)'),
+              type: 'text',
+              required: true
+            },
+            {
+              name: 'name.ar',
+              label: t('Name (Arabic)'),
+              type: 'text',
+              required: false
+            },
+            {
+              name: 'description.en',
+              label: t('Description (English)'),
+              type: 'textarea'
+            },
+            {
+              name: 'description.ar',
+              label: t('Description (Arabic)'),
+              type: 'textarea'
+            },
+            {
+              name: 'case_category_subcategory',
+              label: t('Case Category & Subcategory'),
+              type: 'dependent-dropdown',
+              required: true,
+              dependentConfig: [
+                {
+                  name: 'case_category_id',
+                  label: t('Case Category'),
+                  options: caseCategories ? caseCategories.map((cat: any) => {
+                    // Handle translatable name
+                    let displayName = cat.name;
+                    if (typeof cat.name === 'object' && cat.name !== null) {
+                      displayName = cat.name[i18n.language] || cat.name.en || cat.name.ar || '';
+                    } else if (cat.name_translations && typeof cat.name_translations === 'object') {
+                      displayName = cat.name_translations[i18n.language] || cat.name_translations.en || cat.name_translations.ar || '';
+                    }
+                    return {
+                      value: cat.id.toString(),
+                      label: displayName
+                    };
+                  }) : []
+                },
+                {
+                  name: 'case_subcategory_id',
+                  label: t('Case Subcategory'),
+                  apiEndpoint: '/case/case-categories/{case_category_id}/subcategories',
+                  showCurrentValue: true
+                }
+              ]
+            },
             { name: 'color', label: t('Color'), type: 'color', defaultValue: '#3B82F6' },
             {
               name: 'status',
@@ -358,9 +441,62 @@ console.log('ENTER.......')
               defaultValue: 'active'
             }
           ],
-          modalSize: 'lg'
+          modalSize: 'lg',
+          transformData: (data: any) => {
+            // Transform flat structure to nested structure for translatable fields
+            const transformed: any = { ...data };
+
+            // Handle name field
+            if (transformed['name.en'] || transformed['name.ar']) {
+              transformed.name = {
+                en: transformed['name.en'] || '',
+                ar: transformed['name.ar'] || '',
+              };
+              delete transformed['name.en'];
+              delete transformed['name.ar'];
+            }
+
+            // Handle description field
+            if (transformed['description.en'] || transformed['description.ar']) {
+              transformed.description = {
+                en: transformed['description.en'] || '',
+                ar: transformed['description.ar'] || '',
+              };
+              delete transformed['description.en'];
+              delete transformed['description.ar'];
+            }
+
+            return transformed;
+          }
         }}
-        initialData={currentItem}
+        initialData={
+          currentItem
+            ? {
+              ...currentItem,
+              // Transform name and description to flat structure for form
+              'name.en': currentItem.name_translations?.en ||
+                (typeof currentItem.name === 'object' && currentItem.name !== null ? currentItem.name.en : '') ||
+                (typeof currentItem.name === 'string' ? currentItem.name : '') ||
+                '',
+              'name.ar': currentItem.name_translations?.ar ||
+                (typeof currentItem.name === 'object' && currentItem.name !== null ? currentItem.name.ar : '') ||
+                '',
+              'description.en': currentItem.description_translations?.en ||
+                (typeof currentItem.description === 'object' && currentItem.description !== null ? currentItem.description.en : '') ||
+                (typeof currentItem.description === 'string' ? currentItem.description : '') ||
+                '',
+              'description.ar': currentItem.description_translations?.ar ||
+                (typeof currentItem.description === 'object' && currentItem.description !== null ? currentItem.description.ar : '') ||
+                '',
+              // Get parent category_id from caseCategory's parent if it exists
+              'case_category_id': currentItem.caseCategory?.parent_id
+                ? currentItem.caseCategory.parent_id.toString()
+                : '',
+              // Set subcategory_id (which is stored in case_category_id)
+              'case_subcategory_id': currentItem.case_category_id ? currentItem.case_category_id.toString() : '',
+            }
+            : { case_category_id: '', case_subcategory_id: '' }
+        }
         title={
           formMode === 'create'
             ? t('Add New Case Type')
@@ -375,7 +511,15 @@ console.log('ENTER.......')
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.name || ''}
+        itemName={
+          currentItem?.name_translations
+            ? (currentItem.name_translations[currentLocale] || currentItem.name_translations.en || currentItem.name_translations.ar || '')
+            : (currentItem?.name
+              ? (typeof currentItem.name === 'object' && currentItem.name !== null
+                ? (currentItem.name[currentLocale] || currentItem.name.en || currentItem.name.ar || '')
+                : currentItem.name)
+              : '')
+        }
         entityName="case type"
       />
     </PageTemplate>

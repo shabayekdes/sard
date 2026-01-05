@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('case_types', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
+            $table->json('name');
+            $table->json('description')->nullable();
             $table->string('color', 7)->default('#3B82F6');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');

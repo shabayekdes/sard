@@ -257,17 +257,24 @@ export default function Cases() {
     {
       key: 'case_type',
       label: t('Type'),
-      render: (value: any, row: any) => (
-        <span 
-          className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
-          style={{ 
-            backgroundColor: `${row.case_type?.color}20`, 
-            color: row.case_type?.color 
-          }}
-        >
-          {row.case_type?.name || '-'}
-        </span>
-      )
+      render: (value: any, row: any) => {
+        const currentLocale = i18n.language || 'en';
+        let displayName = row.case_type?.name || '-';
+        if (row.case_type?.name && typeof row.case_type.name === 'object' && row.case_type.name !== null) {
+          displayName = row.case_type.name[currentLocale] || row.case_type.name.en || row.case_type.name.ar || '-';
+        }
+        return (
+          <span 
+            className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
+            style={{ 
+              backgroundColor: `${row.case_type?.color}20`, 
+              color: row.case_type?.color 
+            }}
+          >
+            {displayName}
+          </span>
+        );
+      }
     },
     {
       key: 'case_status',

@@ -14,9 +14,10 @@ interface DependentDropdownProps {
     values: Record<string, string>;
     onChange: (fieldName: string, value: string, formData?: any, additionalData?: any) => void;
     disabled?: boolean;
+    errors?: Record<string, string>;
 }
 
-export default function DependentDropdown({ fields, values, onChange, disabled = false }: DependentDropdownProps) {
+export default function DependentDropdown({ fields, values, onChange, disabled = false, errors = {} }: DependentDropdownProps) {
     const { base_url } = usePage().props as any
 
     const [availableOptions, setAvailableOptions] = useState<Record<string, { value: string; label: string }[]>>(() => {
@@ -179,7 +180,7 @@ export default function DependentDropdown({ fields, values, onChange, disabled =
                             value={values[field.name] || ''}
                             onChange={(e) => handleFieldChange(field.name, e.target.value, index)}
                             disabled={isDisabled || isLoading}
-                            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            className={`flex h-10 w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${errors[field.name] ? 'border-red-500' : 'border-input'}`}
                         >
                             <option 
                                 value=""
@@ -197,6 +198,9 @@ export default function DependentDropdown({ fields, values, onChange, disabled =
                                 </option>
                             ))}
                         </select>
+                        {errors[field.name] && (
+                            <p className="text-sm text-red-500 mt-1">{errors[field.name]}</p>
+                        )}
                     </div>
                 );
             })}

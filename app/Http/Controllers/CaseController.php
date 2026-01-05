@@ -71,6 +71,14 @@ class CaseController extends BaseController
         $cases = $query->paginate($request->per_page ?? 10);
 
         $caseTypes = CaseType::where('created_by', createdBy())->where('status', 'active')->get(['id', 'name']);
+        // Transform case types to include translations
+        $caseTypes->transform(function ($caseType) {
+            return [
+                'id' => $caseType->id,
+                'name' => $caseType->name, // Spatie will automatically return translated value for display
+                'name_translations' => $caseType->getTranslations('name'), // Full translations for editing
+            ];
+        });
         $caseCategories = CaseCategory::where('created_by', createdBy())
             ->where('status', 'active')
             ->whereNull('parent_id')
