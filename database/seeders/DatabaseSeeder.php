@@ -44,6 +44,7 @@ class DatabaseSeeder extends Seeder
                 // Client documents (after DocumentTypeSeeder)
                 EventTypeSeeder::class,
                 CourtTypeSeeder::class,
+                CircleTypeSeeder::class,
                 ClientDocumentSeeder::class,
 
                 // Case Management module seeders

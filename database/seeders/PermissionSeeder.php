@@ -370,6 +370,15 @@ class PermissionSeeder extends Seeder
             ['name' => 'edit-court-types', 'module' => 'court_types', 'label' => 'Edit Court Types', 'description' => 'Can edit court types'],
             ['name' => 'delete-court-types', 'module' => 'court_types', 'label' => 'Delete Court Types', 'description' => 'Can delete court types'],
 
+            // Circle Types
+            ['name' => 'manage-circle-types', 'module' => 'circle_types', 'label' => 'Manage Circle Types', 'description' => 'Can manage circle types'],
+            ['name' => 'manage-any-circle-types', 'module' => 'circle_types', 'label' => 'Manage All Circle Types', 'description' => 'Manage Any Circle Types'],
+            ['name' => 'manage-own-circle-types', 'module' => 'circle_types', 'label' => 'Manage Own Circle Types', 'description' => 'Manage Limited Circle Types that is created by own'],
+            ['name' => 'view-circle-types', 'module' => 'circle_types', 'label' => 'View Circle Types', 'description' => 'View Circle Types'],
+            ['name' => 'create-circle-types', 'module' => 'circle_types', 'label' => 'Create Circle Types', 'description' => 'Can create circle types'],
+            ['name' => 'edit-circle-types', 'module' => 'circle_types', 'label' => 'Edit Circle Types', 'description' => 'Can edit circle types'],
+            ['name' => 'delete-circle-types', 'module' => 'circle_types', 'label' => 'Delete Circle Types', 'description' => 'Can delete circle types'],
+
             // Hearings
             ['name' => 'manage-hearings', 'module' => 'hearings', 'label' => 'Manage Hearings', 'description' => 'Can manage hearings'],
             ['name' => 'manage-any-hearings', 'module' => 'hearings', 'label' => 'Manage All Hearings', 'description' => 'Manage Any Hearings'],

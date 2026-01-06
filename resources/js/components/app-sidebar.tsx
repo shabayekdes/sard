@@ -189,14 +189,14 @@ export function AppSidebar() {
         const caseChildren = [];
         const caseSetupChildren = [];
         if (
-          hasPermission(permissions, 'manage-case-categories') ||
-          hasPermission(permissions, 'manage-any-case-categories') ||
-          hasPermission(permissions, 'manage-own-case-categories')
+            hasPermission(permissions, 'manage-case-categories') ||
+            hasPermission(permissions, 'manage-any-case-categories') ||
+            hasPermission(permissions, 'manage-own-case-categories')
         ) {
-          caseSetupChildren.push({
-            title: t('Case Categories'),
-            href: route('cases.case-categories.index'),
-          });
+            caseSetupChildren.push({
+                title: t('Case Categories'),
+                href: route('cases.case-categories.index'),
+            });
         }
         if (
             hasPermission(permissions, 'manage-case-types') ||
@@ -208,7 +208,7 @@ export function AppSidebar() {
                 href: route('cases.case-types.index'),
             });
         }
-        
+
         if (
             hasPermission(permissions, 'manage-case-statuses') ||
             hasPermission(permissions, 'manage-any-case-statuses') ||
@@ -284,6 +284,16 @@ export function AppSidebar() {
             setupChildren.push({
                 title: t('Court Types'),
                 href: route('advocate.court-types.index'),
+            });
+        }
+        if (
+            hasPermission(permissions, 'manage-circle-types') ||
+            hasPermission(permissions, 'manage-any-circle-types') ||
+            hasPermission(permissions, 'manage-own-circle-types')
+        ) {
+            setupChildren.push({
+                title: t('Circle Types'),
+                href: route('advocate.circle-types.index'),
             });
         }
         if (setupChildren.length > 0) {

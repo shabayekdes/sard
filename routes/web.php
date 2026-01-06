@@ -681,6 +681,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('advocate/court-types/{courtType}/toggle-status', [\App\Http\Controllers\CourtTypeController::class, 'toggleStatus'])->middleware('permission:edit-court-types')->name('advocate.court-types.toggle-status');
         });
 
+        // Circle Type routes
+        Route::middleware('permission:manage-circle-types')->group(function () {
+            Route::get('advocate/circle-types', [\App\Http\Controllers\CircleTypeController::class, 'index'])->name('advocate.circle-types.index');
+            Route::post('advocate/circle-types', [\App\Http\Controllers\CircleTypeController::class, 'store'])->middleware('permission:create-circle-types')->name('advocate.circle-types.store');
+            Route::put('advocate/circle-types/{circleType}', [\App\Http\Controllers\CircleTypeController::class, 'update'])->middleware('permission:edit-circle-types')->name('advocate.circle-types.update');
+            Route::delete('advocate/circle-types/{circleType}', [\App\Http\Controllers\CircleTypeController::class, 'destroy'])->middleware('permission:delete-circle-types')->name('advocate.circle-types.destroy');
+            Route::put('advocate/circle-types/{circleType}/toggle-status', [\App\Http\Controllers\CircleTypeController::class, 'toggleStatus'])->middleware('permission:edit-circle-types')->name('advocate.circle-types.toggle-status');
+        });
+
         // Hearing routes
         Route::middleware('permission:manage-hearings')->group(function () {
             Route::get('hearings', [\App\Http\Controllers\HearingController::class, 'index'])->name('hearings.index');

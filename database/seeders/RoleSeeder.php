@@ -313,6 +313,15 @@ class RoleSeeder extends Seeder
             'edit-court-types',
             'delete-court-types',
 
+            // Circle Types permissions
+            'manage-circle-types',
+            'manage-any-circle-types',
+            'manage-own-circle-types',
+            'view-circle-types',
+            'create-circle-types',
+            'edit-circle-types',
+            'delete-circle-types',
+
             // Hearing permissions
             'manage-hearings',
             'manage-any-hearings',
