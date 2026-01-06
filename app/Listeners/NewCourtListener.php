@@ -26,6 +26,7 @@ class NewCourtListener
 
             // Load related data
             $courtType = \App\Models\CourtType::find($court->court_type_id);
+            $circleType = \App\Models\CircleType::find($court->circle_type_id);
 
             // For courts, we typically notify the admin user since courts don't have their own email
             $adminUser = auth()->user();
@@ -40,7 +41,7 @@ class NewCourtListener
                 '{type}' => $courtType ? $courtType->name : 'Court not assigned',
                 '{phoneno}' => $court->phone ?? 'Not provided',
                 '{email}' => $court->email ?? 'Not provided',
-                '{jurisdiction}' => $court->jurisdiction ?? 'Not specified',
+                '{circle_type}' => $circleType ? $circleType->name : 'Not specified',
                 '{address}' => $court->address ?? 'Not provided',
                 '{app_name}' => config('app.name', 'Legal Management System'),
             ];

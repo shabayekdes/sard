@@ -16,13 +16,8 @@ return new class extends Migration
             $table->string('court_id')->unique(); // Auto-generated court ID
             $table->string('name');
             $table->text('address')->nullable();
-            $table->string('phone')->nullable();
-            $table->string('email')->nullable();
-            $table->string('jurisdiction')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->text('facilities')->nullable(); // JSON field for courtroom facilities
-            $table->text('filing_requirements')->nullable();
-            $table->text('local_rules')->nullable();
             $table->text('notes')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();

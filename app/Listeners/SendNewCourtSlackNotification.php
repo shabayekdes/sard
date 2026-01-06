@@ -21,10 +21,20 @@ class SendNewCourtSlackNotification
         $court = $event->court;
 
        if (isNotificationTemplateEnabled('New Court', createdBy(), 'slack')) {
+            // Load circle type relationship if not already loaded
+            if (!$court->relationLoaded('circleType')) {
+                $court->load('circleType');
+            }
+            
+            $circleTypeName = '-';
+            if ($court->circleType) {
+                $circleTypeName = $court->circleType->name ?? '-';
+            }
+            
             $variables = [
                 '{court_name}' => $court->name ?? '-',
                 '{court_type}' => $court->courtType->name ?? '-',
-                '{jurisdiction}' => $court->jurisdiction ?? '-',
+                '{circle_type}' => $circleTypeName,
                 '{location}' => $court->address ?? '-',
                 '{created_by}' => $court->creator->name ?? '-',
             ];

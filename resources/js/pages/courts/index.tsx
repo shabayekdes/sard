@@ -13,7 +13,7 @@ import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 export default function Courts() {
   const { t, i18n } = useTranslation();
-  const { auth, courts, courtTypes, filters: pageFilters = {} } = usePage().props as any;
+  const { auth, courts, courtTypes, circleTypes, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
   const currentLocale = i18n.language || 'en';
 
@@ -208,7 +208,7 @@ export default function Courts() {
       render: (value: string, row: any) => {
         const courtType = row.court_type;
         if (!courtType) return '-';
-        
+
         // Handle translatable name
         let displayName = courtType.name;
         if (typeof courtType.name === 'object' && courtType.name !== null) {
@@ -216,13 +216,13 @@ export default function Courts() {
         } else if (courtType.name_translations && typeof courtType.name_translations === 'object') {
           displayName = courtType.name_translations[currentLocale] || courtType.name_translations.en || courtType.name_translations.ar || '';
         }
-        
+
         return (
-          <span 
+          <span
             className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
-            style={{ 
-              backgroundColor: `${courtType.color}20`, 
-              color: courtType.color 
+            style={{
+              backgroundColor: `${courtType.color}20`,
+              color: courtType.color
             }}
           >
             {displayName}
@@ -230,7 +230,34 @@ export default function Courts() {
         );
       }
     },
-    { key: 'jurisdiction', label: t('Jurisdiction'), render: (value: string) => value || '-' },
+    {
+      key: 'circle_type_id',
+      label: t('Circle Type'),
+      render: (value: string, row: any) => {
+        const circleType = row.circle_type;
+        if (!circleType) return '-';
+
+        // Handle translatable name
+        let displayName = circleType.name;
+        if (typeof circleType.name === 'object' && circleType.name !== null) {
+          displayName = circleType.name[currentLocale] || circleType.name.en || circleType.name.ar || '';
+        } else if (circleType.name_translations && typeof circleType.name_translations === 'object') {
+          displayName = circleType.name_translations[currentLocale] || circleType.name_translations.en || circleType.name_translations.ar || '';
+        }
+
+        return (
+          <span
+            className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
+            style={{
+              backgroundColor: `${circleType.color}20`,
+              color: circleType.color
+            }}
+          >
+            {displayName}
+          </span>
+        );
+      }
+    },
     {
       key: 'status',
       label: t('Status'),
@@ -247,7 +274,7 @@ export default function Courts() {
       key: 'created_at',
       label: t('Created At'),
       sortable: true,
-        type: 'date',
+      type: 'date',
     }
   ];
 
@@ -332,11 +359,11 @@ export default function Courts() {
         formConfig={{
           fields: [
             { name: 'name', label: t('Court Name'), type: 'text', required: true },
-            { 
-              name: 'court_type_id', 
-              label: t('Court Type'), 
-              type: 'select', 
-              required: true, 
+            {
+              name: 'court_type_id',
+              label: t('Court Type'),
+              type: 'select',
+              required: true,
               options: courtTypes ? courtTypes.map((type: any) => {
                 // Handle translatable name
                 let displayName = type.name;
@@ -346,14 +373,25 @@ export default function Courts() {
                   displayName = type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
                 }
                 return { value: type.id.toString(), label: displayName };
-              }) : [] 
+              }) : []
             },
-            { name: 'jurisdiction', label: t('Jurisdiction'), type: 'text' },
+            {
+              name: 'circle_type_id',
+              label: t('Circle Type'),
+              type: 'select',
+              required: true,
+              options: circleTypes ? circleTypes.map((type: any) => {
+                // Handle translatable name
+                let displayName = type.name;
+                if (typeof type.name === 'object' && type.name !== null) {
+                  displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+                } else if (type.name_translations && typeof type.name_translations === 'object') {
+                  displayName = type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
+                }
+                return { value: type.id.toString(), label: displayName };
+              }) : []
+            },
             { name: 'address', label: t('Address'), type: 'textarea' },
-            { name: 'phone', label: t('Phone'), type: 'text' },
-            { name: 'email', label: t('Email'), type: 'email' },
-            { name: 'filing_requirements', label: t('Filing Requirements'), type: 'textarea' },
-            { name: 'local_rules', label: t('Local Rules'), type: 'textarea' },
             { name: 'notes', label: t('Notes'), type: 'textarea' },
             { name: 'status', label: t('Status'), type: 'select', options: [{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }], defaultValue: 'active' }
           ],
@@ -377,18 +415,14 @@ export default function Courts() {
       <CrudFormModal
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}
-        onSubmit={() => {}}
+        onSubmit={() => { }}
         formConfig={{
           fields: [
             { name: 'court_id', label: t('Court ID'), type: 'text', readOnly: true },
             { name: 'name', label: t('Court Name'), type: 'text', readOnly: true },
             { name: 'court_type', label: t('Court Type'), type: 'text', readOnly: true },
-            { name: 'jurisdiction', label: t('Jurisdiction'), type: 'text', readOnly: true },
+            { name: 'circle_type', label: t('Circle Type'), type: 'text', readOnly: true },
             { name: 'address', label: t('Address'), type: 'textarea', readOnly: true },
-            { name: 'phone', label: t('Phone'), type: 'text', readOnly: true },
-            { name: 'email', label: t('Email'), type: 'email', readOnly: true },
-            { name: 'filing_requirements', label: t('Filing Requirements'), type: 'textarea', readOnly: true },
-            { name: 'local_rules', label: t('Local Rules'), type: 'textarea', readOnly: true },
             { name: 'notes', label: t('Notes'), type: 'textarea', readOnly: true },
             { name: 'status', label: t('Status'), type: 'text', readOnly: true }
           ],
@@ -405,6 +439,16 @@ export default function Courts() {
               return courtType.name_translations[currentLocale] || courtType.name_translations.en || courtType.name_translations.ar || '-';
             }
             return courtType.name || '-';
+          })(),
+          circle_type: (() => {
+            const circleType = currentItem?.circle_type;
+            if (!circleType) return '-';
+            if (typeof circleType.name === 'object' && circleType.name !== null) {
+              return circleType.name[currentLocale] || circleType.name.en || circleType.name.ar || '-';
+            } else if (circleType.name_translations && typeof circleType.name_translations === 'object') {
+              return circleType.name_translations[currentLocale] || circleType.name_translations.en || circleType.name_translations.ar || '-';
+            }
+            return circleType.name || '-';
           })()
         }}
         title={t('View Court Details')}

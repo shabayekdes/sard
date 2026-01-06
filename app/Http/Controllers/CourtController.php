@@ -13,7 +13,7 @@ class CourtController extends Controller
     public function index(Request $request)
     {
         $query = Court::withPermissionCheck()
-            ->with(['creator', 'courtType'])
+            ->with(['creator', 'courtType', 'circleType'])
             ->where('created_by', createdBy());
 
         // Handle search
@@ -21,7 +21,6 @@ class CourtController extends Controller
             $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
                     ->orWhere('court_id', 'like', '%' . $request->search . '%')
-                    ->orWhere('jurisdiction', 'like', '%' . $request->search . '%')
                     ->orWhere('address', 'like', '%' . $request->search . '%');
             });
         }
@@ -45,7 +44,7 @@ class CourtController extends Controller
 
         $courts = $query->paginate($request->per_page ?? 10);
         
-        // Transform the data to include translated values for court types
+        // Transform the data to include translated values for court types and circle types
         $courts->getCollection()->transform(function ($court) {
             $courtData = $court->toArray();
             if ($court->courtType) {
@@ -54,6 +53,14 @@ class CourtController extends Controller
                     'name' => $court->courtType->name, // Spatie will automatically return translated value
                     'name_translations' => $court->courtType->getTranslations('name'), // Full translations
                     'color' => $court->courtType->color,
+                ];
+            }
+            if ($court->circleType) {
+                $courtData['circle_type'] = [
+                    'id' => $court->circleType->id,
+                    'name' => $court->circleType->name, // Spatie will automatically return translated value
+                    'name_translations' => $court->circleType->getTranslations('name'), // Full translations
+                    'color' => $court->circleType->color,
                 ];
             }
             return $courtData;
@@ -74,9 +81,25 @@ class CourtController extends Controller
                 ];
             });
 
+        // Get circle types for dropdown
+        $circleTypes = \App\Models\CircleType::where(function($q) {
+                $q->where('created_by', createdBy());
+            })
+            ->where('status', 'active')
+            ->get(['id', 'name', 'color'])
+            ->map(function ($circleType) {
+                return [
+                    'id' => $circleType->id,
+                    'name' => $circleType->name, // Spatie will automatically return translated value
+                    'name_translations' => $circleType->getTranslations('name'), // Full translations
+                    'color' => $circleType->color,
+                ];
+            });
+
         return Inertia::render('courts/index', [
             'courts' => $courts,
             'courtTypes' => $courtTypes,
+            'circleTypes' => $circleTypes,
             'filters' => $request->all(['search', 'court_type_id', 'status', 'sort_field', 'sort_direction', 'per_page']),
         ]);
     }
@@ -86,14 +109,10 @@ class CourtController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'address' => 'nullable|string',
-            'phone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255',
-            'jurisdiction' => 'nullable|string|max:255',
             'court_type_id' => 'required|exists:court_types,id',
+            'circle_type_id' => 'required|exists:circle_types,id',
             'status' => 'nullable|in:active,inactive',
             'facilities' => 'nullable|array',
-            'filing_requirements' => 'nullable|string',
-            'local_rules' => 'nullable|string',
             'notes' => 'nullable|string',
         ]);
 
@@ -147,14 +166,10 @@ class CourtController extends Controller
                 $validated = $request->validate([
                     'name' => 'required|string|max:255',
                     'address' => 'nullable|string',
-                    'phone' => 'nullable|string|max:20',
-                    'email' => 'nullable|email|max:255',
-                    'jurisdiction' => 'nullable|string|max:255',
                     'court_type_id' => 'required|exists:court_types,id',
+                    'circle_type_id' => 'required|exists:circle_types,id',
                     'status' => 'nullable|in:active,inactive',
                     'facilities' => 'nullable|array',
-                    'filing_requirements' => 'nullable|string',
-                    'local_rules' => 'nullable|string',
                     'notes' => 'nullable|string',
                 ]);
 

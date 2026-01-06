@@ -16,6 +16,7 @@ class Court extends BaseModel
         'email',
         'jurisdiction',
         'court_type_id',
+        'circle_type_id',
         'status',
         'facilities',
         'filing_requirements',
@@ -61,6 +62,14 @@ class Court extends BaseModel
     public function courtType()
     {
         return $this->belongsTo(CourtType::class, 'court_type_id');
+    }
+
+    /**
+     * Get the circle type.
+     */
+    public function circleType()
+    {
+        return $this->belongsTo(CircleType::class, 'circle_type_id');
     }
 
     /**

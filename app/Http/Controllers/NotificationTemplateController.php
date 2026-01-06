@@ -159,6 +159,7 @@ class NotificationTemplateController extends Controller
                 return [
                     '{court_name}' => 'Court Name',
                     '{court_type}' => 'Court Type',
+                    '{circle_type}' => 'Circle Type',
                     '{location}' => 'Court Location'
                 ];
             case 'New Judge':

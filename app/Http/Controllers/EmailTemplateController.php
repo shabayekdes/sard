@@ -127,7 +127,7 @@ class EmailTemplateController extends Controller
                 '{type}' => 'Court Type',
                 '{phoneno}' => 'Phone Number',
                 '{email}' => 'Email',
-                '{jurisdiction}' => 'Jurisdiction',
+                '{circle_type}' => 'Circle Type',
                 '{address}' => 'Address',
                 '{app_name}' => 'App Name'
             ];
