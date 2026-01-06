@@ -44,13 +44,35 @@ class CourtController extends Controller
         }
 
         $courts = $query->paginate($request->per_page ?? 10);
+        
+        // Transform the data to include translated values for court types
+        $courts->getCollection()->transform(function ($court) {
+            $courtData = $court->toArray();
+            if ($court->courtType) {
+                $courtData['court_type'] = [
+                    'id' => $court->courtType->id,
+                    'name' => $court->courtType->name, // Spatie will automatically return translated value
+                    'name_translations' => $court->courtType->getTranslations('name'), // Full translations
+                    'color' => $court->courtType->color,
+                ];
+            }
+            return $courtData;
+        });
 
         // Get court types for dropdown
         $courtTypes = \App\Models\CourtType::where(function($q) {
                 $q->where('created_by', createdBy());
             })
             ->where('status', 'active')
-            ->get(['id', 'name', 'color']);
+            ->get(['id', 'name', 'color'])
+            ->map(function ($courtType) {
+                return [
+                    'id' => $courtType->id,
+                    'name' => $courtType->name, // Spatie will automatically return translated value
+                    'name_translations' => $courtType->getTranslations('name'), // Full translations
+                    'color' => $courtType->color,
+                ];
+            });
 
         return Inertia::render('courts/index', [
             'courts' => $courts,

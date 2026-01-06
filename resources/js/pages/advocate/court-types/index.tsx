@@ -12,9 +12,10 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 export default function CourtTypes() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { auth, courtTypes, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
+  const currentLocale = i18n.language || 'en';
 
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
   const [selectedStatus, setSelectedStatus] = useState(pageFilters.status || 'all');
@@ -172,14 +173,41 @@ export default function CourtTypes() {
   ];
 
   const columns = [
-    { key: 'name', label: t('Name'), sortable: true },
-    { key: 'description', label: t('Description') },
+    {
+      key: 'name',
+      label: t('Name'),
+      sortable: true,
+      render: (value: any, row: any) => {
+        // Check for name_translations first, then name object, then string
+        if (row.name_translations && typeof row.name_translations === 'object') {
+          return row.name_translations[currentLocale] || row.name_translations.en || row.name_translations.ar || '-';
+        }
+        if (typeof value === 'object' && value !== null) {
+          return value[currentLocale] || value.en || value.ar || '-';
+        }
+        return value || '-';
+      }
+    },
+    {
+      key: 'description',
+      label: t('Description'),
+      render: (value: any, row: any) => {
+        // Check for description_translations first, then description object, then string
+        if (row.description_translations && typeof row.description_translations === 'object') {
+          return row.description_translations[currentLocale] || row.description_translations.en || row.description_translations.ar || '-';
+        }
+        if (typeof value === 'object' && value !== null) {
+          return value[currentLocale] || value.en || value.ar || '-';
+        }
+        return value || '-';
+      }
+    },
     {
       key: 'color',
       label: t('Color'),
       render: (value: string) => (
         <div className="flex items-center gap-2">
-          <div 
+          <div
             className="w-4 h-4 rounded border"
             style={{ backgroundColor: value }}
           />
@@ -203,7 +231,7 @@ export default function CourtTypes() {
       key: 'created_at',
       label: t('Created At'),
       sortable: true,
-        type: 'date',
+      type: 'date',
     }
   ];
 
@@ -283,8 +311,28 @@ export default function CourtTypes() {
         onSubmit={handleFormSubmit}
         formConfig={{
           fields: [
-            { name: 'name', label: t('Name'), type: 'text', required: true },
-            { name: 'description', label: t('Description'), type: 'textarea' },
+            {
+              name: 'name.en',
+              label: t('Name (English)'),
+              type: 'text',
+              required: true
+            },
+            {
+              name: 'name.ar',
+              label: t('Name (Arabic)'),
+              type: 'text',
+              required: true
+            },
+            {
+              name: 'description.en',
+              label: t('Description (English)'),
+              type: 'textarea'
+            },
+            {
+              name: 'description.ar',
+              label: t('Description (Arabic)'),
+              type: 'textarea'
+            },
             { name: 'color', label: t('Color'), type: 'color', required: true, defaultValue: '#3B82F6' },
             {
               name: 'status',
@@ -297,9 +345,41 @@ export default function CourtTypes() {
               defaultValue: 'active'
             }
           ],
-          modalSize: 'lg'
+          modalSize: 'lg',
+          transformData: (data: any) => {
+            // Transform flat structure to nested structure for translatable fields
+            const transformed: any = { ...data };
+
+            // Handle name field
+            if (transformed['name.en'] || transformed['name.ar']) {
+              transformed.name = {
+                en: transformed['name.en'] || '',
+                ar: transformed['name.ar'] || '',
+              };
+              delete transformed['name.en'];
+              delete transformed['name.ar'];
+            }
+
+            // Handle description field
+            if (transformed['description.en'] || transformed['description.ar']) {
+              transformed.description = {
+                en: transformed['description.en'] || '',
+                ar: transformed['description.ar'] || '',
+              };
+              delete transformed['description.en'];
+              delete transformed['description.ar'];
+            }
+
+            return transformed;
+          }
         }}
-        initialData={currentItem}
+        initialData={currentItem ? {
+          ...currentItem,
+          'name.en': currentItem.name_translations?.en || (typeof currentItem.name === 'object' ? currentItem.name.en : ''),
+          'name.ar': currentItem.name_translations?.ar || (typeof currentItem.name === 'object' ? currentItem.name.ar : ''),
+          'description.en': currentItem.description_translations?.en || (typeof currentItem.description === 'object' ? currentItem.description?.en : ''),
+          'description.ar': currentItem.description_translations?.ar || (typeof currentItem.description === 'object' ? currentItem.description?.ar : ''),
+        } : {}}
         title={
           formMode === 'create'
             ? t('Add New Court Type')
@@ -313,17 +393,45 @@ export default function CourtTypes() {
       <CrudFormModal
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}
-        onSubmit={() => {}}
+        onSubmit={() => { }}
         formConfig={{
           fields: [
-            { name: 'name', label: t('Name'), type: 'text', readOnly: true },
-            { name: 'description', label: t('Description'), type: 'textarea', readOnly: true },
+            {
+              name: 'name.en',
+              label: t('Name (English)'),
+              type: 'text',
+              readOnly: true
+            },
+            {
+              name: 'name.ar',
+              label: t('Name (Arabic)'),
+              type: 'text',
+              readOnly: true
+            },
+            {
+              name: 'description.en',
+              label: t('Description (English)'),
+              type: 'textarea',
+              readOnly: true
+            },
+            {
+              name: 'description.ar',
+              label: t('Description (Arabic)'),
+              type: 'textarea',
+              readOnly: true
+            },
             { name: 'color', label: t('Color'), type: 'text', readOnly: true },
             { name: 'status', label: t('Status'), type: 'text', readOnly: true }
           ],
           modalSize: 'lg'
         }}
-        initialData={currentItem}
+        initialData={currentItem ? {
+          ...currentItem,
+          'name.en': currentItem.name_translations?.en || (typeof currentItem.name === 'object' ? currentItem.name.en : ''),
+          'name.ar': currentItem.name_translations?.ar || (typeof currentItem.name === 'object' ? currentItem.name.ar : ''),
+          'description.en': currentItem.description_translations?.en || (typeof currentItem.description === 'object' ? currentItem.description?.en : ''),
+          'description.ar': currentItem.description_translations?.ar || (typeof currentItem.description === 'object' ? currentItem.description?.ar : ''),
+        } : {}}
         title={t('View Court Type Details')}
         mode='view'
       />
@@ -332,7 +440,11 @@ export default function CourtTypes() {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.name || ''}
+        itemName={
+          currentItem?.name_translations?.[currentLocale] ||
+          (typeof currentItem?.name === 'object' ? (currentItem?.name[currentLocale] || currentItem?.name.en || currentItem?.name.ar) : currentItem?.name) ||
+          ''
+        }
         entityName="court type"
       />
     </PageTemplate>

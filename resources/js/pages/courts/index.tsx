@@ -12,9 +12,10 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 export default function Courts() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { auth, courts, courtTypes, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
+  const currentLocale = i18n.language || 'en';
 
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
   const [selectedCourtType, setSelectedCourtType] = useState(pageFilters.court_type_id || 'all');
@@ -206,7 +207,17 @@ export default function Courts() {
       label: t('Type'),
       render: (value: string, row: any) => {
         const courtType = row.court_type;
-        return courtType ? (
+        if (!courtType) return '-';
+        
+        // Handle translatable name
+        let displayName = courtType.name;
+        if (typeof courtType.name === 'object' && courtType.name !== null) {
+          displayName = courtType.name[currentLocale] || courtType.name.en || courtType.name.ar || '';
+        } else if (courtType.name_translations && typeof courtType.name_translations === 'object') {
+          displayName = courtType.name_translations[currentLocale] || courtType.name_translations.en || courtType.name_translations.ar || '';
+        }
+        
+        return (
           <span 
             className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
             style={{ 
@@ -214,9 +225,9 @@ export default function Courts() {
               color: courtType.color 
             }}
           >
-            {courtType.name}
+            {displayName}
           </span>
-        ) : '-';
+        );
       }
     },
     { key: 'jurisdiction', label: t('Jurisdiction'), render: (value: string) => value || '-' },
@@ -321,7 +332,22 @@ export default function Courts() {
         formConfig={{
           fields: [
             { name: 'name', label: t('Court Name'), type: 'text', required: true },
-            { name: 'court_type_id', label: t('Court Type'), type: 'select', required: true, options: courtTypes ? courtTypes.map((type: any) => ({ value: type.id.toString(), label: type.name })) : [] },
+            { 
+              name: 'court_type_id', 
+              label: t('Court Type'), 
+              type: 'select', 
+              required: true, 
+              options: courtTypes ? courtTypes.map((type: any) => {
+                // Handle translatable name
+                let displayName = type.name;
+                if (typeof type.name === 'object' && type.name !== null) {
+                  displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+                } else if (type.name_translations && typeof type.name_translations === 'object') {
+                  displayName = type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
+                }
+                return { value: type.id.toString(), label: displayName };
+              }) : [] 
+            },
             { name: 'jurisdiction', label: t('Jurisdiction'), type: 'text' },
             { name: 'address', label: t('Address'), type: 'textarea' },
             { name: 'phone', label: t('Phone'), type: 'text' },
@@ -370,7 +396,16 @@ export default function Courts() {
         }}
         initialData={{
           ...currentItem,
-          court_type: currentItem?.court_type?.name || '-'
+          court_type: (() => {
+            const courtType = currentItem?.court_type;
+            if (!courtType) return '-';
+            if (typeof courtType.name === 'object' && courtType.name !== null) {
+              return courtType.name[currentLocale] || courtType.name.en || courtType.name.ar || '-';
+            } else if (courtType.name_translations && typeof courtType.name_translations === 'object') {
+              return courtType.name_translations[currentLocale] || courtType.name_translations.en || courtType.name_translations.ar || '-';
+            }
+            return courtType.name || '-';
+          })()
         }}
         title={t('View Court Details')}
         mode='view'
