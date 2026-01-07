@@ -13,9 +13,9 @@ class MediaController extends BaseController
     public function index()
     {
         // Check if demo mode is enabled
-        if (config('app.is_demo')) {
-            return $this->getDemoMedia();
-        }
+        // if (config('app.is_demo')) {
+        //     return $this->getDemoMedia();
+        // }
 
         $user = auth()->user();
         $mediaItems = MediaItem::withPermissionCheck()->with('media')->latest()->get();
