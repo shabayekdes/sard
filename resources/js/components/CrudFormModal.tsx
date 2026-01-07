@@ -473,16 +473,38 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
 
             case 'select':
                 const options = field.relation ? relationOptions[field.name] || [] : field.options || [];
+                const valuePrefix = `${field.name}_val_`;
 
-                const currentValue = String(formData[field.name] || '');
-                const selectedOption = field.relation
-                    ? options.find((opt: any) => String(opt[field.relation!.valueField]) === currentValue)
-                    : options.find((opt) => String(opt.value) === currentValue);
+                // Find selected option for display and get its index
+                const selectedOptionIndex = field.relation
+                    ? options.findIndex((opt: any) => String(opt[field.relation!.valueField]) === String(formData[field.name] || ''))
+                    : options.findIndex((opt) => String(opt.value) === String(formData[field.name] || ''));
 
+                const selectedOption = selectedOptionIndex >= 0 ? options[selectedOptionIndex] : null;
                 const displayText = selectedOption ? (field.relation ? selectedOption[field.relation!.labelField] : selectedOption.label) : '';
 
+                // Get the current value with prefix and index for this select instance
+                const currentValue = formData[field.name] && selectedOptionIndex >= 0
+                    ? `${valuePrefix}${formData[field.name]}_idx${selectedOptionIndex}`
+                    : '';
+
+                // Handle value change - strip the prefix and index before calling handleChange
+                const handleSelectChange = (selectedValue: string) => {
+                    let actualValue = selectedValue;
+                    if (selectedValue.startsWith(valuePrefix)) {
+                        // Remove prefix
+                        actualValue = selectedValue.substring(valuePrefix.length);
+                        // Remove index suffix (format: value_idxN -> we want just value)
+                        const idxMatch = actualValue.match(/^(.+)_idx\d+$/);
+                        if (idxMatch) {
+                            actualValue = idxMatch[1];
+                        }
+                    }
+                    handleChange(field.name, actualValue);
+                };
+
                 return (
-                    <Select value={currentValue} onValueChange={(value) => handleChange(field.name, value)} disabled={mode === 'view' || field.disabled}>
+                    <Select value={currentValue} onValueChange={handleSelectChange} disabled={mode === 'view' || field.disabled}>
                         <SelectTrigger className={errors[field.name] ? 'border-red-500' : ''} dir={position === 'right' ? 'rtl' : 'ltr'}>
                             <SelectValue placeholder={field.placeholder || `Select ${field.label}`}>
                                 {displayText || field.placeholder || `Select ${field.label}`}
@@ -490,16 +512,24 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                         </SelectTrigger>
                         <SelectContent className="z-[60000]">
                             {field.relation
-                                ? options.map((option: any) => (
-                                    <SelectItem key={option[field.relation!.valueField]} value={String(option[field.relation!.valueField])}>
-                                        {option[field.relation!.labelField]}
-                                    </SelectItem>
-                                ))
-                                : options.map((option) => (
-                                    <SelectItem key={option.value} value={String(option.value)}>
-                                        {option.label}
-                                    </SelectItem>
-                                ))}
+                                ? options.map((option: any, index: number) => {
+                                    // Include index in value to ensure uniqueness even if option values are duplicated
+                                    const uniqueValue = `${valuePrefix}${option[field.relation!.valueField]}_idx${index}`;
+                                    return (
+                                        <SelectItem key={`${field.name}_${option[field.relation!.valueField]}_${index}`} value={uniqueValue}>
+                                            {option[field.relation!.labelField]}
+                                        </SelectItem>
+                                    );
+                                })
+                                : options.map((option, index) => {
+                                    // Include index in value to ensure uniqueness even if option values are duplicated
+                                    const uniqueValue = `${valuePrefix}${option.value}_idx${index}`;
+                                    return (
+                                        <SelectItem key={`${field.name}_${option.value}_${index}`} value={uniqueValue}>
+                                            {option.label}
+                                        </SelectItem>
+                                    );
+                                })}
                         </SelectContent>
                     </Select>
                 );
@@ -507,10 +537,14 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
             case 'combobox':
                 const comboOptions = field.relation ? relationOptions[field.name] || [] : field.options || [];
                 const [searchTerm, setSearchTerm] = useState('');
-                const comboCurrentValue = String(formData[field.name] || '');
-                const comboSelectedOption = field.relation
-                    ? comboOptions.find((opt: any) => String(opt[field.relation!.valueField]) === comboCurrentValue)
-                    : comboOptions.find((opt) => String(opt.value) === comboCurrentValue);
+                const comboValuePrefix = `${field.name}_combo_val_`;
+
+                // Find selected option for display and get its index
+                const comboSelectedOptionIndex = field.relation
+                    ? comboOptions.findIndex((opt: any) => String(opt[field.relation!.valueField]) === String(formData[field.name] || ''))
+                    : comboOptions.findIndex((opt) => String(opt.value) === String(formData[field.name] || ''));
+
+                const comboSelectedOption = comboSelectedOptionIndex >= 0 ? comboOptions[comboSelectedOptionIndex] : null;
                 const comboDisplayText = comboSelectedOption ? (field.relation ? comboSelectedOption[field.relation!.labelField] : comboSelectedOption.label) : '';
 
                 const filteredOptions = comboOptions.filter((option: any) => {
@@ -518,8 +552,36 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                     return label.toLowerCase().includes(searchTerm.toLowerCase());
                 });
 
+                // Find the index in filteredOptions for the current value (for matching)
+                const filteredSelectedIndex = formData[field.name]
+                    ? (field.relation
+                        ? filteredOptions.findIndex((opt: any) => String(opt[field.relation!.valueField]) === String(formData[field.name]))
+                        : filteredOptions.findIndex((opt) => String(opt.value) === String(formData[field.name])))
+                    : -1;
+
+                // Get the current value with prefix and index for this select instance
+                // Use filteredSelectedIndex if found, otherwise use comboSelectedOptionIndex from original options
+                const comboCurrentValue = formData[field.name] && (filteredSelectedIndex >= 0 || comboSelectedOptionIndex >= 0)
+                    ? `${comboValuePrefix}${formData[field.name]}_idx${filteredSelectedIndex >= 0 ? filteredSelectedIndex : comboSelectedOptionIndex}`
+                    : '';
+
+                // Handle value change - strip the prefix and index before calling handleChange
+                const handleComboChange = (selectedValue: string) => {
+                    let actualValue = selectedValue;
+                    if (selectedValue.startsWith(comboValuePrefix)) {
+                        // Remove prefix
+                        actualValue = selectedValue.substring(comboValuePrefix.length);
+                        // Remove index suffix (format: value_idxN -> we want just value)
+                        const idxMatch = actualValue.match(/^(.+)_idx\d+$/);
+                        if (idxMatch) {
+                            actualValue = idxMatch[1];
+                        }
+                    }
+                    handleChange(field.name, actualValue);
+                };
+
                 return (
-                    <Select value={comboCurrentValue} onValueChange={(value) => handleChange(field.name, value)} disabled={mode === 'view' || field.disabled}>
+                    <Select value={comboCurrentValue} onValueChange={handleComboChange} disabled={mode === 'view' || field.disabled}>
                         <SelectTrigger className={errors[field.name] ? 'border-red-500' : ''}>
                             <SelectValue placeholder={field.placeholder || `Search ${field.label}...`}>
                                 {comboDisplayText || field.placeholder || `Search ${field.label}...`}
@@ -535,16 +597,24 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                 />
                             </div>
                             {field.relation
-                                ? filteredOptions.map((option: any) => (
-                                    <SelectItem key={option[field.relation!.valueField]} value={String(option[field.relation!.valueField])}>
-                                        {option[field.relation!.labelField]}
-                                    </SelectItem>
-                                ))
-                                : filteredOptions.map((option) => (
-                                    <SelectItem key={option.value} value={String(option.value)}>
-                                        {option.label}
-                                    </SelectItem>
-                                ))}
+                                ? filteredOptions.map((option: any, index: number) => {
+                                    // Include index in value to ensure uniqueness even if option values are duplicated
+                                    const uniqueValue = `${comboValuePrefix}${option[field.relation!.valueField]}_idx${index}`;
+                                    return (
+                                        <SelectItem key={`${field.name}_combo_${option[field.relation!.valueField]}_${index}`} value={uniqueValue}>
+                                            {option[field.relation!.labelField]}
+                                        </SelectItem>
+                                    );
+                                })
+                                : filteredOptions.map((option, index) => {
+                                    // Include index in value to ensure uniqueness even if option values are duplicated
+                                    const uniqueValue = `${comboValuePrefix}${option.value}_idx${index}`;
+                                    return (
+                                        <SelectItem key={`${field.name}_combo_${option.value}_${index}`} value={uniqueValue}>
+                                            {option.label}
+                                        </SelectItem>
+                                    );
+                                })}
                         </SelectContent>
                     </Select>
                 );

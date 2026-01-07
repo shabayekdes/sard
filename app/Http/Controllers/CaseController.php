@@ -9,6 +9,8 @@ use App\Models\CaseCategory;
 use App\Models\CaseStatus;
 use App\Models\Client;
 use App\Models\Court;
+use App\Models\OppositeParty;
+use App\Models\Country;
 use App\Models\CaseTimeline;
 use App\Models\CaseTeamMember;
 use App\Models\CaseDocument;
@@ -28,7 +30,7 @@ class CaseController extends BaseController
     public function index(Request $request)
     {
         $query = CaseModel::withPermissionCheck()
-            ->with(['client', 'caseType', 'caseStatus', 'court', 'creator']);
+            ->with(['client', 'caseType', 'caseStatus', 'court', 'creator', 'oppositeParties.nationality']);
 
         if ($request->has('search') && !empty($request->search)) {
             $query->where(function ($q) use ($request) {
@@ -86,6 +88,32 @@ class CaseController extends BaseController
         $caseStatuses = CaseStatus::where('created_by', createdBy())->where('status', 'active')->get(['id', 'name']);
         $clients = Client::where('created_by', createdBy())->where('status', 'active')->get(['id', 'name']);
         $courts = Court::where('created_by', createdBy())->where('status', 'active')->get(['id', 'name']);
+        
+        // Get countries for nationality dropdown - ordered by nationality_name
+        $locale = app()->getLocale();
+        $countries = Country::where('is_active', true)
+            ->orderByRaw("JSON_EXTRACT(nationality_name, '$.{$locale}')")
+            ->orderByRaw("JSON_EXTRACT(nationality_name, '$.en')")
+            ->get(['id', 'name', 'nationality_name'])
+            ->map(function ($country) {
+                // Spatie automatically returns translated value as string
+                $nationalityLabel = $country->nationality_name;
+                $countryName = $country->name;
+                
+                // Use nationality_name if available, otherwise fallback to name
+                $label = !empty($nationalityLabel) ? $nationalityLabel : $countryName;
+                
+                return [
+                    'value' => $country->id,
+                    'label' => $label,
+                ];
+            })
+            ->filter(function ($country) {
+                // Filter out countries with empty labels
+                return !empty($country['label']);
+            })
+            ->values()
+            ->toArray();
 
         $googleCalendarEnabled = Setting::where('user_id', createdBy())
             ->where('key', 'googleCalendarEnabled')
@@ -122,6 +150,7 @@ class CaseController extends BaseController
             'caseStatuses' => $caseStatuses,
             'clients' => $clients,
             'courts' => $courts,
+            'countries' => $countries,
             'googleCalendarEnabled' => $googleCalendarEnabled,
             'planLimits' => $planLimits,
             'filters' => $request->all(['search', 'case_type_id', 'case_status_id', 'priority', 'status', 'court_id', 'sort_field', 'sort_direction', 'per_page']),
@@ -138,7 +167,8 @@ class CaseController extends BaseController
                 'court.judges' => function($query) {
                     $query->where('status', 'active');
                 },
-                'court.courtType'
+                'court.courtType',
+                'oppositeParties.nationality'
             ])
             ->where('id', $caseId)
             ->first();
@@ -386,6 +416,9 @@ class CaseController extends BaseController
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'case_id' => 'nullable|string|max:255',
+            'file_number' => 'nullable|string|max:255',
+            'attributes' => 'nullable|in:petitioner,respondent',
             'client_id' => 'required|exists:clients,id',
             'case_type_id' => 'required|exists:case_types,id',
             'case_category_id' => 'nullable|exists:case_categories,id',
@@ -400,6 +433,11 @@ class CaseController extends BaseController
             'court_details' => 'nullable|string',
             'status' => 'nullable|in:active,inactive',
             'sync_with_google_calendar' => 'nullable|boolean',
+            'opposite_parties' => 'nullable|array',
+            'opposite_parties.*.name' => 'required|string|max:255',
+            'opposite_parties.*.id_number' => 'nullable|string|max:255',
+            'opposite_parties.*.nationality_id' => 'nullable|exists:countries,id',
+            'opposite_parties.*.lawyer_name' => 'nullable|string|max:255',
         ]);
 
         $validated['created_by'] = createdBy();
@@ -415,7 +453,25 @@ class CaseController extends BaseController
             return redirect()->back()->with('error', 'Invalid selection. Please try again.');
         }
 
+        // Extract opposite parties before creating case
+        $oppositeParties = $validated['opposite_parties'] ?? [];
+        unset($validated['opposite_parties']);
+
         $case = CaseModel::create($validated);
+
+        // Create opposite parties
+        if (!empty($oppositeParties)) {
+            foreach ($oppositeParties as $party) {
+                OppositeParty::create([
+                    'case_id' => $case->id,
+                    'name' => $party['name'],
+                    'id_number' => $party['id_number'] ?? null,
+                    'nationality_id' => $party['nationality_id'] ?? null,
+                    'lawyer_name' => $party['lawyer_name'] ?? null,
+                    'created_by' => createdBy(),
+                ]);
+            }
+        }
 
         // Handle Google Calendar sync
         if ($case && $request->sync_with_google_calendar) {
@@ -462,6 +518,9 @@ class CaseController extends BaseController
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'case_id' => 'nullable|string|max:255',
+            'file_number' => 'nullable|string|max:255',
+            'attributes' => 'nullable|in:petitioner,respondent',
             'client_id' => 'required|exists:clients,id',
             'case_type_id' => 'required|exists:case_types,id',
             'case_category_id' => 'nullable|exists:case_categories,id',
@@ -475,6 +534,11 @@ class CaseController extends BaseController
             'opposing_party' => 'nullable|string',
             'court_details' => 'nullable|string',
             'status' => 'nullable|in:active,inactive',
+            'opposite_parties' => 'nullable|array',
+            'opposite_parties.*.name' => 'required|string|max:255',
+            'opposite_parties.*.id_number' => 'nullable|string|max:255',
+            'opposite_parties.*.nationality_id' => 'nullable|exists:countries,id',
+            'opposite_parties.*.lawyer_name' => 'nullable|string|max:255',
         ]);
 
         // Verify related records belong to current company
@@ -487,7 +551,26 @@ class CaseController extends BaseController
             return redirect()->back()->with('error', 'Invalid selection. Please try again.');
         }
 
+        // Extract opposite parties before updating case
+        $oppositeParties = $validated['opposite_parties'] ?? [];
+        unset($validated['opposite_parties']);
+
         $case->update($validated);
+
+        // Delete existing opposite parties and create new ones
+        OppositeParty::where('case_id', $case->id)->delete();
+        if (!empty($oppositeParties)) {
+            foreach ($oppositeParties as $party) {
+                OppositeParty::create([
+                    'case_id' => $case->id,
+                    'name' => $party['name'],
+                    'id_number' => $party['id_number'] ?? null,
+                    'nationality_id' => $party['nationality_id'] ?? null,
+                    'lawyer_name' => $party['lawyer_name'] ?? null,
+                    'created_by' => createdBy(),
+                ]);
+            }
+        }
 
         return redirect()->back()->with('success', 'Case updated successfully.');
     }

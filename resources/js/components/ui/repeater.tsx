@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -54,6 +54,8 @@ export function Repeater({
   emptyMessage = 'No items added yet.'
 }: RepeaterProps) {
   const [items, setItems] = useState<any[]>(value.length > 0 ? value : []);
+  // Generate a unique ID for this repeater instance to ensure unique keys across multiple repeaters
+  const repeaterIdRef = useRef(`repeater_${Math.random().toString(36).substr(2, 9)}_${Date.now()}`);
 
   useEffect(() => {
     if (value && JSON.stringify(value) !== JSON.stringify(items)) {
@@ -94,7 +96,7 @@ export function Repeater({
 
   const moveItem = (fromIndex: number, toIndex: number) => {
     if (!allowReorder) return;
-    
+
     const newItems = [...items];
     const [movedItem] = newItems.splice(fromIndex, 1);
     newItems.splice(toIndex, 0, movedItem);
@@ -104,7 +106,7 @@ export function Repeater({
 
   const renderField = (field: RepeaterField, value: any, onChange: (value: any) => void, itemIndex: number) => {
     const fieldId = `${field.name}_${itemIndex}`;
-    
+
     switch (field.type) {
       case 'textarea':
         return (
@@ -150,20 +152,31 @@ export function Repeater({
         );
 
       case 'select':
-        return (
-          <Select value={value || ''} onValueChange={onChange} disabled={field.disabled}>
-            <SelectTrigger className={field.className}>
-              <SelectValue placeholder={field.placeholder} />
-            </SelectTrigger>
-            <SelectContent>
-              {field.options?.map((option) => (
-                <SelectItem key={option.value} value={option.value.toString()}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        );
+        {
+          const selectId = `${repeaterIdRef.current}_${itemIndex}_${field.name}`;
+
+          return (
+            <Select
+              value={value ? String(value) : ''}
+              onValueChange={onChange}
+              disabled={field.disabled}
+            >
+              <SelectTrigger className={field.className}>
+                <SelectValue placeholder={field.placeholder} />
+              </SelectTrigger>
+              <SelectContent className="z-[9999]">
+                {field.options?.map((option, optionIndex) => (
+                  <SelectItem
+                    key={`${selectId}_${optionIndex}_${option.value}`}
+                    value={String(option.value)}
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          );
+        }
 
       case 'switch':
         return (
@@ -243,7 +256,7 @@ export function Repeater({
                 </span>
               )}
             </div>
-            
+
             {items.length > minItems && (
               <Button
                 type="button"

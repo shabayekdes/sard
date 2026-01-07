@@ -13,6 +13,8 @@ class CaseModel extends BaseModel
 
     protected $fillable = [
         'case_id',
+        'file_number',
+        'attributes',
         'title',
         'description',
         'client_id',
@@ -104,5 +106,10 @@ class CaseModel extends BaseModel
     public function teamMembers()
     {
         return $this->hasMany(CaseTeamMember::class, 'case_id');
+    }
+
+    public function oppositeParties()
+    {
+        return $this->hasMany(OppositeParty::class, 'case_id');
     }
 }

@@ -10,10 +10,11 @@ import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
+import { Repeater, RepeaterField } from '@/components/ui/repeater';
 
 export default function Cases() {
   const { t, i18n } = useTranslation();
-  const { auth, cases, caseTypes, caseCategories, caseStatuses, clients, courts, googleCalendarEnabled, planLimits, filters: pageFilters = {} } = usePage().props as any;
+  const { auth, cases, caseTypes, caseCategories, caseStatuses, clients, courts, countries, googleCalendarEnabled, planLimits, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
 
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
@@ -29,14 +30,14 @@ export default function Cases() {
   const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
 
   const hasActiveFilters = () => {
-    return searchTerm !== '' || selectedCaseType !== 'all' || selectedCaseStatus !== 'all' || 
-           selectedPriority !== 'all' || selectedStatus !== 'all' || selectedCourt !== 'all';
+    return searchTerm !== '' || selectedCaseType !== 'all' || selectedCaseStatus !== 'all' ||
+      selectedPriority !== 'all' || selectedStatus !== 'all' || selectedCourt !== 'all';
   };
 
   const activeFilterCount = () => {
-    return (searchTerm ? 1 : 0) + (selectedCaseType !== 'all' ? 1 : 0) + 
-           (selectedCaseStatus !== 'all' ? 1 : 0) + (selectedPriority !== 'all' ? 1 : 0) + 
-           (selectedStatus !== 'all' ? 1 : 0) + (selectedCourt !== 'all' ? 1 : 0);
+    return (searchTerm ? 1 : 0) + (selectedCaseType !== 'all' ? 1 : 0) +
+      (selectedCaseStatus !== 'all' ? 1 : 0) + (selectedPriority !== 'all' ? 1 : 0) +
+      (selectedStatus !== 'all' ? 1 : 0) + (selectedCourt !== 'all' ? 1 : 0);
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -252,7 +253,17 @@ export default function Cases() {
     {
       key: 'client',
       label: t('Client'),
-      render: (value: any, row: any) => row.client?.name || '-'
+      render: (value: any, row: any) => {
+        if (!row.client) return '-';
+        return (
+          <div className="flex flex-col">
+            <span>{row.client.name || '-'}</span>
+            {row.client.phone && (
+              <span className="text-sm text-gray-500 dark:text-gray-400">{row.client.phone}</span>
+            )}
+          </div>
+        );
+      }
     },
     {
       key: 'case_type',
@@ -264,11 +275,11 @@ export default function Cases() {
           displayName = row.case_type.name[currentLocale] || row.case_type.name.en || row.case_type.name.ar || '-';
         }
         return (
-          <span 
+          <span
             className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
-            style={{ 
-              backgroundColor: `${row.case_type?.color}20`, 
-              color: row.case_type?.color 
+            style={{
+              backgroundColor: `${row.case_type?.color}20`,
+              color: row.case_type?.color
             }}
           >
             {displayName}
@@ -280,11 +291,11 @@ export default function Cases() {
       key: 'case_status',
       label: t('Status'),
       render: (value: any, row: any) => (
-        <span 
+        <span
           className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
-          style={{ 
-            backgroundColor: `${row.case_status?.color}20`, 
-            color: row.case_status?.color 
+          style={{
+            backgroundColor: `${row.case_status?.color}20`,
+            color: row.case_status?.color
           }}
         >
           {row.case_status?.name || '-'}
@@ -320,7 +331,7 @@ export default function Cases() {
         <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'active'
           ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
           : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
-        }`}>
+          }`}>
           {value === 'active' ? t('Active') : t('Inactive')}
         </span>
       )
@@ -500,6 +511,8 @@ export default function Cases() {
         formConfig={{
           fields: [
             { name: 'title', label: t('Case Title'), type: 'text', required: true },
+            { name: 'case_id', label: t('Case ID'), type: 'text' },
+            { name: 'file_number', label: t('File Number'), type: 'text' },
             { name: 'description', label: t('Description'), type: 'textarea' },
             {
               name: 'client_id',
@@ -595,11 +608,52 @@ export default function Cases() {
               ],
               defaultValue: 'medium'
             },
+            {
+              name: 'attributes',
+              label: t('Attributes'),
+              type: 'radio',
+              required: true,
+              defaultValue: 'petitioner',
+              options: [
+                { value: 'petitioner', label: t('Petitioner') },
+                { value: 'respondent', label: t('Respondent') }
+              ]
+            },
+            {
+              name: 'opposite_parties',
+              label: t('Opposite Party'),
+              type: 'custom',
+              render: (field: any, formData: any, onChange: (name: string, value: any) => void) => {
+                // Prepare countries options for the select dropdown
+                const repeaterFields: RepeaterField[] = [
+                  { name: 'name', label: t('Name'), type: 'text', required: true },
+                  { name: 'id_number', label: t('ID'), type: 'text' },
+                  {
+                    name: 'nationality_id',
+                    label: t('Nationality'),
+                    type: 'select',
+                    options: countries,
+                    placeholder: countries.length > 0 ? t('Select Nationality') : t('No nationalities available')
+                  },
+                  { name: 'lawyer_name', label: t('Lawyer Name'), type: 'text' }
+                ];
+
+                return (
+                  <Repeater
+                    fields={repeaterFields}
+                    value={formData.opposite_parties || []}
+                    onChange={(value) => onChange('opposite_parties', value)}
+                    minItems={1}
+                    maxItems={-1}
+                    addButtonText={t('Add Opposite Party')}
+                    removeButtonText={t('Remove')}
+                  />
+                );
+              }
+            },
             { name: 'filing_date', label: t('Filing Date'), type: 'date' },
             { name: 'expected_completion_date', label: t('Expected Completion'), type: 'date' },
             { name: 'estimated_value', label: t('Estimated Value'), type: 'number' },
-            { name: 'opposing_party', label: t('Opposing Party'), type: 'text' },
-            { name: 'court_details', label: t('Court Details'), type: 'textarea' },
             {
               name: 'status',
               label: t('Status'),
@@ -624,8 +678,14 @@ export default function Cases() {
               ...currentItem,
               'case_category_id': currentItem.case_category_id ? currentItem.case_category_id.toString() : 'none',
               'case_subcategory_id': currentItem.case_subcategory_id ? currentItem.case_subcategory_id.toString() : 'none',
+              'opposite_parties': currentItem.opposite_parties ? currentItem.opposite_parties.map((party: any) => ({
+                name: party.name || '',
+                id_number: party.id_number || '',
+                nationality_id: party.nationality_id ? party.nationality_id.toString() : '',
+                lawyer_name: party.lawyer_name || ''
+              })) : []
             }
-            : { case_category_id: 'none', case_subcategory_id: 'none' }
+            : { case_category_id: 'none', case_subcategory_id: 'none', opposite_parties: [] }
         }
         title={
           formMode === 'create'
