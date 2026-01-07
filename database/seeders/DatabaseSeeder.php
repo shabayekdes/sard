@@ -30,7 +30,6 @@ class DatabaseSeeder extends Seeder
                 LoginHistorySeeder::class,
 
                 // Client Management module seeders
-                ClientTypeSeeder::class,
                 ClientBillingCurrencySeeder::class,
                 ClientSeeder::class,
                 ClientBillingInfoSeeder::class,
@@ -38,24 +37,16 @@ class DatabaseSeeder extends Seeder
                 // Advocate module seeders
                 CompanyProfileSeeder::class,
                 PracticeAreaSeeder::class,
-                CompanySettingSeeder::class,
-                DocumentTypeSeeder::class,
 
-                // Client documents (after DocumentTypeSeeder)
-                EventTypeSeeder::class,
-                CourtTypeSeeder::class,
-                CircleTypeSeeder::class,
+                // Client documents
                 ClientDocumentSeeder::class,
 
                 // Case Management module seeders
-                CaseTypeSeeder::class,
-                CaseStatusSeeder::class,
                 TeamMemberRoleSeeder::class,
 
                 // Court Schedule module seeders
                 CourtSeeder::class,
                 JudgeSeeder::class,
-                HearingTypeSeeder::class,
 
                 CaseSeeder::class,
                 CaseTimelineSeeder::class,
@@ -94,7 +85,6 @@ class DatabaseSeeder extends Seeder
                 ComplianceAuditSeeder::class,
 
                 // Billing & Invoicing module seeders
-                ExpenseCategorySeeder::class,
                 FeeTypeSeeder::class,
                 TimeEntrySeeder::class,
                 BillingRateSeeder::class,

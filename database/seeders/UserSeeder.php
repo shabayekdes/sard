@@ -61,7 +61,7 @@ class UserSeeder extends Seeder
 
         // Create default settings for company user if not exists
         if (!Setting::where('user_id', $company->id)->exists()) {
-            copySettingsFromSuperAdmin($company->id);
+            \App\Jobs\SeedCompanySettings::dispatchSync($company->id);
         }
 
         // Get all available plans
@@ -127,7 +127,7 @@ class UserSeeder extends Seeder
             $newCompany->assignRole('company');
 
             if (!Setting::where('user_id', $newCompany->id)->exists()) {
-                copySettingsFromSuperAdmin($newCompany->id);
+                \App\Jobs\SeedCompanySettings::dispatchSync($newCompany->id);
             }
         }
 

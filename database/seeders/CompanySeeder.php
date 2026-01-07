@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\Models\Plan;
-use App\Models\Setting;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Faker\Factory as Faker;
@@ -66,10 +65,8 @@ class CompanySeeder extends Seeder
             // Assign company role
             $user->assignRole('company');
             
-            // Create default settings
-            if (!Setting::where('user_id', $user->id)->exists()) {
-                copySettingsFromSuperAdmin($user->id);
-            }
+            // Seed all default company data (settings, roles, notification templates, and all data types)
+            \App\Jobs\SeedDefaultCompanyData::dispatchSync($user->id);
         }
         
         $this->command->info('Created ' . count($companyNames) . ' company users successfully!');

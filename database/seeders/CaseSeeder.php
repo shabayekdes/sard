@@ -69,8 +69,6 @@ class CaseSeeder extends Seeder
                         'filing_date' => $filingDate,
                         'expected_completion_date' => $expectedCompletion,
                         'estimated_value' => rand(5000, 100000),
-                        'opposing_party' => $opposingParties[($companyUser->id + $i - 1) % count($opposingParties)],
-                        'court_details' => 'Court proceedings scheduled for case #' . $i . '. All documentation filed appropriately.',
                         'status' => rand(1, 10) > 8 ? 'inactive' : 'active', // 20% chance inactive
                         'created_by' => $companyUser->id,
                     ];

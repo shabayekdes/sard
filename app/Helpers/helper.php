@@ -158,6 +158,12 @@ if (! function_exists('isLandingPageEnabled')) {
 }
 
 if (! function_exists('defaultRoleAndSetting')) {
+    /**
+     * Set up default roles, settings, and data for a new user
+     *
+     * @param \App\Models\User $user
+     * @return bool
+     */
     function defaultRoleAndSetting($user)
     {
         $companyRole = Role::where('name', 'company')->first();
@@ -170,317 +176,16 @@ if (! function_exists('defaultRoleAndSetting')) {
         if ($user->type === 'superadmin') {
             createDefaultSettings($user->id);
         } elseif ($user->type === 'company') {
-            copySettingsFromSuperAdmin($user->id);
-
-            // Create client and team_member roles for this company
-            createCompanyRoles($user);
-
-            // Create default notification templates and settings
-            createDefaultNotificationTemplates($user->id);
+            // Dispatch all seeding jobs in parallel
+            // This prevents blocking the HTTP request and improves user experience
+            // SeedDefaultCompanyData will dispatch all individual seeding jobs
+            \App\Jobs\SeedDefaultCompanyData::dispatch($user->id);
         }
 
         return true;
     }
 }
 
-if (! function_exists('createCompanyRoles')) {
-    function createCompanyRoles(\App\Models\User $companyUser)
-    {
-        // Create client role
-        $clientRole = Role::firstOrCreate([
-            'name' => 'client',
-            'guard_name' => 'web',
-            'created_by' => $companyUser->id
-        ], [
-            'label' => 'Client',
-            'description' => 'Client with limited access to their cases and documents'
-        ]);
-
-        $clientRole->syncPermissions([
-                // Dashboard
-                'manage-dashboard',
-
-                // Calender
-                'manage-calendar',
-                'view-calendar',
-
-                // Cases
-                'manage-cases',
-                'view-cases',
-
-                // Case Documents
-                'manage-case-documents',
-                'view-case-documents',
-                'download-case-documents',
-
-                // Case Notes
-                'manage-case-notes',
-                'view-case-notes',
-
-                // Case Timelines
-                'manage-case-timelines',
-                'view-case-timelines',
-
-                // Expenses
-                'manage-expenses',
-                'view-expenses',
-
-                // Client Documents
-                'manage-client-documents',
-                'view-client-documents',
-                'download-client-documents',
-
-                // Client Billing
-                'manage-client-billing',
-                'view-client-billing',
-
-                // Hearings
-                'manage-hearings',
-                'view-hearings',
-
-                // Documents
-                'manage-documents',
-                'view-documents',
-                'download-documents',
-
-
-
-                // Document Comments (limited access)
-                'manage-document-comments',
-                'view-document-comments',
-                'create-document-comments',
-
-                // Messages
-                'manage-messages',
-                'view-messages',
-                'send-messages',
-
-                // Invoices
-                'manage-invoices',
-                'view-invoices',
-
-                // Payments
-                'manage-payments',
-                'view-payments',
-                'create-payments',
-
-                // Time Entries
-                'manage-time-entries',
-                'view-time-entries',
-
-                // Knowledge Articles
-                'manage-knowledge-articles',
-                'view-knowledge-articles',
-
-                // Legal Precedents
-                'manage-legal-precedents',
-                'view-legal-precedents'
-            ]);
-
-        // Create team_member role with permissions
-        $teamRole = Role::firstOrCreate([
-            'name' => 'team_member',
-            'guard_name' => 'web',
-            'created_by' => $companyUser->id
-        ], [
-            'label' => 'Team Member',
-            'description' => 'Team member with limited access to company modules'
-        ]);
-
-        $teamPermissions = [
-            // Dashboard
-            'manage-dashboard',
-
-            // Calender
-            'manage-calendar',
-            'view-calendar',
-            'manage-own-calendar',
-
-            // Tasks
-            'manage-tasks',
-            'view-tasks',
-            'create-tasks',
-            'edit-tasks',
-            'assign-tasks',
-            'toggle-status-tasks',
-
-            // Time Entries
-            'manage-time-entries',
-            'view-time-entries',
-            'create-time-entries',
-            'edit-time-entries',
-            'start-timer',
-            'stop-timer',
-
-            // Cases
-            'manage-cases',
-            'view-cases',
-            'create-cases',
-            'edit-cases',
-            'toggle-status-cases',
-
-            // Case Documents
-            'manage-case-documents',
-            'view-case-documents',
-            'create-case-documents',
-            'edit-case-documents',
-            'download-case-documents',
-
-            // Case Notes
-            'manage-case-notes',
-            'view-case-notes',
-            'create-case-notes',
-            'edit-case-notes',
-
-            // Case Timelines
-            'manage-case-timelines',
-            'view-case-timelines',
-            'create-case-timelines',
-            'edit-case-timelines',
-
-            // Clients
-            'manage-clients',
-            'view-clients',
-            'create-clients',
-            'edit-clients',
-
-            // Client Communications
-
-
-            // Documents
-            'manage-documents',
-            'view-documents',
-            'create-documents',
-            'edit-documents',
-            'download-documents',
-
-
-
-            // Document Comments (limited access)
-            'manage-document-comments',
-            'view-document-comments',
-            'create-document-comments',
-            'edit-document-comments',
-
-            // Document Permissions (view only)
-            'manage-document-permissions',
-            'view-document-permissions',
-
-            // Hearings
-            'manage-hearings',
-            'view-hearings',
-            'create-hearings',
-            'edit-hearings',
-
-            'manage-media',
-            'manage-own-media',
-            // Research
-            'manage-research-projects',
-            'view-research-projects',
-            'create-research-projects',
-            'edit-research-projects',
-            'manage-knowledge-articles',
-            'view-knowledge-articles',
-            'create-knowledge-articles',
-            'edit-knowledge-articles',
-            'manage-legal-precedents',
-            'view-legal-precedents',
-            'create-legal-precedents',
-            'edit-legal-precedents',
-
-            // Messages
-            'manage-messages',
-            'view-messages',
-            'send-messages'
-        ];
-
-        $teamRole->syncPermissions($teamPermissions);
-
-        // Create default team member user
-        $teamMember = User::firstOrCreate([
-            'email' => 'teammember' . $companyUser->id . '@company.com',
-            'created_by' => $companyUser->id
-        ], [
-            'name' => 'John Doe',
-            'password' => \Hash::make('password'),
-            'type' => 'team_member',
-            'lang' => $companyUser->lang ?? 'en',
-            'status' => 'active',
-            'referral_code' => 0
-        ]);
-
-        $teamMember->roles()->sync([$teamRole->id]);
-
-        $clientTypes = [
-            [
-                'name' => 'فرد',
-                'created_by' => $companyUser->id,
-                'status' => 'active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'مؤسسة فردية',
-                'created_by' => $companyUser->id,
-                'status' => 'active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'شركة توصية بسيطة',
-                'created_by' => $companyUser->id,
-                'status' => 'active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'شركة تضامنية',
-                'created_by' => $companyUser->id,
-                'status' => 'active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'شركة ذات مسئولية محدودة',
-                'created_by' => $companyUser->id,
-                'status' => 'active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'شركة مساهمة عامة',
-                'created_by' => $companyUser->id,
-                'status' => 'active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'شركة أجنبية',
-                'created_by' => $companyUser->id,
-                'status' => 'active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'شركة خليجية',
-                'created_by' => $companyUser->id,
-                'status' => 'active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'شركة مساهمة مقفلة',
-                'created_by' => $companyUser->id,
-                'status' => 'active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ];
-
-        \App\Models\ClientType::insert($clientTypes);
-        $companyUser->clientBillingCurrencies()->createMany(config('currencies.available_currencies', []));
-    }
-}
 
 if (! function_exists('getPaymentSettings')) {
     /**
@@ -1439,48 +1144,6 @@ if (! function_exists('createDefaultSettings')) {
     }
 }
 
-if (! function_exists('copySettingsFromSuperAdmin')) {
-    /**
-     * Copy system and brand settings from superadmin to company user
-     *
-     * @param int $companyUserId
-     * @return void
-     */
-    function copySettingsFromSuperAdmin($companyUserId)
-    {
-        $superAdmin = User::where('type', 'superadmin')->first();
-        if (!$superAdmin) {
-            createDefaultSettings($companyUserId);
-            return;
-        }
-
-        // Settings to copy from superadmin (system settings only, not theme settings)
-        $settingsToCopy = [
-            'defaultLanguage', 'dateFormat', 'timeFormat', 'calendarStartDay',
-            'defaultTimezone', 'emailVerification', 'landingPageEnabled',
-            'logoDark', 'logoLight', 'favicon', 'titleText', 'footerText'
-        ];
-
-        $superAdminSettings = Setting::where('user_id', $superAdmin->id)
-            ->whereIn('key', $settingsToCopy)
-            ->get();
-
-        $settingsData = [];
-
-        // Only copy existing superadmin settings
-        foreach ($superAdminSettings as $setting) {
-            $settingsData[] = [
-                'user_id' => $companyUserId,
-                'key' => $setting->key,
-                'value' => $setting->value,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }
-
-        Setting::insertOrIgnore($settingsData);
-    }
-}
 
 if (! function_exists('formatCurrencyForPlansAndReferrals')) {
     /**
@@ -1588,52 +1251,6 @@ if (! function_exists('getCompanyOwnerId')) {
     }
 }
 
-if (! function_exists('createDefaultNotificationTemplates')) {
-    /**
-     * Create default notification templates for a new company
-     *
-     * @param int $companyId
-     * @return void
-     */
-    function createDefaultNotificationTemplates($companyId)
-    {
-        $languages = json_decode(file_get_contents(resource_path('lang/language.json')), true);
-        $langCodes = collect($languages)->pluck('code')->toArray();
-
-        $templates = \App\Models\NotificationTemplate::all();
-
-        foreach ($templates as $template) {
-            foreach ($langCodes as $langCode) {
-                $existingContent = \App\Models\NotificationTemplateLang::where('parent_id', $template->id)
-                    ->where('lang', $langCode)
-                    ->where('created_by', $companyId)
-                    ->first();
-
-                if ($existingContent) {
-                    continue;
-                }
-
-                $globalContent = \App\Models\NotificationTemplateLang::where('parent_id', $template->id)
-                    ->where('lang', $langCode)
-                    ->where('created_by', 1)
-                    ->first();
-
-                if ($globalContent) {
-                    \App\Models\NotificationTemplateLang::create([
-                        'parent_id' => $template->id,
-                        'lang' => $langCode,
-                        'title' => $globalContent->title,
-                        'content' => $globalContent->content,
-                        'created_by' => $companyId
-                    ]);
-                }
-            }
-        }
-
-        // Also create default notification settings
-        createDefaultNotificationSettings($companyId);
-    }
-}
 if (! function_exists('isEmailTemplateEnabled')) {
     /**
      * Check if an email template is enabled for a user
@@ -1866,7 +1483,7 @@ if (! function_exists('syncNotificationTemplatesForAllCompanies')) {
         $companies = \App\Models\User::where('type', 'company')->get();
 
         foreach ($companies as $company) {
-            createDefaultNotificationTemplates($company->id);
+            \App\Jobs\SeedNotificationTemplates::dispatchSync($company->id);
         }
     }
 }

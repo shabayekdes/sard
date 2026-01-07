@@ -41,7 +41,7 @@ class UserObserver
         if ($user->type === 'superadmin') {
             createDefaultSettings($user->id);
         } elseif ($user->type === 'company') {
-            copySettingsFromSuperAdmin($user->id);
+            \App\Jobs\SeedCompanySettings::dispatchSync($user->id);
         }
     }
 }
