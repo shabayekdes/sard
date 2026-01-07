@@ -1360,7 +1360,7 @@ if (! function_exists('defaultSettings')) {
             'titleText' => 'Advocate',
             'footerText' => '© 2025 Advocate. All rights reserved.',
             'themeColor' => 'green',
-            'customColor' => '#10b981',
+            'customColor' => '#205341',
             'sidebarVariant' => 'inset',
             'sidebarStyle' => 'plain',
             'layoutDirection' => 'left',

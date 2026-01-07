@@ -41,7 +41,7 @@ export const DEFAULT_BRAND_SETTINGS: BrandSettings = {
     titleText: 'WorkDo',
     footerText: '© 2024 WorkDo. All rights reserved.',
     themeColor: 'green',
-    customColor: '#10b981',
+    customColor: '#205341',
     sidebarVariant: 'inset',
     sidebarStyle: 'plain',
     layoutDirection: 'left',

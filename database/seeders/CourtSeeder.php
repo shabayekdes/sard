@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Court;
 use App\Models\CourtType;
+use App\Models\CircleType;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -29,6 +30,15 @@ class CourtSeeder extends Seeder
                 continue; // Skip if no court types available for this company
             }
             
+            // Get circle types for this specific company
+            $circleTypes = CircleType::where('created_by', $companyUser->id)
+                ->where('status', 'active')
+                ->pluck('id')
+                ->toArray();
+            if (empty($circleTypes)) {
+                continue; // Skip if no circle types available for this company
+            }
+            
             // Create 2-3 courts per company
             $courtCount = rand(8, 10);
             $courtNames = [
@@ -41,15 +51,7 @@ class CourtSeeder extends Seeder
                 'Superior Court Main',
                 'Juvenile Court Center'
             ];
-            
-            $jurisdictions = [
-                'New York County',
-                'Kings County', 
-                'Queens County',
-                'Bronx County',
-                'Richmond County'
-            ];
-            
+
             $facilitiesOptions = [
                 ['parking', 'wheelchair_access', 'security', 'cafeteria'],
                 ['child_care', 'mediation_rooms', 'parking', 'wheelchair_access'],
@@ -62,14 +64,10 @@ class CourtSeeder extends Seeder
                 $courtData = [
                     'name' => $courtNames[($companyUser->id + $i - 1) % count($courtNames)] . ' #' . $i,
                     'address' => ($i * 100) . ' Justice Avenue, District ' . $i . ', NY 1000' . $i,
-                    'phone' => '+1-555-' . str_pad($companyUser->id . $i, 4, '0', STR_PAD_LEFT),
-                    'email' => 'court' . $i . '@' . strtolower(str_replace(' ', '', $companyUser->name)) . '.gov',
-                    'jurisdiction' => $jurisdictions[($companyUser->id + $i - 1) % count($jurisdictions)],
                     'court_type_id' => $courtTypes[($i - 1) % count($courtTypes)],
+                    'circle_type_id' => $circleTypes[($i - 1) % count($circleTypes)],
                     'status' => rand(1, 10) > 9 ? 'inactive' : 'active', // 10% chance inactive
                     'facilities' => $facilitiesOptions[($i - 1) % count($facilitiesOptions)],
-                    'filing_requirements' => 'Court #' . $i . ' requires electronic filing for all documents. Physical copies needed for exhibits over 50 pages.',
-                    'local_rules' => 'Court sessions begin at 9:00 AM sharp. Late arrivals may result in postponement. Professional attire required.',
                     'notes' => 'Court #' . $i . ' for ' . $companyUser->name . '. Handles various legal matters with modern facilities and procedures.',
                     'created_by' => $companyUser->id,
                 ];

@@ -22,7 +22,7 @@ export function SidebarPreview({ variant, style, themeColor, customColor }: Side
     // Fallback colors if CSS variable isn't available
     switch (themeColor) {
       case 'blue': return '#3b82f6';
-      case 'green': return '#10b981';
+      case 'green': return '#205341';
       case 'purple': return '#8b5cf6';
       case 'orange': return '#f97316';
       case 'red': return '#ef4444';

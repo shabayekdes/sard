@@ -410,7 +410,7 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
                                     <div className="grid grid-cols-6 gap-2">
                                         {Object.entries({
                                             blue: '#3b82f6',
-                                            green: '#10b981',
+                                            green: '#205341',
                                             purple: '#8b5cf6',
                                             orange: '#f97316',
                                             red: '#ef4444',

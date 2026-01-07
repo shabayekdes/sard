@@ -7,6 +7,7 @@ type LayoutContextType = {
     position: LayoutPosition;
     effectivePosition: LayoutPosition;
     updatePosition: (val: LayoutPosition) => void;
+    saveLayoutPosition: () => void;
     isRtl: boolean;
 };
 
@@ -99,7 +100,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         (position === 'left' ? 'right' : 'left') :
         position;
 
-    return <LayoutContext.Provider value={{ position, effectivePosition, updatePosition, isRtl }}>{children}</LayoutContext.Provider>;
+    return <LayoutContext.Provider value={{ position, effectivePosition, updatePosition, saveLayoutPosition, isRtl }}>{children}</LayoutContext.Provider>;
 };
 
 export const useLayout = () => {

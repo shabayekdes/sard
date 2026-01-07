@@ -51,7 +51,7 @@ export function BrandProvider({ children }: { children: ReactNode }) {
         const color =
             brandSettings.themeColor === 'custom'
                 ? brandSettings.customColor
-                : ({ blue: '#3b82f6', green: '#10b981', purple: '#8b5cf6', orange: '#f97316', red: '#ef4444' } as any)[brandSettings.themeColor] ||
+                : ({ blue: '#3b82f6', green: '#205341', purple: '#8b5cf6', orange: '#f97316', red: '#ef4444' } as any)[brandSettings.themeColor] ||
                 '#3b82f6';
 
         document.documentElement.style.setProperty('--theme-color', color);
