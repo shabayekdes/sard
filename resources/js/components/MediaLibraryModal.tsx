@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Upload, X, Image as ImageIcon, Search, Plus, Check, FileText, File, Copy } from 'lucide-react';
 import { usePage } from '@inertiajs/react';
 import { hasPermission } from '@/utils/authorization';
+import { getCsrfToken } from '@/utils/csrf';
 
 interface MediaItem {
   id: number;
@@ -31,20 +32,20 @@ interface StorageSettings {
   max_file_size_mb: number;
 }
 
-export default function MediaLibraryModal({ 
-  isOpen, 
-  onClose, 
-  onSelect, 
-  multiple = false 
+export default function MediaLibraryModal({
+  isOpen,
+  onClose,
+  onSelect,
+  multiple = false
 }: MediaLibraryModalProps) {
-  const { auth, storageSettings } = usePage().props as any;
+  const { auth, storageSettings, csrf_token } = usePage().props as any;
   const permissions = auth?.permissions || [];
   const canCreateMedia = hasPermission(permissions, 'create-media');
   const canManageMedia = hasPermission(permissions, 'manage-media');
-  
+
   const allowedTypes = storageSettings?.allowed_file_types || 'jpg,png,webp,gif';
-  const acceptAttribute = allowedTypes.split(',').map(type => `.${type.trim()}`).join(',');
-  
+  const acceptAttribute = allowedTypes.split(',').map((type: string) => `.${type.trim()}`).join(',');
+
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [filteredMedia, setFilteredMedia] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -65,11 +66,11 @@ export default function MediaLibraryModal({
           'X-Requested-With': 'XMLHttpRequest',
         },
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
       setMedia(data);
       setFilteredMedia(data);
@@ -108,9 +109,9 @@ export default function MediaLibraryModal({
 
   const handleFileUpload = async (files: FileList) => {
     setUploading(true);
-    
-    const allowedExtensions = allowedTypes.split(',').map(type => type.trim().toLowerCase());
-    
+
+    const allowedExtensions = allowedTypes.split(',').map((type: string) => type.trim().toLowerCase());
+
     const validFiles = Array.from(files).filter(file => {
       const fileExtension = file.name.split('.').pop()?.toLowerCase();
       if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
@@ -119,35 +120,38 @@ export default function MediaLibraryModal({
       }
       return true;
     });
-    
+
     if (validFiles.length === 0) {
       setUploading(false);
       return;
     }
-    
+
     const formData = new FormData();
     validFiles.forEach(file => {
       formData.append('files[]', file);
     });
-    
+
     try {
+      // Get fresh CSRF token (prioritizes Inertia token over meta tag)
+      const token = csrf_token || getCsrfToken() || '';
+
       const response = await fetch(route('api.media.batch'), {
         method: 'POST',
         body: formData,
         credentials: 'same-origin',
         headers: {
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          'X-CSRF-TOKEN': token,
           'X-Requested-With': 'XMLHttpRequest',
         },
       });
-      
+
       const result = await response.json();
-      
+
       if (response.ok) {
         if (result.data && result.data.length > 0) {
           setMedia(prev => [...result.data, ...prev]);
         }
-        
+
         // Show appropriate success/warning messages
         if (result.errors && result.errors.length > 0) {
           toast.warning(result.message || `${result.data?.length || 0} uploaded, ${result.errors.length} failed`);
@@ -168,7 +172,7 @@ export default function MediaLibraryModal({
     } catch (error) {
       toast.error('Error uploading files');
     }
-    
+
     setUploading(false);
   };
 
@@ -186,7 +190,7 @@ export default function MediaLibraryModal({
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFileUpload(e.dataTransfer.files);
     }
@@ -194,8 +198,8 @@ export default function MediaLibraryModal({
 
   const handleSelect = (url: string) => {
     if (multiple) {
-      setSelectedItems(prev => 
-        prev.includes(url) 
+      setSelectedItems(prev =>
+        prev.includes(url)
           ? prev.filter(item => item !== url)
           : [...prev, url]
       );
@@ -228,7 +232,7 @@ export default function MediaLibraryModal({
             )}
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           {/* Header with Search and Upload */}
           <div className="flex flex-col sm:flex-row gap-3">
@@ -241,7 +245,7 @@ export default function MediaLibraryModal({
                 className="pl-10"
               />
             </div>
-            
+
             {canCreateMedia && (
               <div className="flex gap-2">
                 <Input
@@ -265,7 +269,7 @@ export default function MediaLibraryModal({
               </div>
             )}
           </div>
-          
+
           {/* Stats and Selection Info */}
           <div className="flex items-center justify-between text-sm text-muted-foreground bg-muted/30 px-3 py-2 rounded-md">
             <span>
@@ -291,9 +295,8 @@ export default function MediaLibraryModal({
               <div className="flex-1 flex items-center justify-center py-16">
                 <div className="text-center max-w-sm">
                   <div
-                    className={`mx-auto w-24 h-24 border-2 border-dashed rounded-xl flex items-center justify-center mb-6 transition-colors ${
-                      dragActive ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'
-                    }`}
+                    className={`mx-auto w-24 h-24 border-2 border-dashed rounded-xl flex items-center justify-center mb-6 transition-colors ${dragActive ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'
+                      }`}
                     onDragEnter={handleDrag}
                     onDragLeave={handleDrag}
                     onDragOver={handleDrag}
@@ -301,7 +304,7 @@ export default function MediaLibraryModal({
                   >
                     <Upload className="h-10 w-10 text-muted-foreground" />
                   </div>
-                  
+
                   <div className="space-y-3 mb-6">
                     <h3 className="text-lg font-semibold">No media files found</h3>
                     {searchTerm && (
@@ -313,7 +316,7 @@ export default function MediaLibraryModal({
                       {searchTerm ? 'Try a different search term or upload new images' : 'Upload images to get started'}
                     </p>
                   </div>
-                  
+
                   {canCreateMedia && (
                     <Button
                       type="button"
@@ -332,11 +335,10 @@ export default function MediaLibraryModal({
                   {currentMedia.map((item) => (
                     <div
                       key={item.id}
-                      className={`relative group cursor-pointer rounded-lg overflow-hidden transition-all hover:scale-105 ${
-                        selectedItems.includes(item.url) 
-                          ? 'ring-2 ring-primary shadow-lg' 
+                      className={`relative group cursor-pointer rounded-lg overflow-hidden transition-all hover:scale-105 ${selectedItems.includes(item.url)
+                          ? 'ring-2 ring-primary shadow-lg'
                           : 'hover:shadow-md border border-border hover:border-primary/50'
-                      }`}
+                        }`}
                       onClick={() => handleSelect(item.url)}
                     >
                       <div className="relative aspect-square bg-muted">
@@ -371,7 +373,7 @@ export default function MediaLibraryModal({
                             <span className="text-xs text-gray-600 font-medium">FILE</span>
                           </div>
                         )}
-                        
+
                         {/* Selection Indicator */}
                         {selectedItems.includes(item.url) && (
                           <div className="absolute inset-0 bg-primary/30 flex items-center justify-center">
@@ -380,7 +382,7 @@ export default function MediaLibraryModal({
                             </div>
                           </div>
                         )}
-                        
+
                         {/* Copy Link Button */}
                         <button
                           className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 hover:bg-white rounded p-1"
@@ -393,10 +395,10 @@ export default function MediaLibraryModal({
                         >
                           <Copy className="h-3 w-3 text-gray-600" />
                         </button>
-                        
+
                         {/* Hover Overlay */}
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                        
+
                         {/* File Name Tooltip */}
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <p className="text-xs text-white truncate" title={item.name}>
@@ -410,7 +412,7 @@ export default function MediaLibraryModal({
               </div>
             )}
           </div>
-          
+
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between pt-3 border-t">
@@ -437,7 +439,7 @@ export default function MediaLibraryModal({
                   } else {
                     page = currentPage - 2 + i;
                   }
-                  
+
                   return (
                     <Button
                       key={page}
