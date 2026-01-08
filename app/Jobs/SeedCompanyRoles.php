@@ -276,7 +276,7 @@ class SeedCompanyRoles implements ShouldQueue
         $teamMember->roles()->sync([$teamRole->id]);
 
         // Create client billing currencies
-        $companyUser->clientBillingCurrencies()->createMany(config('currencies.available_currencies', []));
+        // $companyUser->clientBillingCurrencies()->createMany(config('currencies.available_currencies', []));
     }
 
     /**
