@@ -275,82 +275,8 @@ class SeedCompanyRoles implements ShouldQueue
 
         $teamMember->roles()->sync([$teamRole->id]);
 
-        // Create default client types
-        $clientTypes = [
-            [
-                'name' => 'فرد',
-                'created_by' => $companyUser->id,
-                'status' => 'active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'مؤسسة فردية',
-                'created_by' => $companyUser->id,
-                'status' => 'active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'شركة توصية بسيطة',
-                'created_by' => $companyUser->id,
-                'status' => 'active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'شركة تضامنية',
-                'created_by' => $companyUser->id,
-                'status' => 'active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'شركة ذات مسئولية محدودة',
-                'created_by' => $companyUser->id,
-                'status' => 'active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'شركة مساهمة عامة',
-                'created_by' => $companyUser->id,
-                'status' => 'active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'شركة أجنبية',
-                'created_by' => $companyUser->id,
-                'status' => 'active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'شركة خليجية',
-                'created_by' => $companyUser->id,
-                'status' => 'active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'شركة مساهمة مقفلة',
-                'created_by' => $companyUser->id,
-                'status' => 'active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ];
-
-        ClientType::insert($clientTypes);
-
         // Create client billing currencies
         $companyUser->clientBillingCurrencies()->createMany(config('currencies.available_currencies', []));
-
-        Log::info("SeedCompanyRoles: Completed", [
-            'company_id' => $this->companyUserId,
-            'client_types_created' => count($clientTypes)
-        ]);
     }
 
     /**
