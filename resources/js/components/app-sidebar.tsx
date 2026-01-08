@@ -858,7 +858,7 @@ export function AppSidebar() {
         //     hasPermission(permissions, 'manage-compliance-audits') ||
         //     hasPermission(permissions, 'manage-any-compliance-audits') ||
         //     hasPermission(permissions, 'manage-own-compliance-audits')
-        // ) {
+        // ) {Database\Seeders\UserSeeder
         //     complianceChildren.push({
         //         title: t('Compliance Audit'),
         //         href: route('compliance.audits.index'),
@@ -873,17 +873,17 @@ export function AppSidebar() {
         // }
 
         // 12. Knowledge Base, Research Category (under Legal Research) - Legal Precedents HIDDEN
-        const legalResearchChildren = [];
-        if (
-            hasPermission(permissions, 'manage-knowledge-articles') ||
-            hasPermission(permissions, 'manage-any-knowledge-articles') ||
-            hasPermission(permissions, 'manage-own-knowledge-articles')
-        ) {
-            legalResearchChildren.push({
-                title: t('Knowledge Base'),
-                href: route('legal-research.knowledge.index'),
-            });
-        }
+        // const legalResearchChildren = [];
+        // if (
+        //     hasPermission(permissions, 'manage-knowledge-articles') ||
+        //     hasPermission(permissions, 'manage-any-knowledge-articles') ||
+        //     hasPermission(permissions, 'manage-own-knowledge-articles')
+        // ) {
+        //     legalResearchChildren.push({
+        //         title: t('Knowledge Base'),
+        //         href: route('legal-research.knowledge.index'),
+        //     });
+        // }
         // Legal Precedents - HIDDEN
         // if (
         //     hasPermission(permissions, 'manage-legal-precedents') ||
@@ -895,23 +895,23 @@ export function AppSidebar() {
         //         href: route('legal-research.precedents.index'),
         //     });
         // }
-        if (
-            hasPermission(permissions, 'manage-research-categories') ||
-            hasPermission(permissions, 'manage-any-research-categories') ||
-            hasPermission(permissions, 'manage-own-research-categories')
-        ) {
-            legalResearchChildren.push({
-                title: t('Research Category'),
-                href: route('legal-research.categories.index'),
-            });
-        }
-        if (legalResearchChildren.length > 0) {
-            items.push({
-                title: t('Legal Research'),
-                icon: BookOpen,
-                children: legalResearchChildren,
-            });
-        }
+        // if (
+        //     hasPermission(permissions, 'manage-research-categories') ||
+        //     hasPermission(permissions, 'manage-any-research-categories') ||
+        //     hasPermission(permissions, 'manage-own-research-categories')
+        // ) {
+        //     legalResearchChildren.push({
+        //         title: t('Research Category'),
+        //         href: route('legal-research.categories.index'),
+        //     });
+        // }
+        // if (legalResearchChildren.length > 0) {
+        //     items.push({
+        //         title: t('Legal Research'),
+        //         icon: BookOpen,
+        //         children: legalResearchChildren,
+        //     });
+        // }
 
         return items;
     };
