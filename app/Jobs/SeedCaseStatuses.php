@@ -45,6 +45,14 @@ class SeedCaseStatuses implements ShouldQueue
      */
     public function handle(): void
     {
+        // Check if case statuses already exist for this company
+        if (CaseStatus::where('created_by', $this->companyUserId)->exists()) {
+            Log::info("SeedCaseStatuses: Case statuses already exist, skipping", [
+                'company_id' => $this->companyUserId
+            ]);
+            return;
+        }
+
         $caseStatuses = [
             [
                 'name' => 'New',

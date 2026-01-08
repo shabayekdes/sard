@@ -43,6 +43,7 @@ class DatabaseSeeder extends Seeder
 
                 // Case Management module seeders
                 TeamMemberRoleSeeder::class,
+                CaseCategorySeeder::class,
 
                 // Court Schedule module seeders
                 CourtSeeder::class,

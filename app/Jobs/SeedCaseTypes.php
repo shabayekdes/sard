@@ -45,6 +45,14 @@ class SeedCaseTypes implements ShouldQueue
      */
     public function handle(): void
     {
+        // Check if case types already exist for this company
+        if (CaseType::where('created_by', $this->companyUserId)->exists()) {
+            Log::info("SeedCaseTypes: Case types already exist, skipping", [
+                'company_id' => $this->companyUserId
+            ]);
+            return;
+        }
+
         $caseTypes = [
             [
                 'name' => '{"en":"Case Registration","ar":"تسجيل قضية"}',

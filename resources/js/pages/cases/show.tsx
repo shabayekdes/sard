@@ -18,6 +18,7 @@ export default function CaseShow() {
     const {
         auth,
         case: caseData,
+        latestHearing,
         timelines,
         teamMembers,
         users,
@@ -34,7 +35,18 @@ export default function CaseShow() {
     } = usePage().props as any;
     const permissions = auth?.permissions || [];
 
-    const [activeTab, setActiveTab] = useState('timelines');
+    // Helper function to extract translated value from translatable objects
+    const getTranslatedValue = (value: any): string => {
+        if (!value) return '-';
+        if (typeof value === 'string') return value;
+        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+            const locale = i18n.language || 'en';
+            return value[locale] || value.en || value.ar || '-';
+        }
+        return '-';
+    };
+
+    const [activeTab, setActiveTab] = useState('details');
     const [selectedProject, setSelectedProject] = useState<any>(null);
     const [projectSubTab, setProjectSubTab] = useState('details');
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -730,67 +742,160 @@ export default function CaseShow() {
             {/* Case Header */}
             <div className="mb-6 rounded-lg border border-gray-200 bg-white shadow dark:border-gray-700 dark:bg-gray-900">
                 <div className="p-6">
-                    <div className="grid grid-cols-4 gap-4 text-sm md:grid-cols-6">
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                        {/* Section 1: Case Information */}
                         <div>
-                            <span className="font-medium text-gray-500 dark:text-gray-400">{t('Client')}:</span>
-                            <p className="text-gray-900 dark:text-white">{caseData.client?.name}</p>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <span className="font-medium text-gray-500 dark:text-gray-400">{t('Client')}:</span>
+                                    <p className="text-gray-900 dark:text-white">{caseData.client?.name || '-'}</p>
+                                </div>
+                                <div>
+                                    <span className="font-medium text-gray-500 dark:text-gray-400">{t('Case Type')}:</span>
+                                    <p className="text-gray-900 dark:text-white">
+                                        {caseData.case_type?.name
+                                            ? (typeof caseData.case_type.name === 'object' && caseData.case_type.name !== null
+                                                ? (caseData.case_type.name[i18n.language] || caseData.case_type.name.en || caseData.case_type.name.ar || '-')
+                                                : caseData.case_type.name)
+                                            : '-'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <span className="font-medium text-gray-500 dark:text-gray-400">{t('Filing Date')}:</span>
+                                    <p className="text-gray-900 dark:text-white">
+                                        {caseData.filing_date
+                                            ? window.appSettings?.formatDate(caseData.filing_date) || new Date(caseData.filing_date).toLocaleDateString()
+                                            : '-'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <span className="font-medium text-gray-500 dark:text-gray-400">{t('Expected Completion')}:</span>
+                                    <p className="text-gray-900 dark:text-white">
+                                        {caseData.expected_completion_date
+                                            ? window.appSettings?.formatDate(caseData.expected_completion_date) ||
+                                              new Date(caseData.expected_completion_date).toLocaleDateString()
+                                            : '-'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <span className="font-medium text-gray-500 dark:text-gray-400">{t('Status')}:</span>
+                                    <p className="mt-1 text-gray-900 dark:text-white">
+                                        <span
+                                            className={`inline-flex items-center rounded px-2 py-1 text-xs font-medium ${
+                                                caseData.status === 'active'
+                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                            }`}
+                                        >
+                                            {caseData.status === 'active' ? t('Active') : t('Inactive')}
+                                        </span>
+                                    </p>
+                                </div>
+                                <div>
+                                    <span className="font-medium text-gray-500 dark:text-gray-400">{t('Priority')}:</span>
+                                    <p className="mt-1 text-gray-900 dark:text-white">
+                                        <span
+                                            className={`inline-flex items-center rounded px-2 py-1 text-xs font-medium ${
+                                                caseData.priority === 'high'
+                                                    ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                    : caseData.priority === 'medium'
+                                                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                                      : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                            }`}
+                                        >
+                                            {t(caseData.priority?.charAt(0).toUpperCase() + caseData.priority?.slice(1))}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
+
+                        {/* Section 2: Next Session / Latest Hearing */}
                         <div>
-                            <span className="font-medium text-gray-500 dark:text-gray-400">{t('Case Type')}:</span>
-                            <p className="text-gray-900 dark:text-white">
-                                {caseData.case_type?.name
-                                    ? (typeof caseData.case_type.name === 'object' && caseData.case_type.name !== null
-                                        ? (caseData.case_type.name[i18n.language] || caseData.case_type.name.en || caseData.case_type.name.ar || '-')
-                                        : caseData.case_type.name)
-                                    : '-'}
-                            </p>
-                        </div>
-                        <div>
-                            <span className="font-medium text-gray-500 dark:text-gray-400">{t('Filing Date')}:</span>
-                            <p className="text-gray-900 dark:text-white">
-                                {caseData.filing_date
-                                    ? window.appSettings?.formatDate(caseData.filing_date) || new Date(caseData.filing_date).toLocaleDateString()
-                                    : '-'}
-                            </p>
-                        </div>
-                        <div>
-                            <span className="font-medium text-gray-500 dark:text-gray-400">{t('Expected Completion')}:</span>
-                            <p className="text-gray-900 dark:text-white">
-                                {caseData.expected_completion_date
-                                    ? window.appSettings?.formatDate(caseData.expected_completion_date) ||
-                                      new Date(caseData.expected_completion_date).toLocaleDateString()
-                                    : '-'}
-                            </p>
-                        </div>
-                        <div>
-                            <span className="font-medium text-gray-500 dark:text-gray-400">{t('Status')}:</span>
-                            <p className="mt-1 text-gray-900 dark:text-white">
-                                <span
-                                    className={`inline-flex items-center rounded px-2 py-1 text-xs font-medium ${
-                                        caseData.status === 'active'
-                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                    }`}
-                                >
-                                    {caseData.status === 'active' ? t('Active') : t('Inactive')}
-                                </span>
-                            </p>
-                        </div>
-                        <div>
-                            <span className="font-medium text-gray-500 dark:text-gray-400">{t('Priority')}:</span>
-                            <p className="mt-1 text-gray-900 dark:text-white">
-                                <span
-                                    className={`inline-flex items-center rounded px-2 py-1 text-xs font-medium ${
-                                        caseData.priority === 'high'
-                                            ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                            : caseData.priority === 'medium'
-                                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                              : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                    }`}
-                                >
-                                    {t(caseData.priority?.charAt(0).toUpperCase() + caseData.priority?.slice(1))}
-                                </span>
-                            </p>
+                            <h3 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">{t('Next Session')}:</h3>
+                            {latestHearing ? (
+                                <div className="space-y-3 text-sm">
+                                    <div>
+                                        <span className="font-medium text-gray-500 dark:text-gray-400">{t('Hearing Title')}:</span>
+                                        <p className="text-gray-900 dark:text-white">{latestHearing.title || '-'}</p>
+                                    </div>
+                                    <div>
+                                        <span className="font-medium text-gray-500 dark:text-gray-400">{t('Date')} + {t('Time')}:</span>
+                                        <p className="text-gray-900 dark:text-white">
+                                            {latestHearing.hearing_date
+                                                ? (() => {
+                                                    const dateStr = window.appSettings?.formatDate(latestHearing.hearing_date) || new Date(latestHearing.hearing_date).toLocaleDateString();
+                                                    let timeStr = '';
+                                                    if (latestHearing.hearing_time) {
+                                                        if (typeof latestHearing.hearing_time === 'string') {
+                                                            // If it's already a time string (HH:mm)
+                                                            const [hours, minutes] = latestHearing.hearing_time.split(':');
+                                                            const date = new Date();
+                                                            date.setHours(parseInt(hours), parseInt(minutes));
+                                                            timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                                        } else {
+                                                            timeStr = new Date(latestHearing.hearing_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                                        }
+                                                    }
+                                                    return timeStr ? `${dateStr} ${timeStr}` : dateStr;
+                                                })()
+                                                : '-'}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <span className="font-medium text-gray-500 dark:text-gray-400">{t('Court')}:</span>
+                                        <p className="text-gray-900 dark:text-white">
+                                            {latestHearing.court
+                                                ? (() => {
+                                                    // Handle translatable court_type name
+                                                    let courtTypeName = '-';
+                                                    if (latestHearing.court.court_type?.name) {
+                                                        if (typeof latestHearing.court.court_type.name === 'object' && latestHearing.court.court_type.name !== null) {
+                                                            courtTypeName = latestHearing.court.court_type.name[i18n.language] || latestHearing.court.court_type.name.en || latestHearing.court.court_type.name.ar || '-';
+                                                        } else {
+                                                            courtTypeName = latestHearing.court.court_type.name;
+                                                        }
+                                                    }
+                                                    
+                                                    // Handle translatable circle_type name
+                                                    let circleTypeName = '';
+                                                    if (latestHearing.court.circle_type?.name) {
+                                                        if (typeof latestHearing.court.circle_type.name === 'object' && latestHearing.court.circle_type.name !== null) {
+                                                            circleTypeName = latestHearing.court.circle_type.name[i18n.language] || latestHearing.court.circle_type.name.en || latestHearing.court.circle_type.name.ar || '';
+                                                        } else {
+                                                            circleTypeName = latestHearing.court.circle_type.name;
+                                                        }
+                                                    }
+                                                    
+                                                    return circleTypeName ? `${courtTypeName} + ${circleTypeName}` : courtTypeName;
+                                                })()
+                                                : '-'}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <span className="font-medium text-gray-500 dark:text-gray-400">{t('Hearing Status')}:</span>
+                                        <p className="mt-1 text-gray-900 dark:text-white">
+                                            <span
+                                                className={`inline-flex items-center rounded px-2 py-1 text-xs font-medium ${
+                                                    latestHearing.status === 'completed'
+                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                        : latestHearing.status === 'in_progress'
+                                                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                                          : latestHearing.status === 'postponed'
+                                                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                                            : latestHearing.status === 'cancelled'
+                                                              ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                              : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                                                }`}
+                                            >
+                                                {t(latestHearing.status?.charAt(0).toUpperCase() + latestHearing.status?.slice(1).replace('_', ' '))}
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <p className="text-sm text-gray-500 dark:text-gray-400">{t('No upcoming or recent hearings')}</p>
+                            )}
                         </div>
                     </div>
 
@@ -805,7 +910,7 @@ export default function CaseShow() {
 
                                 <div>
                                     <span className="font-medium text-gray-500 dark:text-gray-400">{t('Court Type')}:</span>
-                                    <p className="text-gray-900 dark:text-white">{caseData.court.court_type?.name || '-'}</p>
+                                    <p className="text-gray-900 dark:text-white">{caseData.court.court_type ? getTranslatedValue(caseData.court.court_type.name) : '-'}</p>
                                 </div>
                                 <div>
                                     <span className="font-medium text-gray-500 dark:text-gray-400">{t('Address')}:</span>
@@ -869,6 +974,22 @@ export default function CaseShow() {
             <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow dark:border-gray-700 dark:bg-gray-900">
                 <div className="border-b border-gray-200 dark:border-gray-700">
                     <nav className="flex overflow-x-auto">
+                        <button
+                            onClick={() => {
+                                setActiveTab('details');
+                                router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
+                            }}
+                            className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
+                                activeTab === 'details'
+                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                            }`}
+                        >
+                            <div className="flex items-center space-x-2">
+                                <FileText className="h-4 w-4" />
+                                <span>{t('Details')}</span>
+                            </div>
+                        </button>
                         {hasPermission(permissions, 'view-case-timelines') && (
                             <button
                                 onClick={() => {
@@ -981,6 +1102,166 @@ export default function CaseShow() {
                 </div>
 
                 <div className="p-6">
+                    {activeTab === 'details' && (
+                        <div className="space-y-6">
+                            {/* Client Info Section */}
+                            <div>
+                                <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">{t('Client Info')}</h3>
+                                <div className="grid grid-cols-1 gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800 md:grid-cols-2">
+                                    <div>
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Client')}*:</span>
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                            {caseData.client?.name || '-'}
+                                            {caseData.client?.client_type && (
+                                                <span className="ml-2 inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                                                    {getTranslatedValue(caseData.client.client_type.name)}
+                                                </span>
+                                            )}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Mobile No')}:</span>
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-white">{caseData.client?.phone || '-'}</p>
+                                    </div>
+                                    <div>
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Attributes')}*:</span>
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                            {caseData.attributes ? (
+                                                <span className="inline-flex items-center rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 dark:bg-purple-900 dark:text-purple-200">
+                                                    {t(caseData.attributes.charAt(0).toUpperCase() + caseData.attributes.slice(1))}
+                                                </span>
+                                            ) : (
+                                                '-'
+                                            )}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Opposite Parties */}
+                                {caseData.opposite_parties && caseData.opposite_parties.length > 0 && (
+                                    <div className="mt-4">
+                                        <h4 className="mb-3 text-base font-semibold text-gray-900 dark:text-white">{t('Opposite Party')}:</h4>
+                                        <div className="space-y-3">
+                                            {caseData.opposite_parties.map((party: any, index: number) => (
+                                                <div key={party.id || index} className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+                                                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                                                        <div>
+                                                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Name')}*:</span>
+                                                            <p className="mt-1 text-sm text-gray-900 dark:text-white">{party.name || '-'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('ID')}:</span>
+                                                            <p className="mt-1 text-sm text-gray-900 dark:text-white">{party.id_number || '-'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Nationality')}:</span>
+                                                            <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                                                {party.nationality
+                                                                    ? getTranslatedValue(party.nationality.name || party.nationality)
+                                                                    : '-'}
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Lawyer Name')}:</span>
+                                                            <p className="mt-1 text-sm text-gray-900 dark:text-white">{party.lawyer_name || '-'}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Case Info Section */}
+                            <div>
+                                <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">{t('Case Info')}</h3>
+                                <div className="grid grid-cols-1 gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800 md:grid-cols-2">
+                                    <div>
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Case Number')}:</span>
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-white">{caseData.case_id || '-'}</p>
+                                    </div>
+                                    <div>
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Status')}:</span>
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                            <span
+                                                className={`inline-flex items-center rounded px-2 py-1 text-xs font-medium ${
+                                                    caseData.status === 'active'
+                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                }`}
+                                            >
+                                                {caseData.status === 'active' ? t('Active') : t('Inactive')}
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('File Number')}:</span>
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-white">{caseData.file_number || '-'}</p>
+                                    </div>
+                                    <div>
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Case Main Category')}*:</span>
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                            {caseData.case_category ? getTranslatedValue(caseData.case_category.name) : '-'}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Case Sub Category')}*:</span>
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                            {caseData.case_subcategory ? getTranslatedValue(caseData.case_subcategory.name) : '-'}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Case Type')}*:</span>
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                            {caseData.case_type ? getTranslatedValue(caseData.case_type.name) : '-'}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Estimated Value')}:</span>
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                            {caseData.estimated_value
+                                                ? (window.appSettings?.formatCurrency?.(caseData.estimated_value) || caseData.estimated_value)
+                                                : '-'}
+                                        </p>
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Description')}:</span>
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-white whitespace-pre-wrap">{caseData.description || '-'}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Court Section */}
+                            {caseData.court && (
+                                <div>
+                                    <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">{t('Court')}:</h3>
+                                    <div className="grid grid-cols-1 gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800 md:grid-cols-2">
+                                        <div>
+                                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Court Name')}*:</span>
+                                            <p className="mt-1 text-sm text-gray-900 dark:text-white">{caseData.court.name || '-'}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Court Type')}*:</span>
+                                            <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                                {caseData.court.court_type ? getTranslatedValue(caseData.court.court_type.name) : '-'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Circle Type')}*:</span>
+                                            <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                                {caseData.court.circle_type ? getTranslatedValue(caseData.court.circle_type.name) : '-'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Address')}:</span>
+                                            <p className="mt-1 text-sm text-gray-900 dark:text-white">{caseData.court.address || '-'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
                     {activeTab === 'timelines' && (
                         <div>
                             <div className="mb-6 flex items-center justify-between">

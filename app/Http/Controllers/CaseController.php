@@ -9,6 +9,7 @@ use App\Models\CaseCategory;
 use App\Models\CaseStatus;
 use App\Models\Client;
 use App\Models\Court;
+use App\Models\Hearing;
 use App\Models\OppositeParty;
 use App\Models\Country;
 use App\Models\CaseTimeline;
@@ -161,13 +162,16 @@ class CaseController extends BaseController
     {
         $case = CaseModel::withPermissionCheck()
             ->with([
-                'client',
+                'client.clientType',
                 'caseType',
+                'caseCategory',
+                'caseSubcategory',
                 'caseStatus',
                 'court.judges' => function($query) {
                     $query->where('status', 'active');
                 },
                 'court.courtType',
+                'court.circleType',
                 'oppositeParties.nationality'
             ])
             ->where('id', $caseId)
@@ -336,8 +340,23 @@ class CaseController extends BaseController
             ->where('key', 'googleCalendarEnabled')
             ->value('value') == '1';
 
+        // Get latest hearing (done or upcoming) for this case
+        // Prioritize upcoming hearings, then show the most recent completed one
+        $latestHearing = Hearing::withPermissionCheck()
+            ->with([
+                'court.courtType',
+                'court.circleType',
+                'hearingType'
+            ])
+            ->where('case_id', $caseId)
+            ->orderByRaw('CASE WHEN hearing_date >= CURDATE() THEN 0 ELSE 1 END')
+            ->orderBy('hearing_date', 'desc')
+            ->orderBy('hearing_time', 'desc')
+            ->first();
+
         return Inertia::render('cases/show', [
             'case' => $case,
+            'latestHearing' => $latestHearing,
             'timelines' => $timelines,
             'teamMembers' => $teamMembers,
             'caseDocuments' => $caseDocuments,

@@ -64,6 +64,9 @@ class UserSeeder extends Seeder
             \App\Jobs\SeedCompanySettings::dispatchSync($company->id);
         }
 
+        // Seed all default company data (case types, statuses, etc.)
+        \App\Jobs\SeedDefaultCompanyData::dispatchSync($company->id);
+
         // Get all available plans
         $freePlan = Plan::where('name', 'Free')->first();
         $starterPlan = Plan::where('name', 'Starter')->first();
@@ -129,6 +132,9 @@ class UserSeeder extends Seeder
             if (!Setting::where('user_id', $newCompany->id)->exists()) {
                 \App\Jobs\SeedCompanySettings::dispatchSync($newCompany->id);
             }
+
+            // Seed all default company data (case types, statuses, etc.)
+            \App\Jobs\SeedDefaultCompanyData::dispatchSync($newCompany->id);
         }
 
         // Assign default plan to all company users with null plan_id
