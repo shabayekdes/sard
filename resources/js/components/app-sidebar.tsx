@@ -152,99 +152,48 @@ export function AppSidebar() {
             });
         }
 
-        // 2. Team Members
-        const staffChildren = [];
+        // 2. Client
+        const clientChildren = [];
         if (
-            hasPermission(permissions, 'manage-users') ||
-            hasPermission(permissions, 'manage-any-users') ||
-            hasPermission(permissions, 'manage-own-users')
+            hasPermission(permissions, 'manage-clients') ||
+            hasPermission(permissions, 'manage-any-clients') ||
+            hasPermission(permissions, 'manage-own-clients')
         ) {
-            staffChildren.push({
-                title: t('Members'),
-                href: route('users.index'),
+            clientChildren.push({
+                title: t('Clients'),
+                href: route('clients.index'),
             });
         }
         if (
-            hasPermission(permissions, 'manage-roles') ||
-            hasPermission(permissions, 'manage-any-roles') ||
-            hasPermission(permissions, 'manage-own-roles')
+            hasPermission(permissions, 'manage-client-documents') ||
+            hasPermission(permissions, 'manage-any-client-documents') ||
+            hasPermission(permissions, 'manage-own-client-documents')
         ) {
-            staffChildren.push({
-                title: t('Roles'),
-                href: route('roles.index'),
+            clientChildren.push({
+                title: t('Clients Documents'),
+                href: route('clients.documents.index'),
             });
         }
-        if (staffChildren.length > 0) {
+        if (
+            hasPermission(permissions, 'manage-client-billing') ||
+            hasPermission(permissions, 'manage-any-client-billing') ||
+            hasPermission(permissions, 'manage-own-client-billing')
+        ) {
+            clientChildren.push({
+                title: t('Client Billing'),
+                href: route('clients.billing.index'),
+            });
+        }
+        if (clientChildren.length > 0) {
             items.push({
-                title: t('Team Members'),
-                icon: Users,
-                children: staffChildren,
+                title: t('Client'),
+                icon: UserCheck,
+                children: clientChildren,
             });
         }
 
-        // 3. Advocate (Company Profiles moved to Setup)
-        // Note: Company Profiles has been moved to Setup section
-
-        // 4. Case Management
+        // 3. Cases
         const caseChildren = [];
-        const caseSetupChildren = [];
-        if (
-            hasPermission(permissions, 'manage-case-categories') ||
-            hasPermission(permissions, 'manage-any-case-categories') ||
-            hasPermission(permissions, 'manage-own-case-categories')
-        ) {
-            caseSetupChildren.push({
-                title: t('Case Categories'),
-                href: route('cases.case-categories.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-case-types') ||
-            hasPermission(permissions, 'manage-any-case-types') ||
-            hasPermission(permissions, 'manage-own-case-types')
-        ) {
-            caseSetupChildren.push({
-                title: t('Case Types'),
-                href: route('cases.case-types.index'),
-            });
-        }
-
-        if (
-            hasPermission(permissions, 'manage-case-statuses') ||
-            hasPermission(permissions, 'manage-any-case-statuses') ||
-            hasPermission(permissions, 'manage-own-case-statuses')
-        ) {
-            caseSetupChildren.push({
-                title: t('Case Statuses'),
-                href: route('cases.case-statuses.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-event-types') ||
-            hasPermission(permissions, 'manage-any-event-types') ||
-            hasPermission(permissions, 'manage-own-event-types')
-        ) {
-            caseSetupChildren.push({
-                title: t('Event Types'),
-                href: route('advocate.event-types.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-hearing-types') ||
-            hasPermission(permissions, 'manage-any-hearing-types') ||
-            hasPermission(permissions, 'manage-own-hearing-types')
-        ) {
-            caseSetupChildren.push({
-                title: t('Hearing Types'),
-                href: route('hearing-types.index'),
-            });
-        }
-        if (caseSetupChildren.length > 0) {
-            caseChildren.push({
-                title: t('Case Setup'),
-                children: caseSetupChildren,
-            });
-        }
         if (
             hasPermission(permissions, 'manage-cases') ||
             hasPermission(permissions, 'manage-any-cases') ||
@@ -265,255 +214,62 @@ export function AppSidebar() {
                 href: route('hearings.index'),
             });
         }
-        if (caseChildren.length > 0) {
-            items.push({
-                title: t('Case Management'),
-                icon: Briefcase,
-                children: caseChildren,
-            });
-        }
-
-        // 5. Court Schedule
-        const courtScheduleChildren = [];
-        const setupChildren = [];
-        if (
-            hasPermission(permissions, 'manage-court-types') ||
-            hasPermission(permissions, 'manage-any-court-types') ||
-            hasPermission(permissions, 'manage-own-court-types')
-        ) {
-            setupChildren.push({
-                title: t('Court Types'),
-                href: route('advocate.court-types.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-circle-types') ||
-            hasPermission(permissions, 'manage-any-circle-types') ||
-            hasPermission(permissions, 'manage-own-circle-types')
-        ) {
-            setupChildren.push({
-                title: t('Circle Types'),
-                href: route('advocate.circle-types.index'),
-            });
-        }
-        if (setupChildren.length > 0) {
-            courtScheduleChildren.push({
-                title: t('Court Setup'),
-                children: setupChildren,
-            });
-        }
         if (
             hasPermission(permissions, 'manage-courts') ||
             hasPermission(permissions, 'manage-any-courts') ||
             hasPermission(permissions, 'manage-own-courts')
         ) {
-            courtScheduleChildren.push({
+            caseChildren.push({
                 title: t('Courts'),
                 href: route('courts.index'),
             });
         }
         if (
-            hasPermission(permissions, 'manage-judges') ||
-            hasPermission(permissions, 'manage-any-judges') ||
-            hasPermission(permissions, 'manage-own-judges')
+            hasPermission(permissions, 'manage-research-projects') ||
+            hasPermission(permissions, 'manage-any-research-projects') ||
+            hasPermission(permissions, 'manage-own-research-projects')
         ) {
-            courtScheduleChildren.push({
-                title: t('Judges'),
-                href: route('judges.index'),
+            caseChildren.push({
+                title: t('Legal Research'),
+                href: route('legal-research.projects.index'),
             });
         }
-        if (courtScheduleChildren.length > 0) {
+        if (caseChildren.length > 0) {
             items.push({
-                title: t('Court Schedule'),
-                icon: Calendar,
-                children: courtScheduleChildren,
+                title: t('Cases'),
+                icon: Briefcase,
+                children: caseChildren,
             });
         }
 
-        // 6. Client Management
-        const clientChildren = [];
-        const clientSetupChildren = [];
+        // 4. Calendar
         if (
-            hasPermission(permissions, 'manage-client-types') ||
-            hasPermission(permissions, 'manage-any-client-types') ||
-            hasPermission(permissions, 'manage-own-client-types')
+            hasPermission(permissions, 'manage-calendar') ||
+            hasPermission(permissions, 'manage-any-calendar') ||
+            hasPermission(permissions, 'manage-own-calendar')
         ) {
-            clientSetupChildren.push({
-                title: t('Client Types'),
-                href: route('clients.client-types.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-document-types') ||
-            hasPermission(permissions, 'manage-any-document-types') ||
-            hasPermission(permissions, 'manage-own-document-types')
-        ) {
-            clientSetupChildren.push({
-                title: t('Document Types'),
-                href: route('advocate.document-types.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-client-billing-currencies') ||
-            hasPermission(permissions, 'manage-any-client-billing-currencies') ||
-            hasPermission(permissions, 'manage-own-client-billing-currencies')
-        ) {
-            clientSetupChildren.push({
-                title: t('Billing Currencies'),
-                href: route('client-billing-currencies.index'),
-            });
-        }
-        if (clientSetupChildren.length > 0) {
-            clientChildren.push({
-                title: t('Client Setup'),
-                children: clientSetupChildren,
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-clients') ||
-            hasPermission(permissions, 'manage-any-clients') ||
-            hasPermission(permissions, 'manage-own-clients')
-        ) {
-            clientChildren.push({
-                title: t('Clients'),
-                href: route('clients.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-client-documents') ||
-            hasPermission(permissions, 'manage-any-client-documents') ||
-            hasPermission(permissions, 'manage-own-client-documents')
-        ) {
-            clientChildren.push({
-                title: t('Documents'),
-                href: route('clients.documents.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-client-billing') ||
-            hasPermission(permissions, 'manage-any-client-billing') ||
-            hasPermission(permissions, 'manage-own-client-billing')
-        ) {
-            clientChildren.push({
-                title: t('Billing'),
-                href: route('clients.billing.index'),
-            });
-        }
-        if (clientChildren.length > 0) {
             items.push({
-                title: t('Client Management'),
-                icon: UserCheck,
-                children: clientChildren,
+                title: t('Calendar'),
+                href: route('calendar.index'),
+                icon: CalendarDays,
             });
         }
 
-        // 7. Billing & Invoicing
-        const billingChildren = [];
-        const billingSetupChildren = [];
+        // 5. Messages
         if (
-            hasPermission(permissions, 'manage-expense-categories') ||
-            hasPermission(permissions, 'manage-any-expense-categories') ||
-            hasPermission(permissions, 'manage-own-expense-categories')
+            hasPermission(permissions, 'manage-messages') ||
+            hasPermission(permissions, 'manage-any-messages') ||
+            hasPermission(permissions, 'manage-own-messages')
         ) {
-            billingSetupChildren.push({
-                title: t('Expense Categories'),
-                href: route('billing.expense-categories.index'),
-            });
-        }
-        if (billingSetupChildren.length > 0) {
-            billingChildren.push({
-                title: t('Billing Setup'),
-                children: billingSetupChildren,
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-time-entries') ||
-            hasPermission(permissions, 'manage-any-time-entries') ||
-            hasPermission(permissions, 'manage-own-time-entries')
-        ) {
-            billingChildren.push({
-                title: t('Time Entries'),
-                href: route('billing.time-entries.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-billing-rates') ||
-            hasPermission(permissions, 'manage-any-billing-rates') ||
-            hasPermission(permissions, 'manage-own-billing-rates')
-        ) {
-            billingChildren.push({
-                title: t('Billing Rates'),
-                href: route('billing.billing-rates.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-expenses') ||
-            hasPermission(permissions, 'manage-any-expenses') ||
-            hasPermission(permissions, 'manage-own-expenses')
-        ) {
-            billingChildren.push({
-                title: t('Expenses'),
-                href: route('billing.expenses.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-invoices') ||
-            hasPermission(permissions, 'manage-any-invoices') ||
-            hasPermission(permissions, 'manage-own-invoices')
-        ) {
-            billingChildren.push({
-                title: t('Invoices'),
-                href: route('billing.invoices.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-payments') ||
-            hasPermission(permissions, 'manage-any-payments') ||
-            hasPermission(permissions, 'manage-own-payments')
-        ) {
-            billingChildren.push({
-                title: t('Payments'),
-                href: route('billing.payments.index'),
-            });
-        }
-        if (billingChildren.length > 0) {
             items.push({
-                title: t('Billing & Invoicing'),
-                icon: DollarSign,
-                children: billingChildren,
+                title: t('Messages'),
+                icon: MessageSquare,
+                href: route('communication.messages.index'),
             });
         }
 
-        // 8. Task & Workflow
+        // 6. Tasks & Workflow
         const taskChildren = [];
-        const taskSetupChildren = [];
-        if (
-            hasPermission(permissions, 'manage-task-types') ||
-            hasPermission(permissions, 'manage-any-task-types') ||
-            hasPermission(permissions, 'manage-own-task-types')
-        ) {
-            taskSetupChildren.push({
-                title: t('Task Types'),
-                href: route('tasks.task-types.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-task-statuses') ||
-            hasPermission(permissions, 'manage-any-task-statuses') ||
-            hasPermission(permissions, 'manage-own-task-statuses')
-        ) {
-            taskSetupChildren.push({
-                title: t('Task Statuses'),
-                href: route('tasks.task-statuses.index'),
-            });
-        }
-        if (taskSetupChildren.length > 0) {
-            taskChildren.push({
-                title: t('Task Setup'),
-                children: taskSetupChildren,
-            });
-        }
-
         if (
             hasPermission(permissions, 'manage-tasks') ||
             hasPermission(permissions, 'manage-any-tasks') ||
@@ -536,129 +292,82 @@ export function AppSidebar() {
         }
         if (taskChildren.length > 0) {
             items.push({
-                title: t('Task & Workflow'),
+                title: t('Tasks & Workflow'),
                 icon: CheckSquare,
                 children: taskChildren,
             });
         }
 
-        // 9. Calendar
+        // 7. Billing
+        const billingChildren = [];
         if (
-            hasPermission(permissions, 'manage-calendar') ||
-            hasPermission(permissions, 'manage-any-calendar') ||
-            hasPermission(permissions, 'manage-own-calendar')
+            hasPermission(permissions, 'manage-invoices') ||
+            hasPermission(permissions, 'manage-any-invoices') ||
+            hasPermission(permissions, 'manage-own-invoices')
         ) {
+            billingChildren.push({
+                title: t('Invoices'),
+                href: route('billing.invoices.index'),
+            });
+        }
+        if (
+            hasPermission(permissions, 'manage-payments') ||
+            hasPermission(permissions, 'manage-any-payments') ||
+            hasPermission(permissions, 'manage-own-payments')
+        ) {
+            billingChildren.push({
+                title: t('Payments'),
+                href: route('billing.payments.index'),
+            });
+        }
+        if (
+            hasPermission(permissions, 'manage-time-entries') ||
+            hasPermission(permissions, 'manage-any-time-entries') ||
+            hasPermission(permissions, 'manage-own-time-entries')
+        ) {
+            billingChildren.push({
+                title: t('Time Entries'),
+                href: route('billing.time-entries.index'),
+            });
+        }
+        if (
+            hasPermission(permissions, 'manage-billing-rates') ||
+            hasPermission(permissions, 'manage-any-billing-rates') ||
+            hasPermission(permissions, 'manage-own-billing-rates')
+        ) {
+            billingChildren.push({
+                title: t('Billing Rate'),
+                href: route('billing.billing-rates.index'),
+            });
+        }
+        if (
+            hasPermission(permissions, 'manage-expenses') ||
+            hasPermission(permissions, 'manage-any-expenses') ||
+            hasPermission(permissions, 'manage-own-expenses')
+        ) {
+            billingChildren.push({
+                title: t('Expense'),
+                href: route('billing.expenses.index'),
+            });
+        }
+        if (billingChildren.length > 0) {
             items.push({
-                title: t('Calendar'),
-                href: route('calendar.index'),
-                icon: CalendarDays,
+                title: t('Billing'),
+                icon: DollarSign,
+                children: billingChildren,
             });
         }
 
-        // 10. Legal Research
-        const researchChildren = [];
-        const researchSetupChildren = [];
-        if (
-            hasPermission(permissions, 'manage-research-types') ||
-            hasPermission(permissions, 'manage-any-research-types') ||
-            hasPermission(permissions, 'manage-own-research-types')
-        ) {
-            researchSetupChildren.push({
-                title: t('Research Types'),
-                href: route('legal-research.research-types.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-practice-areas') ||
-            hasPermission(permissions, 'manage-any-practice-areas') ||
-            hasPermission(permissions, 'manage-own-practice-areas')
-        ) {
-            researchSetupChildren.push({
-                title: t('Practice Areas'),
-                href: route('advocate.practice-areas.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-research-categories') ||
-            hasPermission(permissions, 'manage-any-research-categories') ||
-            hasPermission(permissions, 'manage-own-research-categories')
-        ) {
-            researchSetupChildren.push({
-                title: t('Research Categories'),
-                href: route('legal-research.categories.index'),
-            });
-        }
-        if (researchSetupChildren.length > 0) {
-            researchChildren.push({
-                title: t('Research Setup'),
-                children: researchSetupChildren,
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-research-projects') ||
-            hasPermission(permissions, 'manage-any-research-projects') ||
-            hasPermission(permissions, 'manage-own-research-projects')
-        ) {
-            researchChildren.push({
-                title: t('Research Projects'),
-                href: route('legal-research.projects.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-research-sources') ||
-            hasPermission(permissions, 'manage-any-research-sources') ||
-            hasPermission(permissions, 'manage-own-research-sources')
-        ) {
-            researchChildren.push({
-                title: t('Research Sources'),
-                href: route('legal-research.sources.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-knowledge-articles') ||
-            hasPermission(permissions, 'manage-any-knowledge-articles') ||
-            hasPermission(permissions, 'manage-own-knowledge-articles')
-        ) {
-            researchChildren.push({
-                title: t('Knowledge Base'),
-                href: route('legal-research.knowledge.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-legal-precedents') ||
-            hasPermission(permissions, 'manage-any-legal-precedents') ||
-            hasPermission(permissions, 'manage-own-legal-precedents')
-        ) {
-            researchChildren.push({
-                title: t('Legal Precedents'),
-                href: route('legal-research.precedents.index'),
-            });
-        }
-        if (researchChildren.length > 0) {
-            items.push({
-                title: t('Legal Research'),
-                icon: BookOpen,
-                children: researchChildren,
-            });
-        }
-
-        // 11. Document Management
+        // 8. Document Management
         const documentChildren = [];
-        const documentSetupChildren = [];
         if (
-            hasPermission(permissions, 'manage-document-categories') ||
-            hasPermission(permissions, 'manage-any-document-categories') ||
-            hasPermission(permissions, 'manage-own-document-categories')
+            hasPermission(permissions, 'manage-media') ||
+            hasPermission(permissions, 'manage-any-media') ||
+            hasPermission(permissions, 'manage-own-media')
         ) {
-            documentSetupChildren.push({
-                title: t('Categories'),
-                href: route('document-management.categories.index'),
-            });
-        }
-        if (documentSetupChildren.length > 0) {
             documentChildren.push({
-                title: t('Document Setup'),
-                children: documentSetupChildren,
+                title: t('Media Library'),
+                href: route('media-library'),
             });
         }
         if (
@@ -682,16 +391,6 @@ export function AppSidebar() {
             });
         }
         if (
-            hasPermission(permissions, 'manage-document-permissions') ||
-            hasPermission(permissions, 'manage-any-document-permissions') ||
-            hasPermission(permissions, 'manage-own-document-permissions')
-        ) {
-            documentChildren.push({
-                title: t('Permissions'),
-                href: route('document-management.permissions.index'),
-            });
-        }
-        if (
             hasPermission(permissions, 'manage-document-comments') ||
             hasPermission(permissions, 'manage-any-document-comments') ||
             hasPermission(permissions, 'manage-own-document-comments')
@@ -699,6 +398,16 @@ export function AppSidebar() {
             documentChildren.push({
                 title: t('Comments'),
                 href: route('document-management.comments.index'),
+            });
+        }
+        if (
+            hasPermission(permissions, 'manage-document-permissions') ||
+            hasPermission(permissions, 'manage-any-document-permissions') ||
+            hasPermission(permissions, 'manage-own-document-permissions')
+        ) {
+            documentChildren.push({
+                title: t('Permissions'),
+                href: route('document-management.permissions.index'),
             });
         }
         if (documentChildren.length > 0) {
@@ -709,207 +418,498 @@ export function AppSidebar() {
             });
         }
 
-        // 12. Compliance & Regulatory
-        const complianceChildren = [];
-        const complianceSetupChildren = [];
+        // 9. Setup (Configurations)
+        const setupChildren = [];
+
+        // Client configurations
+        const clientConfigChildren = [];
         if (
-            hasPermission(permissions, 'manage-compliance-categories') ||
-            hasPermission(permissions, 'manage-any-compliance-categories') ||
-            hasPermission(permissions, 'manage-own-compliance-categories')
+            hasPermission(permissions, 'manage-client-types') ||
+            hasPermission(permissions, 'manage-any-client-types') ||
+            hasPermission(permissions, 'manage-own-client-types')
         ) {
-            complianceSetupChildren.push({
-                title: t('Compliance Categories'),
-                href: route('compliance.categories.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-compliance-frequencies') ||
-            hasPermission(permissions, 'manage-any-compliance-frequencies') ||
-            hasPermission(permissions, 'manage-own-compliance-frequencies')
-        ) {
-            complianceSetupChildren.push({
-                title: t('Compliance Frequencies'),
-                href: route('compliance.frequencies.index'),
+            clientConfigChildren.push({
+                title: t('Client Type'),
+                href: route('clients.client-types.index'),
             });
         }
         if (
-            hasPermission(permissions, 'manage-risk-categories') ||
-            hasPermission(permissions, 'manage-any-risk-categories') ||
-            hasPermission(permissions, 'manage-own-risk-categories')
+            hasPermission(permissions, 'manage-document-types') ||
+            hasPermission(permissions, 'manage-any-document-types') ||
+            hasPermission(permissions, 'manage-own-document-types')
         ) {
-            complianceSetupChildren.push({
-                title: t('Risk Categories'),
-                href: route('compliance.risk-categories.index'),
+            clientConfigChildren.push({
+                title: t('Document Type'),
+                href: route('advocate.document-types.index'),
             });
         }
-        if (
-            hasPermission(permissions, 'manage-audit-types') ||
-            hasPermission(permissions, 'manage-any-audit-types') ||
-            hasPermission(permissions, 'manage-own-audit-types')
-        ) {
-            complianceSetupChildren.push({
-                title: t('Compliance Audit Types'),
-                href: route('compliance.audit-types.index'),
-            });
-        }
-        if (complianceSetupChildren.length > 0) {
-            complianceChildren.push({
-                title: t('Compliance Setup'),
-                children: complianceSetupChildren,
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-compliance-requirements') ||
-            hasPermission(permissions, 'manage-any-compliance-requirements') ||
-            hasPermission(permissions, 'manage-own-compliance-requirements')
-        ) {
-            complianceChildren.push({
-                title: t('Compliance Requirements'),
-                href: route('compliance.requirements.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-professional-licenses') ||
-            hasPermission(permissions, 'manage-any-professional-licenses') ||
-            hasPermission(permissions, 'manage-own-professional-licenses')
-        ) {
-            complianceChildren.push({
-                title: t('Professional Licenses'),
-                href: route('compliance.professional-licenses.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-cle-tracking') ||
-            hasPermission(permissions, 'manage-any-cle-tracking') ||
-            hasPermission(permissions, 'manage-own-cle-tracking')
-        ) {
-            complianceChildren.push({
-                title: t('CLE Tracking'),
-                href: route('compliance.cle-tracking.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-regulatory-bodies') ||
-            hasPermission(permissions, 'manage-any-regulatory-bodies') ||
-            hasPermission(permissions, 'manage-own-regulatory-bodies')
-        ) {
-            complianceChildren.push({
-                title: t('Regulatory Bodies'),
-                href: route('compliance.regulatory-bodies.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-risk-assessments') ||
-            hasPermission(permissions, 'manage-any-risk-assessments') ||
-            hasPermission(permissions, 'manage-own-risk-assessments')
-        ) {
-            complianceChildren.push({
-                title: t('Risk Assessments'),
-                href: route('compliance.risk-assessments.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-compliance-audits') ||
-            hasPermission(permissions, 'manage-any-compliance-audits') ||
-            hasPermission(permissions, 'manage-own-compliance-audits')
-        ) {
-            complianceChildren.push({
-                title: t('Compliance Audits'),
-                href: route('compliance.audits.index'),
-            });
-        }
-        if (complianceChildren.length > 0) {
-            items.push({
-                title: t('Compliance & Regulatory'),
-                icon: CheckSquare,
-                children: complianceChildren,
+        if (clientConfigChildren.length > 0) {
+            setupChildren.push({
+                title: t('Client'),
+                children: clientConfigChildren,
             });
         }
 
-        // 13. Communication
+        // Case configurations
+        const caseConfigChildren = [];
         if (
-            hasPermission(permissions, 'manage-messages') ||
-            hasPermission(permissions, 'manage-any-messages') ||
-            hasPermission(permissions, 'manage-own-messages')
+            hasPermission(permissions, 'manage-case-categories') ||
+            hasPermission(permissions, 'manage-any-case-categories') ||
+            hasPermission(permissions, 'manage-own-case-categories')
         ) {
-            items.push({
-                title: t('Communication'),
-                icon: Mail,
-                href: route('communication.messages.index'),
+            caseConfigChildren.push({
+                title: t('Case Categories'),
+                href: route('cases.case-categories.index'),
             });
         }
-
-        // 14. Media Library
         if (
-            hasPermission(permissions, 'manage-media') ||
-            hasPermission(permissions, 'manage-any-media') ||
-            hasPermission(permissions, 'manage-own-media')
+            hasPermission(permissions, 'manage-case-types') ||
+            hasPermission(permissions, 'manage-any-case-types') ||
+            hasPermission(permissions, 'manage-own-case-types')
         ) {
-            items.push({
-                title: t('Media Library'),
-                href: route('media-library'),
-                icon: Image,
+            caseConfigChildren.push({
+                title: t('Case Types'),
+                href: route('cases.case-types.index'),
             });
         }
-
-        // 15. Plans
         if (
-            hasPermission(permissions, 'manage-plans') ||
-            hasPermission(permissions, 'manage-any-plans') ||
-            hasPermission(permissions, 'manage-own-plans')
+            hasPermission(permissions, 'manage-case-statuses') ||
+            hasPermission(permissions, 'manage-any-case-statuses') ||
+            hasPermission(permissions, 'manage-own-case-statuses')
         ) {
-            items.push({
-                title: t('Plans'),
-                href: route('plans.index'),
-                icon: CreditCard,
+            caseConfigChildren.push({
+                title: t('Case Statuses'),
+                href: route('cases.case-statuses.index'),
             });
         }
-
-        // 16. Referral Program
         if (
-            hasPermission(permissions, 'manage-referral') ||
-            hasPermission(permissions, 'manage-any-referral') ||
-            hasPermission(permissions, 'manage-own-referral')
+            hasPermission(permissions, 'manage-event-types') ||
+            hasPermission(permissions, 'manage-any-event-types') ||
+            hasPermission(permissions, 'manage-own-event-types')
         ) {
-            items.push({
-                title: t('Referral Program'),
-                href: route('referral.index'),
-                icon: Gift,
+            caseConfigChildren.push({
+                title: t('Event Types'),
+                href: route('advocate.event-types.index'),
+            });
+        }
+        if (
+            hasPermission(permissions, 'manage-hearing-types') ||
+            hasPermission(permissions, 'manage-any-hearing-types') ||
+            hasPermission(permissions, 'manage-own-hearing-types')
+        ) {
+            caseConfigChildren.push({
+                title: t('Hearing Types'),
+                href: route('hearing-types.index'),
+            });
+        }
+        if (caseConfigChildren.length > 0) {
+            setupChildren.push({
+                title: t('Case'),
+                children: caseConfigChildren,
             });
         }
 
-        // 17. Notification Templates (only for company users)
-        if (userRole === 'company') {
-            items.push({
-                title: t('Notification Templates'),
-                href: route('notification-templates.index'),
-                icon: Bell,
+        // Courts & Judiciary configurations
+        const courtsJudiciaryChildren = [];
+        if (
+            hasPermission(permissions, 'manage-court-types') ||
+            hasPermission(permissions, 'manage-any-court-types') ||
+            hasPermission(permissions, 'manage-own-court-types')
+        ) {
+            courtsJudiciaryChildren.push({
+                title: t('Court Types'),
+                href: route('advocate.court-types.index'),
+            });
+        }
+        if (
+            hasPermission(permissions, 'manage-circle-types') ||
+            hasPermission(permissions, 'manage-any-circle-types') ||
+            hasPermission(permissions, 'manage-own-circle-types')
+        ) {
+            courtsJudiciaryChildren.push({
+                title: t('Circle Types'),
+                href: route('advocate.circle-types.index'),
+            });
+        }
+        if (
+            hasPermission(permissions, 'manage-judges') ||
+            hasPermission(permissions, 'manage-any-judges') ||
+            hasPermission(permissions, 'manage-own-judges')
+        ) {
+            courtsJudiciaryChildren.push({
+                title: t('Judges'),
+                href: route('judges.index'),
+            });
+        }
+        if (courtsJudiciaryChildren.length > 0) {
+            setupChildren.push({
+                title: t('Courts & Judiciary'),
+                children: courtsJudiciaryChildren,
             });
         }
 
-        // 18. Setup
-        const setupMenuChildren = [];
-        if (hasPermission(permissions, 'manage-settings')) {
-            setupMenuChildren.push({
-                title: t('Settings'),
-                href: route('settings'),
+        // Research configurations
+        const researchConfigChildren = [];
+        if (
+            hasPermission(permissions, 'manage-research-types') ||
+            hasPermission(permissions, 'manage-any-research-types') ||
+            hasPermission(permissions, 'manage-own-research-types')
+        ) {
+            researchConfigChildren.push({
+                title: t('Research Type'),
+                href: route('legal-research.research-types.index'),
             });
         }
+        if (
+            hasPermission(permissions, 'manage-practice-areas') ||
+            hasPermission(permissions, 'manage-any-practice-areas') ||
+            hasPermission(permissions, 'manage-own-practice-areas')
+        ) {
+            researchConfigChildren.push({
+                title: t('Practice Area'),
+                href: route('advocate.practice-areas.index'),
+            });
+        }
+        if (
+            hasPermission(permissions, 'manage-research-sources') ||
+            hasPermission(permissions, 'manage-any-research-sources') ||
+            hasPermission(permissions, 'manage-own-research-sources')
+        ) {
+            researchConfigChildren.push({
+                title: t('Research Source'),
+                href: route('legal-research.sources.index'),
+            });
+        }
+        if (researchConfigChildren.length > 0) {
+            setupChildren.push({
+                title: t('Research'),
+                children: researchConfigChildren,
+            });
+        }
+
+        // Task configurations
+        const taskConfigChildren = [];
+        if (
+            hasPermission(permissions, 'manage-task-types') ||
+            hasPermission(permissions, 'manage-any-task-types') ||
+            hasPermission(permissions, 'manage-own-task-types')
+        ) {
+            taskConfigChildren.push({
+                title: t('Task Types'),
+                href: route('tasks.task-types.index'),
+            });
+        }
+        if (
+            hasPermission(permissions, 'manage-task-statuses') ||
+            hasPermission(permissions, 'manage-any-task-statuses') ||
+            hasPermission(permissions, 'manage-own-task-statuses')
+        ) {
+            taskConfigChildren.push({
+                title: t('Task Statuses'),
+                href: route('tasks.task-statuses.index'),
+            });
+        }
+        if (taskConfigChildren.length > 0) {
+            setupChildren.push({
+                title: t('Task'),
+                children: taskConfigChildren,
+            });
+        }
+
+        // Billing configurations
+        const billingConfigChildren = [];
+        if (
+            hasPermission(permissions, 'manage-expense-categories') ||
+            hasPermission(permissions, 'manage-any-expense-categories') ||
+            hasPermission(permissions, 'manage-own-expense-categories')
+        ) {
+            billingConfigChildren.push({
+                title: t('Expense Category'),
+                href: route('billing.expense-categories.index'),
+            });
+        }
+        if (
+            hasPermission(permissions, 'manage-client-billing-currencies') ||
+            hasPermission(permissions, 'manage-any-client-billing-currencies') ||
+            hasPermission(permissions, 'manage-own-client-billing-currencies')
+        ) {
+            billingConfigChildren.push({
+                title: t('Client Billing Currency'),
+                href: route('client-billing-currencies.index'),
+            });
+        }
+        if (billingConfigChildren.length > 0) {
+            setupChildren.push({
+                title: t('Billing'),
+                children: billingConfigChildren,
+            });
+        }
+
+        // Documents configurations
+        const documentsConfigChildren = [];
+        if (
+            hasPermission(permissions, 'manage-document-categories') ||
+            hasPermission(permissions, 'manage-any-document-categories') ||
+            hasPermission(permissions, 'manage-own-document-categories')
+        ) {
+            documentsConfigChildren.push({
+                title: t('Document Categories'),
+                href: route('document-management.categories.index'),
+            });
+        }
+        if (documentsConfigChildren.length > 0) {
+            setupChildren.push({
+                title: t('Documents'),
+                children: documentsConfigChildren,
+            });
+        }
+
+        if (setupChildren.length > 0) {
+            items.push({
+                title: t('Setup'),
+                icon: Wrench,
+                children: setupChildren,
+            });
+        }
+
+        // 10. Settings
+        const settingsChildren = [];
+
+        // Company & System
+        const companySystemChildren = [];
         if (
             hasPermission(permissions, 'manage-company-profiles') ||
             hasPermission(permissions, 'manage-any-company-profiles') ||
             hasPermission(permissions, 'manage-own-company-profiles')
         ) {
-            setupMenuChildren.push({
-                title: t('Company Profiles'),
+            companySystemChildren.push({
+                title: t('Company Profile'),
                 href: route('advocate.company-profiles.index'),
             });
         }
-        if (setupMenuChildren.length > 0) {
+        if (hasPermission(permissions, 'manage-settings')) {
+            companySystemChildren.push({
+                title: t('System Settings'),
+                href: route('settings'),
+            });
+        }
+        if (companySystemChildren.length > 0) {
+            settingsChildren.push({
+                title: t('Company & System'),
+                children: companySystemChildren,
+            });
+        }
+
+        // User Management
+        const userManagementChildren = [];
+        if (
+            hasPermission(permissions, 'manage-users') ||
+            hasPermission(permissions, 'manage-any-users') ||
+            hasPermission(permissions, 'manage-own-users')
+        ) {
+            userManagementChildren.push({
+                title: t('Users'),
+                href: route('users.index'),
+            });
+        }
+        if (
+            hasPermission(permissions, 'manage-roles') ||
+            hasPermission(permissions, 'manage-any-roles') ||
+            hasPermission(permissions, 'manage-own-roles')
+        ) {
+            userManagementChildren.push({
+                title: t('Roles'),
+                href: route('roles.index'),
+            });
+        }
+        if (
+            hasPermission(permissions, 'manage-plans') ||
+            hasPermission(permissions, 'manage-any-plans') ||
+            hasPermission(permissions, 'manage-own-plans')
+        ) {
+            userManagementChildren.push({
+                title: t('Plans'),
+                href: route('plans.index'),
+            });
+        }
+        if (userManagementChildren.length > 0) {
+            settingsChildren.push({
+                title: t('User Management'),
+                children: userManagementChildren,
+            });
+        }
+
+        // Notifications
+        if (userRole === 'company') {
+            settingsChildren.push({
+                title: t('Notification Template'),
+                href: route('notification-templates.index'),
+            });
+        }
+
+        if (settingsChildren.length > 0) {
             items.push({
-                title: t('Setup'),
-                icon: Wrench,
-                children: setupMenuChildren,
+                title: t('Settings'),
+                icon: Settings,
+                children: settingsChildren,
+            });
+        }
+
+        // 11. Compliance & Regulatory Module - HIDDEN
+        // const complianceChildren = [];
+        // const complianceSetupChildren = [];
+        // if (
+        //     hasPermission(permissions, 'manage-compliance-categories') ||
+        //     hasPermission(permissions, 'manage-any-compliance-categories') ||
+        //     hasPermission(permissions, 'manage-own-compliance-categories')
+        // ) {
+        //     complianceSetupChildren.push({
+        //         title: t('Compliance Category'),
+        //         href: route('compliance.categories.index'),
+        //     });
+        // }
+        // if (
+        //     hasPermission(permissions, 'manage-compliance-frequencies') ||
+        //     hasPermission(permissions, 'manage-any-compliance-frequencies') ||
+        //     hasPermission(permissions, 'manage-own-compliance-frequencies')
+        // ) {
+        //     complianceSetupChildren.push({
+        //         title: t('Compliance Frequencies'),
+        //         href: route('compliance.frequencies.index'),
+        //     });
+        // }
+        // if (
+        //     hasPermission(permissions, 'manage-risk-categories') ||
+        //     hasPermission(permissions, 'manage-any-risk-categories') ||
+        //     hasPermission(permissions, 'manage-own-risk-categories')
+        // ) {
+        //     complianceSetupChildren.push({
+        //         title: t('Risk Category'),
+        //         href: route('compliance.risk-categories.index'),
+        //     });
+        // }
+        // if (
+        //     hasPermission(permissions, 'manage-audit-types') ||
+        //     hasPermission(permissions, 'manage-any-audit-types') ||
+        //     hasPermission(permissions, 'manage-own-audit-types')
+        // ) {
+        //     complianceSetupChildren.push({
+        //         title: t('Compliance Audit Type'),
+        //         href: route('compliance.audit-types.index'),
+        //     });
+        // }
+        // if (complianceSetupChildren.length > 0) {
+        //     complianceChildren.push({
+        //         title: t('Compliance Setup'),
+        //         children: complianceSetupChildren,
+        //     });
+        // }
+        // if (
+        //     hasPermission(permissions, 'manage-compliance-requirements') ||
+        //     hasPermission(permissions, 'manage-any-compliance-requirements') ||
+        //     hasPermission(permissions, 'manage-own-compliance-requirements')
+        // ) {
+        //     complianceChildren.push({
+        //         title: t('Compliance Requirements'),
+        //         href: route('compliance.requirements.index'),
+        //     });
+        // }
+        // if (
+        //     hasPermission(permissions, 'manage-professional-licenses') ||
+        //     hasPermission(permissions, 'manage-any-professional-licenses') ||
+        //     hasPermission(permissions, 'manage-own-professional-licenses')
+        // ) {
+        //     complianceChildren.push({
+        //         title: t('Professional Licenses'),
+        //         href: route('compliance.professional-licenses.index'),
+        //     });
+        // }
+        // if (
+        //     hasPermission(permissions, 'manage-cle-tracking') ||
+        //     hasPermission(permissions, 'manage-any-cle-tracking') ||
+        //     hasPermission(permissions, 'manage-own-cle-tracking')
+        // ) {
+        //     complianceChildren.push({
+        //         title: t('CLE Tracking'),
+        //         href: route('compliance.cle-tracking.index'),
+        //     });
+        // }
+        // if (
+        //     hasPermission(permissions, 'manage-regulatory-bodies') ||
+        //     hasPermission(permissions, 'manage-any-regulatory-bodies') ||
+        //     hasPermission(permissions, 'manage-own-regulatory-bodies')
+        // ) {
+        //     complianceChildren.push({
+        //         title: t('Regulatory Bodies'),
+        //         href: route('compliance.regulatory-bodies.index'),
+        //     });
+        // }
+        // if (
+        //     hasPermission(permissions, 'manage-risk-assessments') ||
+        //     hasPermission(permissions, 'manage-any-risk-assessments') ||
+        //     hasPermission(permissions, 'manage-own-risk-assessments')
+        // ) {
+        //     complianceChildren.push({
+        //         title: t('Risk Assessments'),
+        //         href: route('compliance.risk-assessments.index'),
+        //     });
+        // }
+        // if (
+        //     hasPermission(permissions, 'manage-compliance-audits') ||
+        //     hasPermission(permissions, 'manage-any-compliance-audits') ||
+        //     hasPermission(permissions, 'manage-own-compliance-audits')
+        // ) {
+        //     complianceChildren.push({
+        //         title: t('Compliance Audit'),
+        //         href: route('compliance.audits.index'),
+        //     });
+        // }
+        // if (complianceChildren.length > 0) {
+        //     items.push({
+        //         title: t('Compliance & Regulatory Module'),
+        //         icon: CheckSquare,
+        //         children: complianceChildren,
+        //     });
+        // }
+
+        // 12. Knowledge Base, Research Category (under Legal Research) - Legal Precedents HIDDEN
+        const legalResearchChildren = [];
+        if (
+            hasPermission(permissions, 'manage-knowledge-articles') ||
+            hasPermission(permissions, 'manage-any-knowledge-articles') ||
+            hasPermission(permissions, 'manage-own-knowledge-articles')
+        ) {
+            legalResearchChildren.push({
+                title: t('Knowledge Base'),
+                href: route('legal-research.knowledge.index'),
+            });
+        }
+        // Legal Precedents - HIDDEN
+        // if (
+        //     hasPermission(permissions, 'manage-legal-precedents') ||
+        //     hasPermission(permissions, 'manage-any-legal-precedents') ||
+        //     hasPermission(permissions, 'manage-own-legal-precedents')
+        // ) {
+        //     legalResearchChildren.push({
+        //         title: t('Legal Precedents'),
+        //         href: route('legal-research.precedents.index'),
+        //     });
+        // }
+        if (
+            hasPermission(permissions, 'manage-research-categories') ||
+            hasPermission(permissions, 'manage-any-research-categories') ||
+            hasPermission(permissions, 'manage-own-research-categories')
+        ) {
+            legalResearchChildren.push({
+                title: t('Research Category'),
+                href: route('legal-research.categories.index'),
+            });
+        }
+        if (legalResearchChildren.length > 0) {
+            items.push({
+                title: t('Legal Research'),
+                icon: BookOpen,
+                children: legalResearchChildren,
             });
         }
 
