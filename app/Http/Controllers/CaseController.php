@@ -16,6 +16,7 @@ use App\Models\CaseTimeline;
 use App\Models\CaseTeamMember;
 use App\Models\CaseDocument;
 use App\Models\DocumentType;
+use App\Models\EventType;
 use App\Models\ResearchProject;
 use App\Models\Task;
 use App\Models\TaskType;
@@ -178,7 +179,9 @@ class CaseController extends BaseController
             ->first();
 
         // Timeline query with filters
-        $timelineQuery = CaseTimeline::withPermissionCheck()->where('case_id', $caseId);
+        $timelineQuery = CaseTimeline::withPermissionCheck()
+            ->with('eventType')
+            ->where('case_id', $caseId);
 
         if ($request->has('timeline_search') && !empty($request->timeline_search)) {
             $timelineQuery->where(function ($q) use ($request) {
@@ -188,7 +191,7 @@ class CaseController extends BaseController
         }
 
         if ($request->has('timeline_event_type') && $request->timeline_event_type !== 'all') {
-            $timelineQuery->where('event_type', $request->timeline_event_type);
+            $timelineQuery->where('event_type_id', $request->timeline_event_type);
         }
 
         if ($request->has('timeline_status') && $request->timeline_status !== 'all') {
@@ -271,6 +274,9 @@ class CaseController extends BaseController
             })
             ->get(['id', 'name', 'email']);
         $documentTypes = DocumentType::withPermissionCheck()
+            ->where('status', 'active')
+            ->get(['id', 'name', 'color']);
+        $eventTypes = EventType::withPermissionCheck()
             ->where('status', 'active')
             ->get(['id', 'name', 'color']);
         $roles = \Spatie\Permission\Models\Role::where('created_by', createdBy())
@@ -365,6 +371,7 @@ class CaseController extends BaseController
             'tasks' => $tasks,
             'users' => $users,
             'documentTypes' => $documentTypes,
+            'eventTypes' => $eventTypes,
             'roles' => $roles,
             'taskTypes' => $taskTypes,
             'taskStatuses' => $taskStatuses,

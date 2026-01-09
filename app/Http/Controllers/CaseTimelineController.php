@@ -61,7 +61,7 @@ class CaseTimelineController extends Controller
     {
         $validated = $request->validate([
             'case_id' => 'required|exists:cases,id',
-            'event_type' => 'required|string|max:255',
+            'event_type_id' => 'required|exists:event_types,id',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'event_date' => 'required|date',
@@ -103,7 +103,7 @@ class CaseTimelineController extends Controller
 
         $validated = $request->validate([
             'case_id' => 'required|exists:cases,id',
-            'event_type' => 'required|string|max:255',
+            'event_type_id' => 'required|exists:event_types,id',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'event_date' => 'required|date',
