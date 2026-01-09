@@ -736,7 +736,7 @@ export default function CaseShow() {
             label: t('View'),
             icon: 'Eye',
             action: 'view',
-            className: 'text-blue-500',
+            className: 'text-primary',
         },
         {
             label: t('Edit'),
@@ -1004,7 +1004,7 @@ export default function CaseShow() {
                                 router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                             }}
                             className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'details'
-                                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                ? 'border-primary text-primary dark:text-primary'
                                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                                 }`}
                         >
@@ -1020,7 +1020,7 @@ export default function CaseShow() {
                                     router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'timelines'
-                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    ? 'border-primary text-primary dark:text-primary'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                                     }`}
                             >
@@ -1037,7 +1037,7 @@ export default function CaseShow() {
                                     router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'team'
-                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    ? 'border-primary text-primary dark:text-primary'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                                     }`}
                             >
@@ -1054,7 +1054,7 @@ export default function CaseShow() {
                                     router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'documents'
-                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    ? 'border-primary text-primary dark:text-primary'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                                     }`}
                             >
@@ -1071,7 +1071,7 @@ export default function CaseShow() {
                                     router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'notes'
-                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    ? 'border-primary text-primary dark:text-primary'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                                     }`}
                             >
@@ -1088,7 +1088,7 @@ export default function CaseShow() {
                                     router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'tasks'
-                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    ? 'border-primary text-primary dark:text-primary'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                                     }`}
                             >
@@ -1105,7 +1105,7 @@ export default function CaseShow() {
                                     router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'research-projects'
-                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    ? 'border-primary text-primary dark:text-primary'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                                     }`}
                             >
@@ -1285,7 +1285,7 @@ export default function CaseShow() {
                                 {hasPermission(permissions, 'create-case-timelines') && (
                                     <button
                                         onClick={() => handleTimelineAction('create')}
-                                        className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                                        className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90"
                                     >
                                         <Plus className="h-4 w-4" />
                                         {t('Add Event')}
@@ -1419,7 +1419,7 @@ export default function CaseShow() {
                                 {hasPermission(permissions, 'create-case-team-members') && (
                                     <button
                                         onClick={() => handleTeamAction('create')}
-                                        className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                                        className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90"
                                     >
                                         <Plus className="h-4 w-4" />
                                         {t('Add Member')}
@@ -1517,7 +1517,7 @@ export default function CaseShow() {
                                 {hasPermission(permissions, 'create-case-documents') && (
                                     <button
                                         onClick={() => handleDocumentAction('create')}
-                                        className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                                        className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90"
                                     >
                                         <Plus className="h-4 w-4" />
                                         {t('Add Document')}
@@ -1667,7 +1667,7 @@ export default function CaseShow() {
                                     },
                                 ]}
                                 actions={[
-                                    { label: t('View'), icon: 'Eye', action: 'view', className: 'text-blue-500' },
+                                    { label: t('View'), icon: 'Eye', action: 'view', className: 'text-primary' },
                                     { label: t('Edit'), icon: 'Edit', action: 'edit', className: 'text-amber-500' },
                                     { label: t('Download'), icon: 'Download', action: 'download', className: 'text-green-500' },
                                     { label: t('Delete'), icon: 'Trash2', action: 'delete', className: 'text-red-500' },
@@ -1705,7 +1705,7 @@ export default function CaseShow() {
                                 {hasPermission(permissions, 'create-case-notes') && (
                                     <button
                                         onClick={() => handleNoteAction('create')}
-                                        className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                                        className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90"
                                     >
                                         <Plus className="h-4 w-4" />
                                         {t('Add Note')}
@@ -1821,7 +1821,7 @@ export default function CaseShow() {
                                     },
                                 ]}
                                 actions={[
-                                    { label: t('View'), icon: 'Eye', action: 'view', className: 'text-blue-500' },
+                                    { label: t('View'), icon: 'Eye', action: 'view', className: 'text-primary' },
                                     { label: t('Edit'), icon: 'Edit', action: 'edit', className: 'text-amber-500' },
                                     { label: t('Delete'), icon: 'Trash2', action: 'delete', className: 'text-red-500' },
                                 ]}
@@ -1900,7 +1900,7 @@ export default function CaseShow() {
                                 {hasPermission(permissions, 'create-tasks') && (
                                     <button
                                         onClick={() => handleTaskAction('create')}
-                                        className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                                        className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90"
                                     >
                                         <Plus className="h-4 w-4" />
                                         {t('Add Task')}
@@ -2088,7 +2088,7 @@ export default function CaseShow() {
                                         label: t('View'),
                                         icon: 'Eye',
                                         action: 'view',
-                                        className: 'text-blue-500',
+                                        className: 'text-primary',
                                     },
                                     {
                                         label: t('Edit'),
@@ -2185,7 +2185,7 @@ export default function CaseShow() {
                                                     ),
                                                 },
                                             ]}
-                                            actions={[{ label: t('View Details'), icon: 'Eye', action: 'view', className: 'text-blue-500' }]}
+                                            actions={[{ label: t('View Details'), icon: 'Eye', action: 'view', className: 'text-primary' }]}
                                             data={researchProjects?.data || []}
                                             from={researchProjects?.from || 1}
                                             onAction={(action, project) => {
@@ -2330,7 +2330,7 @@ export default function CaseShow() {
                                                                 type: 'date',
                                                             },
                                                         ]}
-                                                        actions={[{ label: t('View'), icon: 'Eye', action: 'view', className: 'text-blue-500' }]}
+                                                        actions={[{ label: t('View'), icon: 'Eye', action: 'view', className: 'text-primary' }]}
                                                         data={selectedProject.notes || []}
                                                         from={1}
                                                         onAction={(action, note) => {
@@ -2385,7 +2385,7 @@ export default function CaseShow() {
                                                                 type: 'date',
                                                             },
                                                         ]}
-                                                        actions={[{ label: t('View'), icon: 'Eye', action: 'view', className: 'text-blue-500' }]}
+                                                        actions={[{ label: t('View'), icon: 'Eye', action: 'view', className: 'text-primary' }]}
                                                         data={selectedProject.citations || []}
                                                         from={1}
                                                         onAction={(action, citation) => {
