@@ -19,6 +19,7 @@ export default function CaseShow() {
         auth,
         case: caseData,
         latestHearing,
+        hearings,
         timelines,
         teamMembers,
         users,
@@ -31,6 +32,11 @@ export default function CaseShow() {
         tasks,
         taskTypes,
         taskStatuses,
+        courts,
+        courtTypes,
+        circleTypes,
+        judges,
+        hearingTypes,
         googleCalendarEnabled,
         filters = {},
     } = usePage().props as any;
@@ -97,6 +103,19 @@ export default function CaseShow() {
     const [taskPriority, setTaskPriority] = useState(filters.task_priority || 'all');
     const [taskAssignedTo, setTaskAssignedTo] = useState(filters.task_assigned_to || 'all');
     const [showTaskFilters, setShowTaskFilters] = useState(false);
+
+    // Hearing filters
+    const [hearingSearch, setHearingSearch] = useState(filters.hearing_search || '');
+    const [hearingStatus, setHearingStatus] = useState(filters.hearing_status || 'all');
+    const [hearingCourtId, setHearingCourtId] = useState(filters.hearing_court_id || 'all');
+    const [hearingCourtTypeId, setHearingCourtTypeId] = useState(filters.hearing_court_type_id || 'all');
+    const [hearingCircleTypeId, setHearingCircleTypeId] = useState(filters.hearing_circle_type_id || 'all');
+    const [showHearingFilters, setShowHearingFilters] = useState(false);
+    const [isHearingFormModalOpen, setIsHearingFormModalOpen] = useState(false);
+    const [isHearingViewModalOpen, setIsHearingViewModalOpen] = useState(false);
+    const [isHearingDeleteModalOpen, setIsHearingDeleteModalOpen] = useState(false);
+    const [currentHearing, setCurrentHearing] = useState<any>(null);
+    const [hearingFormMode, setHearingFormMode] = useState<'create' | 'edit' | 'view'>('create');
 
     const handleTimelineAction = (action: string, item?: any) => {
         setCurrentItem(item || null);
@@ -595,6 +614,115 @@ export default function CaseShow() {
             },
             { preserveState: true, preserveScroll: true },
         );
+    };
+
+    // Hearing handlers
+    const handleHearingSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        applyHearingFilters();
+    };
+
+    const applyHearingFilters = () => {
+        router.get(
+            route('cases.show', caseData.id),
+            {
+                hearing_search: hearingSearch || undefined,
+                hearing_status: hearingStatus !== 'all' ? hearingStatus : undefined,
+                hearing_court_id: hearingCourtId !== 'all' ? hearingCourtId : undefined,
+                hearing_court_type_id: hearingCourtTypeId !== 'all' ? hearingCourtTypeId : undefined,
+                hearing_circle_type_id: hearingCircleTypeId !== 'all' ? hearingCircleTypeId : undefined,
+                hearing_per_page: filters.hearing_per_page,
+            },
+            { preserveState: true, preserveScroll: true },
+        );
+    };
+
+    const handleHearingSort = (field: string) => {
+        const direction = filters.hearing_sort_field === field && filters.hearing_sort_direction === 'asc' ? 'desc' : 'asc';
+        router.get(
+            route('cases.show', caseData.id),
+            {
+                hearing_search: hearingSearch || undefined,
+                hearing_status: hearingStatus !== 'all' ? hearingStatus : undefined,
+                hearing_court_id: hearingCourtId !== 'all' ? hearingCourtId : undefined,
+                hearing_court_type_id: hearingCourtTypeId !== 'all' ? hearingCourtTypeId : undefined,
+                hearing_circle_type_id: hearingCircleTypeId !== 'all' ? hearingCircleTypeId : undefined,
+                hearing_sort_field: field,
+                hearing_sort_direction: direction,
+                hearing_per_page: filters.hearing_per_page,
+            },
+            { preserveState: true, preserveScroll: true },
+        );
+    };
+
+    const handleHearingAction = (action: string, item: any) => {
+        setCurrentHearing(item);
+        switch (action) {
+            case 'view':
+                setHearingFormMode('view');
+                setIsHearingViewModalOpen(true);
+                break;
+            case 'edit':
+                setHearingFormMode('edit');
+                setIsHearingFormModalOpen(true);
+                break;
+            case 'delete':
+                setIsHearingDeleteModalOpen(true);
+                break;
+        }
+    };
+
+    const handleHearingSubmit = (formData: any) => {
+        const data = { ...formData, case_id: caseData.id };
+
+        if (hearingFormMode === 'create') {
+            toast.loading(t('Scheduling hearing...'));
+            router.post(route('hearings.store'), data, {
+                onSuccess: (page) => {
+                    setIsHearingFormModalOpen(false);
+                    toast.dismiss();
+                    if (page.props.flash.success) {
+                        toast.success(page.props.flash.success);
+                    }
+                },
+                onError: (errors) => {
+                    toast.dismiss();
+                    toast.error(`Failed to schedule hearing: ${Object.values(errors).join(', ')}`);
+                }
+            });
+        } else if (hearingFormMode === 'edit') {
+            toast.loading(t('Updating hearing...'));
+            router.put(route('hearings.update', currentHearing.id), data, {
+                onSuccess: (page) => {
+                    setIsHearingFormModalOpen(false);
+                    toast.dismiss();
+                    if (page.props.flash.success) {
+                        toast.success(page.props.flash.success);
+                    }
+                },
+                onError: (errors) => {
+                    toast.dismiss();
+                    toast.error(`Failed to update hearing: ${Object.values(errors).join(', ')}`);
+                }
+            });
+        }
+    };
+
+    const handleHearingDeleteConfirm = () => {
+        toast.loading(t('Deleting hearing...'));
+        router.delete(route('hearings.destroy', currentHearing.id), {
+            onSuccess: (page) => {
+                setIsHearingDeleteModalOpen(false);
+                toast.dismiss();
+                if (page.props.flash.success) {
+                    toast.success(page.props.flash.success);
+                }
+            },
+            onError: (errors) => {
+                toast.dismiss();
+                toast.error('Failed to delete hearing');
+            }
+        });
     };
 
     const handleTaskSort = (field: string) => {
@@ -1098,6 +1226,23 @@ export default function CaseShow() {
                                 </div>
                             </button>
                         )}
+                        {hasPermission(permissions, 'view-hearings') && (
+                            <button
+                                onClick={() => {
+                                    setActiveTab('hearings');
+                                    router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
+                                }}
+                                className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'hearings'
+                                    ? 'border-primary text-primary dark:text-primary'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                                    }`}
+                            >
+                                <div className="flex items-center space-x-2">
+                                    <Calendar className="h-4 w-4" />
+                                    <span>{t('Sessions')}</span>
+                                </div>
+                            </button>
+                        )}
                         {hasPermission(permissions, 'view-research-projects') && (
                             <button
                                 onClick={() => {
@@ -1111,7 +1256,7 @@ export default function CaseShow() {
                             >
                                 <div className="flex items-center space-x-2">
                                     <Search className="h-4 w-4" />
-                                    <span>{t('Research Projects')}</span>
+                                    <span>{t('Case Research')}</span>
                                 </div>
                             </button>
                         )}
@@ -2135,12 +2280,229 @@ export default function CaseShow() {
                         </div>
                     )}
 
+                    {activeTab === 'hearings' && (
+                        <div>
+                            <div className="mb-6 flex items-center justify-between">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('Sessions')}</h3>
+                                {hasPermission(permissions, 'create-hearings') && (
+                                    <button
+                                        onClick={() => {
+                                            setCurrentHearing(null);
+                                            setHearingFormMode('create');
+                                            setIsHearingFormModalOpen(true);
+                                        }}
+                                        className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90"
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                        {t('Add New Session')}
+                                    </button>
+                                )}
+                            </div>
+
+                            <div className="mb-4">
+                                <SearchAndFilterBar
+                                    searchTerm={hearingSearch}
+                                    onSearchChange={setHearingSearch}
+                                    onSearch={handleHearingSearch}
+                                    filters={[
+                                        {
+                                            name: 'hearing_status',
+                                            label: t('Status'),
+                                            type: 'select',
+                                            value: hearingStatus,
+                                            onChange: setHearingStatus,
+                                            options: [
+                                                { value: 'all', label: t('All Statuses') },
+                                                { value: 'scheduled', label: t('Scheduled') },
+                                                { value: 'in_progress', label: t('In Progress') },
+                                                { value: 'completed', label: t('Completed') },
+                                                { value: 'postponed', label: t('Postponed') },
+                                                { value: 'cancelled', label: t('Cancelled') },
+                                            ],
+                                        },
+                                        {
+                                            name: 'hearing_court_id',
+                                            label: t('Court'),
+                                            type: 'select',
+                                            value: hearingCourtId,
+                                            onChange: setHearingCourtId,
+                                            options: [
+                                                { value: 'all', label: t('All Courts') },
+                                                ...(courts?.map((court: any) => ({
+                                                    value: court.id.toString(),
+                                                    label: court.name,
+                                                })) || []),
+                                            ],
+                                        },
+                                        {
+                                            name: 'hearing_court_type_id',
+                                            label: t('Court Type'),
+                                            type: 'select',
+                                            value: hearingCourtTypeId,
+                                            onChange: setHearingCourtTypeId,
+                                            options: [
+                                                { value: 'all', label: t('All Court Types') },
+                                                ...(courtTypes?.map((type: any) => ({
+                                                    value: type.id.toString(),
+                                                    label: getTranslatedValue(type.name),
+                                                })) || []),
+                                            ],
+                                        },
+                                        {
+                                            name: 'hearing_circle_type_id',
+                                            label: t('Circle Type'),
+                                            type: 'select',
+                                            value: hearingCircleTypeId,
+                                            onChange: setHearingCircleTypeId,
+                                            options: [
+                                                { value: 'all', label: t('All Circle Types') },
+                                                ...(circleTypes?.map((type: any) => ({
+                                                    value: type.id.toString(),
+                                                    label: getTranslatedValue(type.name),
+                                                })) || []),
+                                            ],
+                                        },
+                                    ]}
+                                    showFilters={showHearingFilters}
+                                    setShowFilters={setShowHearingFilters}
+                                    hasActiveFilters={() =>
+                                        hearingSearch !== '' ||
+                                        hearingStatus !== 'all' ||
+                                        hearingCourtId !== 'all' ||
+                                        hearingCourtTypeId !== 'all' ||
+                                        hearingCircleTypeId !== 'all'
+                                    }
+                                    activeFilterCount={() =>
+                                        (hearingSearch ? 1 : 0) +
+                                        (hearingStatus !== 'all' ? 1 : 0) +
+                                        (hearingCourtId !== 'all' ? 1 : 0) +
+                                        (hearingCourtTypeId !== 'all' ? 1 : 0) +
+                                        (hearingCircleTypeId !== 'all' ? 1 : 0)
+                                    }
+                                    onResetFilters={() => {
+                                        setHearingSearch('');
+                                        setHearingStatus('all');
+                                        setHearingCourtId('all');
+                                        setHearingCourtTypeId('all');
+                                        setHearingCircleTypeId('all');
+                                        router.get(route('cases.show', caseData.id));
+                                    }}
+                                    onApplyFilters={applyHearingFilters}
+                                    currentPerPage={filters.hearing_per_page?.toString() || '10'}
+                                    onPerPageChange={(value) => {
+                                        router.get(route('cases.show', caseData.id), {
+                                            ...filters,
+                                            hearing_per_page: parseInt(value),
+                                        });
+                                    }}
+                                />
+                            </div>
+
+                            <CrudTable
+                                columns={[
+                                    {
+                                        key: 'hearing_id',
+                                        label: t('Session ID'),
+                                        sortable: true,
+                                    },
+                                    {
+                                        key: 'title',
+                                        label: t('Title'),
+                                        sortable: true,
+                                    },
+                                    {
+                                        key: 'court',
+                                        label: t('Court'),
+                                        render: (value: any) => {
+                                            if (!value) return '-';
+                                            const courtName = value.name || '-';
+                                            const courtType = value.court_type ? getTranslatedValue(value.court_type.name) : '';
+                                            return courtType ? `${courtName} + ${courtType}` : courtName;
+                                        },
+                                    },
+                                    {
+                                        key: 'court',
+                                        label: t('Circle'),
+                                        render: (value: any) => {
+                                            if (!value || !value.circle_type) return '-';
+                                            const circleType = getTranslatedValue(value.circle_type.name);
+                                            // Note: There's no circle_no field in the database, showing only circle type
+                                            return circleType;
+                                        },
+                                    },
+                                    {
+                                        key: 'hearing_date',
+                                        label: t('Date & Time'),
+                                        sortable: true,
+                                        render: (value: string, row: any) => (
+                                            <div className="flex flex-col">
+                                                <div className="flex items-center gap-1">
+                                                    <Calendar className="h-3 w-3" />
+                                                    <span>{window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1 text-xs text-gray-500">
+                                                    <Clock className="h-3 w-3" />
+                                                    <span>{window.appSettings?.formatTime(`2000-01-01T${row.hearing_time}`) || row.hearing_time}</span>
+                                                </div>
+                                            </div>
+                                        ),
+                                    },
+                                    {
+                                        key: 'status',
+                                        label: t('Status'),
+                                        render: (value: string) => {
+                                            const statusColors = {
+                                                scheduled: 'bg-blue-50 text-blue-700 ring-blue-600/20',
+                                                in_progress: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
+                                                completed: 'bg-green-50 text-green-700 ring-green-600/20',
+                                                postponed: 'bg-orange-50 text-orange-700 ring-orange-600/20',
+                                                cancelled: 'bg-red-50 text-red-700 ring-red-600/20'
+                                            };
+                                            return (
+                                                <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${statusColors[value as keyof typeof statusColors] || 'bg-gray-50 text-gray-700 ring-gray-600/20'}`}>
+                                                    {t(value?.charAt(0).toUpperCase() + value?.slice(1).replace('_', ' '))}
+                                                </span>
+                                            );
+                                        },
+                                    },
+                                ]}
+                                actions={[
+                                    { label: t('View'), icon: 'Eye', action: 'view', className: 'text-blue-500', requiredPermission: 'view-hearings' },
+                                    { label: t('Edit'), icon: 'Edit', action: 'edit', className: 'text-amber-500', requiredPermission: 'edit-hearings' },
+                                    { label: t('Delete'), icon: 'Trash2', action: 'delete', className: 'text-red-500', requiredPermission: 'delete-hearings' }
+                                ]}
+                                data={hearings?.data || []}
+                                from={hearings?.from || 1}
+                                onAction={handleHearingAction}
+                                sortField={filters.hearing_sort_field}
+                                sortDirection={filters.hearing_sort_direction}
+                                onSort={handleHearingSort}
+                                permissions={permissions}
+                                entityPermissions={{
+                                    view: 'view-hearings',
+                                    create: 'create-hearings',
+                                    edit: 'edit-hearings',
+                                    delete: 'delete-hearings'
+                                }}
+                            />
+
+                            <Pagination
+                                from={hearings?.from || 0}
+                                to={hearings?.to || 0}
+                                total={hearings?.total || 0}
+                                links={hearings?.links}
+                                entityName={t("hearings")}
+                                onPageChange={(url) => router.get(url)}
+                            />
+                        </div>
+                    )}
+
                     {activeTab === 'research-projects' && (
                         <div>
                             {!selectedProject ? (
                                 <div>
                                     <div className="mb-6 flex items-center justify-between">
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('Research Projects')}</h3>
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('Case Research')}</h3>
                                     </div>
 
                                     <div className="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
@@ -2987,6 +3349,128 @@ export default function CaseShow() {
                 title={t('Note Details')}
                 mode="view"
             />
+
+            {/* Hearing Form Modal */}
+            {activeTab === 'hearings' && (
+                <>
+                    <CrudFormModal
+                        isOpen={isHearingFormModalOpen}
+                        onClose={() => setIsHearingFormModalOpen(false)}
+                        onSubmit={handleHearingSubmit}
+                        formConfig={{
+                            fields: [
+                                {
+                                    name: 'court_judge',
+                                    type: 'dependent-dropdown',
+                                    dependentConfig: [
+                                        {
+                                            name: 'court_id',
+                                            label: t('Court'),
+                                            required: true,
+                                            options: courts ? courts.map((c: any) => ({ value: c.id.toString(), label: c.name })) : []
+                                        },
+                                        {
+                                            name: 'judge_id',
+                                            label: t('Judge'),
+                                            apiEndpoint: '/api/hearings/court-judges/{court_id}',
+                                            showCurrentValue: true
+                                        }
+                                    ]
+                                },
+                                {
+                                    name: 'hearing_type_id',
+                                    label: t('Hearing Type'),
+                                    type: 'select',
+                                    options: [{ value: 'none', label: t('Select Type') }, ...(hearingTypes ? hearingTypes.map((ht: any) => ({
+                                        value: ht.id.toString(),
+                                        label: getTranslatedValue(ht.name)
+                                    })) : [])]
+                                },
+                                { name: 'title', label: t('Title'), type: 'text', required: true },
+                                { name: 'description', label: t('Description'), type: 'textarea' },
+                                { name: 'hearing_date', label: t('Date'), type: 'date', required: true },
+                                { name: 'hearing_time', label: t('Time'), type: 'time', required: true },
+                                { name: 'duration_minutes', label: t('Duration (minutes)'), type: 'number', defaultValue: 60 },
+                                {
+                                    name: 'status',
+                                    label: t('Status'),
+                                    type: 'select',
+                                    options: [
+                                        { value: 'scheduled', label: t('Scheduled') },
+                                        { value: 'in_progress', label: t('In Progress') },
+                                        { value: 'completed', label: t('Completed') },
+                                        { value: 'postponed', label: t('Postponed') },
+                                        { value: 'cancelled', label: t('Cancelled') }
+                                    ],
+                                    defaultValue: 'scheduled'
+                                },
+                                { name: 'notes', label: t('Notes'), type: 'textarea' },
+                                ...(hearingFormMode === 'edit' ? [{ name: 'outcome', label: t('Outcome'), type: 'textarea' }] : [])
+                            ].concat(googleCalendarEnabled && hearingFormMode === 'create' ? [{
+                                name: 'sync_with_google_calendar',
+                                label: t('Synchronize in Google Calendar'),
+                                type: 'switch',
+                                defaultValue: false
+                            }] : []),
+                            modalSize: 'xl'
+                        }}
+                        initialData={currentHearing}
+                        title={
+                            hearingFormMode === 'create'
+                                ? t('Add New Session / Hearing')
+                                : t('Edit Hearing')
+                        }
+                        mode={hearingFormMode}
+                    />
+
+                    <CrudFormModal
+                        isOpen={isHearingViewModalOpen}
+                        onClose={() => setIsHearingViewModalOpen(false)}
+                        onSubmit={() => { }}
+                        formConfig={{
+                            fields: [
+                                { name: 'hearing_id', label: t('Session ID'), type: 'text', readOnly: true },
+                                { name: 'title', label: t('Title'), type: 'text', readOnly: true },
+                                { name: 'description', label: t('Description'), type: 'textarea', readOnly: true },
+                                { name: 'court', label: t('Court'), type: 'text', readOnly: true },
+                                { name: 'judge', label: t('Judge'), type: 'text', readOnly: true },
+                                { name: 'hearing_type', label: t('Type'), type: 'text', readOnly: true },
+                                { name: 'hearing_date', label: t('Date'), type: 'text', readOnly: true },
+                                { name: 'hearing_time', label: t('Time'), type: 'text', readOnly: true },
+                                { name: 'duration_minutes', label: t('Duration (minutes)'), type: 'text', readOnly: true },
+                                { name: 'status', label: t('Status'), type: 'text', readOnly: true },
+                                { name: 'notes', label: t('Notes'), type: 'textarea', readOnly: true },
+                                { name: 'outcome', label: t('Outcome'), type: 'textarea', readOnly: true }
+                            ],
+                            modalSize: 'xl'
+                        }}
+                        initialData={{
+                            ...currentHearing,
+                            court: currentHearing?.court ? (() => {
+                                const courtName = currentHearing.court.name || '-';
+                                const courtType = currentHearing.court.court_type ? getTranslatedValue(currentHearing.court.court_type.name) : '';
+                                return courtType ? `${courtName} + ${courtType}` : courtName;
+                            })() : '-',
+                            judge: currentHearing?.judge?.name || '-',
+                            hearing_type: getTranslatedValue(currentHearing?.hearing_type?.name) || '-',
+                            hearing_date: currentHearing?.hearing_date ? (window.appSettings?.formatDate(currentHearing.hearing_date) || new Date(currentHearing.hearing_date).toLocaleDateString()) : '-',
+                            hearing_time: currentHearing?.hearing_time || '-',
+                            duration_minutes: currentHearing?.duration_minutes ? `${currentHearing.duration_minutes} minutes` : '-',
+                            status: currentHearing?.status ? t(currentHearing.status.charAt(0).toUpperCase() + currentHearing.status.slice(1).replace('_', ' ')) : '-'
+                        }}
+                        title={t('View Hearing Details')}
+                        mode='view'
+                    />
+
+                    <CrudDeleteModal
+                        isOpen={isHearingDeleteModalOpen}
+                        onClose={() => setIsHearingDeleteModalOpen(false)}
+                        onConfirm={handleHearingDeleteConfirm}
+                        itemName={currentHearing?.title || ''}
+                        entityName="hearing"
+                    />
+                </>
+            )}
 
             {/* Google Calendar Modal */}
             <GoogleCalendarModal

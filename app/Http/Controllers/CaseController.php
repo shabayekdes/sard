@@ -360,9 +360,73 @@ class CaseController extends BaseController
             ->orderBy('hearing_time', 'desc')
             ->first();
 
+        // Hearings query with filters
+        $hearingsQuery = Hearing::withPermissionCheck()
+            ->with([
+                'court.courtType',
+                'court.circleType',
+                'hearingType',
+                'judge'
+            ])
+            ->where('case_id', $caseId);
+
+        if ($request->has('hearing_search') && !empty($request->hearing_search)) {
+            $hearingsQuery->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->hearing_search . '%')
+                    ->orWhere('hearing_id', 'like', '%' . $request->hearing_search . '%')
+                    ->orWhere('description', 'like', '%' . $request->hearing_search . '%');
+            });
+        }
+
+        if ($request->has('hearing_status') && !empty($request->hearing_status) && $request->hearing_status !== 'all') {
+            $hearingsQuery->where('status', $request->hearing_status);
+        }
+
+        if ($request->has('hearing_court_id') && !empty($request->hearing_court_id) && $request->hearing_court_id !== 'all') {
+            $hearingsQuery->where('court_id', $request->hearing_court_id);
+        }
+
+        if ($request->has('hearing_court_type_id') && !empty($request->hearing_court_type_id) && $request->hearing_court_type_id !== 'all') {
+            $hearingsQuery->whereHas('court', function($q) use ($request) {
+                $q->where('court_type_id', $request->hearing_court_type_id);
+            });
+        }
+
+        if ($request->has('hearing_circle_type_id') && !empty($request->hearing_circle_type_id) && $request->hearing_circle_type_id !== 'all') {
+            $hearingsQuery->whereHas('court', function($q) use ($request) {
+                $q->where('circle_type_id', $request->hearing_circle_type_id);
+            });
+        }
+
+        if ($request->has('hearing_sort_field') && !empty($request->hearing_sort_field)) {
+            $hearingsQuery->orderBy($request->hearing_sort_field, $request->hearing_sort_direction ?? 'asc');
+        } else {
+            $hearingsQuery->orderBy('hearing_date', 'desc')->orderBy('hearing_time', 'desc');
+        }
+
+        $hearings = $hearingsQuery->paginate($request->hearing_per_page ?? 10, ['*'], 'hearing_page');
+
+        // Get courts, court types, and circle types for filters
+        $courts = Court::withPermissionCheck()
+            ->where('status', 'active')
+            ->get(['id', 'name']);
+        $courtTypes = \App\Models\CourtType::withPermissionCheck()
+            ->where('status', 'active')
+            ->get(['id', 'name']);
+        $circleTypes = \App\Models\CircleType::withPermissionCheck()
+            ->where('status', 'active')
+            ->get(['id', 'name']);
+        $judges = \App\Models\Judge::withPermissionCheck()
+            ->where('status', 'active')
+            ->get(['id', 'name']);
+        $hearingTypes = \App\Models\HearingType::withPermissionCheck()
+            ->where('status', 'active')
+            ->get(['id', 'name']);
+
         return Inertia::render('cases/show', [
             'case' => $case,
             'latestHearing' => $latestHearing,
+            'hearings' => $hearings,
             'timelines' => $timelines,
             'teamMembers' => $teamMembers,
             'caseDocuments' => $caseDocuments,
@@ -375,6 +439,11 @@ class CaseController extends BaseController
             'roles' => $roles,
             'taskTypes' => $taskTypes,
             'taskStatuses' => $taskStatuses,
+            'courts' => $courts,
+            'courtTypes' => $courtTypes,
+            'circleTypes' => $circleTypes,
+            'judges' => $judges,
+            'hearingTypes' => $hearingTypes,
             'googleCalendarEnabled' => $googleCalendarEnabled,
             'filters' => $request->all([
                 'timeline_search', 'timeline_event_type', 'timeline_status', 'timeline_completed',
@@ -384,7 +453,9 @@ class CaseController extends BaseController
                 'doc_search', 'doc_type', 'doc_confidentiality', 'doc_status',
                 'doc_sort_field', 'doc_sort_direction', 'doc_per_page',
                 'task_search', 'task_type_id', 'task_status', 'task_priority', 'task_assigned_to',
-                'task_sort_field', 'task_sort_direction', 'task_per_page'
+                'task_sort_field', 'task_sort_direction', 'task_per_page',
+                'hearing_search', 'hearing_status', 'hearing_court_id', 'hearing_court_type_id',
+                'hearing_circle_type_id', 'hearing_sort_field', 'hearing_sort_direction', 'hearing_per_page'
             ]),
         ]);
     }

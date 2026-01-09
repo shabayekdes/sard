@@ -14,7 +14,7 @@ import { capitalize } from '@/utils/helpers';
 
 export default function Hearings() {
   const { t, i18n } = useTranslation();
-  const { auth, hearings, cases, courts, judges, hearingTypes, googleCalendarEnabled, filters: pageFilters = {} } = usePage().props as any;
+  const { auth, hearings, cases, courts, courtTypes, circleTypes, judges, hearingTypes, googleCalendarEnabled, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
   const currentLocale = i18n.language || 'en';
 
@@ -31,6 +31,8 @@ export default function Hearings() {
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
   const [selectedStatus, setSelectedStatus] = useState(pageFilters.status || 'all');
   const [selectedCourt, setSelectedCourt] = useState(pageFilters.court_id || 'all');
+  const [selectedCourtType, setSelectedCourtType] = useState(pageFilters.court_type_id || 'all');
+  const [selectedCircleType, setSelectedCircleType] = useState(pageFilters.circle_type_id || 'all');
   const [showFilters, setShowFilters] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -49,6 +51,8 @@ export default function Hearings() {
       search: searchTerm || undefined,
       status: selectedStatus !== 'all' ? selectedStatus : undefined,
       court_id: selectedCourt !== 'all' ? selectedCourt : undefined,
+      court_type_id: selectedCourtType !== 'all' ? selectedCourtType : undefined,
+      circle_type_id: selectedCircleType !== 'all' ? selectedCircleType : undefined,
       per_page: pageFilters.per_page
     }, { preserveState: true, preserveScroll: true });
   };
@@ -62,6 +66,8 @@ export default function Hearings() {
       search: searchTerm || undefined,
       status: selectedStatus !== 'all' ? selectedStatus : undefined,
       court_id: selectedCourt !== 'all' ? selectedCourt : undefined,
+      court_type_id: selectedCourtType !== 'all' ? selectedCourtType : undefined,
+      circle_type_id: selectedCircleType !== 'all' ? selectedCircleType : undefined,
       per_page: pageFilters.per_page
     }, { preserveState: true, preserveScroll: true });
   };
@@ -143,6 +149,8 @@ export default function Hearings() {
     setSearchTerm('');
     setSelectedStatus('all');
     setSelectedCourt('all');
+    setSelectedCourtType('all');
+    setSelectedCircleType('all');
     setShowFilters(false);
     router.get(route('hearings.index'), {
       page: 1,
@@ -153,7 +161,7 @@ export default function Hearings() {
   const pageActions = [];
   if (hasPermission(permissions, 'create-hearings')) {
     pageActions.push({
-      label: t('Schedule Hearing'),
+      label: t('Schedule Session'),
       icon: <Plus className="h-4 w-4 mr-2" />,
       variant: 'default',
       onClick: () => handleAddNew()
@@ -163,26 +171,65 @@ export default function Hearings() {
   const breadcrumbs = [
     { title: t('Dashboard'), href: route('dashboard') },
     { title: t('Court Schedule'), href: route('courts.index') },
-    { title: t('Hearings') }
+    { title: t('Sessions') }
   ];
 
   const columns = [
-    { key: 'hearing_id', label: t('Hearing ID'), sortable: true },
+    { key: 'hearing_id', label: t('Session ID'), sortable: true },
     { key: 'title', label: t('Title'), sortable: true },
-    { 
-      key: 'case', 
-      label: t('Case'), 
-      render: (value: any) => value ? `${value.case_id} - ${value.title}` : '-' 
+    {
+      key: 'case',
+      label: t('Case'),
+      render: (value: any) => {
+        if (!value) return '-';
+        const caseId = value.case_id || '-';
+        const caseName = value.title || '-';
+        const caseNumber = value.file_number || '';
+        if (caseNumber) {
+          return `${caseId} + ${caseName} + ${caseNumber}`;
+        }
+        return `${caseId} + ${caseName}`;
+      }
     },
-    { 
-      key: 'court', 
-      label: t('Court'), 
-      render: (value: any) => value?.name || '-' 
+    {
+      key: 'court',
+      label: t('Court'),
+      render: (value: any) => {
+        if (!value) return '-';
+        const courtName = value.name || '-';
+        const courtType = value.court_type ? getTranslatedValue(value.court_type.name) : '';
+        const circleType = value.circle_type ? getTranslatedValue(value.circle_type.name) : '';
+        // Extract circle number from court name if it exists (e.g., "Court #123" or "Court 123")
+        const circleNoMatch = value.name?.match(/#?\s*(\d+)/);
+        const circleNo = circleNoMatch ? circleNoMatch[1] : '';
+
+        const parts = [courtName];
+        if (courtType) parts.push(courtType);
+        if (circleType) parts.push(circleType);
+        if (circleNo) parts.push(circleNo);
+
+        return parts.join(' + ');
+      }
     },
-    { 
-      key: 'judge', 
-      label: t('Judge'), 
-      render: (value: any) => value?.name || '-' 
+    {
+      key: 'court',
+      label: t('Circle'),
+      render: (value: any) => {
+        if (!value) return '-';
+        const circleType = value.circle_type ? getTranslatedValue(value.circle_type.name) : '';
+        // Extract circle number from court name if it exists
+        const circleNoMatch = value.name?.match(/#?\s*(\d+)/);
+        const circleNo = circleNoMatch ? circleNoMatch[1] : '';
+
+        if (circleType && circleNo) {
+          return `${circleType} + ${circleNo}`;
+        } else if (circleType) {
+          return circleType;
+        } else if (circleNo) {
+          return circleNo;
+        }
+        return '-';
+      },
     },
     {
       key: 'hearing_date',
@@ -196,7 +243,7 @@ export default function Hearings() {
           </div>
           <div className="flex items-center gap-1 text-xs text-gray-500">
             <Clock className="h-3 w-3" />
-            <span>{window.appSettings?.formatTime(`2000-01-01T${row.hearing_time}`) || row.hearing_time} ({row.duration_minutes}min)</span>
+            <span>{window.appSettings?.formatTime(`2000-01-01T${row.hearing_time}`) || row.hearing_time}</span>
           </div>
         </div>
       )
@@ -214,7 +261,7 @@ export default function Hearings() {
         };
         return (
           <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${statusColors[value as keyof typeof statusColors] || 'bg-gray-50 text-gray-700 ring-gray-600/20'}`}>
-            {capitalize(value)}
+            {t(value?.charAt(0).toUpperCase() + value?.slice(1).replace('_', ' '))}
           </span>
         );
       }
@@ -243,10 +290,25 @@ export default function Hearings() {
       label: court.name
     }))
   ];
-console.log({currentItem});
+
+  const courtTypeOptions = [
+    { value: 'all', label: t('All Court Types') },
+    ...(courtTypes || []).map((type: any) => ({
+      value: type.id.toString(),
+      label: getTranslatedValue(type.name),
+    }))
+  ];
+
+  const circleTypeOptions = [
+    { value: 'all', label: t('All Circle Types') },
+    ...(circleTypes || []).map((type: any) => ({
+      value: type.id.toString(),
+      label: getTranslatedValue(type.name),
+    }))
+  ];
 
   return (
-    <PageTemplate title={t("Hearing Management")} url="/hearings" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+    <PageTemplate title={t("Session Management")} url="/hearings" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
       <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
         <SearchAndFilterBar
           searchTerm={searchTerm}
@@ -254,12 +316,14 @@ console.log({currentItem});
           onSearch={handleSearch}
           filters={[
             { name: 'status', label: t('Status'), type: 'select', value: selectedStatus, onChange: setSelectedStatus, options: statusOptions },
-            { name: 'court_id', label: t('Court'), type: 'select', value: selectedCourt, onChange: setSelectedCourt, options: courtOptions }
+            { name: 'court_id', label: t('Court'), type: 'select', value: selectedCourt, onChange: setSelectedCourt, options: courtOptions },
+            { name: 'court_type_id', label: t('Court Type'), type: 'select', value: selectedCourtType, onChange: setSelectedCourtType, options: courtTypeOptions },
+            { name: 'circle_type_id', label: t('Circle Type'), type: 'select', value: selectedCircleType, onChange: setSelectedCircleType, options: circleTypeOptions }
           ]}
           showFilters={showFilters}
           setShowFilters={setShowFilters}
-          hasActiveFilters={() => searchTerm !== '' || selectedStatus !== 'all' || selectedCourt !== 'all'}
-          activeFilterCount={() => (searchTerm ? 1 : 0) + (selectedStatus !== 'all' ? 1 : 0) + (selectedCourt !== 'all' ? 1 : 0)}
+          hasActiveFilters={() => searchTerm !== '' || selectedStatus !== 'all' || selectedCourt !== 'all' || selectedCourtType !== 'all' || selectedCircleType !== 'all'}
+          activeFilterCount={() => (searchTerm ? 1 : 0) + (selectedStatus !== 'all' ? 1 : 0) + (selectedCourt !== 'all' ? 1 : 0) + (selectedCourtType !== 'all' ? 1 : 0) + (selectedCircleType !== 'all' ? 1 : 0)}
           onResetFilters={handleResetFilters}
           onApplyFilters={applyFilters}
           currentPerPage={pageFilters.per_page?.toString() || "10"}
@@ -269,7 +333,9 @@ console.log({currentItem});
               per_page: parseInt(value),
               search: searchTerm || undefined,
               status: selectedStatus !== 'all' ? selectedStatus : undefined,
-              court_id: selectedCourt !== 'all' ? selectedCourt : undefined
+              court_id: selectedCourt !== 'all' ? selectedCourt : undefined,
+              court_type_id: selectedCourtType !== 'all' ? selectedCourtType : undefined,
+              circle_type_id: selectedCircleType !== 'all' ? selectedCircleType : undefined
             }, { preserveState: true, preserveScroll: true });
           }}
         />
@@ -310,37 +376,52 @@ console.log({currentItem});
         onSubmit={handleFormSubmit}
         formConfig={{
           fields: [
-            { 
-              name: 'case_id', 
-              label: t('Case'), 
-              type: 'select', 
-              required: true, 
-              options: cases ? cases.map((c: any) => ({ value: c.id.toString(), label: `${c.case_id} - ${c.title}` })) : [] 
+            {
+              name: 'case_id',
+              label: t('Case'),
+              type: 'select',
+              required: true,
+              options: cases ? cases.map((c: any) => ({ value: c.id.toString(), label: `${c.case_id} - ${c.title}` })) : []
             },
             {
-              name: 'court_judge',
-              type: 'dependent-dropdown',
-              dependentConfig: [
-                {
-                  name: 'court_id',
-                  label: t('Court'),
-                  required: true,
-                  options: courts ? courts.map((c: any) => ({ value: c.id.toString(), label: c.name })) : []
-                },
-                {
-                  name: 'judge_id',
-                  label: t('Judge'),
-                  apiEndpoint: '/api/hearings/court-judges/{court_id}',
-                  showCurrentValue: true
-                }
-              ]
+              name: 'court_id',
+              label: t('Court'),
+              type: 'select',
+              required: true,
+              options: courts ? courts.map((c: any) => {
+                const courtName = c.name || '';
+                const courtType = c.court_type ? getTranslatedValue(c.court_type.name) : '';
+                const circleType = c.circle_type ? getTranslatedValue(c.circle_type.name) : '';
+                const parts = [courtName];
+                if (courtType) parts.push(courtType);
+                if (circleType) parts.push(circleType);
+                return {
+                  value: c.id.toString(),
+                  label: parts.join(' + ')
+                };
+              }) : []
             },
-            { 
-              name: 'hearing_type_id', 
-              label: t('Hearing Type'), 
-              type: 'select', 
-              options: [{ value: 'none', label: t('Select Type') }, ...(hearingTypes ? hearingTypes.map((ht: any) => ({ 
-                value: ht.id.toString(), 
+            {
+              name: 'circle_number',
+              label: t('Circle Number'),
+              type: 'text'
+            },
+            {
+              name: 'judge_id',
+              label: t('Judge'),
+              type: 'select',
+              options: [{ value: 'none', label: t('Select Judge') }, ...(judges ? judges.map((j: any) => ({
+                value: j.id.toString(),
+                label: j.name
+              })) : [])]
+            },
+            {
+              name: 'hearing_type_id',
+              label: t('Hearing Type'),
+              type: 'select',
+              required: true,
+              options: [{ value: 'none', label: t('Select Type') }, ...(hearingTypes ? hearingTypes.map((ht: any) => ({
+                value: ht.id.toString(),
                 label: getTranslatedValue(ht.name)
               })) : [])]
             },
@@ -349,6 +430,7 @@ console.log({currentItem});
             { name: 'hearing_date', label: t('Date'), type: 'date', required: true },
             { name: 'hearing_time', label: t('Time'), type: 'time', required: true },
             { name: 'duration_minutes', label: t('Duration (minutes)'), type: 'number', defaultValue: 60 },
+            { name: 'url', label: t('URL'), type: 'text' },
             {
               name: 'status',
               label: t('Status'),
@@ -369,8 +451,8 @@ console.log({currentItem});
         initialData={currentItem}
         title={
           formMode === 'create'
-            ? t('Schedule New Hearing')
-            : t('Edit Hearing')
+            ? t('Schedule New Session')
+            : t('Edit Session')
         }
         mode={formMode}
       />
@@ -378,7 +460,7 @@ console.log({currentItem});
       <CrudFormModal
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}
-        onSubmit={() => {}}
+        onSubmit={() => { }}
         formConfig={{
           fields: [
             { name: 'hearing_id', label: t('Hearing ID'), type: 'text', readOnly: true },
@@ -398,16 +480,34 @@ console.log({currentItem});
         }}
         initialData={{
           ...currentItem,
-          case: currentItem?.case ? `${currentItem.case.case_id} - ${currentItem.case.title}` : '-',
-          court: currentItem?.court?.name || '-',
+          case: currentItem?.case ? (() => {
+            const caseId = currentItem.case.case_id || '-';
+            const caseName = currentItem.case.title || '-';
+            const caseNumber = currentItem.case.file_number || '';
+            if (caseNumber) {
+              return `${caseId} + ${caseName} + ${caseNumber}`;
+            }
+            return `${caseId} + ${caseName}`;
+          })() : '-',
+          court: currentItem?.court ? (() => {
+            const courtName = currentItem.court.name || '-';
+            const courtType = currentItem.court.court_type ? getTranslatedValue(currentItem.court.court_type.name) : '';
+            const circleType = currentItem.court.circle_type ? getTranslatedValue(currentItem.court.circle_type.name) : '';
+            const parts = [courtName];
+            if (courtType) parts.push(courtType);
+            if (circleType) parts.push(circleType);
+            return parts.join(' + ');
+          })() : '-',
+          circle_number: currentItem?.circle_number || '-',
           judge: currentItem?.judge?.name || '-',
           hearing_type: getTranslatedValue(currentItem?.hearing_type?.name) || '-',
           hearing_date: currentItem?.hearing_date ? (window.appSettings?.formatDate(currentItem.hearing_date) || new Date(currentItem.hearing_date).toLocaleDateString()) : '-',
           hearing_time: currentItem?.hearing_time || '-',
           duration_minutes: currentItem?.duration_minutes ? `${currentItem.duration_minutes} minutes` : '-',
-          status: currentItem?.status ? capitalize(currentItem.status) : '-'
+          url: currentItem?.url || '-',
+          status: currentItem?.status ? t(currentItem.status.charAt(0).toUpperCase() + currentItem.status.slice(1).replace('_', ' ')) : '-'
         }}
-        title={t('View Hearing Details')}
+        title={t('View Session Details')}
         mode='view'
       />
 

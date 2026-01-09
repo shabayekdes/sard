@@ -8,6 +8,8 @@ use App\Models\Court;
 use App\Models\Judge;
 use App\Models\HearingType;
 use App\Models\Setting;
+use App\Models\CaseTimeline;
+use App\Models\EventType;
 use App\Services\GoogleCalendarService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -17,14 +19,26 @@ class HearingController extends BaseController
     public function index(Request $request)
     {
         $query = Hearing::withPermissionCheck()
-            ->with(['case', 'court', 'judge', 'hearingType', 'creator']);
+            ->with([
+                'case',
+                'court.courtType',
+                'court.circleType',
+                'hearingType'
+            ]);
 
         if ($request->has('search') && !empty($request->search)) {
             $query->where(function ($q) use ($request) {
                 $q->where('title', 'like', '%' . $request->search . '%')
                     ->orWhere('hearing_id', 'like', '%' . $request->search . '%')
+                    ->orWhere('description', 'like', '%' . $request->search . '%')
                     ->orWhereHas('case', function($caseQuery) use ($request) {
-                        $caseQuery->where('case_id', 'like', '%' . $request->search . '%');
+                        $caseQuery->where('case_id', 'like', '%' . $request->search . '%')
+                            ->orWhere('title', 'like', '%' . $request->search . '%')
+                            ->orWhere('file_number', 'like', '%' . $request->search . '%');
+                    })
+                    ->orWhereHas('court', function($courtQuery) use ($request) {
+                        // Search in court name or circle number if it exists
+                        $courtQuery->where('name', 'like', '%' . $request->search . '%');
                     });
             });
         }
@@ -37,6 +51,18 @@ class HearingController extends BaseController
             $query->where('court_id', $request->court_id);
         }
 
+        if ($request->has('court_type_id') && !empty($request->court_type_id) && $request->court_type_id !== 'all') {
+            $query->whereHas('court', function($q) use ($request) {
+                $q->where('court_type_id', $request->court_type_id);
+            });
+        }
+
+        if ($request->has('circle_type_id') && !empty($request->circle_type_id) && $request->circle_type_id !== 'all') {
+            $query->whereHas('court', function($q) use ($request) {
+                $q->where('circle_type_id', $request->circle_type_id);
+            });
+        }
+
         if ($request->has('sort_field') && !empty($request->sort_field)) {
             $query->orderBy($request->sort_field, $request->sort_direction ?? 'asc');
         } else {
@@ -45,8 +71,17 @@ class HearingController extends BaseController
 
         $hearings = $query->paginate($request->per_page ?? 10);
 
-        $cases = CaseModel::withPermissionCheck()->get(['id', 'case_id', 'title']);
-        $courts = Court::withPermissionCheck()->where('status', 'active')->get(['id', 'name']);
+        $cases = CaseModel::withPermissionCheck()->get(['id', 'case_id', 'title', 'file_number']);
+        $courts = Court::withPermissionCheck()
+            ->with(['courtType', 'circleType'])
+            ->where('status', 'active')
+            ->get(['id', 'name', 'court_type_id', 'circle_type_id']);
+        $courtTypes = \App\Models\CourtType::withPermissionCheck()
+            ->where('status', 'active')
+            ->get(['id', 'name']);
+        $circleTypes = \App\Models\CircleType::withPermissionCheck()
+            ->where('status', 'active')
+            ->get(['id', 'name']);
         $judges = Judge::withPermissionCheck()->where('status', 'active')->get(['id', 'name']);
         $hearingTypes = HearingType::withPermissionCheck()
             ->where('status', 'active')
@@ -60,10 +95,12 @@ class HearingController extends BaseController
             'hearings' => $hearings,
             'cases' => $cases,
             'courts' => $courts,
+            'courtTypes' => $courtTypes,
+            'circleTypes' => $circleTypes,
             'judges' => $judges,
             'hearingTypes' => $hearingTypes,
             'googleCalendarEnabled' => $googleCalendarEnabled,
-            'filters' => $request->all(['search', 'status', 'court_id', 'sort_field', 'sort_direction', 'per_page']),
+            'filters' => $request->all(['search', 'status', 'court_id', 'court_type_id', 'circle_type_id', 'sort_field', 'sort_direction', 'per_page']),
         ]);
     }
 
@@ -72,13 +109,15 @@ class HearingController extends BaseController
         $validated = $request->validate([
             'case_id' => 'required|exists:cases,id,created_by,' . createdBy(),
             'court_id' => 'required|exists:courts,id,created_by,' . createdBy(),
+            'circle_number' => 'nullable|string|max:255',
             'judge_id' => 'nullable|exists:judges,id,created_by,' . createdBy(),
-            'hearing_type_id' => 'nullable|exists:hearing_types,id,created_by,' . createdBy(),
+            'hearing_type_id' => 'required|exists:hearing_types,id,created_by,' . createdBy(),
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'hearing_date' => 'required|date|after_or_equal:today',
             'hearing_time' => 'required|date_format:H:i',
             'duration_minutes' => 'nullable|integer|min:15|max:480',
+            'url' => 'nullable|url|max:500',
             'status' => 'nullable|in:scheduled,in_progress,completed,postponed,cancelled',
             'notes' => 'nullable|string',
             'sync_with_google_calendar' => 'nullable|boolean',
@@ -89,11 +128,8 @@ class HearingController extends BaseController
         $validated['duration_minutes'] = $validated['duration_minutes'] ?? 60;
 
         // Handle 'none' values for optional fields
-        if ($validated['judge_id'] === 'none') {
+        if (isset($validated['judge_id']) && $validated['judge_id'] === 'none') {
             $validated['judge_id'] = null;
-        }
-        if ($validated['hearing_type_id'] === 'none') {
-            $validated['hearing_type_id'] = null;
         }
 
         $hearing = Hearing::create($validated);
@@ -152,13 +188,15 @@ class HearingController extends BaseController
         $validated = $request->validate([
             'case_id' => 'required|exists:cases,id,created_by,' . createdBy(),
             'court_id' => 'required|exists:courts,id,created_by,' . createdBy(),
+            'circle_number' => 'nullable|string|max:255',
             'judge_id' => 'nullable|exists:judges,id,created_by,' . createdBy(),
-            'hearing_type_id' => 'nullable|exists:hearing_types,id,created_by,' . createdBy(),
+            'hearing_type_id' => 'required|exists:hearing_types,id,created_by,' . createdBy(),
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'hearing_date' => 'required|date|after_or_equal:today',
             'hearing_time' => 'required|date_format:H:i',
             'duration_minutes' => 'nullable|integer|min:15|max:480',
+            'url' => 'nullable|url|max:500',
             'status' => 'nullable|in:scheduled,in_progress,completed,postponed,cancelled',
             'notes' => 'nullable|string',
             'outcome' => 'nullable|string',
@@ -166,11 +204,8 @@ class HearingController extends BaseController
         ]);
 
         // Handle 'none' values for optional fields
-        if ($validated['judge_id'] === 'none') {
+        if (isset($validated['judge_id']) && $validated['judge_id'] === 'none') {
             $validated['judge_id'] = null;
-        }
-        if ($validated['hearing_type_id'] === 'none') {
-            $validated['hearing_type_id'] = null;
         }
 
         $hearing->update($validated);
