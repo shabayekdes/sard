@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('case_timelines', function (Blueprint $table) {
-            $table->foreignId('event_type_id')->nullable()->after('event_type')->constrained('event_types')->onDelete('set null');
+            $table->foreignId('event_type_id')->nullable()->after('case_id')->constrained('event_types')->onDelete('set null');
         });
     }
 

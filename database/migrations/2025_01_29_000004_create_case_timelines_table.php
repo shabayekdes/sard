@@ -11,10 +11,11 @@ return new class extends Migration
         Schema::create('case_timelines', function (Blueprint $table) {
             $table->id();
             $table->foreignId('case_id')->constrained('cases')->onDelete('cascade');
-            $table->string('event_type')->default('milestone');
             $table->string('title');
             $table->text('description')->nullable();
             $table->dateTime('event_date');
+            $table->string('google_calendar_event_id')->nullable();
+            $table->string('meeting_link')->nullable();
             $table->boolean('is_completed')->default(false);
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');

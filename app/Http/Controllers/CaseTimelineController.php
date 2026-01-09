@@ -6,6 +6,7 @@ use App\Models\CaseTimeline;
 use App\Models\CaseModel;
 use App\Models\Setting;
 use App\Services\GoogleCalendarService;
+use App\Services\EmailTemplateService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -74,20 +75,38 @@ class CaseTimelineController extends Controller
         $validated['status'] = $validated['status'] ?? 'active';
         $validated['is_completed'] = $validated['is_completed'] ?? false;
 
-        $case = CaseModel::withPermissionCheck()->where('id', $validated['case_id'])->first();
+        $case = CaseModel::withPermissionCheck()->with('client')->where('id', $validated['case_id'])->first();
         if (!$case) {
             return redirect()->back()->with('error', 'Invalid case selected.');
         }
 
         $timeline = CaseTimeline::create($validated);
 
-        // Handle Google Calendar sync
+        // Handle Google Calendar sync and meeting link creation
+        $meetingLink = null;
         if ($timeline && $request->sync_with_google_calendar) {
             $calendarService = new GoogleCalendarService();
-            $eventId = $calendarService->createEvent($timeline, createdBy(), 'timeline');
-            if ($eventId) {
-                $timeline->update(['google_calendar_event_id' => $eventId]);
+            $createMeetingLink = $request->create_meeting_link ?? false;
+            $result = $calendarService->createEvent($timeline, createdBy(), 'timeline', $createMeetingLink);
+            
+            if ($result) {
+                if (is_array($result)) {
+                    // Meeting link was created
+                    $timeline->update([
+                        'google_calendar_event_id' => $result['event_id'],
+                        'meeting_link' => $result['meeting_link']
+                    ]);
+                    $meetingLink = $result['meeting_link'];
+                } else {
+                    // Just event ID returned
+                    $timeline->update(['google_calendar_event_id' => $result]);
+                }
             }
+        }
+
+        // Send email notification to client if meeting link was created
+        if ($meetingLink && $case->client && $case->client->email) {
+            $this->sendMeetingLinkNotification($case, $timeline, $meetingLink);
         }
 
         return redirect()->back()->with('success', 'Timeline event created successfully.');
@@ -169,5 +188,50 @@ class CaseTimelineController extends Controller
         $timeline->save();
 
         return redirect()->back()->with('success', 'Timeline event status updated successfully.');
+    }
+
+    /**
+     * Send meeting link notification to client
+     */
+    private function sendMeetingLinkNotification($case, $timeline, $meetingLink)
+    {
+        try {
+            if (isEmailTemplateEnabled('Timeline Meeting Link', createdBy()) && !IsDemo()) {
+                $emailService = new EmailTemplateService();
+                $client = $case->client;
+
+                if (!$client || !$client->email) {
+                    return;
+                }
+
+                $eventType = $timeline->eventType;
+                $eventTypeName = $eventType ? (is_string($eventType->name) ? $eventType->name : ($eventType->name['en'] ?? 'Event')) : 'Event';
+
+                $variables = [
+                    '{user_name}' => auth()->user()->name ?? 'System Administrator',
+                    '{client}' => $client->name ?? 'Client',
+                    '{case}' => $case->title ?? 'N/A',
+                    '{case_id}' => $case->case_id ?? 'N/A',
+                    '{event_title}' => $timeline->title ?? 'Event',
+                    '{event_type}' => $eventTypeName,
+                    '{event_date}' => $timeline->event_date ? $timeline->event_date->format('F j, Y \a\t g:i A') : 'Not specified',
+                    '{meeting_link}' => $meetingLink,
+                    '{description}' => $timeline->description ?? '',
+                    '{app_name}' => config('app.name', 'Legal Management System'),
+                ];
+
+                $userLanguage = auth()->user()->lang ?? 'en';
+
+                $emailService->sendTemplateEmailWithLanguage(
+                    'Timeline Meeting Link',
+                    $variables,
+                    (string) $client->email,
+                    (string) $client->name,
+                    $userLanguage
+                );
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to send meeting link notification: ' . $e->getMessage());
+        }
     }
 }

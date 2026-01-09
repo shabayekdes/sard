@@ -2464,7 +2464,13 @@ export default function CaseShow() {
                                         name: 'sync_with_google_calendar',
                                         label: t('Synchronize in Google Calendar'),
                                         type: 'switch',
-                                        defaultValue: false,
+                                        defaultValue: true,
+                                    },
+                                    {
+                                        name: 'create_meeting_link',
+                                        label: t('Create Meeting Link'),
+                                        type: 'switch',
+                                        defaultValue: true,
                                     },
                                 ]
                                 : [],

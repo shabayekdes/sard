@@ -11,7 +11,6 @@ class CaseTimeline extends BaseModel
 
     protected $fillable = [
         'case_id',
-        'event_type',
         'event_type_id',
         'title',
         'description',
@@ -19,7 +18,8 @@ class CaseTimeline extends BaseModel
         'is_completed',
         'status',
         'created_by',
-        'google_calendar_event_id'
+        'google_calendar_event_id',
+        'meeting_link'
     ];
 
     protected $casts = [

@@ -69,7 +69,7 @@ class GoogleCalendarService
         $this->client->useApplicationDefaultCredentials();
     }
 
-    public function createEvent($item, $userId, $type = 'task')
+    public function createEvent($item, $userId, $type = 'task', $createMeetingLink = false)
     {
         if (!$this->isEnabled($userId)) {
             \Log::info('Google Calendar not enabled for user', ['user_id' => $userId]);
@@ -82,6 +82,11 @@ class GoogleCalendarService
 
             $summary = $item->title ?? ($type === 'team_member' ? 'Team Member Assignment: ' . ($item->user->name ?? 'Unknown') : 'Event');
             $description = $item->description ?? ($type === 'team_member' ? 'Team member assigned to case' : '');
+            
+            // Set create_meeting_link property on item for later use
+            if ($createMeetingLink) {
+                $item->create_meeting_link = true;
+            }
             
             $event = new Google_Service_Calendar_Event([
                 'summary' => $summary,
@@ -142,13 +147,43 @@ class GoogleCalendarService
             $end->setDateTime($endTime->format('c'));
             $event->setEnd($end);
 
+            // Add conference data (Google Meet) if requested
+            if (isset($item->create_meeting_link) && $item->create_meeting_link) {
+                $conferenceData = new \Google_Service_Calendar_ConferenceData();
+                $conferenceRequest = new \Google_Service_Calendar_CreateConferenceRequest();
+                $conferenceRequest->setRequestId(uniqid());
+                $conferenceData->setCreateRequest($conferenceRequest);
+                $event->setConferenceData($conferenceData);
+            }
+
             // Get calendar ID from settings
             $calendarId = Setting::where('user_id', $userId)
                 ->where('key', 'googleCalendarId')
                 ->value('value') ?: 'primary';
                 
-            $calendarEvent = $this->service->events->insert($calendarId, $event);
+            $calendarEvent = $this->service->events->insert($calendarId, $event, [
+                'conferenceDataVersion' => isset($item->create_meeting_link) && $item->create_meeting_link ? 1 : 0
+            ]);
             $eventId = $calendarEvent->getId();
+            
+            // Extract meeting link if conference was created
+            $meetingLink = null;
+            if (isset($item->create_meeting_link) && $item->create_meeting_link && $calendarEvent->getConferenceData()) {
+                $entryPoints = $calendarEvent->getConferenceData()->getEntryPoints();
+                if ($entryPoints && count($entryPoints) > 0) {
+                    foreach ($entryPoints as $entryPoint) {
+                        if ($entryPoint->getEntryPointType() === 'video') {
+                            $meetingLink = $entryPoint->getUri();
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // Return event ID and meeting link
+            if ($meetingLink) {
+                return ['event_id' => $eventId, 'meeting_link' => $meetingLink];
+            }
             return $eventId;
         } catch (\Exception $e) {
             \Log::error('Google Calendar event creation failed', [
