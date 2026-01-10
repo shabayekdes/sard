@@ -147,258 +147,275 @@ export default function ShowInvoice() {
 
 
   return (
-    <PageTemplate
-      title={`${t('Invoice')} #${invoice.invoice_number || invoice.id}`}
-      url={route('billing.invoices.show', invoice.id)}
-      breadcrumbs={breadcrumbs}
-      actions={pageActions}
-      noPadding
-    >
-      <div className="space-y-6">
-        {/* Invoice Header */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex justify-between items-start mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                {t('Invoice')} #{invoice.invoice_number || invoice.id}
-              </h2>
-              <p className="text-gray-600 mt-1">
-                {t('Created on')} {window.appSettings?.formatDate(invoice.created_at) || new Date(invoice.created_at).toLocaleDateString()}
-              </p>
-            </div>
-            <div className="text-right">
-              <span className={`inline-flex items-center rounded-md px-3 py-1 text-sm font-medium ring-1 ring-inset ${getStatusColor(invoice.status)}`}>
-                {t(invoice.status?.charAt(0).toUpperCase() + invoice.status?.slice(1))}
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="text-lg font-semibold mb-3">{t('Client Information')}</h3>
-              <div className="space-y-2">
-                <p>
-                  <strong>{t('Name')}:</strong> {invoice.client?.name || '-'}
-                  {invoice.client?.business_type && (
-                    <span className="ml-2 inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-200">
-                      {invoice.client.business_type === 'b2b' ? t('Business') : t('Individual')}
-                    </span>
-                  )}
-                </p>
-                <p><strong>{t('Email')}:</strong> {invoice.client?.email || '-'}</p>
-                <p><strong>{t('Phone')}:</strong> {invoice.client?.phone || '-'}</p>
-                {invoice.client?.business_type === 'b2b' && (
-                  <>
-                    <p><strong>{t('CR Number')}:</strong> {invoice.client?.cr_number || '-'}</p>
-                    <p><strong>{t('Tax Number')}:</strong> {invoice.client?.tax_id || '-'}</p>
-                    <p><strong>{t('Address')}:</strong> {invoice.client?.address || '-'}</p>
-                  </>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-semibold mb-3">{t('Invoice Details')}</h3>
-              <div className="space-y-2">
-                <p><strong>{t('Invoice Date')}:</strong> {window.appSettings?.formatDate(invoice.invoice_date) || new Date(invoice.invoice_date).toLocaleDateString()}</p>
-                <p><strong>{t('Due Date')}:</strong> {window.appSettings?.formatDate(invoice.due_date) || new Date(invoice.due_date).toLocaleDateString()}</p>
-                {invoice.case && (
-                  <p><strong>{t('Case')}:</strong> {invoice.case.case_id ? `${invoice.case.case_id} - ${invoice.case.title}` : invoice.case.title}</p>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Line Items */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4">{t('Invoice Items')}</h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('Description')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('Quantity')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('Rate')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('Amount')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {invoiceItems?.map((item: any, index: number) => (
-                  <tr key={index} className={item.type === 'expense' ? 'bg-orange-50' : ''}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div className="space-y-1">
-                        <div>{item.description}</div>
-                        {item.type === 'expense' && (
-                          <div className="text-xs text-orange-600 flex items-center">
-                            <span className="bg-orange-100 px-2 py-1 rounded text-orange-700 font-medium">{t('Expense')}</span>
-                            {item.expense_date && <span className="ml-2">{window.appSettings?.formatDate(item.expense_date) || new Date(item.expense_date).toLocaleDateString()}</span>}
-                          </div>
-                        )}
-                        {item.type === 'time' && (
-                          <div className="text-xs text-blue-600 flex items-center">
-                            <span className="bg-blue-100 px-2 py-1 rounded text-blue-700 font-medium">{t('Time Entry')}</span>
-                          </div>
-                        )}
+      <PageTemplate
+          title={`${t('Invoice')} #${invoice.invoice_number || invoice.id}`}
+          url={route('billing.invoices.show', invoice.id)}
+          breadcrumbs={breadcrumbs}
+          actions={pageActions}
+          noPadding
+      >
+          <div className="space-y-6">
+              {/* Invoice Header */}
+              <div className="rounded-lg bg-white p-6 shadow">
+                  <div className="mb-6 flex items-start justify-between">
+                      <div>
+                          <h2 className="text-2xl font-bold text-gray-900">
+                              {t('Invoice')} #{invoice.invoice_number || invoice.id}
+                          </h2>
+                          <p className="mt-1 text-gray-600">
+                              {t('Created on')}{' '}
+                              {window.appSettings?.formatDate(invoice.created_at) || new Date(invoice.created_at).toLocaleDateString()}
+                          </p>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.quantity}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatAmount(parseFloat(item.rate || 0))}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatAmount(parseFloat(item.amount || 0))}
-                    </td>
-                  </tr>
-                ))}
+                      <div className="text-right">
+                          <span
+                              className={`inline-flex items-center rounded-md px-3 py-1 text-sm font-medium ring-1 ring-inset ${getStatusColor(invoice.status)}`}
+                          >
+                              {t(invoice.status?.charAt(0).toUpperCase() + invoice.status?.slice(1))}
+                          </span>
+                      </div>
+                  </div>
 
-                {(!invoiceItems || invoiceItems.length === 0) && (
-                  <tr>
-                    <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
-                      {t('No items found')}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                      <div>
+                          <h3 className="mb-3 text-lg font-semibold">{t('Client Information')}</h3>
+                          <div className="space-y-2">
+                              <p>
+                                  <strong>{t('Name')}:</strong> {invoice.client?.name || '-'}
+                                  {invoice.client?.business_type && (
+                                      <span className="ml-2 inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                                          {invoice.client.business_type === 'b2b' ? t('Business') : t('Individual')}
+                                      </span>
+                                  )}
+                              </p>
+                              <p>
+                                  <strong>{t('Email')}:</strong> {invoice.client?.email || '-'}
+                              </p>
+                              <p>
+                                  <strong>{t('Phone')}:</strong> {invoice.client?.phone || '-'}
+                              </p>
+                              {invoice.client?.business_type === 'b2b' && (
+                                  <>
+                                      <p>
+                                          <strong>{t('CR Number')}:</strong> {invoice.client?.cr_number || '-'}
+                                      </p>
+                                      <p>
+                                          <strong>{t('Tax Number')}:</strong> {invoice.client?.tax_id || '-'}
+                                      </p>
+                                      <p>
+                                          <strong>{t('Address')}:</strong> {invoice.client?.address || '-'}
+                                      </p>
+                                  </>
+                              )}
+                          </div>
+                      </div>
 
-        {/* Additional Info */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900">{t('Additional Info')}</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">{t('NOTES')}</h4>
-              <p className="text-sm text-gray-600">
-                {invoice.notes || t('Thank you for your business. Please remit payment by due date.')}
-              </p>
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">{t('TERMS')}</h4>
-              <p className="text-sm text-gray-600">
-                {(() => {
-                  const billingInfo = clientBillingInfo?.[invoice.client_id];
-                  if (billingInfo?.custom_payment_terms) {
-                    return billingInfo.custom_payment_terms;
-                  }
-                  if (billingInfo?.payment_terms) {
-                    const termsMap: Record<string, string> = {
-                      'net_15': t('Net 15 days'),
-                      'net_30': t('Net 30 days'),
-                      'net_45': t('Net 45 days'),
-                      'net_60': t('Net 60 days'),
-                      'due_on_receipt': t('Due on receipt'),
-                      'custom': billingInfo.custom_payment_terms || t('Custom terms')
-                    };
-                    const termText = termsMap[billingInfo.payment_terms] || billingInfo.payment_terms;
-                    return `${termText}. ${t('Late payment fee of 1.5% per month applies.')}`;
-                  }
-                  return t('Net 30 days. Late payment fee of 1.5% per month applies.');
-                })()}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Invoice Summary */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex justify-end">
-            <div className="w-full max-w-sm space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-600">{t('Subtotal')}:</span>
-                <span className="font-medium">{formatAmount(parseFloat((invoice.subtotal || 0).toString()))}</span>
+                      <div>
+                          <h3 className="mb-3 text-lg font-semibold">{t('Invoice Details')}</h3>
+                          <div className="space-y-2">
+                              <p>
+                                  <strong>{t('Invoice Date')}:</strong>{' '}
+                                  {window.appSettings?.formatDate(invoice.invoice_date) || new Date(invoice.invoice_date).toLocaleDateString()}
+                              </p>
+                              <p>
+                                  <strong>{t('Due Date')}:</strong>{' '}
+                                  {window.appSettings?.formatDate(invoice.due_date) || new Date(invoice.due_date).toLocaleDateString()}
+                              </p>
+                              {invoice.case && (
+                                  <p>
+                                      <strong>{t('Case')}:</strong>{' '}
+                                      {invoice.case.case_id ? `${invoice.case.case_id} - ${invoice.case.title}` : invoice.case.title}
+                                  </p>
+                              )}
+                          </div>
+                      </div>
+                  </div>
               </div>
 
-              {invoice.tax_amount > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600">{t('Tax')}:</span>
-                  <span className="font-medium">{formatAmount(parseFloat((invoice.tax_amount || 0).toString()))}</span>
-                </div>
-              )}
+              {/* Line Items */}
+              <div className="rounded-lg bg-white p-6 shadow">
+                  <h3 className="mb-4 text-lg font-semibold">{t('Invoice Items')}</h3>
+                  <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                              <tr>
+                                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                      {t('Description')}
+                                  </th>
+                                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">{t('Quantity')}</th>
+                                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">{t('Rate')}</th>
+                                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">{t('Amount')}</th>
+                              </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200 bg-white">
+                              {invoiceItems?.map((item: any, index: number) => (
+                                  <tr key={index} className={item.type === 'expense' ? 'bg-orange-50' : ''}>
+                                      <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
+                                          <div className="space-y-1">
+                                              <div>{item.description}</div>
+                                              {item.type === 'expense' && (
+                                                  <div className="flex items-center text-xs text-orange-600">
+                                                      <span className="rounded bg-orange-100 px-2 py-1 font-medium text-orange-700">
+                                                          {t('Expense')}
+                                                      </span>
+                                                      {item.expense_date && (
+                                                          <span className="ml-2">
+                                                              {window.appSettings?.formatDate(item.expense_date) ||
+                                                                  new Date(item.expense_date).toLocaleDateString()}
+                                                          </span>
+                                                      )}
+                                                  </div>
+                                              )}
+                                              {item.type === 'time' && (
+                                                  <div className="flex items-center text-xs text-blue-600">
+                                                      <span className="rounded bg-blue-100 px-2 py-1 font-medium text-blue-700">
+                                                          {t('Time Entry')}
+                                                      </span>
+                                                  </div>
+                                              )}
+                                          </div>
+                                      </td>
+                                      <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">{item.quantity}</td>
+                                      <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
+                                          {formatAmount(parseFloat(item.rate || 0))}
+                                      </td>
+                                      <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
+                                          {formatAmount(parseFloat(item.amount || 0))}
+                                      </td>
+                                  </tr>
+                              ))}
 
-              <div className="border-t pt-3">
-                <div className="flex justify-between text-lg font-bold">
-                  <span>{t('Total')}:</span>
-                  <span>{formatAmount(parseFloat((invoice.total_amount || 0).toString()))}</span>
-                </div>
+                              {(!invoiceItems || invoiceItems.length === 0) && (
+                                  <tr>
+                                      <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
+                                          {t('No items found')}
+                                      </td>
+                                  </tr>
+                              )}
+                          </tbody>
+                      </table>
+                  </div>
               </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Notes */}
-        {invoice.notes && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold mb-4">{t('Notes')}</h3>
-            <p className="text-gray-700 whitespace-pre-wrap">{invoice.notes}</p>
-          </div>
-        )}
-      </div>
+              {/* Invoice Summary */}
+              <div className="rounded-lg bg-white p-6 shadow">
+                  <div className="flex justify-end">
+                      <div className="w-full max-w-sm space-y-3">
+                          <div className="flex justify-between">
+                              <span className="text-gray-600">{t('Subtotal')}:</span>
+                              <span className="font-medium">{formatAmount(parseFloat((invoice.subtotal || 0).toString()))}</span>
+                          </div>
 
-      {/* Payment Modal */}
-      <CrudFormModal
-        isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
-        onSubmit={handlePaymentSubmit}
-        formConfig={{
-          fields: [
-            {
-              name: 'invoice_id',
-              label: t('Invoice'),
-              type: 'select',
-              required: true,
-              disabled: true,
-              options: [{
-                value: invoice.id.toString(),
-                label: `${invoice.invoice_number || invoice.id} - ${invoice.client?.name || '-'}`
-              }]
-            },
-            {
-              name: 'payment_method',
-              label: t('Payment Method'),
-              type: 'select',
-              required: true,
-              options: [
-                { value: 'cash', label: t('Cash') },
-                { value: 'check', label: t('Check') },
-                { value: 'credit_card', label: t('Credit Card') },
-                { value: 'bank_transfer', label: t('Bank Transfer') },
-                { value: 'online', label: t('Online Payment') }
-              ]
-            },
-            { name: 'amount', label: t('Amount'), type: 'number', step: '0.01', required: true, min: '0' },
-            { name: 'payment_date', label: t('Payment Date'), type: 'date', required: true },
-            { name: 'notes', label: t('Notes'), type: 'textarea' },
-            {
-              name: 'attachment',
-              label: t('Attachment'),
-              type: 'media-picker',
-              multiple: true,
-              placeholder: t('Select files...')
-            }
-          ],
-          modalSize: 'lg'
-        }}
-        initialData={{
-          invoice_id: invoice.id.toString(),
-          amount: invoice.remaining_amount || invoice.total_amount,
-          payment_date: new Date().toISOString().split('T')[0],
-          payment_method: 'cash'
-        }}
-        title={t('Record New Payment')}
-        mode="create"
-      />
-    </PageTemplate>
+                          {invoice.tax_amount > 0 && (
+                              <div className="flex justify-between">
+                                  <span className="text-gray-600">{t('Tax')}:</span>
+                                  <span className="font-medium">{formatAmount(parseFloat((invoice.tax_amount || 0).toString()))}</span>
+                              </div>
+                          )}
+
+                          <div className="border-t pt-3">
+                              <div className="flex justify-between text-lg font-bold">
+                                  <span>{t('Total')}:</span>
+                                  <span>{formatAmount(parseFloat((invoice.total_amount || 0).toString()))}</span>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              {/* Additional Info */}
+              <div className="rounded-lg bg-white p-6 shadow">
+                  <h3 className="mb-4 text-lg font-semibold text-gray-900">{t('Additional Info')}</h3>
+                  <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                      <div>
+                          <h4 className="mb-2 text-sm font-semibold text-gray-700">{t('NOTES')}</h4>
+                          <p className="text-sm text-gray-600">
+                              {invoice.notes || t('Thank you for your business. Please remit payment by due date.')}
+                          </p>
+                      </div>
+                      <div>
+                          <h4 className="mb-2 text-sm font-semibold text-gray-700">{t('TERMS')}</h4>
+                          <p className="text-sm text-gray-600">
+                              {(() => {
+                                  const billingInfo = clientBillingInfo?.[invoice.client_id];
+                                  if (billingInfo?.custom_payment_terms) {
+                                      return billingInfo.custom_payment_terms;
+                                  }
+                                  if (billingInfo?.payment_terms) {
+                                      const termsMap: Record<string, string> = {
+                                          net_15: t('Net 15 days'),
+                                          net_30: t('Net 30 days'),
+                                          net_45: t('Net 45 days'),
+                                          net_60: t('Net 60 days'),
+                                          due_on_receipt: t('Due on receipt'),
+                                          custom: billingInfo.custom_payment_terms || t('Custom terms'),
+                                      };
+                                      const termText = termsMap[billingInfo.payment_terms] || billingInfo.payment_terms;
+                                      return `${termText}. ${t('Late payment fee of 1.5% per month applies.')}`;
+                                  }
+                                  return t('Net 30 days. Late payment fee of 1.5% per month applies.');
+                              })()}
+                          </p>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+          {/* Payment Modal */}
+          <CrudFormModal
+              isOpen={isPaymentModalOpen}
+              onClose={() => setIsPaymentModalOpen(false)}
+              onSubmit={handlePaymentSubmit}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'invoice_id',
+                          label: t('Invoice'),
+                          type: 'select',
+                          required: true,
+                          disabled: true,
+                          options: [
+                              {
+                                  value: invoice.id.toString(),
+                                  label: `${invoice.invoice_number || invoice.id} - ${invoice.client?.name || '-'}`,
+                              },
+                          ],
+                      },
+                      {
+                          name: 'payment_method',
+                          label: t('Payment Method'),
+                          type: 'select',
+                          required: true,
+                          options: [
+                              { value: 'cash', label: t('Cash') },
+                              { value: 'check', label: t('Check') },
+                              { value: 'credit_card', label: t('Credit Card') },
+                              { value: 'bank_transfer', label: t('Bank Transfer') },
+                              { value: 'online', label: t('Online Payment') },
+                          ],
+                      },
+                      { name: 'amount', label: t('Amount'), type: 'number', step: '0.01', required: true, min: '0' },
+                      { name: 'payment_date', label: t('Payment Date'), type: 'date', required: true },
+                      { name: 'notes', label: t('Notes'), type: 'textarea' },
+                      {
+                          name: 'attachment',
+                          label: t('Attachment'),
+                          type: 'media-picker',
+                          multiple: true,
+                          placeholder: t('Select files...'),
+                      },
+                  ],
+                  modalSize: 'lg',
+              }}
+              initialData={{
+                  invoice_id: invoice.id.toString(),
+                  amount: invoice.remaining_amount || invoice.total_amount,
+                  payment_date: new Date().toISOString().split('T')[0],
+                  payment_method: 'cash',
+              }}
+              title={t('Record New Payment')}
+              mode="create"
+          />
+      </PageTemplate>
   );
 }
