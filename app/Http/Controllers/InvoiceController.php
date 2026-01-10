@@ -131,7 +131,7 @@ class InvoiceController extends BaseController
 
         // Load client billing info and currencies
         $clientBillingInfo = ClientBillingInfo::withPermissionCheck()
-            ->select('client_id', 'currency')
+            ->select('client_id', 'currency', 'payment_terms', 'custom_payment_terms')
             ->get()
             ->keyBy('client_id');
         $currencies = \App\Models\ClientBillingCurrency::where('status', true)
