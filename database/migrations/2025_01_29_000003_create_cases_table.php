@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('cases', function (Blueprint $table) {
             $table->id();
             $table->string('case_id')->unique();
+            $table->string('case_number')->nullable();
             $table->string('title');
             $table->text('description')->nullable();
             $table->foreignId('client_id')->constrained('clients')->onDelete('cascade');

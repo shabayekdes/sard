@@ -13,6 +13,7 @@ class CaseModel extends BaseModel
 
     protected $fillable = [
         'case_id',
+        'case_number',
         'file_number',
         'attributes',
         'title',

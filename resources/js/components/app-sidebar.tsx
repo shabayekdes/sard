@@ -646,22 +646,22 @@ export function AppSidebar() {
         }
 
         // Documents configurations
-        const documentsConfigChildren = [];
         if (
             hasPermission(permissions, 'manage-document-categories') ||
             hasPermission(permissions, 'manage-any-document-categories') ||
             hasPermission(permissions, 'manage-own-document-categories')
         ) {
-            documentsConfigChildren.push({
+            setupChildren.push({
                 title: t('Document Categories'),
                 href: route('document-management.categories.index'),
             });
         }
-        if (documentsConfigChildren.length > 0) {
-            setupChildren.push({
-                title: t('Documents'),
-                children: documentsConfigChildren,
-            });
+        // Notifications
+        if (userRole === 'company') {
+          setupChildren.push({
+              title: t('Notification Template'),
+              href: route('notification-templates.index'),
+          });
         }
 
         if (setupChildren.length > 0) {
@@ -736,14 +736,6 @@ export function AppSidebar() {
             settingsChildren.push({
                 title: t('User Management'),
                 children: userManagementChildren,
-            });
-        }
-
-        // Notifications
-        if (userRole === 'company') {
-            settingsChildren.push({
-                title: t('Notification Template'),
-                href: route('notification-templates.index'),
             });
         }
 

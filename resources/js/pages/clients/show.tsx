@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { Pagination } from '@/components/ui/pagination';
 import { CrudFormModal } from '@/components/CrudFormModal';
+import { CrudTable } from '@/components/CrudTable';
 import { toast } from '@/components/custom-toast';
 import { ArrowLeft, FileText, Briefcase, Receipt, CreditCard } from 'lucide-react';
 import { formatCurrency } from '@/utils/helpers';
@@ -91,6 +92,195 @@ export default function ClientShow() {
     const invoicesTotal = invoices?.total || invoicesData.length;
     const paymentsData = payments?.data || payments || [];
     const paymentsTotal = payments?.total || paymentsData.length;
+
+    const caseColumns = [
+        {
+            key: 'case_id',
+            label: t('Case ID'),
+            sortable: true
+        },
+        {
+            key: 'title',
+            label: t('Title'),
+            sortable: true,
+            render: (value: any, row: any) => {
+                const title = row.title || '-';
+                const caseNumber = row.case_number ? ` - ${row.case_number}` : '';
+                return `${title}${caseNumber}`;
+            }
+        },
+        {
+            key: 'case_status',
+            label: t('Status'),
+            render: (value: any, row: any) => (
+                <span
+                    className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
+                    style={{
+                        backgroundColor: `${row.case_status?.color}20`,
+                        color: row.case_status?.color
+                    }}
+                >
+                    {row.case_status?.name || '-'}
+                </span>
+            )
+        },
+        {
+            key: 'priority',
+            label: t('Priority'),
+            render: (value: string) => {
+                const colors = {
+                    low: 'bg-green-50 text-green-700 ring-green-600/20',
+                    medium: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
+                    high: 'bg-red-50 text-red-700 ring-red-600/20'
+                };
+                return (
+                    <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${colors[value as keyof typeof colors] || colors.medium}`}>
+                        {value ? t(value.charAt(0).toUpperCase() + value.slice(1)) : '-'}
+                    </span>
+                );
+            }
+        },
+        {
+            key: 'filing_date',
+            label: t('Filing Date'),
+            sortable: true,
+            render: (value: string) => value ? (window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()) : '-'
+        }
+    ];
+
+    const caseActions = [
+        {
+            label: t('View'),
+            icon: 'Eye',
+            action: 'view',
+            className: 'text-primary',
+            href: (row: any) => route('cases.show', row.id)
+        }
+    ];
+
+    const invoiceColumns = [
+        {
+            key: 'invoice_number',
+            label: t('Invoice #'),
+            sortable: true
+        },
+        {
+            key: 'case',
+            label: t('Case'),
+            render: (value: any, row: any) => {
+                if (!row.case) return '-';
+                return (
+                    <div className="flex flex-col">
+                        <span className="font-medium">{row.case.case_id || '-'}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{row.case.title || '-'}</span>
+                    </div>
+                );
+            }
+        },
+        {
+            key: 'total_amount',
+            label: t('Total'),
+            render: (value: any) => {
+                const amount = parseFloat(value);
+                return isNaN(amount) ? formatCurrency(0.00) : formatCurrency(amount);
+            }
+        },
+        {
+            key: 'invoice_date',
+            label: t('Invoice Date'),
+            sortable: true,
+            render: (value: string) => value ? (window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()) : '-'
+        },
+        {
+            key: 'due_date',
+            label: t('Due Date'),
+            sortable: true,
+            render: (value: string) => value ? (window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()) : '-'
+        },
+        {
+            key: 'status',
+            label: t('Status'),
+            render: (value: string) => {
+                const statusColors = {
+                    draft: 'bg-gray-50 text-gray-700 ring-gray-600/20',
+                    sent: 'bg-blue-50 text-blue-700 ring-blue-600/20',
+                    paid: 'bg-green-50 text-green-700 ring-green-600/20',
+                    partial: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
+                    partial_paid: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
+                    overdue: 'bg-red-50 text-red-700 ring-red-600/20',
+                    cancelled: 'bg-gray-50 text-gray-700 ring-gray-600/20'
+                };
+                return (
+                    <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${statusColors[value as keyof typeof statusColors] || statusColors.draft}`}>
+                        {t(value === 'partial_paid' ? 'Partial Paid' : value?.charAt(0).toUpperCase() + value?.slice(1).replace('_', ' '))}
+                    </span>
+                );
+            }
+        }
+    ];
+
+    const invoiceActions = [
+        {
+            label: t('View Invoice'),
+            icon: 'Eye',
+            action: 'view',
+            className: 'text-primary',
+            href: (row: any) => route('billing.invoices.show', row.id)
+        }
+    ];
+
+    const paymentColumns = [
+        {
+            key: 'invoice',
+            label: t('Invoice #'),
+            render: (value: any) => value?.invoice_number || '-'
+        },
+        {
+            key: 'amount',
+            label: t('Amount'),
+            render: (value: any) => {
+                const amount = parseFloat(value);
+                return isNaN(amount) ? formatCurrency(0.00) : formatCurrency(amount.toFixed(2));
+            }
+        },
+        {
+            key: 'payment_method',
+            label: t('Payment Method'),
+            render: (value: string) => (
+                <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                    {t(value ? value.charAt(0).toUpperCase() + value.slice(1).replace('_', ' ') : '-')}
+                </span>
+            )
+        },
+        {
+            key: 'payment_date',
+            label: t('Payment Date'),
+            sortable: true,
+            render: (value: string) => value ? (window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()) : '-'
+        }
+    ];
+
+    const handlePaymentAction = (action: string, item: any) => {
+        if (action === 'view') {
+            const paymentData = {
+                ...item,
+                invoice_id: item.invoice_id ? String(item.invoice_id) : (item.invoice?.id ? String(item.invoice.id) : ''),
+                invoice: item.invoice
+            };
+            setCurrentPayment(paymentData);
+            setPaymentFormMode('view');
+            setIsPaymentModalOpen(true);
+        }
+    };
+
+    const paymentActions = [
+        {
+            label: t('View Payment'),
+            icon: 'Eye',
+            action: 'view',
+            className: 'text-primary'
+        }
+    ];
 
 
     return (
@@ -250,8 +440,8 @@ export default function ClientShow() {
                             <button
                                 onClick={() => setActiveTab('cases')}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'cases'
-                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                                    ? 'border-primary text-primary'
+                                    : 'border-transparent text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary'
                                     }`}
                             >
                                 <div className="flex items-center space-x-2">
@@ -260,22 +450,34 @@ export default function ClientShow() {
                                 </div>
                             </button>
                             <button
-                                onClick={() => setActiveTab('invoices-payments')}
-                                className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'invoices-payments'
-                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                                onClick={() => setActiveTab('invoices')}
+                                className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'invoices'
+                                    ? 'border-primary text-primary'
+                                    : 'border-transparent text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary'
                                     }`}
                             >
                                 <div className="flex items-center space-x-2">
                                     <Receipt className="h-4 w-4" />
-                                    <span>{t('Invoices & Payments')}</span>
+                                    <span>{t('Invoices')} ({invoicesTotal})</span>
+                                </div>
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('payments')}
+                                className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'payments'
+                                    ? 'border-primary text-primary'
+                                    : 'border-transparent text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary'
+                                    }`}
+                            >
+                                <div className="flex items-center space-x-2">
+                                    <CreditCard className="h-4 w-4" />
+                                    <span>{t('Payments')} ({paymentsTotal})</span>
                                 </div>
                             </button>
                             <button
                                 onClick={() => setActiveTab('documents')}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'documents'
-                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                                    ? 'border-primary text-primary'
+                                    : 'border-transparent text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary'
                                     }`}
                             >
                                 <div className="flex items-center space-x-2">
@@ -286,8 +488,8 @@ export default function ClientShow() {
                             <button
                                 onClick={() => setActiveTab('billing')}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'billing'
-                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                                    ? 'border-primary text-primary'
+                                    : 'border-transparent text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary'
                                     }`}
                             >
                                 <div className="flex items-center space-x-2">
@@ -325,105 +527,15 @@ export default function ClientShow() {
                                 </div>
                                 {casesData && casesData.length > 0 ? (
                                     <>
-                                        <div className="overflow-x-auto">
-                                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                                <thead className="bg-gray-50 dark:bg-gray-800">
-                                                    <tr>
-                                                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                            {t('Case ID')}
-                                                        </th>
-                                                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                            {t('Title')}
-                                                        </th>
-                                                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                            {t('Type')}
-                                                        </th>
-                                                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                            {t('Status')}
-                                                        </th>
-                                                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                            {t('Priority')}
-                                                        </th>
-                                                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                            {t('Filing Date')}
-                                                        </th>
-                                                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                            {t('Actions')}
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
-                                                    {casesData.map((caseItem: any) => (
-                                                        <tr key={caseItem.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                                                            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-white">
-                                                                {caseItem.case_id}
-                                                            </td>
-                                                            <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                                                                {caseItem.title}
-                                                            </td>
-                                                            <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                                                {caseItem.case_type ? (
-                                                                    <span
-                                                                        className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
-                                                                        style={{
-                                                                            backgroundColor: `${caseItem.case_type.color}20`,
-                                                                            color: caseItem.case_type.color
-                                                                        }}
-                                                                    >
-                                                                        {caseItem.case_type.name
-                                                                            ? (typeof caseItem.case_type.name === 'object' && caseItem.case_type.name !== null
-                                                                                ? (caseItem.case_type.name[i18n.language] || caseItem.case_type.name.en || caseItem.case_type.name.ar || '-')
-                                                                                : caseItem.case_type.name)
-                                                                            : '-'}
-                                                                    </span>
-                                                                ) : (
-                                                                    <span className="text-gray-500">-</span>
-                                                                )}
-                                                            </td>
-                                                            <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                                                {caseItem.case_status ? (
-                                                                    <span
-                                                                        className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
-                                                                        style={{
-                                                                            backgroundColor: `${caseItem.case_status.color}20`,
-                                                                            color: caseItem.case_status.color
-                                                                        }}
-                                                                    >
-                                                                        {caseItem.case_status.name}
-                                                                    </span>
-                                                                ) : (
-                                                                    <span className="text-gray-500">-</span>
-                                                                )}
-                                                            </td>
-                                                            <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                                                {caseItem.priority ? (
-                                                                    <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${caseItem.priority === 'low' ? 'bg-green-50 text-green-700 ring-green-600/20' :
-                                                                        caseItem.priority === 'medium' ? 'bg-yellow-50 text-yellow-700 ring-yellow-600/20' :
-                                                                            'bg-red-50 text-red-700 ring-red-600/20'
-                                                                        }`}>
-                                                                        {t(caseItem.priority.charAt(0).toUpperCase() + caseItem.priority.slice(1))}
-                                                                    </span>
-                                                                ) : (
-                                                                    <span className="text-gray-500">-</span>
-                                                                )}
-                                                            </td>
-                                                            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                                                {caseItem.filing_date
-                                                                    ? (window.appSettings?.formatDate(caseItem.filing_date) || new Date(caseItem.filing_date).toLocaleDateString())
-                                                                    : '-'}
-                                                            </td>
-                                                            <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
-                                                                <a
-                                                                    href={route('cases.show', caseItem.id)}
-                                                                    className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                                                                >
-                                                                    {t('View')}
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
+                                        <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
+                                            <CrudTable
+                                                columns={caseColumns}
+                                                actions={caseActions}
+                                                data={casesData}
+                                                from={cases?.from || 1}
+                                                onAction={() => { }}
+                                                permissions={[]}
+                                            />
                                         </div>
                                         {cases?.links && (
                                             <div className="mt-4">
@@ -444,272 +556,139 @@ export default function ClientShow() {
                             </div>
                         )}
 
-                        {activeTab === 'invoices-payments' && (
+                        {activeTab === 'invoices' && (
                             <div>
-                                {/* Invoices Section */}
                                 <div className="mb-6">
-                                    <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">{t('Invoices')} ({invoicesTotal})</h3>
+                                    <SearchAndFilterBar
+                                        searchTerm={invoiceSearchTerm}
+                                        onSearchChange={setInvoiceSearchTerm}
+                                        onSearch={(e) => {
+                                            e.preventDefault();
+                                            router.get(route('clients.show', client.id), {
+                                                invoice_page: 1,
+                                                invoice_search: invoiceSearchTerm || undefined,
+                                                invoice_per_page: filters.invoice_per_page || 10
+                                            }, { preserveState: true, preserveScroll: true });
+                                        }}
+                                        filters={[]}
+                                        showFilters={false}
+                                        setShowFilters={() => { }}
+                                        hasActiveFilters={() => invoiceSearchTerm !== ''}
+                                        activeFilterCount={() => invoiceSearchTerm ? 1 : 0}
+                                        onResetFilters={() => {
+                                            setInvoiceSearchTerm('');
+                                            router.get(route('clients.show', client.id), {
+                                                invoice_page: 1,
+                                                invoice_per_page: filters.invoice_per_page || 10
+                                            }, { preserveState: true, preserveScroll: true });
+                                        }}
+                                        onApplyFilters={() => { }}
+                                        currentPerPage={filters.invoice_per_page?.toString() || '10'}
+                                        onPerPageChange={(value) => {
+                                            router.get(route('clients.show', client.id), {
+                                                invoice_page: 1,
+                                                invoice_per_page: parseInt(value),
+                                                invoice_search: invoiceSearchTerm || undefined
+                                            }, { preserveState: true, preserveScroll: true });
+                                        }}
+                                    />
                                 </div>
-                                <div className="mb-8">
-                                    <div className="mb-6">
-                                        <SearchAndFilterBar
-                                            searchTerm={invoiceSearchTerm}
-                                            onSearchChange={setInvoiceSearchTerm}
-                                            onSearch={(e) => {
-                                                e.preventDefault();
-                                                router.get(route('clients.show', client.id), {
-                                                    invoice_page: 1,
-                                                    invoice_search: invoiceSearchTerm || undefined,
-                                                    invoice_per_page: filters.invoice_per_page || 10
-                                                }, { preserveState: true, preserveScroll: true });
-                                            }}
-                                            filters={[]}
-                                            showFilters={false}
-                                            setShowFilters={() => { }}
-                                            hasActiveFilters={() => invoiceSearchTerm !== ''}
-                                            activeFilterCount={() => invoiceSearchTerm ? 1 : 0}
-                                            onResetFilters={() => {
-                                                setInvoiceSearchTerm('');
-                                                router.get(route('clients.show', client.id), {
-                                                    invoice_page: 1,
-                                                    invoice_per_page: filters.invoice_per_page || 10
-                                                }, { preserveState: true, preserveScroll: true });
-                                            }}
-                                            onApplyFilters={() => { }}
-                                            currentPerPage={filters.invoice_per_page?.toString() || '10'}
-                                            onPerPageChange={(value) => {
-                                                router.get(route('clients.show', client.id), {
-                                                    invoice_page: 1,
-                                                    invoice_per_page: parseInt(value),
-                                                    invoice_search: invoiceSearchTerm || undefined
-                                                }, { preserveState: true, preserveScroll: true });
-                                            }}
-                                        />
-                                    </div>
-                                    {invoicesData && invoicesData.length > 0 ? (
-                                        <>
-                                            <div className="overflow-x-auto">
-                                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                                    <thead className="bg-gray-50 dark:bg-gray-800">
-                                                        <tr>
-                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                                {t('Invoice #')}
-                                                            </th>
-                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                                {t('Case')}
-                                                            </th>
-                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                                {t('Total')}
-                                                            </th>
-                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                                {t('Invoice Date')}
-                                                            </th>
-                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                                {t('Due Date')}
-                                                            </th>
-                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                                {t('Status')}
-                                                            </th>
-                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                                {t('Action')}
-                                                            </th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
-                                                        {invoicesData.map((invoice: any) => (
-                                                            <tr key={invoice.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-white">
-                                                                    {invoice.invoice_number}
-                                                                </td>
-                                                                <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                                                                    {invoice.case ? (
-                                                                        <div className="flex flex-col">
-                                                                            <span className="font-medium">{invoice.case.case_id || '-'}</span>
-                                                                            <span className="text-xs text-gray-500 dark:text-gray-400">{invoice.case.title || '-'}</span>
-                                                                        </div>
-                                                                    ) : (
-                                                                        <span className="text-gray-500">-</span>
-                                                                    )}
-                                                                </td>
-                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-white">
-                                                                    {formatCurrency(invoice.total_amount || 0)}
-                                                                </td>
-                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                                                    {invoice.invoice_date
-                                                                        ? (window.appSettings?.formatDate(invoice.invoice_date) || new Date(invoice.invoice_date).toLocaleDateString())
-                                                                        : '-'}
-                                                                </td>
-                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                                                    {invoice.due_date
-                                                                        ? (window.appSettings?.formatDate(invoice.due_date) || new Date(invoice.due_date).toLocaleDateString())
-                                                                        : '-'}
-                                                                </td>
-                                                                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                                                    {invoice.status ? (
-                                                                        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${invoice.status === 'paid' ? 'bg-green-50 text-green-700 ring-green-600/20' :
-                                                                            invoice.status === 'sent' ? 'bg-blue-50 text-blue-700 ring-blue-600/20' :
-                                                                                invoice.status === 'partial_paid' || invoice.status === 'partial' ? 'bg-yellow-50 text-yellow-700 ring-yellow-600/20' :
-                                                                                    invoice.status === 'overdue' ? 'bg-red-50 text-red-700 ring-red-600/20' :
-                                                                                        invoice.status === 'cancelled' ? 'bg-gray-50 text-gray-700 ring-gray-600/20' :
-                                                                                            'bg-gray-50 text-gray-700 ring-gray-600/20'
-                                                                            }`}>
-                                                                            {t(invoice.status === 'partial_paid' ? 'Partial Paid' : invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1).replace('_', ' '))}
-                                                                        </span>
-                                                                    ) : (
-                                                                        <span className="text-gray-500">-</span>
-                                                                    )}
-                                                                </td>
-                                                                <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
-                                                                    <a
-                                                                        href={route('billing.invoices.show', invoice.id)}
-                                                                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                                                                    >
-                                                                        {t('View Invoice')}
-                                                                    </a>
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
+                                {invoicesData && invoicesData.length > 0 ? (
+                                    <>
+                                        <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
+                                            <CrudTable
+                                                columns={invoiceColumns}
+                                                actions={invoiceActions}
+                                                data={invoicesData}
+                                                from={invoices?.from || 1}
+                                                onAction={() => { }}
+                                                permissions={[]}
+                                            />
+                                        </div>
+                                        {invoices?.links && (
+                                            <div className="mt-4">
+                                                <Pagination
+                                                    from={invoices?.from || 0}
+                                                    to={invoices?.to || 0}
+                                                    total={invoices?.total || 0}
+                                                    links={invoices?.links}
+                                                    entityName={t('invoices')}
+                                                    onPageChange={(url) => router.get(url)}
+                                                />
                                             </div>
-                                            {invoices?.links && (
-                                                <div className="mt-4">
-                                                    <Pagination
-                                                        from={invoices?.from || 0}
-                                                        to={invoices?.to || 0}
-                                                        total={invoices?.total || 0}
-                                                        links={invoices?.links}
-                                                        entityName={t('invoices')}
-                                                        onPageChange={(url) => router.get(url)}
-                                                    />
-                                                </div>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <div className="py-8 text-center text-gray-500">{t('No invoices found for this client')}</div>
-                                    )}
-                                </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <div className="py-8 text-center text-gray-500">{t('No invoices found for this client')}</div>
+                                )}
+                            </div>
+                        )}
 
-                                {/* Payments Section */}
-                                <div className="mt-8 border-t border-gray-200 pt-8 dark:border-gray-700">
-                                    <h3 className="mb-6 text-lg font-semibold text-gray-900 dark:text-white">{t('Payments')}</h3>
-                                    <div className="mb-6">
-                                        <SearchAndFilterBar
-                                            searchTerm={paymentSearchTerm}
-                                            onSearchChange={setPaymentSearchTerm}
-                                            onSearch={(e) => {
-                                                e.preventDefault();
-                                                router.get(route('clients.show', client.id), {
-                                                    payment_page: 1,
-                                                    payment_search: paymentSearchTerm || undefined,
-                                                    payment_per_page: filters.payment_per_page || 10
-                                                }, { preserveState: true, preserveScroll: true });
-                                            }}
-                                            filters={[]}
-                                            showFilters={false}
-                                            setShowFilters={() => { }}
-                                            hasActiveFilters={() => paymentSearchTerm !== ''}
-                                            activeFilterCount={() => paymentSearchTerm ? 1 : 0}
-                                            onResetFilters={() => {
-                                                setPaymentSearchTerm('');
-                                                router.get(route('clients.show', client.id), {
-                                                    payment_page: 1,
-                                                    payment_per_page: filters.payment_per_page || 10
-                                                }, { preserveState: true, preserveScroll: true });
-                                            }}
-                                            onApplyFilters={() => { }}
-                                            currentPerPage={filters.payment_per_page?.toString() || '10'}
-                                            onPerPageChange={(value) => {
-                                                router.get(route('clients.show', client.id), {
-                                                    payment_page: 1,
-                                                    payment_per_page: parseInt(value),
-                                                    payment_search: paymentSearchTerm || undefined
-                                                }, { preserveState: true, preserveScroll: true });
-                                            }}
-                                        />
-                                    </div>
-                                    {paymentsData && paymentsData.length > 0 ? (
-                                        <>
-                                            <div className="overflow-x-auto">
-                                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                                    <thead className="bg-gray-50 dark:bg-gray-800">
-                                                        <tr>
-                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                                {t('Invoice #')}
-                                                            </th>
-                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                                {t('Amount')}
-                                                            </th>
-                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                                {t('Payment Method')}
-                                                            </th>
-                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                                {t('Payment Date')}
-                                                            </th>
-                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                                {t('Action')}
-                                                            </th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
-                                                        {paymentsData.map((payment: any) => (
-                                                            <tr key={payment.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-white">
-                                                                    {payment.invoice?.invoice_number || '-'}
-                                                                </td>
-                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-white">
-                                                                    {formatCurrency(payment.amount || 0)}
-                                                                </td>
-                                                                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                                                    <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                                                                        {t(payment.payment_method ? payment.payment_method.charAt(0).toUpperCase() + payment.payment_method.slice(1).replace('_', ' ') : '-')}
-                                                                    </span>
-                                                                </td>
-                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                                                    {payment.payment_date
-                                                                        ? (window.appSettings?.formatDate(payment.payment_date) || new Date(payment.payment_date).toLocaleDateString())
-                                                                        : '-'}
-                                                                </td>
-                                                                <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            // Ensure invoice_id is a string for the select field and preserve invoice relationship
-                                                                            const paymentData = {
-                                                                                ...payment,
-                                                                                invoice_id: payment.invoice_id ? String(payment.invoice_id) : (payment.invoice?.id ? String(payment.invoice.id) : ''),
-                                                                                invoice: payment.invoice // Preserve invoice relationship
-                                                                            };
-                                                                            setCurrentPayment(paymentData);
-                                                                            setPaymentFormMode('view');
-                                                                            setIsPaymentModalOpen(true);
-                                                                        }}
-                                                                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                                                                    >
-                                                                        {t('View Payment')}
-                                                                    </button>
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                            {payments?.links && (
-                                                <div className="mt-4">
-                                                    <Pagination
-                                                        from={payments?.from || 0}
-                                                        to={payments?.to || 0}
-                                                        total={payments?.total || 0}
-                                                        links={payments?.links}
-                                                        entityName={t('payments')}
-                                                        onPageChange={(url) => router.get(url)}
-                                                    />
-                                                </div>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <div className="py-8 text-center text-gray-500">{t('No payments found for this client')}</div>
-                                    )}
+                        {activeTab === 'payments' && (
+                            <div>
+                                <div className="mb-6">
+                                    <SearchAndFilterBar
+                                        searchTerm={paymentSearchTerm}
+                                        onSearchChange={setPaymentSearchTerm}
+                                        onSearch={(e) => {
+                                            e.preventDefault();
+                                            router.get(route('clients.show', client.id), {
+                                                payment_page: 1,
+                                                payment_search: paymentSearchTerm || undefined,
+                                                payment_per_page: filters.payment_per_page || 10
+                                            }, { preserveState: true, preserveScroll: true });
+                                        }}
+                                        filters={[]}
+                                        showFilters={false}
+                                        setShowFilters={() => { }}
+                                        hasActiveFilters={() => paymentSearchTerm !== ''}
+                                        activeFilterCount={() => paymentSearchTerm ? 1 : 0}
+                                        onResetFilters={() => {
+                                            setPaymentSearchTerm('');
+                                            router.get(route('clients.show', client.id), {
+                                                payment_page: 1,
+                                                payment_per_page: filters.payment_per_page || 10
+                                            }, { preserveState: true, preserveScroll: true });
+                                        }}
+                                        onApplyFilters={() => { }}
+                                        currentPerPage={filters.payment_per_page?.toString() || '10'}
+                                        onPerPageChange={(value) => {
+                                            router.get(route('clients.show', client.id), {
+                                                payment_page: 1,
+                                                payment_per_page: parseInt(value),
+                                                payment_search: paymentSearchTerm || undefined
+                                            }, { preserveState: true, preserveScroll: true });
+                                        }}
+                                    />
                                 </div>
+                                {paymentsData && paymentsData.length > 0 ? (
+                                    <>
+                                        <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
+                                            <CrudTable
+                                                columns={paymentColumns}
+                                                actions={paymentActions}
+                                                data={paymentsData}
+                                                from={payments?.from || 1}
+                                                onAction={handlePaymentAction}
+                                                permissions={[]}
+                                            />
+                                        </div>
+                                        {payments?.links && (
+                                            <div className="mt-4">
+                                                <Pagination
+                                                    from={payments?.from || 0}
+                                                    to={payments?.to || 0}
+                                                    total={payments?.total || 0}
+                                                    links={payments?.links}
+                                                    entityName={t('payments')}
+                                                    onPageChange={(url) => router.get(url)}
+                                                />
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <div className="py-8 text-center text-gray-500">{t('No payments found for this client')}</div>
+                                )}
                             </div>
                         )}
 

@@ -248,7 +248,12 @@ export default function Cases() {
     {
       key: 'title',
       label: t('Title'),
-      sortable: true
+      sortable: true,
+      render: (value: any, row: any) => {
+        const title = row.title || '-';
+        const caseNumber = row.case_number ? ` - ${row.case_number}` : '';
+        return `${title}${caseNumber}`;
+      }
     },
     {
       key: 'client',
@@ -262,28 +267,6 @@ export default function Cases() {
               <span className="text-sm text-gray-500 dark:text-gray-400">{row.client.phone}</span>
             )}
           </div>
-        );
-      }
-    },
-    {
-      key: 'case_type',
-      label: t('Type'),
-      render: (value: any, row: any) => {
-        const currentLocale = i18n.language || 'en';
-        let displayName = row.case_type?.name || '-';
-        if (row.case_type?.name && typeof row.case_type.name === 'object' && row.case_type.name !== null) {
-          displayName = row.case_type.name[currentLocale] || row.case_type.name.en || row.case_type.name.ar || '-';
-        }
-        return (
-          <span
-            className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
-            style={{
-              backgroundColor: `${row.case_type?.color}20`,
-              color: row.case_type?.color
-            }}
-          >
-            {displayName}
-          </span>
         );
       }
     },
@@ -512,6 +495,7 @@ export default function Cases() {
           fields: [
             { name: 'title', label: t('Case Title'), type: 'text', required: true },
             { name: 'case_id', label: t('Case ID'), type: 'text' },
+            { name: 'case_number', label: t('Case Number'), type: 'text' },
             { name: 'file_number', label: t('File Number'), type: 'text' },
             { name: 'description', label: t('Description'), type: 'textarea' },
             {
