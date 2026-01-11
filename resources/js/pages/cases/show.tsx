@@ -674,7 +674,7 @@ export default function CaseShow() {
 
     const handleHearingSubmit = (formData: any) => {
         const data = { ...formData, case_id: caseData.id };
-        
+
         // Handle 'none' values for optional fields
         if (data.judge_id === 'none') {
             data.judge_id = null;
@@ -896,7 +896,7 @@ export default function CaseShow() {
 
     return (
         <PageTemplate
-            title={`${caseData.title} (${caseData.case_id})`}
+            title={`${caseData.title}${caseData.case_number ? ` - ${caseData.case_number}` : ''} (${caseData.case_id})`}
             url={`/cases/${caseData.id}`}
             actions={pageActions}
             breadcrumbs={breadcrumbs}
