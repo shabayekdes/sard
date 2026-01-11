@@ -93,7 +93,7 @@ export default function CircleTypes() {
             },
             onError: (errors) => {
                 toast.dismiss();
-                toast.error('Failed to update status');
+                toast.error(t('Failed to update status'));
             }
         });
     };
@@ -111,7 +111,7 @@ export default function CircleTypes() {
                 },
                 onError: (errors) => {
                     toast.dismiss();
-                    toast.error(`Failed to create circle type: ${Object.values(errors).join(', ')}`);
+                    toast.error(`${t('Failed to create circle type')}: ${Object.values(errors).join(', ')}`);
                 }
             });
         } else if (formMode === 'edit') {
@@ -126,7 +126,7 @@ export default function CircleTypes() {
                 },
                 onError: (errors) => {
                     toast.dismiss();
-                    toast.error(`Failed to update circle type: ${Object.values(errors).join(', ')}`);
+                    toast.error(`${t('Failed to update circle type')}: ${Object.values(errors).join(', ')}`);
                 }
             });
         }
@@ -136,18 +136,19 @@ export default function CircleTypes() {
         toast.loading(t('Deleting circle type...'));
         router.delete(route('advocate.circle-types.destroy', currentItem.id), {
             onSuccess: (page) => {
-                setIsDeleteModalOpen(false);
                 toast.dismiss();
                 if (page.props.flash.success) {
+                    setIsDeleteModalOpen(false);
                     toast.success(page.props.flash.success);
                 }
                 if (page.props.flash.error) {
+                    // Keep modal open to show error message
                     toast.error(page.props.flash.error);
                 }
             },
             onError: (errors) => {
                 toast.dismiss();
-                const errorMessage = errors.message || Object.values(errors).join(', ') || 'Failed to delete circle type';
+                const errorMessage = errors.message || Object.values(errors).join(', ') || t('Failed to delete circle type');
                 toast.error(errorMessage);
             }
         });
@@ -452,7 +453,7 @@ export default function CircleTypes() {
                     (typeof currentItem?.name === 'object' ? (currentItem?.name[currentLocale] || currentItem?.name.en || currentItem?.name.ar) : currentItem?.name) ||
                     ''
                 }
-                entityName="circle type"
+                entityName={t("circle type")}
             />
         </PageTemplate>
     );

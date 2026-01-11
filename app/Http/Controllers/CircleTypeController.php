@@ -118,11 +118,14 @@ class CircleTypeController extends Controller
             return redirect()->back()->with('error', 'Circle type not found.');
         }
 
-        // Check if any court is mapped with this circle type
-        $courtsCount = Court::where('circle_type_id', $id)->count();
+        // Check if any court is mapped with this circle type (only check courts created by the same user/company)
+        $courtsCount = Court::where('circle_type_id', $id)
+            ->where('created_by', createdBy())
+            ->count();
 
         if ($courtsCount > 0) {
-            return redirect()->back()->with('error', 'Cannot delete circle type. There are ' . $courtsCount . ' court(s) mapped with this circle type.');
+            $errorMessage = __('Cannot delete circle type. There are :count court(s) mapped with this circle type. Please remove or reassign the courts before deleting.', ['count' => $courtsCount]);
+            return redirect()->back()->with('error', $errorMessage);
         }
 
         $circleType->delete();
