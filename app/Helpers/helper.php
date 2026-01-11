@@ -1062,8 +1062,8 @@ if (! function_exists('defaultSettings')) {
             'logoDark' => '/images/logos/logo-dark.png',
             'logoLight' => '/images/logos/logo-light.png',
             'favicon' => '/images/logos/favicon.ico',
-            'titleText' => 'Advocate',
-            'footerText' => '© 2025 Advocate. All rights reserved.',
+            'titleText' => 'Sard app - تطبيق سرد',
+            'footerText' => '© 2026 Sard . All rights reserved. - جميع الحقوق محفوظة لشركة سرد 2026',
             'themeColor' => 'green',
             'customColor' => '#205341',
             'sidebarVariant' => 'inset',
@@ -1090,7 +1090,7 @@ if (! function_exists('defaultSettings')) {
 
             // Currency Settings
             'decimalFormat' => '2',
-            'defaultCurrency' => 'USD',
+            'defaultCurrency' => 'SAR',
             'decimalSeparator' => '.',
             'thousandsSeparator' => ',',
             'floatNumber' => true,

@@ -19,6 +19,7 @@ export default function Courts() {
 
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
   const [selectedCourtType, setSelectedCourtType] = useState(pageFilters.court_type_id || 'all');
+  const [selectedCircleType, setSelectedCircleType] = useState(pageFilters.circle_type_id || 'all');
   const [selectedStatus, setSelectedStatus] = useState(pageFilters.status || 'all');
   const [showFilters, setShowFilters] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -28,11 +29,11 @@ export default function Courts() {
   const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
 
   const hasActiveFilters = () => {
-    return searchTerm !== '' || selectedCourtType !== 'all' || selectedStatus !== 'all';
+    return searchTerm !== '' || selectedCourtType !== 'all' || selectedCircleType !== 'all' || selectedStatus !== 'all';
   };
 
   const activeFilterCount = () => {
-    return (searchTerm ? 1 : 0) + (selectedCourtType !== 'all' ? 1 : 0) + (selectedStatus !== 'all' ? 1 : 0);
+    return (searchTerm ? 1 : 0) + (selectedCourtType !== 'all' ? 1 : 0) + (selectedCircleType !== 'all' ? 1 : 0) + (selectedStatus !== 'all' ? 1 : 0);
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -45,6 +46,7 @@ export default function Courts() {
       page: 1,
       search: searchTerm || undefined,
       court_type_id: selectedCourtType !== 'all' ? selectedCourtType : undefined,
+      circle_type_id: selectedCircleType !== 'all' ? selectedCircleType : undefined,
       status: selectedStatus !== 'all' ? selectedStatus : undefined,
       per_page: pageFilters.per_page
     }, { preserveState: true, preserveScroll: true });
@@ -59,6 +61,7 @@ export default function Courts() {
       page: 1,
       search: searchTerm || undefined,
       court_type_id: selectedCourtType !== 'all' ? selectedCourtType : undefined,
+      circle_type_id: selectedCircleType !== 'all' ? selectedCircleType : undefined,
       status: selectedStatus !== 'all' ? selectedStatus : undefined,
       per_page: pageFilters.per_page
     }, { preserveState: true, preserveScroll: true });
@@ -173,6 +176,7 @@ export default function Courts() {
   const handleResetFilters = () => {
     setSearchTerm('');
     setSelectedCourtType('all');
+    setSelectedCircleType('all');
     setSelectedStatus('all');
     setShowFilters(false);
 
@@ -285,11 +289,29 @@ export default function Courts() {
     { label: t('Delete'), icon: 'Trash2', action: 'delete', className: 'text-red-500', requiredPermission: 'delete-courts' }
   ];
 
+  // Helper function to get translated value from JSON object
+  const getTranslatedValue = (value: any): string => {
+    if (!value) return '-';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'object' && value !== null) {
+      return value[currentLocale] || value.en || value.ar || '-';
+    }
+    return '-';
+  };
+
   const courtTypeOptions = [
     { value: 'all', label: t('All Types') },
     ...(courtTypes || []).map((type: any) => ({
       value: type.id.toString(),
-      label: type.name
+      label: getTranslatedValue(type.name)
+    }))
+  ];
+
+  const circleTypeOptions = [
+    { value: 'all', label: t('All Circle Types') },
+    ...(circleTypes || []).map((type: any) => ({
+      value: type.id.toString(),
+      label: getTranslatedValue(type.name)
     }))
   ];
 
@@ -308,6 +330,7 @@ export default function Courts() {
           onSearch={handleSearch}
           filters={[
             { name: 'court_type_id', label: t('Court Type'), type: 'select', value: selectedCourtType, onChange: setSelectedCourtType, options: courtTypeOptions },
+            { name: 'circle_type_id', label: t('Circle Type'), type: 'select', value: selectedCircleType, onChange: setSelectedCircleType, options: circleTypeOptions },
             { name: 'status', label: t('Status'), type: 'select', value: selectedStatus, onChange: setSelectedStatus, options: statusOptions }
           ]}
           showFilters={showFilters}
@@ -322,6 +345,7 @@ export default function Courts() {
               page: 1, per_page: parseInt(value),
               search: searchTerm || undefined,
               court_type_id: selectedCourtType !== 'all' ? selectedCourtType : undefined,
+              circle_type_id: selectedCircleType !== 'all' ? selectedCircleType : undefined,
               status: selectedStatus !== 'all' ? selectedStatus : undefined
             }, { preserveState: true, preserveScroll: true });
           }}

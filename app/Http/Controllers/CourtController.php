@@ -30,6 +30,11 @@ class CourtController extends Controller
             $query->where('court_type_id', $request->court_type_id);
         }
 
+        // Handle circle type filter
+        if ($request->has('circle_type_id') && !empty($request->circle_type_id) && $request->circle_type_id !== 'all') {
+            $query->where('circle_type_id', $request->circle_type_id);
+        }
+
         // Handle status filter
         if ($request->has('status') && !empty($request->status) && $request->status !== 'all') {
             $query->where('status', $request->status);
@@ -100,7 +105,7 @@ class CourtController extends Controller
             'courts' => $courts,
             'courtTypes' => $courtTypes,
             'circleTypes' => $circleTypes,
-            'filters' => $request->all(['search', 'court_type_id', 'status', 'sort_field', 'sort_direction', 'per_page']),
+            'filters' => $request->all(['search', 'court_type_id', 'circle_type_id', 'status', 'sort_field', 'sort_direction', 'per_page']),
         ]);
     }
 

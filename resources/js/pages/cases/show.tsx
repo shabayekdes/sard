@@ -674,6 +674,14 @@ export default function CaseShow() {
 
     const handleHearingSubmit = (formData: any) => {
         const data = { ...formData, case_id: caseData.id };
+        
+        // Handle 'none' values for optional fields
+        if (data.judge_id === 'none') {
+            data.judge_id = null;
+        }
+        if (data.hearing_type_id === 'none') {
+            data.hearing_type_id = null;
+        }
 
         if (hearingFormMode === 'create') {
             toast.loading(t('Scheduling hearing...'));
@@ -3360,27 +3368,42 @@ export default function CaseShow() {
                         formConfig={{
                             fields: [
                                 {
-                                    name: 'court_judge',
-                                    type: 'dependent-dropdown',
-                                    dependentConfig: [
-                                        {
-                                            name: 'court_id',
-                                            label: t('Court'),
-                                            required: true,
-                                            options: courts ? courts.map((c: any) => ({ value: c.id.toString(), label: c.name })) : []
-                                        },
-                                        {
-                                            name: 'judge_id',
-                                            label: t('Judge'),
-                                            apiEndpoint: '/api/hearings/court-judges/{court_id}',
-                                            showCurrentValue: true
-                                        }
-                                    ]
+                                    name: 'court_id',
+                                    label: t('Court'),
+                                    type: 'select',
+                                    required: true,
+                                    options: courts ? courts.map((c: any) => {
+                                        const courtName = c.name || '';
+                                        const courtType = c.court_type ? getTranslatedValue(c.court_type.name) : '';
+                                        const circleType = c.circle_type ? getTranslatedValue(c.circle_type.name) : '';
+                                        const parts = [courtName];
+                                        if (courtType) parts.push(courtType);
+                                        if (circleType) parts.push(circleType);
+                                        return {
+                                            value: c.id.toString(),
+                                            label: parts.join(' + ')
+                                        };
+                                    }) : []
+                                },
+                                {
+                                    name: 'circle_number',
+                                    label: t('Circle Number'),
+                                    type: 'text'
+                                },
+                                {
+                                    name: 'judge_id',
+                                    label: t('Judge'),
+                                    type: 'select',
+                                    options: [{ value: 'none', label: t('Select Judge') }, ...(judges ? judges.map((j: any) => ({
+                                        value: j.id.toString(),
+                                        label: j.name
+                                    })) : [])]
                                 },
                                 {
                                     name: 'hearing_type_id',
                                     label: t('Hearing Type'),
                                     type: 'select',
+                                    required: true,
                                     options: [{ value: 'none', label: t('Select Type') }, ...(hearingTypes ? hearingTypes.map((ht: any) => ({
                                         value: ht.id.toString(),
                                         label: getTranslatedValue(ht.name)
@@ -3391,6 +3414,7 @@ export default function CaseShow() {
                                 { name: 'hearing_date', label: t('Date'), type: 'date', required: true },
                                 { name: 'hearing_time', label: t('Time'), type: 'time', required: true },
                                 { name: 'duration_minutes', label: t('Duration (minutes)'), type: 'number', defaultValue: 60 },
+                                { name: 'url', label: t('URL'), type: 'text' },
                                 {
                                     name: 'status',
                                     label: t('Status'),
@@ -3417,8 +3441,8 @@ export default function CaseShow() {
                         initialData={currentHearing}
                         title={
                             hearingFormMode === 'create'
-                                ? t('Add New Session / Hearing')
-                                : t('Edit Hearing')
+                                ? t('Schedule New Session')
+                                : t('Edit Session')
                         }
                         mode={hearingFormMode}
                     />
