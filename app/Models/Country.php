@@ -14,6 +14,8 @@ class Country extends Model
     protected $fillable = [
         'name',
         'nationality_name',
+        'country_code',
+        'phone_code',
         'is_active',
     ];
 

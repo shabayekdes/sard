@@ -7,6 +7,7 @@ use App\Models\ClientType;
 use App\Models\Country;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 
 class ClientController extends Controller
@@ -81,6 +82,21 @@ class ClientController extends Controller
                 ];
             });
 
+        $locale = app()->getLocale();
+        $phoneCountries = Country::where('is_active', true)
+            ->whereNotNull('country_code')
+            ->orderByRaw("JSON_EXTRACT(name, '$.{$locale}')")
+            ->orderByRaw("JSON_EXTRACT(name, '$.en')")
+            ->get(['id', 'name', 'country_code'])
+            ->map(function ($country) {
+                return [
+                    'value' => $country->id,
+                    'label' => $country->name,
+                    'code' => $country->country_code,
+                ];
+            })
+            ->values();
+
         // Get plan limits for clients (same pattern as UserController)
         $authUser = auth()->user();
         $planLimits = null;
@@ -107,6 +123,7 @@ class ClientController extends Controller
             'clients' => $clients,
             'clientTypes' => $clientTypes,
             'countries' => $countries,
+            'phoneCountries' => $phoneCountries,
             'planLimits' => $planLimits,
             'filters' => $request->all(['search', 'client_type_id', 'status', 'sort_field', 'sort_direction', 'per_page']),
         ]);
@@ -139,7 +156,8 @@ class ClientController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'password' => 'required|string|min:6',
-            'phone' => 'required|string|max:20',
+            'country_id' => 'required|exists:countries,id',
+            'phone' => 'required|string',
             'business_type' => 'required|string|in:b2c,b2b',
             'nationality_id' => 'required_if:business_type,b2c|exists:countries,id',
             'gender' => 'required_if:business_type,b2c|string|in:male,female',
@@ -157,6 +175,23 @@ class ClientController extends Controller
             'notes' => 'nullable|string',
             'referral_source' => 'nullable|string|max:255',
         ]);
+
+        $phoneCountry = Country::where('id', $validated['country_id'])
+            ->whereNotNull('country_code')
+            ->first();
+
+        if (! $phoneCountry) {
+            return redirect()->back()->withErrors(['country_id' => __('Invalid phone country')]);
+        }
+
+        $phoneValidator = Validator::make(
+            ['phone' => $validated['phone']],
+            ['phone' => 'phone:'.$phoneCountry->country_code],
+        );
+
+        if ($phoneValidator->fails()) {
+            return redirect()->back()->withErrors($phoneValidator)->withInput();
+        }
 
         $validated['created_by'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
@@ -241,7 +276,8 @@ class ClientController extends Controller
                 $validated = $request->validate([
                     'name' => 'required|string|max:255',
                     'email' => 'required|email|max:255',
-                    'phone' => 'required|string|max:20',
+                    'country_id' => 'required|exists:countries,id',
+                    'phone' => 'required|string',
                     'business_type' => 'required|string|in:b2c,b2b',
                     'nationality_id' => 'nullable|exists:countries,id',
                     'gender' => 'nullable|string|in:male,female',
@@ -259,6 +295,23 @@ class ClientController extends Controller
                     'notes' => 'nullable|string',
                     'referral_source' => 'nullable|string|max:255',
                 ]);
+
+                $phoneCountry = Country::where('id', $validated['country_id'])
+                    ->whereNotNull('country_code')
+                    ->first();
+
+                if (! $phoneCountry) {
+                    return redirect()->back()->withErrors(['country_id' => __('Invalid phone country')]);
+                }
+
+                $phoneValidator = Validator::make(
+                    ['phone' => $validated['phone']],
+                    ['phone' => 'phone:'.$phoneCountry->country_code],
+                );
+
+                if ($phoneValidator->fails()) {
+                    return redirect()->back()->withErrors($phoneValidator)->withInput();
+                }
 
                 // Check if client type belongs to the current user's company
                 $clientType = ClientType::withPermissionCheck()

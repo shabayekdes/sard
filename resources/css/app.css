@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import 'react-phone-input-2/lib/style.css';
 
 @plugin 'tailwindcss-animate';
 @plugin 'tailwind-scrollbar';

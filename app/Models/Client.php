@@ -15,6 +15,7 @@ class Client extends BaseModel
         'email',
         'tax_rate',
         'phone',
+        'country_id',
         'address',
         'client_type_id',
         'status',

@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->json('name');
             $table->json('nationality_name');
+            $table->string('country_code', 2)->unique();
+            $table->string('phone_code', 8)->unique();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

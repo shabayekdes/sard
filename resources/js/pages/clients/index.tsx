@@ -14,10 +14,11 @@ import { router, usePage } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import PhoneInput from 'react-phone-input-2';
 
 export default function Clients() {
     const { t, i18n } = useTranslation();
-    const { auth, clients, clientTypes, countries, planLimits, filters: pageFilters = {} } = usePage().props as any;
+    const { auth, clients, clientTypes, countries, phoneCountries, planLimits, filters: pageFilters = {} } = usePage().props as any;
     const permissions = auth?.permissions || [];
     const currentLocale = i18n.language || 'en';
 
@@ -416,6 +417,13 @@ export default function Clients() {
         { value: 'inactive', label: t('Inactive') },
     ];
 
+    const phoneCountriesById = new Map((phoneCountries || []).map((country: any) => [String(country.value), country]));
+    const phoneCountriesByCode = new Map((phoneCountries || []).map((country: any) => [String(country.code).toLowerCase(), country]));
+    const phoneCountryCodes = (phoneCountries || [])
+        .map((country: any) => String(country.code || '').toLowerCase())
+        .filter((code: string) => code);
+    const defaultPhoneCountry = (phoneCountries || [])[0];
+
     return (
         <PageTemplate title={t('Client Management')} url="/clients" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
             {/* Search and filters section */}
@@ -504,7 +512,49 @@ export default function Clients() {
                 formConfig={{
                     fields: [
                         { name: 'name', label: t('Client Name'), type: 'text', required: true },
-                        { name: 'phone', label: t('Phone Number'), type: 'text', required: true },
+                        {
+                            name: 'country_id',
+                            label: t('Phone Country'),
+                            type: 'text',
+                            defaultValue: defaultPhoneCountry?.value,
+                            conditional: () => false,
+                        },
+                        {
+                            name: 'phone',
+                            label: t('Phone Number'),
+                            type: 'text',
+                            required: true,
+                            render: (_, data, handleChange) => {
+                                const currentCountryId = data?.country_id || currentItem?.country_id || defaultPhoneCountry?.value;
+                                const currentCountry = phoneCountriesById.get(String(currentCountryId));
+                                const currentCountryCode = (currentCountry?.code || defaultPhoneCountry?.code || '').toLowerCase();
+
+                                return (
+                                    <PhoneInput
+                                        country={currentCountryCode || undefined}
+                                        value={data?.phone || ''}
+                                        onlyCountries={phoneCountryCodes}
+                                        enableSearch
+                                        inputProps={{ name: 'phone', required: true }}
+                                        containerClass="w-full"
+                                        inputClass="w-full !h-10 !border !border-input !bg-background !text-sm !text-foreground"
+                                        buttonClass="!border !border-input !bg-background"
+                                        dropdownClass="!bg-background !text-foreground"
+                                        onChange={(value, countryData) => {
+                                            handleChange('phone', value || '');
+
+                                            if (countryData && typeof countryData === 'object' && 'countryCode' in countryData) {
+                                                const code = String((countryData as any).countryCode || '').toLowerCase();
+                                                const selectedCountry = phoneCountriesByCode.get(code);
+                                                if (selectedCountry) {
+                                                    handleChange('country_id', selectedCountry.value);
+                                                }
+                                            }
+                                        }}
+                                    />
+                                );
+                            },
+                        },
                         { name: 'email', label: t('Email'), type: 'email', required: true },
                         ...(formMode === 'create' ? [{ name: 'password', label: t('Password'), type: 'password', required: true }] : []),
                         {

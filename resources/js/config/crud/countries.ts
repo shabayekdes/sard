@@ -31,6 +31,14 @@ export const countriesConfig: CrudConfig = {
                 sortable: true,
             },
             {
+                key: 'country_code',
+                label: t('Country Code'),
+            },
+            {
+                key: 'phone_code',
+                label: t('Phone Code'),
+            },
+            {
                 key: 'is_active',
                 label: t('Active'),
                 type: 'boolean',
@@ -76,6 +84,16 @@ export const countriesConfig: CrudConfig = {
             {
                 name: 'nationality_name.ar',
                 label: t('Nationality Name (Arabic)'),
+                type: 'text',
+            },
+            {
+                name: 'country_code',
+                label: t('Country Code'),
+                type: 'text',
+            },
+            {
+                name: 'phone_code',
+                label: t('Phone Code'),
                 type: 'text',
             },
             {
