@@ -32,13 +32,16 @@ class CaseModel extends BaseModel
         'court_details',
         'status',
         'created_by',
-        'google_calendar_event_id'
+        'google_calendar_event_id',
+        'ai_summary',
+        'ai_summary_updated_at',
     ];
 
     protected $casts = [
         'filing_date' => 'date',
         'expected_completion_date' => 'date',
         'estimated_value' => 'decimal:2',
+        'ai_summary_updated_at' => 'datetime',
     ];
 
     protected static function boot()

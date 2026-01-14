@@ -692,4 +692,172 @@ class CaseController extends BaseController
 
         return redirect()->back()->with('success', 'Case status updated successfully.');
     }
+
+    /**
+     * Show the case creation chat interface
+     */
+    public function createChat(): Response
+    {
+        $clients = Client::where('created_by', createdBy())
+            ->where('status', 'active')
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($client) {
+                return [
+                    'id' => $client->id,
+                    'name' => $client->name, // Spatie will automatically return translated value
+                ];
+            });
+
+        $caseTypes = CaseType::where('created_by', createdBy())
+            ->where('status', 'active')
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($type) {
+                return [
+                    'id' => $type->id,
+                    'name' => $type->name, // Spatie will automatically return translated value
+                ];
+            });
+
+        $caseStatuses = CaseStatus::where('created_by', createdBy())
+            ->where('status', 'active')
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($status) {
+                return [
+                    'id' => $status->id,
+                    'name' => $status->name, // Spatie will automatically return translated value
+                ];
+            });
+
+        $courts = Court::where('created_by', createdBy())
+            ->where('status', 'active')
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($court) {
+                return [
+                    'id' => $court->id,
+                    'name' => $court->name, // Spatie will automatically return translated value
+                ];
+            });
+
+        return Inertia::render('cases/create-chat', [
+            'clients' => $clients,
+            'caseTypes' => $caseTypes,
+            'caseStatuses' => $caseStatuses,
+            'courts' => $courts,
+        ]);
+    }
+
+    /**
+     * Generate case information from a prompt
+     */
+    public function generateFromPrompt(Request $request): JsonResponse
+    {
+        $request->validate([
+            'prompt' => 'required|string|max:5000',
+        ]);
+
+        try {
+            $service = new CaseCreationService();
+            
+            $result = $service->generateFromPrompt(
+                $request->input('prompt'),
+                []
+            );
+
+            return response()->json([
+                'success' => true,
+                'data' => $result,
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Case Creation from Prompt Error', [
+                'error' => $e->getMessage(),
+                'user_id' => createdBy(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to generate case from prompt: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Create a case from generated information
+     */
+    public function createFromPrompt(Request $request): JsonResponse
+    {
+        $request->validate([
+            'prompt' => 'required|string|max:5000',
+            'client_id' => 'required|exists:clients,id',
+            'case_type_id' => 'required|exists:case_types,id',
+            'case_status_id' => 'required|exists:case_statuses,id',
+            'court_id' => 'required|exists:courts,id',
+        ]);
+
+        try {
+            // Verify all related records belong to user
+            $client = Client::where('id', $request->client_id)
+                ->where('created_by', createdBy())
+                ->first();
+            $caseType = CaseType::where('id', $request->case_type_id)
+                ->where('created_by', createdBy())
+                ->first();
+            $caseStatus = CaseStatus::where('id', $request->case_status_id)
+                ->where('created_by', createdBy())
+                ->first();
+            $court = Court::where('id', $request->court_id)
+                ->where('created_by', createdBy())
+                ->first();
+
+            if (!$client || !$caseType || !$caseStatus || !$court) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid selection. Please verify all selections belong to your account.',
+                ], 400);
+            }
+
+            $service = new CaseCreationService();
+            
+            // Generate case information from prompt
+            $result = $service->generateFromPrompt($request->input('prompt'), [
+                'client_id' => $request->client_id,
+                'court_id' => $request->court_id,
+                'case_type_id' => $request->case_type_id,
+            ]);
+
+            // Create the case
+            $case = $service->createCase($result['parsed'], [
+                'client_id' => $request->client_id,
+                'case_type_id' => $request->case_type_id,
+                'case_status_id' => $request->case_status_id,
+                'court_id' => $request->court_id,
+                'created_by' => createdBy(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'case' => $case->load(['client', 'caseType', 'caseStatus', 'court']),
+                'generated_info' => $result['parsed'],
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Case Creation Error', [
+                'error' => $e->getMessage(),
+                'user_id' => createdBy(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create case: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }

@@ -390,6 +390,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('dashboard/redirect', [DashboardController::class, 'redirectToFirstAvailablePage'])->name('dashboard.redirect');
 
+        // Chat routes
+        Route::get('chat', [\App\Http\Controllers\ChatController::class, 'index'])->name('chat.index');
+        Route::post('chat', [\App\Http\Controllers\ChatController::class, 'store'])->name('chat.store');
+        Route::get('chat/{id}', [\App\Http\Controllers\ChatController::class, 'show'])->name('chat.show');
+
+        // AI Summarize Test (UI)
+        Route::get('ai/summarize-test', [\App\Http\Controllers\AiTestController::class, 'showForm'])->name('ai.summarize_test')->middleware('auth');
+        Route::post('ai/summarize-test', [\App\Http\Controllers\AiTestController::class, 'submit'])->name('ai.summarize_test.submit')->middleware('auth');
+
         // Analytics routes
         Route::get('dashboard/analytics', [\App\Http\Controllers\DashboardAnalyticsController::class, 'index'])->name('dashboard.analytics.index');
 
@@ -748,6 +757,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Case Management routes
         Route::middleware('permission:manage-cases')->group(function () {
             Route::get('cases', [\App\Http\Controllers\CaseController::class, 'index'])->name('cases.index');
+            Route::get('cases/create-chat', [\App\Http\Controllers\CaseController::class, 'createChat'])->middleware('permission:create-cases')->name('cases.create-chat');
+            Route::post('cases/generate-from-prompt', [\App\Http\Controllers\CaseController::class, 'generateFromPrompt'])->middleware('permission:create-cases')->name('cases.generate-from-prompt');
+            Route::post('cases/create-from-prompt', [\App\Http\Controllers\CaseController::class, 'createFromPrompt'])->middleware('permission:create-cases')->name('cases.create-from-prompt');
             Route::get('cases/{case}', [\App\Http\Controllers\CaseController::class, 'show'])->middleware('permission:view-cases')->name('cases.show');
             Route::post('cases', [\App\Http\Controllers\CaseController::class, 'store'])->middleware('permission:create-cases')->name('cases.store');
             Route::put('cases/{case}', [\App\Http\Controllers\CaseController::class, 'update'])->middleware('permission:edit-cases')->name('cases.update');
