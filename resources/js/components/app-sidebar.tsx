@@ -722,23 +722,23 @@ export function AppSidebar() {
                 href: route('roles.index'),
             });
         }
-        if (
-            hasPermission(permissions, 'manage-plans') ||
-            hasPermission(permissions, 'manage-any-plans') ||
-            hasPermission(permissions, 'manage-own-plans')
-        ) {
-            userManagementChildren.push({
-                title: t('Plans'),
-                href: route('plans.index'),
-            });
-        }
+        
         if (userManagementChildren.length > 0) {
             settingsChildren.push({
                 title: t('User Management'),
                 children: userManagementChildren,
             });
         }
-
+        if (
+            hasPermission(permissions, 'manage-plans') ||
+            hasPermission(permissions, 'manage-any-plans') ||
+            hasPermission(permissions, 'manage-own-plans')
+        ) {
+            settingsChildren.push({
+                title: t('Plans'),
+                href: route('plans.index'),
+            });
+        }
         if (settingsChildren.length > 0) {
             items.push({
                 title: t('Settings'),

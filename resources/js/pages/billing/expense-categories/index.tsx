@@ -342,8 +342,28 @@ export default function ExpenseCategories() {
         onSubmit={handleFormSubmit}
         formConfig={{
           fields: [
-            { name: 'name', label: t('Name'), type: 'text', required: true },
-            { name: 'description', label: t('Description'), type: 'textarea' },
+            {
+              name: 'name.en',
+              label: t('Name (English)'),
+              type: 'text',
+              required: true
+            },
+            {
+              name: 'name.ar',
+              label: t('Name (Arabic)'),
+              type: 'text',
+              required: true
+            },
+            {
+              name: 'description.en',
+              label: t('Description (English)'),
+              type: 'textarea'
+            },
+            {
+              name: 'description.ar',
+              label: t('Description (Arabic)'),
+              type: 'textarea'
+            },
             {
               name: 'status',
               label: t('Status'),
@@ -355,9 +375,46 @@ export default function ExpenseCategories() {
               defaultValue: 'active'
             }
           ],
-          modalSize: 'lg'
+          modalSize: 'lg',
+          transformData: (data: any) => {
+            const transformed: any = { ...data };
+
+            if (transformed['name.en'] || transformed['name.ar']) {
+              transformed.name = {
+                en: transformed['name.en'] || '',
+                ar: transformed['name.ar'] || ''
+              };
+              delete transformed['name.en'];
+              delete transformed['name.ar'];
+            }
+
+            if (transformed['description.en'] || transformed['description.ar']) {
+              transformed.description = {
+                en: transformed['description.en'] || '',
+                ar: transformed['description.ar'] || ''
+              };
+              delete transformed['description.en'];
+              delete transformed['description.ar'];
+            }
+
+            return transformed;
+          }
         }}
-        initialData={currentItem}
+        initialData={
+          currentItem
+            ? {
+              ...currentItem,
+              'name.en': currentItem.name_translations?.en ||
+                (typeof currentItem.name === 'object' ? currentItem.name?.en : '') || '',
+              'name.ar': currentItem.name_translations?.ar ||
+                (typeof currentItem.name === 'object' ? currentItem.name?.ar : '') || '',
+              'description.en': currentItem.description_translations?.en ||
+                (typeof currentItem.description === 'object' ? currentItem.description?.en : '') || '',
+              'description.ar': currentItem.description_translations?.ar ||
+                (typeof currentItem.description === 'object' ? currentItem.description?.ar : '') || '',
+            }
+            : {}
+        }
         title={
           formMode === 'create'
             ? t('Add New Expense Category')

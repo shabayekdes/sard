@@ -16,6 +16,7 @@ export default function Expenses() {
   const { t, i18n } = useTranslation();
   const { auth, expenses, categories, cases, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
+  const currentLocale = i18n.language || 'en';
 
   // State
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
@@ -264,6 +265,15 @@ export default function Expenses() {
     { title: t('Expenses') }
   ];
 
+  const getCategoryLabel = (category: any) => {
+    if (!category) return '';
+    const translations = category.name_translations || (typeof category.name === 'object' ? category.name : null);
+    if (translations && typeof translations === 'object') {
+      return translations[currentLocale] || translations.en || translations.ar || '';
+    }
+    return category.name || '';
+  };
+
   // Define table columns
   const columns = [
     {
@@ -283,8 +293,7 @@ export default function Expenses() {
         const category = (categories || []).find((cat: any) => cat.id === row.expense_category_id);
         if (!category) return '-';
 
-
-        return category.name || '';
+        return getCategoryLabel(category);
       }
     },
     {
@@ -373,7 +382,7 @@ export default function Expenses() {
     { value: 'all', label: t('All Categories') },
     ...(categories || []).map((category: any) => ({
       value: category.id.toString(),
-      label: category.name
+      label: getCategoryLabel(category)
     }))
   ];
 
@@ -506,9 +515,9 @@ export default function Expenses() {
               label: t('Category'),
               type: 'select',
               required: true,
-              options: (categories || []).filter(category => category.id && category.name).map((category: any) => ({
+              options: (categories || []).filter(category => category.id && getCategoryLabel(category)).map((category: any) => ({
                 value: category.id.toString(),
-                label: category.name
+                label: getCategoryLabel(category)
               }))
             },
             { name: 'description', label: t('Description'), type: 'text', required: true },
@@ -558,7 +567,7 @@ export default function Expenses() {
               render: () => {
                 const category = (categories || []).find((cat: any) => cat.id === currentItem?.expense_category_id);
                 return <div className="rounded-md border bg-gray-50 p-2">
-                  {category?.name || '-'}
+                  {category ? getCategoryLabel(category) : '-'}
                 </div>;
               }
             },
