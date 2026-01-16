@@ -16,6 +16,7 @@ use App\Models\Client;
 use App\Models\TimeEntry;
 use App\Models\Invoice;
 use App\Models\Payment;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -239,6 +240,24 @@ class DashboardController extends Controller
             ->where('recipient_id', auth()->id())
             ->where('is_read', false)
             ->count();
+        $closedCases = CaseModel::where('created_by', $companyId)
+            ->whereHas('caseStatus', function ($q) {
+                $q->where('is_closed', true);
+            })
+            ->count();
+        $successRate = $totalCases > 0 ? round(($closedCases / $totalCases) * 100, 1) : 0;
+        $avgResolutionDays = CaseModel::where('created_by', $companyId)
+            ->whereHas('caseStatus', function ($q) {
+                $q->where('is_closed', true);
+            })
+            ->selectRaw('AVG(DATEDIFF(updated_at, created_at)) as avg_days')
+            ->value('avg_days') ?? 0;
+        $totalInvoiced = Invoice::where('created_by', $companyId)->sum('total_amount') ?? 0;
+        $totalCollected = Payment::where('created_by', $companyId)->sum('amount') ?? 0;
+        $collectionRate = $totalInvoiced > 0 ? round(($totalCollected / $totalInvoiced) * 100, 1) : 0;
+        $billableHours = TimeEntry::where('created_by', $companyId)
+            ->where('is_billable', true)
+            ->sum('hours') ?? 0;
 
         // Calculate monthly growth
         $currentMonthClients = Client::where('created_by', $companyId)
@@ -299,19 +318,159 @@ class DashboardController extends Controller
         // Upcoming hearings
         $upcomingHearingsList = Hearing::where('created_by', $companyId)
             ->where('hearing_date', '>=', now())
+            ->with(['case', 'court.courtType', 'court.circleType', 'judge', 'hearingType'])
             ->orderBy('hearing_date')
             ->take(4)
             ->get()
             ->map(function ($hearing) {
                 return [
                     'id' => $hearing->id,
-                    'title' => $hearing->title ?? 'Court Hearing',
-                    'court' => $hearing->court ?? 'District Court',
-                    'date' => $hearing->hearing_date->format('M d, Y'),
-                    'time' => $hearing->hearing_date->format('H:i A'),
-                    'type' => $hearing->hearing_type ?? 'General'
+                    'hearing_id' => $hearing->hearing_id,
+                    'title' => $hearing->title ?? 'Court Session',
+                    'case' => $hearing->case ? [
+                        'case_id' => $hearing->case->case_id,
+                        'title' => $hearing->case->title,
+                        'file_number' => $hearing->case->file_number,
+                    ] : null,
+                    'court' => $hearing->court ? [
+                        'name' => $hearing->court->name,
+                        'court_type' => $hearing->court->courtType?->name,
+                        'circle_type' => $hearing->court->circleType?->name,
+                    ] : null,
+                    'judge' => $hearing->judge ? [
+                        'name' => $hearing->judge->name,
+                    ] : null,
+                    'hearing_type' => $hearing->hearingType ? [
+                        'name' => $hearing->hearingType->name,
+                    ] : null,
+                    'description' => $hearing->description,
+                    'hearing_date' => $hearing->hearing_date?->toDateString(),
+                    'hearing_time' => $hearing->hearing_time,
+                    'duration_minutes' => $hearing->duration_minutes,
+                    'status' => $hearing->status,
+                    'notes' => $hearing->notes,
+                    'url' => $hearing->url,
+                    'date' => $hearing->hearing_date?->format('M d, Y'),
+                    'time' => $hearing->hearing_time ? date('H:i A', strtotime($hearing->hearing_time)) : $hearing->hearing_date?->format('H:i A'),
+                    'type' => $hearing->hearingType?->name ?? 'General'
                 ];
             });
+
+        $recentCases = CaseModel::where('created_by', $companyId)
+            ->with(['client'])
+            ->latest()
+            ->take(4)
+            ->get(['id', 'title', 'case_number', 'client_id', 'created_at']);
+
+        $upcomingTasksList = Task::where('created_by', $companyId)
+            ->where('status', 1)
+            ->whereNotNull('due_date')
+            ->with(['assignedUser', 'taskType'])
+            ->orderBy('due_date')
+            ->take(4)
+            ->get()
+            ->map(function ($task) {
+                return [
+                    'id' => $task->id,
+                    'title' => $task->title,
+                    'due_date' => optional($task->due_date)->format('M d, Y'),
+                    'assigned_to' => $task->assignedUser ? [
+                        'name' => $task->assignedUser->name,
+                    ] : null,
+                    'task_type' => $task->taskType ? [
+                        'name' => $task->taskType->name,
+                    ] : null,
+                    'description' => $task->description,
+                    'status' => $task->status,
+                    'priority' => $task->priority,
+                ];
+            });
+
+        $casesByYear = [];
+        for ($year = date('Y') - 4; $year <= date('Y'); $year++) {
+            for ($month = 1; $month <= 12; $month++) {
+                $monthData = [
+                    'year' => $year,
+                    'month' => $month,
+                    'month_name' => Carbon::create()->month($month)->format('M'),
+                    'critical' => 0,
+                    'high' => 0,
+                    'medium' => 0,
+                    'low' => 0
+                ];
+
+                $cases = CaseModel::where('created_by', $companyId)
+                    ->whereYear('created_at', $year)
+                    ->whereMonth('created_at', $month)
+                    ->selectRaw('priority, COUNT(*) as count')
+                    ->groupBy('priority')
+                    ->get();
+
+                foreach ($cases as $case) {
+                    $priority = strtolower($case->priority);
+                    if (isset($monthData[$priority])) {
+                        $monthData[$priority] = $case->count;
+                    }
+                }
+
+                $casesByYear[] = $monthData;
+            }
+        }
+
+        $yearlyRevenue = [];
+        for ($year = date('Y') - 4; $year <= date('Y'); $year++) {
+            for ($month = 1; $month <= 12; $month++) {
+                $revenue = Invoice::where('created_by', $companyId)
+                    ->where('status', 'paid')
+                    ->whereYear('created_at', $year)
+                    ->whereMonth('created_at', $month)
+                    ->sum('total_amount');
+
+                $yearlyRevenue[] = [
+                    'year' => $year,
+                    'month' => $month,
+                    'month_name' => Carbon::create()->month($month)->format('M'),
+                    'revenue' => $revenue ?: 0
+                ];
+            }
+        }
+
+        $tasksByPriority = [];
+        for ($year = date('Y') - 4; $year <= date('Y'); $year++) {
+            for ($month = 1; $month <= 12; $month++) {
+                $monthData = [
+                    'year' => $year,
+                    'month' => $month,
+                    'month_name' => Carbon::create()->month($month)->format('M'),
+                    'critical' => 0,
+                    'high' => 0,
+                    'medium' => 0,
+                ];
+
+                $tasks = Task::where('created_by', $companyId)
+                    ->whereYear('created_at', $year)
+                    ->whereMonth('created_at', $month)
+                    ->selectRaw('priority, COUNT(*) as count')
+                    ->groupBy('priority')
+                    ->get();
+
+                foreach ($tasks as $task) {
+                    $priority = strtolower($task->priority);
+                    if (isset($monthData[$priority])) {
+                        $monthData[$priority] = $task->count;
+                    }
+                }
+
+                $tasksByPriority[] = $monthData;
+            }
+        }
+
+        $overdueInvoices = Invoice::where('created_by', $companyId)
+            ->where('status', 'overdue')
+            ->with('client')
+            ->latest()
+            ->take(5)
+            ->get(['id', 'client_id', 'invoice_number', 'total_amount']);
 
         // Tasks by priority (in progress only)
         $tasksPriority = [
@@ -350,11 +509,21 @@ class DashboardController extends Controller
                 'monthlyGrowth' => $monthlyGrowth,
                 'pendingTasks' => $pendingTasks,
                 'upcomingHearings' => $upcomingHearings,
-                'unreadMessages' => $unreadMessages
+                'unreadMessages' => $unreadMessages,
+                'successRate' => $successRate,
+                'avgResolutionDays' => round($avgResolutionDays, 1),
+                'collectionRate' => $collectionRate,
+                'billableHours' => round($billableHours, 1),
             ],
             'recentActivity' => $recentActivity,
             'casesByStatus' => $casesByStatus,
             'upcomingHearings' => $upcomingHearingsList,
+            'recentCases' => $recentCases,
+            'upcomingTasks' => $upcomingTasksList,
+            'casesByYear' => $casesByYear,
+            'yearlyRevenue' => $yearlyRevenue,
+            'overdueInvoices' => $overdueInvoices,
+            'tasksByPriority' => $tasksByPriority,
             'tasksPriority' => $tasksPriority,
             'plan' => [
                 'name' => $currentPlan ? $currentPlan->name : 'Free Plan',

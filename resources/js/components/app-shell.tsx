@@ -1,5 +1,6 @@
 import CookieConsentBanner from '@/components/CookieConsentBanner';
 import { FloatingChatGpt } from '@/components/FloatingChatGpt';
+import { FloatingQuickActions } from '@/components/FloatingQuickActions';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { usePage } from '@inertiajs/react';
 import { useState } from 'react';
@@ -30,6 +31,7 @@ export function AppShell({ children, variant = 'header' }: AppShellProps) {
         return (
             <div className="flex min-h-screen w-full flex-col">
                 {children}
+                <FloatingQuickActions />
                 <FloatingChatGpt />
                 {shouldShowCookie && <CookieConsentBanner />}
             </div>
@@ -40,6 +42,7 @@ export function AppShell({ children, variant = 'header' }: AppShellProps) {
         <SidebarProvider defaultOpen={isOpen} open={isOpen} onOpenChange={handleSidebarChange}>
             <div className="flex w-full flex-row">
                 {children}
+                <FloatingQuickActions />
                 <FloatingChatGpt />
                 {shouldShowCookie && <CookieConsentBanner />}
             </div>
