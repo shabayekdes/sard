@@ -45,8 +45,11 @@ export default function CompanyProfiles() {
     name: '',
     registration_number: '',
     establishment_date: '',
+    cr: '',
+    tax_number: '',
     company_size: 'solo',
     business_type: 'law_firm',
+    default_setup: '',
     
     // Services
     services_offered: '',
@@ -76,8 +79,11 @@ export default function CompanyProfiles() {
         name: companyProfile.name || '',
         registration_number: companyProfile.registration_number || '',
         establishment_date: companyProfile.establishment_date ? companyProfile.establishment_date.split('T')[0] : '',
+        cr: companyProfile.cr || '',
+        tax_number: companyProfile.tax_number || '',
         company_size: companyProfile.company_size || 'solo',
         business_type: companyProfile.business_type || 'law_firm',
+        default_setup: companyProfile.default_setup || '',
         services_offered: companyProfile.services_offered || '',
         notable_cases: companyProfile.notable_cases || '',
         description: companyProfile.description || '',
@@ -208,7 +214,7 @@ export default function CompanyProfiles() {
               />
             </div>
             <div>
-              <Label htmlFor="phone" className="text-sm font-medium">{t('Phone')}</Label>
+              <Label htmlFor="phone" className="text-sm font-medium">{t('Mobile')}</Label>
               <Input
                 id="phone"
                 value={formData.phone}
@@ -357,7 +363,7 @@ export default function CompanyProfiles() {
               />
             </div>
             <div>
-              <Label htmlFor="company_size" className="text-sm font-medium">{t('Practice Size')}</Label>
+              <Label htmlFor="company_size" className="text-sm font-medium">{t('Office Size')}</Label>
               <Select
                 value={formData.company_size || 'solo'}
                 onValueChange={(value) => handleChange('company_size', value)}
@@ -375,7 +381,7 @@ export default function CompanyProfiles() {
               </Select>
             </div>
             <div className="md:col-span-2">
-              <Label htmlFor="services_offered" className="text-sm font-medium">{t('Services Offered')}</Label>
+              <Label htmlFor="services_offered" className="text-sm font-medium">{t('Service Offers')}</Label>
               <Textarea
                 id="services_offered"
                 value={formData.services_offered}
@@ -407,12 +413,13 @@ export default function CompanyProfiles() {
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="name" className="text-sm font-medium">{t('Firm Name')}</Label>
+              <Label htmlFor="name" className="text-sm font-medium">{t('Company Name')} *</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => handleChange('name', e.target.value)}
                 disabled={!isEditing}
+                required
                 className="text-sm"
               />
             </div>
@@ -438,6 +445,26 @@ export default function CompanyProfiles() {
               />
             </div>
             <div>
+              <Label htmlFor="cr" className="text-sm font-medium">{t('CR')}</Label>
+              <Input
+                id="cr"
+                value={formData.cr}
+                onChange={(e) => handleChange('cr', e.target.value)}
+                disabled={!isEditing}
+                className="text-sm"
+              />
+            </div>
+            <div>
+              <Label htmlFor="tax_number" className="text-sm font-medium">{t('Tax Number')}</Label>
+              <Input
+                id="tax_number"
+                value={formData.tax_number}
+                onChange={(e) => handleChange('tax_number', e.target.value)}
+                disabled={!isEditing}
+                className="text-sm"
+              />
+            </div>
+            <div>
               <Label htmlFor="business_type" className="text-sm font-medium">{t('Business Type')}</Label>
               <Select
                 value={formData.business_type || 'law_firm'}
@@ -454,6 +481,16 @@ export default function CompanyProfiles() {
                   <SelectItem value="other" className="text-sm">{t('Other')}</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div>
+              <Label htmlFor="default_setup" className="text-sm font-medium">{t('Default Setup')}</Label>
+              <Input
+                id="default_setup"
+                value={formData.default_setup}
+                onChange={(e) => handleChange('default_setup', e.target.value)}
+                disabled={!isEditing}
+                className="text-sm"
+              />
             </div>
             <div className="md:col-span-2">
               <Label htmlFor="description" className="text-sm font-medium">{t('Description')}</Label>
