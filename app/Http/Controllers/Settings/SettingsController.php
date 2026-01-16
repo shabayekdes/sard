@@ -41,7 +41,12 @@ class SettingsController extends Controller
 
         $emailTemplates = [];
         if (Auth::user()->type === 'company') {
-            $emailTemplatesQuery = EmailTemplate::with('emailTemplateLangs')->get();
+            $hiddenNames = hiddenEmailTemplateNames();
+            $emailTemplatesQuery = EmailTemplate::with('emailTemplateLangs')
+                ->when(!empty($hiddenNames), function ($query) use ($hiddenNames) {
+                    return $query->whereNotIn('name', $hiddenNames);
+                })
+                ->get();
             $userSettings = UserEmailTemplate::where('user_id', Auth::id())->get()->keyBy('template_id');
 
             $emailTemplates = $emailTemplatesQuery->map(function ($template) use ($userSettings) {

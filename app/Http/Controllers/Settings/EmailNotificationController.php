@@ -14,7 +14,12 @@ class EmailNotificationController extends Controller
     {
         $user = Auth::user();
 
-        $emailTemplates = EmailTemplate::with('emailTemplateLangs')->get();
+        $hiddenNames = hiddenEmailTemplateNames();
+        $emailTemplates = EmailTemplate::with('emailTemplateLangs')
+            ->when(!empty($hiddenNames), function ($query) use ($hiddenNames) {
+                return $query->whereNotIn('name', $hiddenNames);
+            })
+            ->get();
 
         $userSettings = UserEmailTemplate::where('user_id', $user->id)
             ->get()
@@ -59,7 +64,14 @@ class EmailNotificationController extends Controller
             $user = Auth::user();
             $settings = $request->input('settings', []);
 
-            foreach ($settings as $setting) {
+        $hiddenNames = hiddenEmailTemplateNames();
+
+        foreach ($settings as $setting) {
+            $template = EmailTemplate::find($setting['template_id'] ?? null);
+            if ($template && in_array($template->name, $hiddenNames, true)) {
+                continue;
+            }
+
                 UserEmailTemplate::updateOrCreate(
                     [
                         'user_id' => $user->id,

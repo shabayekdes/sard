@@ -1261,6 +1261,10 @@ if (! function_exists('isEmailTemplateEnabled')) {
      */
     function isEmailTemplateEnabled($templateName, $userId = null)
     {
+        if (in_array($templateName, hiddenEmailTemplateNames(), true)) {
+            return false;
+        }
+
         if (is_null($userId)) {
             $userId = createdBy();
         }
@@ -1275,6 +1279,22 @@ if (! function_exists('isEmailTemplateEnabled')) {
             ->first();
 
         return $userTemplate ? $userTemplate->is_active : false;
+    }
+}
+
+if (! function_exists('hiddenEmailTemplateNames')) {
+    /**
+     * Email templates that should be hidden from user settings and disabled.
+     *
+     * @return array<int, string>
+     */
+    function hiddenEmailTemplateNames()
+    {
+        return [
+            'New License',
+            'New CLE Record',
+            'New Regulatory Body',
+        ];
     }
 }
 

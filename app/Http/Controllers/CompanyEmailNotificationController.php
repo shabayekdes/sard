@@ -14,8 +14,13 @@ class CompanyEmailNotificationController extends Controller
     {
         $user = Auth::user();
         
-        // Get all email templates
-        $emailTemplates = EmailTemplate::with('emailTemplateLangs')->get();
+        // Get all email templates except hidden ones
+        $hiddenNames = hiddenEmailTemplateNames();
+        $emailTemplates = EmailTemplate::with('emailTemplateLangs')
+            ->when(!empty($hiddenNames), function ($query) use ($hiddenNames) {
+                return $query->whereNotIn('name', $hiddenNames);
+            })
+            ->get();
 
         // Get user's notification settings
         $userSettings = UserEmailTemplate::where('user_id', $user->id)
@@ -53,7 +58,14 @@ class CompanyEmailNotificationController extends Controller
         $user = Auth::user();
         $settings = $request->input('settings', []);
 
+        $hiddenNames = hiddenEmailTemplateNames();
+
         foreach ($settings as $setting) {
+            $template = EmailTemplate::find($setting['template_id'] ?? null);
+            if ($template && in_array($template->name, $hiddenNames, true)) {
+                continue;
+            }
+
             UserEmailTemplate::updateOrCreate(
                 [
                     'user_id' => $user->id,
