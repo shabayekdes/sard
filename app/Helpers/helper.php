@@ -1057,6 +1057,10 @@ if (! function_exists('defaultSettings')) {
             'defaultTimezone' => 'UTC',
             'emailVerification' => false,
             'landingPageEnabled' => true,
+            'recaptchaEnabled' => false,
+            'recaptchaVersion' => 'v3',
+            'recaptchaSiteKey' => config('services.recaptcha.site_key', ''),
+            'recaptchaSecretKey' => config('services.recaptcha.secret_key', ''),
 
             // Brand Settings
             'logoDark' => '/images/logos/logo-dark.png',

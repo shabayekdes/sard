@@ -20,7 +20,7 @@ export default function Recaptcha({ onVerify, onExpired, onError }: RecaptchaPro
   const widgetId = useRef<number | null>(null);
 
   const recaptchaEnabled = settings.recaptchaEnabled === 'true' || settings.recaptchaEnabled === true || settings.recaptchaEnabled === 1 || settings.recaptchaEnabled === '1';
-  const recaptchaVersion = settings.recaptchaVersion || 'v2';
+  const recaptchaVersion = settings.recaptchaVersion || 'v3';
   const recaptchaSiteKey = settings.recaptchaSiteKey || '';
 
   useEffect(() => {

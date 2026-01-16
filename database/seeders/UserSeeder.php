@@ -38,6 +38,19 @@ class UserSeeder extends Seeder
             createDefaultSettings($superAdmin->id);
         }
 
+        $recaptchaSettings = [
+            'recaptchaVersion' => 'v3',
+            'recaptchaSiteKey' => config('services.recaptcha.site_key', ''),
+            'recaptchaSecretKey' => config('services.recaptcha.secret_key', ''),
+        ];
+
+        foreach ($recaptchaSettings as $key => $value) {
+            Setting::updateOrCreate(
+                ['user_id' => $superAdmin->id, 'key' => $key],
+                ['value' => (string) $value]
+            );
+        }
+
         // Get default plan
         $defaultPlan = Plan::where('is_default', true)->first();
 

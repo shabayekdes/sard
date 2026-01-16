@@ -21,7 +21,7 @@ export default function RecaptchaSettings({ settings = {} }: RecaptchaSettingsPr
   // Default settings
   const defaultSettings = {
     recaptchaEnabled: false,
-    recaptchaVersion: 'v2',
+    recaptchaVersion: 'v3',
     recaptchaSiteKey: '',
     recaptchaSecretKey: ''
   };
