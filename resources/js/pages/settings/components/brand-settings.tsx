@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useBrand } from '@/contexts/BrandContext';
 import { useLayout, type LayoutPosition } from '@/contexts/LayoutContext';
 import { useSidebarSettings } from '@/contexts/SidebarContext';
-import { useAppearance, type Appearance, type ThemeColor } from '@/hooks/use-appearance';
+import { THEME_COLORS, useAppearance, type Appearance, type ThemeColor } from '@/hooks/use-appearance';
 import { getCookie } from '@/utils/cookies';
 import { getImagePath } from '@/utils/helpers';
 import { router, usePage } from '@inertiajs/react';
@@ -408,13 +408,7 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
                                     <Separator className="my-2" />
 
                                     <div className="grid grid-cols-6 gap-2">
-                                        {Object.entries({
-                                            blue: '#3b82f6',
-                                            green: '#205341',
-                                            purple: '#8b5cf6',
-                                            orange: '#f97316',
-                                            red: '#ef4444',
-                                        }).map(([color, hex]) => (
+                                        {Object.entries(THEME_COLORS).map(([color, hex]) => (
                                             <Button
                                                 key={color}
                                                 type="button"

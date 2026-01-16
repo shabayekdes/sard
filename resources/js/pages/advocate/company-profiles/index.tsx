@@ -20,27 +20,27 @@ export default function CompanyProfiles() {
     advocate_name: '',
     bar_registration_number: '',
     years_of_experience: '',
-    
+
     // Contact Details
     email: '',
     phone: '',
     website: '',
     address: '',
-    
+
     // Professional Details
     law_degree: '',
     university: '',
     specialization: '',
-    
+
     // Court & Jurisdiction
     court_jurisdictions: '',
     languages_spoken: '',
-    
+
     // Business Details
     consultation_fees: '',
     office_hours: '',
     success_rate: '',
-    
+
     // Company Details
     name: '',
     registration_number: '',
@@ -50,7 +50,7 @@ export default function CompanyProfiles() {
     company_size: 'solo',
     business_type: 'law_firm',
     default_setup: '',
-    
+
     // Services
     services_offered: '',
     notable_cases: '',
@@ -98,14 +98,14 @@ export default function CompanyProfiles() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Ensure required fields have values
     const submitData = {
       ...formData,
       company_size: formData.company_size || 'solo',
       business_type: formData.business_type || 'law_firm'
     };
-    
+
     if (companyProfile) {
       // Update existing profile
       toast.loading(t('Updating advocate profile...'));
@@ -163,9 +163,9 @@ export default function CompanyProfiles() {
   ];
 
   return (
-    <PageTemplate 
-      title={t("Advocate Profile")} 
-      url="/advocate/company-profiles" 
+    <PageTemplate
+      title={t("Advocate Profile")}
+      url="/advocate/company-profiles"
       actions={pageActions}
       breadcrumbs={breadcrumbs}
     >

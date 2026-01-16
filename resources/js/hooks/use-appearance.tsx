@@ -18,11 +18,11 @@ const DEFAULT_THEME: ThemeSettings = {
 
 // Preset theme colors
 export const THEME_COLORS = {
-    blue: '#3b82f6',
     green: '#205341',
-    purple: '#8b5cf6',
-    orange: '#f97316',
-    red: '#ef4444',
+    blue: '#0F2A44',
+    purple: '#1F4E79',
+    orange: '#C8A951',
+    red: '#2E2E2E',
 };
 
 const prefersDark = () => {

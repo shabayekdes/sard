@@ -1,4 +1,5 @@
 import { SidebarMenuSkeleton } from '@/components/ui/sidebar';
+import { THEME_COLORS } from '@/hooks/use-appearance';
 import { Sidebar as SidebarIcon, Home, Users, Settings, FileText, ShoppingCart } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -21,13 +22,16 @@ export function SidebarPreview({ variant, style, themeColor, customColor }: Side
     
     // Fallback colors if CSS variable isn't available
     switch (themeColor) {
-      case 'blue': return '#3b82f6';
-      case 'green': return '#205341';
-      case 'purple': return '#8b5cf6';
-      case 'orange': return '#f97316';
-      case 'red': return '#ef4444';
-      case 'custom': return customColor;
-      default: return '#3b82f6';
+      case 'custom':
+        return customColor;
+      case 'blue':
+      case 'green':
+      case 'purple':
+      case 'orange':
+      case 'red':
+        return THEME_COLORS[themeColor as keyof typeof THEME_COLORS];
+      default:
+        return THEME_COLORS.green;
     }
   };
 

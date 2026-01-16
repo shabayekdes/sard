@@ -1,4 +1,5 @@
 import type { PageProps } from '@/types/page-props';
+import { THEME_COLORS } from '@/hooks/use-appearance';
 import { getBrandSettings, type BrandSettings } from '@/utils/brandSettings';
 import { getBaseUrl, getImagePath } from '@/utils/helpers';
 import { usePage } from '@inertiajs/react';
@@ -51,8 +52,8 @@ export function BrandProvider({ children }: { children: ReactNode }) {
         const color =
             brandSettings.themeColor === 'custom'
                 ? brandSettings.customColor
-                : ({ blue: '#3b82f6', green: '#205341', purple: '#8b5cf6', orange: '#f97316', red: '#ef4444' } as any)[brandSettings.themeColor] ||
-                '#3b82f6';
+                : THEME_COLORS[brandSettings.themeColor as keyof typeof THEME_COLORS] ||
+                  THEME_COLORS.green;
 
         document.documentElement.style.setProperty('--theme-color', color);
         document.documentElement.style.setProperty('--primary', color);
