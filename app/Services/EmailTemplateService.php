@@ -12,6 +12,17 @@ use Exception;
 class EmailTemplateService
 {
     private static $sentEmails = [];
+
+    /**
+     * @param string $templateName
+     * @param array $variables
+     * @param string $toEmail
+     * @param Business|null $business
+     * @param string|null $toName
+     * @return bool
+     *
+     * @deprecated not used anymore, use sendTemplateEmailWithLanguage instead
+     */
     public function sendTemplateEmail(string $templateName, array $variables, string $toEmail, Business $business = null, string $toName = null)
     {
         // Skip email sending in demo mode
@@ -113,12 +124,6 @@ class EmailTemplateService
 
     public function sendTemplateEmailWithLanguage(string $templateName, array $variables, string $toEmail, string $toName = null, string $language = 'en')
     {
-        // Skip email sending in demo mode
-        if (config('app.is_demo', false)) {
-            \Log::info('Email sending skipped - demo mode enabled');
-            return true;
-        }
-
         // Prevent duplicate emails within same request
         $emailKey = md5($templateName . $toEmail . serialize($variables));
         if (isset(self::$sentEmails[$emailKey])) {
@@ -223,12 +228,12 @@ class EmailTemplateService
     private function configureBusinessSMTP(?Business $business = null)
     {
         // Get email settings from settings table
-        $emailDriver = getSetting('email_driver', 'smtp');
-        $emailHost = getSetting('email_host');
-        $emailUsername = getSetting('email_username');
-        $emailPassword = getSetting('email_password');
-        $emailPort = getSetting('email_port', 587);
-        $emailEncryption = getSetting('email_encryption', 'tls');
+        $emailDriver = getSetting('email_driver', config('mail.default', 'smtp'));
+        $emailHost = getSetting('email_host') ?: config('mail.mailers.smtp.host');
+        $emailUsername = getSetting('email_username') ?: config('mail.mailers.smtp.username');
+        $emailPassword = getSetting('email_password') ?: config('mail.mailers.smtp.password');
+        $emailPort = getSetting('email_port', config('mail.mailers.smtp.port', 587));
+        $emailEncryption = getSetting('email_encryption', config('mail.mailers.smtp.encryption', 'tls'));
 
         // Check if email settings are configured
         if (!$emailHost) {

@@ -27,7 +27,7 @@ class SettingsController extends Controller
     public function index()
     {
         // Get system settings using helper function
-        $systemSettings = settings();
+        $systemSettings = sanitizeEmailSettingsForUi(settings());
         $currencies = CurrencyResource::collection(Currency::all())->resolve();
         $paymentSettings = PaymentSetting::getUserSettings(auth()->id());
         $webhooks = Webhook::where('user_id', auth()->id())->get();

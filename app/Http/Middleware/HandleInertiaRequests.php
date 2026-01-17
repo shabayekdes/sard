@@ -57,7 +57,7 @@ class HandleInertiaRequests extends Middleware
             ];
         } else {
             // Get system settings
-            $settings = settings();
+            $settings = sanitizeEmailSettingsForUi(settings());
             // Get currency symbol
             $currencyCode = $settings['defaultCurrency'] ?? 'USD';
             $currency = Currency::where('code', $currencyCode)->first();

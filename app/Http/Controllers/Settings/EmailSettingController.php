@@ -16,24 +16,42 @@ class EmailSettingController extends Controller
      * Get email settings for the authenticated user.
      *
      * @return \Illuminate\Http\JsonResponse
+     *
+     * @deprecated
      */
     public function getEmailSettings()
     {
+        $rawSettings = settings();
+
+        $defaultHost = config('mail.mailers.smtp.host');
+        $defaultPort = config('mail.mailers.smtp.port', 587);
+        $defaultUsername = config('mail.mailers.smtp.username');
+        $defaultPassword = config('mail.mailers.smtp.password');
+        $defaultEncryption = config('mail.mailers.smtp.encryption', 'tls');
+
         $settings = [
-            'provider' => getSetting('email_provider', 'smtp'),
-            'driver' => getSetting('email_driver', 'smtp'),
-            'host' => getSetting('email_host', 'smtp.example.com'),
-            'port' => getSetting('email_port', '587'),
-            'username' => getSetting('email_username', 'user@example.com'),
-            'password' => getSetting('email_password', ''),
-            'encryption' => getSetting('email_encryption', 'tls'),
-            'fromAddress' => getSetting('email_from_address', 'noreply@example.com'),
-            'fromName' => getSetting('email_from_name', 'WorkDo System')
+            'provider' => $rawSettings['email_provider'] ?? 'smtp',
+            'driver' => $rawSettings['email_driver'] ?? config('mail.default', 'smtp'),
+            'host' => $rawSettings['email_host'] ?? '',
+            'port' => $rawSettings['email_port'] ?? (string) $defaultPort,
+            'username' => $rawSettings['email_username'] ?? '',
+            'password' => $rawSettings['email_password'] ?? '',
+            'encryption' => $rawSettings['email_encryption'] ?? $defaultEncryption,
+            'fromAddress' => $rawSettings['email_from_address'] ?? config('mail.from.address'),
+            'fromName' => $rawSettings['email_from_name'] ?? config('mail.from.name')
         ];
 
-        // Mask password if it exists
-        if (!empty($settings['password'])) {
-            $settings['password'] = '••••••••••••';
+        $user = Auth::user();
+        if (!$user || $user->type !== 'superadmin') {
+            $usesDefaultCredentials = ($rawSettings['email_host'] ?? null) === $defaultHost
+                && ($rawSettings['email_username'] ?? null) === $defaultUsername
+                && ($rawSettings['email_password'] ?? null) === $defaultPassword;
+
+            if ($usesDefaultCredentials) {
+                $settings['host'] = '';
+                $settings['username'] = '';
+                $settings['password'] = '';
+            }
         }
 
         return response()->json($settings);
@@ -50,27 +68,35 @@ class EmailSettingController extends Controller
         $validated = $request->validate([
             'provider' => 'required|string',
             'driver' => 'required|string',
-            'host' => 'required|string',
-            'port' => 'required|string',
-            'username' => 'required|string',
+            'host' => 'nullable|string',
+            'port' => 'nullable|string',
+            'username' => 'nullable|string',
             'password' => 'nullable|string',
-            'encryption' => 'required|string',
+            'encryption' => 'nullable|string',
             'fromAddress' => 'required|email',
             'fromName' => 'required|string',
         ]);
 
         updateSetting('email_provider', $validated['provider']);
         updateSetting('email_driver', $validated['driver']);
-        updateSetting('email_host', $validated['host']);
-        updateSetting('email_port', $validated['port']);
-        updateSetting('email_username', $validated['username']);
+        if (!empty($validated['host'])) {
+            updateSetting('email_host', $validated['host']);
+        }
+        if (!empty($validated['port'])) {
+            updateSetting('email_port', $validated['port']);
+        }
+        if (!empty($validated['username'])) {
+            updateSetting('email_username', $validated['username']);
+        }
         
         // Only update password if provided and not masked
         if (!empty($validated['password']) && $validated['password'] !== '••••••••••••') {
             updateSetting('email_password', $validated['password']);
         }
         
-        updateSetting('email_encryption', $validated['encryption']);
+        if (!empty($validated['encryption'])) {
+            updateSetting('email_encryption', $validated['encryption']);
+        }
         updateSetting('email_from_address', $validated['fromAddress']);
         updateSetting('email_from_name', $validated['fromName']);
 
@@ -97,17 +123,17 @@ class EmailSettingController extends Controller
 
         $settings = [
             'provider' => getSetting('email_provider', 'smtp'),
-            'driver' => getSetting('email_driver', 'smtp'),
-            'host' => getSetting('email_host', 'smtp.example.com'),
-            'port' => getSetting('email_port', '587'),
-            'username' => getSetting('email_username', 'user@example.com'),
-            'encryption' => getSetting('email_encryption', 'tls'),
-            'fromAddress' => getSetting('email_from_address', 'noreply@example.com'),
-            'fromName' => getSetting('email_from_name', 'WorkDo System')
+            'driver' => getSetting('email_driver', config('mail.default', 'smtp')),
+            'host' => getSetting('email_host') ?: config('mail.mailers.smtp.host'),
+            'port' => getSetting('email_port', config('mail.mailers.smtp.port', 587)),
+            'username' => getSetting('email_username') ?: config('mail.mailers.smtp.username'),
+            'encryption' => getSetting('email_encryption', config('mail.mailers.smtp.encryption', 'tls')),
+            'fromAddress' => getSetting('email_from_address', config('mail.from.address')),
+            'fromName' => getSetting('email_from_name', config('mail.from.name'))
         ];
         
         // Get the actual password (not masked)
-        $password = getSetting('email_password', '');
+        $password = getSetting('email_password') ?: config('mail.mailers.smtp.password');
         
         try {
             // Configure mail settings for this request only
@@ -122,6 +148,8 @@ class EmailSettingController extends Controller
                 'mail.from.name' => $settings['fromName'],
             ]);
 
+
+            // dd(config('mail'));
             // Send test email
             Mail::to($request->email)->send(new TestMail());
 

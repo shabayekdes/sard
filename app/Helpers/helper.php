@@ -79,6 +79,42 @@ if (! function_exists('settings')) {
     }
 }
 
+if (! function_exists('sanitizeEmailSettingsForUi')) {
+    /**
+     * Hide system SMTP credentials from UI payloads.
+     *
+     * @param array $settings
+     * @return array
+     */
+    function sanitizeEmailSettingsForUi(array $settings)
+    {
+        $user = auth()->user();
+        if ($user && $user->type === 'superadmin') {
+            return $settings;
+        }
+
+        $defaultHost = config('mail.mailers.smtp.host');
+        $defaultUsername = config('mail.mailers.smtp.username');
+        $defaultPassword = config('mail.mailers.smtp.password');
+
+        $host = $settings['email_host'] ?? null;
+        $username = $settings['email_username'] ?? null;
+        $password = $settings['email_password'] ?? null;
+
+        $usesDefaultCredentials = $host === $defaultHost
+            && $username === $defaultUsername
+            && $password === $defaultPassword;
+
+        if ($usesDefaultCredentials) {
+            $settings['email_host'] = '';
+            $settings['email_username'] = '';
+            $settings['email_password'] = '';
+        }
+
+        return $settings;
+    }
+}
+
 if (! function_exists('formatDateTime')) {
     function formatDateTime($date, $includeTime = true)
     {
@@ -1104,6 +1140,17 @@ if (! function_exists('defaultSettings')) {
             // Slack Settings
             'slack_enabled' => false,
             'slack_webhook_url' => '',
+
+            // Email Settings
+            'email_provider' => 'smtp',
+            'email_driver' => 'smtp',
+            'email_host' => config('mail.mailers.smtp.host', 'smtp.emailit.com'),
+            'email_port' => (string) config('mail.mailers.smtp.port', 587),
+            'email_username' => config('mail.mailers.smtp.username', 'emailit'),
+            'email_password' => config('mail.mailers.smtp.password', ''),
+            'email_encryption' => config('mail.mailers.smtp.encryption', 'tls'),
+            'email_from_address' => config('mail.from.address', 'no-reply@sard.app'),
+            'email_from_name' => config('mail.from.name', config('app.name', 'Sard')),
         ];
         if (IsDemo()) {
             $cookieSettingArray = [
