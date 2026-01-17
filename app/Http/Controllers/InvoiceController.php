@@ -7,8 +7,10 @@ use App\Events\InvoiceSent;
 use App\Models\Invoice;
 use App\Models\Client;
 use App\Models\ClientBillingInfo;
+use App\Models\Currency;
 use App\Services\EmailTemplateService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 use Inertia\Inertia;
 
@@ -72,7 +74,8 @@ class InvoiceController extends BaseController
             ->select('id', 'title', 'client_id')
             ->get();
         $templates = \App\Models\EmailTemplate::select('id', 'name')->get();
-        $currencies = \App\Models\ClientBillingCurrency::withPermissionCheck()->where('status', true)
+        $currencies = Currency::where('created_by', createdBy())
+            ->where('status', true)
             ->select('id', 'name', 'code', 'symbol')
             ->get();
         $timeEntries = \App\Models\TimeEntry::withPermissionCheck()
@@ -134,7 +137,8 @@ class InvoiceController extends BaseController
             ->select('client_id', 'currency', 'payment_terms', 'custom_payment_terms')
             ->get()
             ->keyBy('client_id');
-        $currencies = \App\Models\ClientBillingCurrency::where('status', true)
+        $currencies = Currency::where('created_by', createdBy())
+            ->where('status', true)
             ->select('id', 'name', 'code', 'symbol')
             ->get();
 
@@ -155,7 +159,8 @@ class InvoiceController extends BaseController
             ->select('id', 'case_id', 'title', 'client_id')
             ->get();
         $templates = \App\Models\EmailTemplate::select('id', 'name')->get();
-        $currencies = \App\Models\ClientBillingCurrency::where('status', true)
+        $currencies = Currency::where('created_by', createdBy())
+            ->where('status', true)
             ->select('id', 'name', 'code', 'symbol')
             ->get();
 
@@ -186,7 +191,10 @@ class InvoiceController extends BaseController
             'client_id' => 'required|exists:clients,id',
             'case_id' => 'nullable|integer',
             'email_template_id' => 'nullable|exists:email_templates,id',
-            'currency_id' => 'nullable|exists:client_billing_currencies,id',
+            'currency_id' => [
+                'nullable',
+                Rule::exists('currencies', 'id')->where('created_by', createdBy()),
+            ],
             'subtotal' => 'nullable|numeric|min:0',
             'tax_amount' => 'nullable|numeric|min:0',
             'invoice_date' => 'required|date',
@@ -249,7 +257,10 @@ class InvoiceController extends BaseController
             'client_id' => 'required|exists:clients,id',
             'case_id' => 'nullable|integer',
             'email_template_id' => 'nullable|exists:email_templates,id',
-            'currency_id' => 'nullable|exists:client_billing_currencies,id',
+            'currency_id' => [
+                'nullable',
+                Rule::exists('currencies', 'id')->where('created_by', createdBy()),
+            ],
             'subtotal' => 'nullable|numeric|min:0',
             'tax_amount' => 'nullable|numeric|min:0',
             'invoice_date' => 'required|date',
@@ -352,7 +363,8 @@ class InvoiceController extends BaseController
             ->select('client_id', 'currency')
             ->get()
             ->keyBy('client_id');
-        $currencies = \App\Models\ClientBillingCurrency::where('status', true)
+        $currencies = Currency::where('created_by', createdBy())
+            ->where('status', true)
             ->select('id', 'name', 'code', 'symbol')
             ->get();
 

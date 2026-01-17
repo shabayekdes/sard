@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use App\Models\ClientBillingInfo;
-use App\Models\ClientBillingCurrency;
+use App\Models\Currency;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class ClientBillingInfoController extends Controller
@@ -56,10 +57,10 @@ class ClientBillingInfoController extends Controller
             ->get(['id', 'name']);
 
         // Get currencies for form dropdown
-        $currencies = ClientBillingCurrency::where('created_by', createdBy())
+        $currencies = Currency::where('created_by', createdBy())
             ->where('status', true)
-            ->orderBy('name')
-            ->get(['id', 'name', 'code', 'symbol', 'is_default']);
+            ->orderByRaw("JSON_EXTRACT(name, '$.ar') ASC")
+            ->get(['id', 'name', 'code', 'symbol']);
 
         return Inertia::render('clients/billing/index', [
             'billingInfo' => $billingInfo,
@@ -79,14 +80,23 @@ class ClientBillingInfoController extends Controller
             'billing_contact_phone' => 'nullable|string|max:20',
             'payment_terms' => 'required|in:net_15,net_30,net_45,net_60,due_on_receipt,custom',
             'custom_payment_terms' => 'nullable|string|max:255',
-            'currency' => 'nullable|exists:client_billing_currencies,code',
+            'currency' => [
+                'nullable',
+                Rule::exists('currencies', 'code')
+                    ->where('created_by', createdBy())
+                    ->where('status', true),
+            ],
             'billing_notes' => 'nullable|string',
             'status' => 'nullable|in:active,suspended,closed',
         ]);
 
         $validated['created_by'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
-        $validated['currency'] = $validated['currency'] ?? 'USD';
+        $defaultCurrency = Currency::where('created_by', createdBy())
+            ->where('status', true)
+            ->orderBy('code')
+            ->value('code');
+        $validated['currency'] = $validated['currency'] ?? $defaultCurrency ?? 'USD';
 
         // Check if client belongs to the current user's company
         $client = Client::where('id', $validated['client_id'])
@@ -120,7 +130,12 @@ class ClientBillingInfoController extends Controller
                     'billing_contact_phone' => 'nullable|string|max:20',
                     'payment_terms' => 'required|in:net_15,net_30,net_45,net_60,due_on_receipt,custom',
                     'custom_payment_terms' => 'nullable|string|max:255',
-                    'currency' => 'nullable|exists:client_billing_currencies,code',
+                    'currency' => [
+                        'nullable',
+                        Rule::exists('currencies', 'code')
+                            ->where('created_by', createdBy())
+                            ->where('status', true),
+                    ],
                     'billing_notes' => 'nullable|string',
                     'status' => 'nullable|in:active,suspended,closed',
                 ]);

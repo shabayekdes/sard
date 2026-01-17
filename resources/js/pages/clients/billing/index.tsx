@@ -12,7 +12,7 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 export default function ClientBilling() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { auth, billingInfo, clients, currencies, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
 
@@ -27,6 +27,11 @@ export default function ClientBilling() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<any>(null);
   const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
+
+  const getLocalizedValue = (value: any) => {
+    if (!value || typeof value !== 'object') return value;
+    return value[i18n.language] ?? value.en ?? value.ar ?? '';
+  };
 
   // Check if any filters are active
   const hasActiveFilters = () => {
@@ -430,15 +435,15 @@ export default function ClientBilling() {
             },
             { name: 'custom_payment_terms', label: t('Custom Payment Terms'), type: 'text' },
 
-            { 
-              name: 'currency', 
-              label: t('Currency'), 
+            {
+              name: 'currency',
+              label: t('Currency'),
               type: 'select',
               options: currencies ? currencies.map((currency: any) => ({
                 value: currency.code,
-                label: `${currency.name} (${currency.code}) ${currency.symbol}`
+                label: `${getLocalizedValue(currency.name)} (${currency.code}) ${currency.symbol}`
               })) : [],
-              defaultValue: currencies?.find((c: any) => c.is_default)?.code || 'USD'
+              defaultValue: currencies?.[0]?.code || 'USD'
             },
             { name: 'billing_notes', label: t('Billing Notes'), type: 'textarea' },
             {
@@ -468,7 +473,7 @@ export default function ClientBilling() {
       <CrudFormModal
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}
-        onSubmit={() => {}}
+        onSubmit={() => { }}
         formConfig={{
           fields: [
             {

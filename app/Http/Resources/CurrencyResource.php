@@ -22,7 +22,6 @@ class CurrencyResource extends JsonResource
             'symbol' => $this->symbol,
             'description' => $this->description, // Spatie will automatically return translated value for display
             'description_translations' => $this->getTranslations('description'), // Full translations for editing
-            'is_default' => $this->is_default,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

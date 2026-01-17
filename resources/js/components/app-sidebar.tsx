@@ -96,11 +96,6 @@ export function AppSidebar() {
             icon: Mail,
         },
         {
-            title: t('Currencies'),
-            href: route('currencies.index'),
-            icon: DollarSign,
-        },
-        {
             title: t('Countries'),
             href: route('countries.index'),
             icon: Globe,
@@ -629,12 +624,12 @@ export function AppSidebar() {
             });
         }
         if (
-            hasPermission(permissions, 'manage-client-billing-currencies') ||
-            hasPermission(permissions, 'manage-any-client-billing-currencies') ||
-            hasPermission(permissions, 'manage-own-client-billing-currencies')
+            hasPermission(permissions, 'manage-currencies') ||
+            hasPermission(permissions, 'manage-any-currencies') ||
+            hasPermission(permissions, 'manage-own-currencies')
         ) {
             billingConfigChildren.push({
-                title: t('Client Billing Currency'),
+                title: t('Currencies'),
                 href: route('client-billing-currencies.index'),
             });
         }

@@ -14,11 +14,14 @@ return new class extends Migration
         Schema::create('currencies', function (Blueprint $table) {
             $table->id();
             $table->json('name');
-            $table->string('code', 10)->unique();
+            $table->string('code', 10);
             $table->string('symbol', 10)->nullable();
             $table->json('description')->nullable();
-            $table->boolean('is_default')->default(false);
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->boolean('status')->default(true);
             $table->timestamps();
+
+            $table->unique(['code', 'created_by']);
         });
     }
 

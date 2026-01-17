@@ -54,7 +54,5 @@ class ReferralSeeder extends Seeder
         foreach ($referrals as $referralData) {
             Referral::create($referralData);
         }
-
-        $this->command->info('Referrals seeded successfully!');
     }
 }

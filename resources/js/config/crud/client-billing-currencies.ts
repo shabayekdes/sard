@@ -6,10 +6,10 @@ export const clientBillingCurrenciesConfig: CrudConfig = {
     name: 'client-billing-currencies',
     endpoint: route('client-billing-currencies.index'),
     permissions: {
-      view: 'manage-client-billing-currencies',
-      create: 'manage-client-billing-currencies',
-      edit: 'manage-client-billing-currencies',
-      delete: 'manage-client-billing-currencies'
+      view: 'manage-currencies',
+      create: 'manage-currencies',
+      edit: 'manage-currencies',
+      delete: 'manage-currencies'
     }
   },
   table: {
@@ -32,11 +32,6 @@ export const clientBillingCurrenciesConfig: CrudConfig = {
       { 
         key: 'description', 
         label: t('Description') 
-      },
-      { 
-        key: 'is_default', 
-        label: t('Default'), 
-        type: 'boolean'
       }
     ],
     actions: [
@@ -45,15 +40,14 @@ export const clientBillingCurrenciesConfig: CrudConfig = {
         icon: 'Edit', 
         action: 'edit', 
         className: 'text-amber-500',
-        requiredPermission: 'manage-client-billing-currencies'
+        requiredPermission: 'manage-currencies'
       },
       { 
         label: t('Delete'), 
         icon: 'Trash2', 
         action: 'delete', 
         className: 'text-red-500',
-        requiredPermission: 'manage-client-billing-currencies',
-        condition: (row) => !row.is_default
+        requiredPermission: 'manage-currencies'
       }
     ]
   },
@@ -84,11 +78,6 @@ export const clientBillingCurrenciesConfig: CrudConfig = {
         name: 'description', 
         label: t('Description'), 
         type: 'textarea' 
-      },
-      { 
-        name: 'is_default', 
-        label: t('Set as Default Currency'), 
-        type: 'checkbox' 
       }
     ]
   }

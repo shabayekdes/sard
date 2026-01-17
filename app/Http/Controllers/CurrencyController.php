@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\CurrencyResource;
 use App\Models\Currency;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class CurrencyController extends Controller
@@ -14,7 +15,7 @@ class CurrencyController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Currency::query();
+        $query = Currency::query()->whereNull('created_by');
 
         // Handle search - search in translatable fields
         if ($request->has('search')) {
@@ -66,18 +67,20 @@ class CurrencyController extends Controller
             'name' => 'required|array',
             'name.en' => 'required|string|max:255',
             'name.ar' => 'required|string|max:255',
-            'code' => 'required|string|max:10|unique:currencies',
+            'code' => [
+                'required',
+                'string',
+                'max:10',
+                Rule::unique('currencies', 'code')->whereNull('created_by'),
+            ],
             'symbol' => 'required|string|max:10',
             'description' => 'nullable|array',
             'description.en' => 'nullable|string',
             'description.ar' => 'nullable|string',
-            'is_default' => 'boolean',
         ]);
 
-        // If this is set as default, unset all other defaults
-        if ($request->input('is_default')) {
-            Currency::where('is_default', true)->update(['is_default' => false]);
-        }
+        $validated['created_by'] = null;
+        $validated['status'] = true;
 
         Currency::create($validated);
 
@@ -93,20 +96,17 @@ class CurrencyController extends Controller
             'name' => 'required|array',
             'name.en' => 'required|string|max:255',
             'name.ar' => 'required|string|max:255',
-            'code' => 'required|string|max:10|unique:currencies,code,'.$currency->id,
+            'code' => [
+                'required',
+                'string',
+                'max:10',
+                Rule::unique('currencies', 'code')->whereNull('created_by')->ignore($currency->id),
+            ],
             'symbol' => 'required|string|max:10',
             'description' => 'nullable|array',
             'description.en' => 'nullable|string',
             'description.ar' => 'nullable|string',
-            'is_default' => 'boolean',
         ]);
-
-        // If this is set as default, unset all other defaults
-        if ($request->input('is_default')) {
-            Currency::where('id', '!=', $currency->id)
-                ->where('is_default', true)
-                ->update(['is_default' => false]);
-        }
 
         $currency->update($validated);
 
@@ -118,11 +118,6 @@ class CurrencyController extends Controller
      */
     public function destroy(Currency $currency)
     {
-        // Don't allow deleting the default currency
-        if ($currency->is_default) {
-            return redirect()->back()->with('error', __('Cannot delete the default currency.'));
-        }
-
         $currency->delete();
 
         return redirect()->back();
@@ -133,7 +128,7 @@ class CurrencyController extends Controller
      */
     public function getAllCurrencies()
     {
-        $currencies = Currency::all();
+        $currencies = Currency::whereNull('created_by')->get();
 
         return response()->json(CurrencyResource::collection($currencies)->resolve());
     }

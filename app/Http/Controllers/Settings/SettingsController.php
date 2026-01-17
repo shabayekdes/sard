@@ -28,7 +28,15 @@ class SettingsController extends Controller
     {
         // Get system settings using helper function
         $systemSettings = sanitizeEmailSettingsForUi(settings());
-        $currencies = CurrencyResource::collection(Currency::all())->resolve();
+        if (Auth::user()->hasRole(['superadmin'])) {
+            $currencies = CurrencyResource::collection(
+                Currency::whereNull('created_by')->get()
+            )->resolve();
+        } else {
+            $currencies = CurrencyResource::collection(
+                Currency::where('created_by', createdBy())->where('status', true)->get()
+            )->resolve();
+        }
         $paymentSettings = PaymentSetting::getUserSettings(auth()->id());
         $webhooks = Webhook::where('user_id', auth()->id())->get();
         $companySettings = CompanySetting::where('created_by', createdBy())->get();

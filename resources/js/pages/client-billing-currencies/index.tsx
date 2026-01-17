@@ -12,7 +12,7 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 export default function ClientBillingCurrencies() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { auth, currencies, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
 
@@ -63,8 +63,21 @@ export default function ClientBillingCurrencies() {
     }, { preserveState: true, preserveScroll: true });
   };
 
+  const getLocalizedValue = (value: any) => {
+    if (!value || typeof value !== 'object') return value;
+    return value[i18n.language] ?? value.en ?? value.ar ?? '';
+  };
+
   const handleAction = (action: string, item: any) => {
-    setCurrentItem(item);
+    const normalizedItem = item
+      ? {
+        ...item,
+        name: getLocalizedValue(item.name),
+        description: getLocalizedValue(item.description)
+      }
+      : item;
+
+    setCurrentItem(normalizedItem);
     if (action === 'edit') {
       setFormMode('edit');
       setIsFormModalOpen(true);
@@ -122,7 +135,7 @@ export default function ClientBillingCurrencies() {
   };
 
   const pageActions = [];
-  if (hasPermission(permissions, 'create-client-billing-currencies')) {
+  if (hasPermission(permissions, 'create-currencies')) {
     pageActions.push({
       label: t('Add Currency'),
       icon: <Plus className="h-4 w-4 mr-2" />,
@@ -134,23 +147,22 @@ export default function ClientBillingCurrencies() {
   const breadcrumbs = [
     { title: t('Dashboard'), href: route('dashboard') },
     { title: t('Client Management'), href: route('clients.index') },
-    { title: t('Billing Currencies') }
+    { title: t('Currencies') }
   ];
 
   const columns = [
-    { key: 'name', label: t('Name'), sortable: true },
+    {
+      key: 'name',
+      label: t('Name'),
+      sortable: true,
+      render: (value: any) => getLocalizedValue(value)
+    },
     { key: 'code', label: t('Code'), sortable: true },
     { key: 'symbol', label: t('Symbol'), sortable: true },
-    { key: 'description', label: t('Description') },
     {
-      key: 'is_default',
-      label: t('Default'),
-      render: (value: boolean) => (
-        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20' : 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20'
-          }`}>
-          {value ? t('Yes') : t('No')}
-        </span>
-      )
+      key: 'description',
+      label: t('Description'),
+      render: (value: any) => getLocalizedValue(value)
     }
   ];
 
@@ -160,21 +172,20 @@ export default function ClientBillingCurrencies() {
       icon: 'Edit',
       action: 'edit',
       className: 'text-amber-500',
-      requiredPermission: 'edit-client-billing-currencies'
+      requiredPermission: 'edit-currencies'
     },
     {
       label: t('Delete'),
       icon: 'Trash2',
       action: 'delete',
       className: 'text-red-500',
-      requiredPermission: 'delete-client-billing-currencies',
-      condition: (row: any) => !row.is_default
+      requiredPermission: 'delete-currencies'
     }
   ];
 
   return (
     <PageTemplate
-      title={t("Client Billing Currencies")}
+      title={t("Currencies")}
       url="/client-billing-currencies"
       actions={pageActions}
       breadcrumbs={breadcrumbs}
@@ -218,10 +229,9 @@ export default function ClientBillingCurrencies() {
           onSort={handleSort}
           permissions={permissions}
           entityPermissions={{
-            view: 'view-client-billing-currencies',
-            create: 'create-client-billing-currencies',
-            edit: 'edit-client-billing-currencies',
-            delete: 'delete-client-billing-currencies'
+            view: 'view-currencies',
+            edit: 'edit-currencies',
+            delete: 'delete-currencies'
           }}
         />
 
@@ -244,8 +254,7 @@ export default function ClientBillingCurrencies() {
             { name: 'name', label: t('Currency Name'), type: 'text', required: true },
             { name: 'code', label: t('Currency Code'), type: 'text', required: true, placeholder: 'e.g. USD, EUR, GBP' },
             { name: 'symbol', label: t('Currency Symbol'), type: 'text', required: true, placeholder: 'e.g. $, €, £' },
-            { name: 'description', label: t('Description'), type: 'textarea' },
-            { name: 'is_default', label: t('Set as Default Currency'), type: 'checkbox' }
+            { name: 'description', label: t('Description'), type: 'textarea' }
           ]
         }}
         initialData={currentItem}

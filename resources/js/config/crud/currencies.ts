@@ -34,11 +34,6 @@ export const currenciesConfig: CrudConfig = {
                 key: 'description',
                 label: t('Description'),
             },
-            {
-                key: 'is_default',
-                label: t('Default'),
-                type: 'boolean',
-            },
         ],
         actions: [
             {
@@ -96,11 +91,6 @@ export const currenciesConfig: CrudConfig = {
                 name: 'description.ar',
                 label: t('Description (Arabic)'),
                 type: 'textarea',
-            },
-            {
-                name: 'is_default',
-                label: t('Set as Default Currency'),
-                type: 'checkbox',
             },
         ],
         transformData: (data: any) => {

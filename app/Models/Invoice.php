@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Traits\AutoApplyPermissionCheck;
+use App\Models\Currency;
 
 class Invoice extends BaseModel
 {
@@ -85,7 +86,7 @@ class Invoice extends BaseModel
 
     public function currency(): BelongsTo
     {
-        return $this->belongsTo(ClientBillingCurrency::class, 'currency_id');
+        return $this->belongsTo(Currency::class, 'currency_id');
     }
 
     public function expenses(): HasMany

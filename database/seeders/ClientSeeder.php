@@ -115,89 +115,68 @@ class ClientSeeder extends Seeder
             ]);
 
             // Get client types for this company
-            $clientTypes = ClientType::all();
-            //
-            // // Create default client types if none exist
-            // if ($clientTypes->count() === 0) {
-            //     $defaultTypes = [
-            //         ['name' => 'Individual', 'description' => 'Individual clients'],
-            //         ['name' => 'Corporate', 'description' => 'Corporate clients']
-            //     ];
-            //
-            //     foreach ($defaultTypes as $typeData) {
-            //         ClientType::create([
-            //             'name' => $typeData['name'],
-            //             'description' => $typeData['description'],
-            //             'status' => 'active',
-            //             'created_by' => $companyUser->id
-            //         ]);
-            //     }
-            //
-            //     $clientTypes = ClientType::where('created_by', $companyUser->id)->get();
-            // }
+            $clientTypes = ClientType::where('created_by', $companyUser->id)->get();
 
-            if ($clientTypes->count() > 0) {
-                // Create 3-5 clients for each company
-                $clientCount = rand(3, 5);
-                $clientNames = [
-                    'John Smith',
-                    'Sarah Johnson',
-                    'Michael Brown',
-                    'Emily Davis',
-                    'David Wilson',
-                    'Lisa Anderson',
-                    'Robert Taylor',
-                    'Jennifer Martinez',
-                    'William Garcia',
-                    'Mary Rodriguez'
+            // Create 3-5 clients for each company
+            $clientCount = rand(3, 5);
+            $clientNames = [
+                'John Smith',
+                'Sarah Johnson',
+                'Michael Brown',
+                'Emily Davis',
+                'David Wilson',
+                'Lisa Anderson',
+                'Robert Taylor',
+                'Jennifer Martinez',
+                'William Garcia',
+                'Mary Rodriguez'
+            ];
+
+            for ($i = 1; $i <= $clientCount; $i++) {
+                $clientType = $clientTypes->random();
+                $isCorporate = fake()->randomElement(['b2c', 'b2b']) === 'b2b'; // 30% chance of being corporate
+                $clientName = $clientNames[($companyUser->id + $i - 1) % count($clientNames)];
+
+                $email = strtolower(str_replace(' ', '_', $clientName)) . '_' . $companyUser->id . '@example.com';
+
+                $clientData = [
+                    'name' => $clientName,
+                    'email' => $email,
+                    'phone' => '+1-555-' . str_pad($companyUser->id . $i, 4, '0', STR_PAD_LEFT),
+                    'address' => ($i * 100) . ' Main St, New York, NY 1000' . $i,
+                    'client_type_id' => $clientType->id,
+                    'status' => ($clientName === 'Lisa Anderson' || $clientName === 'Michael Brown') ? 'active' : (rand(1, 10) > 8 ? 'inactive' : 'active'),
+                    'company_name' => $isCorporate ? $clientNames[($companyUser->id + $i - 1) % count($clientNames)] . ' Corp' : null,
+                    'tax_id' => $isCorporate ? 'TAX' . str_pad($companyUser->id . $i, 6, '0', STR_PAD_LEFT) : null,
+                    'tax_rate' => rand(0, 15) / 100, // 0% to 15% tax rate
+                    'date_of_birth' => !$isCorporate ? '198' . rand(0, 9) . '-' . str_pad(rand(1, 12), 2, '0', STR_PAD_LEFT) . '-' . str_pad(rand(1, 28), 2, '0', STR_PAD_LEFT) : null,
+                    'referral_source' => ['Website', 'Referral', 'Advertisement', 'Social Media', 'Word of Mouth', 'Legal Directory'][rand(0, 5)],
+                    'notes' => 'Client #' . $i . ' for ' . $companyUser->name . '. ' . ($isCorporate ? 'Corporate client with business needs.' : 'Individual client seeking legal assistance.'),
                 ];
 
-                for ($i = 1; $i <= $clientCount; $i++) {
-                    $clientType = $clientTypes->random();
-                    $isCorporate = fake()->randomElement(['b2c', 'b2b']) === 'b2b'; // 30% chance of being corporate
-                    $clientName = $clientNames[($companyUser->id + $i - 1) % count($clientNames)];
+                // Create client record
+                $client = Client::firstOrCreate([
+                    'email' => $clientData['email'],
+                    'created_by' => $companyUser->id
+                ], [
+                    ...$clientData,
+                    'created_by' => $companyUser->id,
+                ]);
 
-                    $email = strtolower(str_replace(' ', '_', $clientName)) . '_' . $companyUser->id . '@example.com';
+                // Create client user account
+                $clientUser = User::updateOrCreate([
+                    'email' => $clientData['email']
+                ], [
+                    'name' => $clientData['name'],
+                    'password' => Hash::make('password'),
+                    'type' => 'client',
+                    'lang' => $companyUser->lang ?? 'en',
+                    'status' => 'active',
+                    'referral_code' => 0,
+                    'created_by' => $companyUser->id
+                ]);
 
-                    $clientData = [
-                        'name' => $clientName,
-                        'email' => $email,
-                        'phone' => '+1-555-' . str_pad($companyUser->id . $i, 4, '0', STR_PAD_LEFT),
-                        'address' => ($i * 100) . ' Main St, New York, NY 1000' . $i,
-                        'client_type_id' => $clientType->id,
-                        'status' => ($clientName === 'Lisa Anderson' || $clientName === 'Michael Brown') ? 'active' : (rand(1, 10) > 8 ? 'inactive' : 'active'),
-                        'company_name' => $isCorporate ? $clientNames[($companyUser->id + $i - 1) % count($clientNames)] . ' Corp' : null,
-                        'tax_id' => $isCorporate ? 'TAX' . str_pad($companyUser->id . $i, 6, '0', STR_PAD_LEFT) : null,
-                        'tax_rate' => rand(0, 15) / 100, // 0% to 15% tax rate
-                        'date_of_birth' => !$isCorporate ? '198' . rand(0, 9) . '-' . str_pad(rand(1, 12), 2, '0', STR_PAD_LEFT) . '-' . str_pad(rand(1, 28), 2, '0', STR_PAD_LEFT) : null,
-                        'referral_source' => ['Website', 'Referral', 'Advertisement', 'Social Media', 'Word of Mouth', 'Legal Directory'][rand(0, 5)],
-                        'notes' => 'Client #' . $i . ' for ' . $companyUser->name . '. ' . ($isCorporate ? 'Corporate client with business needs.' : 'Individual client seeking legal assistance.'),
-                    ];
-
-                    // Create client record
-                    $client = Client::firstOrCreate([
-                        'email' => $clientData['email'],
-                        'created_by' => $companyUser->id
-                    ], [
-                        ...$clientData,
-                        'created_by' => $companyUser->id,
-                    ]);
-
-                    // Create client user account
-                    $clientUser = User::updateOrCreate([
-                        'email' => $clientData['email']
-                    ], [
-                        'name' => $clientData['name'],
-                        'password' => Hash::make('password'),
-                        'type' => 'client',
-                        'lang' => $companyUser->lang ?? 'en',
-                        'status' => 'active',
-                        'referral_code' => 0,
-                        'created_by' => $companyUser->id
-                    ]);
-
-                    $clientUser->roles()->sync([$clientRole->id]);
-                }
+                $clientUser->roles()->sync([$clientRole->id]);
             }
         }
     }

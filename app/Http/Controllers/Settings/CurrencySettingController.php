@@ -18,7 +18,6 @@ class CurrencySettingController extends Controller
         try {
             $validated = $request->validate([
                 'decimalFormat' => 'required|string|in:0,1,2,3,4',
-                'defaultCurrency' => 'required|string|exists:currencies,code',
                 'decimalSeparator' => ['required', 'string', Rule::in(['.', ','])],
                 'thousandsSeparator' => 'required|string',
                 'floatNumber' => 'required|boolean',

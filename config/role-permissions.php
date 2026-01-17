@@ -11,7 +11,6 @@ return [
         'plan_requests',
         'plan_orders',
         'domain_requests',
-        'currencies',
         'countries',
         'referral',
         'coupons',
@@ -62,7 +61,7 @@ return [
 
         'client_documents',
         'client_billing',
-        'client_billing_currencies',
+        'currencies',
         'cases',
         'case_types',
         'case_categories',

@@ -360,10 +360,12 @@ class ClientController extends Controller
 
         // Load currency name if billing info exists
         if ($client && $client->billingInfo && $client->billingInfo->currency) {
-            $currency = \App\Models\ClientBillingCurrency::find($client->billingInfo->currency);
-            $client->billingInfo->currency_name = $currency ? $currency->name : null;
-            $client->billingInfo->currency_code = $currency ? $currency->code : null;
-            $client->billingInfo->currency_symbol = $currency ? $currency->symbol : null;
+            $currency = \App\Models\Currency::where('code', $client->billingInfo->currency)
+                ->where('created_by', $client->created_by)
+                ->first();
+            $client->billingInfo->currency_name = $currency?->name;
+            $client->billingInfo->currency_code = $currency?->code;
+            $client->billingInfo->currency_symbol = $currency?->symbol;
         }
 
         $documents = \App\Models\ClientDocument::withPermissionCheck()

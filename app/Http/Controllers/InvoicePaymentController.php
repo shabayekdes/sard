@@ -89,9 +89,12 @@ class InvoicePaymentController extends Controller
         $clientBillingInfo = \App\Models\ClientBillingInfo::select('client_id', 'currency')
             ->get()
             ->keyBy('client_id');
-        $currencies = \App\Models\ClientBillingCurrency::where('status', true)
-            ->select('id', 'name', 'code', 'symbol')
-            ->get();
+
+        // TODO: Not used currently, remove if not needed
+        // $currencies = \App\Models\Currency::where('created_by', $invoice->created_by)
+        //     ->where('status', true)
+        //     ->select('id', 'name', 'code', 'symbol')
+        //     ->get();
 
         // Get PayPal settings for frontend
         $paypalSettings = getPaymentMethodConfig('paypal', $invoice->created_by);
@@ -109,8 +112,11 @@ class InvoicePaymentController extends Controller
         // Get currency details if company currency is set
         $defaultCurrency = null;
         if ($companyCurrency) {
-            $defaultCurrency = \App\Models\ClientBillingCurrency::where('code', $companyCurrency)
-                ->orWhere('id', $companyCurrency)
+            $defaultCurrency = \App\Models\Currency::where('created_by', $invoice->created_by)
+                ->where(function ($query) use ($companyCurrency) {
+                    $query->where('code', $companyCurrency)
+                        ->orWhere('id', $companyCurrency);
+                })
                 ->select('id', 'name', 'code', 'symbol')
                 ->first();
         }
@@ -120,8 +126,8 @@ class InvoicePaymentController extends Controller
             'enabledGateways' => $enabledGateways,
             'remainingAmount' => $invoice->remaining_amount,
             'clientBillingInfo' => $clientBillingInfo,
-            'currencies' => $currencies,
-            'defaultCurrency' => $defaultCurrency,
+            // 'currencies' => $currencies,
+            // 'defaultCurrency' => $defaultCurrency,
             'paypalClientId' => $paypalSettings['client_id'] ?? null,
             'flutterwavePublicKey' => $paymentSettings['flutterwave_public_key'] ?? null,
             'tapPublicKey' => $paymentSettings['tap_secret_key'] ?? null,

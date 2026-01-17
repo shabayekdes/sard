@@ -161,14 +161,14 @@ class RoleSeeder extends Seeder
             'edit-client-billing',
             'delete-client-billing',
 
-            // Client Billing Currency permissions
-            'manage-client-billing-currencies',
-            'manage-any-client-billing-currencies',
-            'manage-own-client-billing-currencies',
-            'view-client-billing-currencies',
-            'create-client-billing-currencies',
-            'edit-client-billing-currencies',
-            'delete-client-billing-currencies',
+            // Currency permissions
+            'manage-currencies',
+            'manage-any-currencies',
+            'manage-own-currencies',
+            'view-currencies',
+            'create-currencies',
+            'edit-currencies',
+            'delete-currencies',
 
             // Company Profile permissions
             'manage-company-profiles',

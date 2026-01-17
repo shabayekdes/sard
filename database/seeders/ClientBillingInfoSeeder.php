@@ -24,11 +24,11 @@ class ClientBillingInfoSeeder extends Seeder
             // Get clients for this company
             $clients = Client::where('created_by', $companyUser->id)->get();
             
-            // Get currencies for this company (extract original codes)
-            $currencies = \App\Models\ClientBillingCurrency::where('created_by', $companyUser->id)->get();
-            $currencyCodes = $currencies->map(function($currency) {
-                return explode('_', $currency->code)[0]; // Get original code before underscore
-            })->toArray();
+            // Get currencies for this company
+            $currencies = \App\Models\Currency::where('created_by', $companyUser->id)
+                ->where('status', true)
+                ->get();
+            $currencyCodes = $currencies->pluck('code')->toArray();
             $defaultCurrency = $currencyCodes[0] ?? 'USD';
             
             if ($clients->count() > 0) {

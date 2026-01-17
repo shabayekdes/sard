@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
                 RoleSeeder::class,
                 PlanSeeder::class,
                 UserSeeder::class,
+                CompanySeeder::class,
                 CurrencySeeder::class,
                 CountrySeeder::class,
                 EmailTemplateSeeder::class,
@@ -30,7 +31,6 @@ class DatabaseSeeder extends Seeder
                 LoginHistorySeeder::class,
 
                 // Client Management module seeders
-                ClientBillingCurrencySeeder::class,
                 ClientSeeder::class,
                 ClientBillingInfoSeeder::class,
 

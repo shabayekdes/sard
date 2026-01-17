@@ -322,9 +322,6 @@ trait AutoApplyPermissionCheck
             case 'App\Models\ClientBillingInfo':
                 return $query->where('client_id', $client->id);
 
-            case 'App\Models\ClientBillingCurrency':
-                return $query->where('created_by', $client->created_by);
-
             case 'App\Models\Hearing':
                 return $query->whereHas('case', function ($q) use ($client) {
                     $q->where('client_id', $client->id);

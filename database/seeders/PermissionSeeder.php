@@ -140,15 +140,6 @@ class PermissionSeeder extends Seeder
             ['name' => 'edit-countries', 'module' => 'countries', 'label' => 'Edit Countries', 'description' => 'Can edit countries'],
             ['name' => 'delete-countries', 'module' => 'countries', 'label' => 'Delete Countries', 'description' => 'Can delete countries'],
 
-            // Client Billing Currency management
-            ['name' => 'manage-client-billing-currencies', 'module' => 'client_billing_currencies', 'label' => 'Manage Client Billing Currencies', 'description' => 'Can manage client billing currencies'],
-            ['name' => 'manage-any-client-billing-currencies', 'module' => 'client_billing_currencies', 'label' => 'Manage All Client Billing Currencies', 'description' => 'Manage Any Client Billing Currencies'],
-            ['name' => 'manage-own-client-billing-currencies', 'module' => 'client_billing_currencies', 'label' => 'Manage Own Client Billing Currencies', 'description' => 'Manage Limited Client Billing Currencies that is created by own'],
-            ['name' => 'view-client-billing-currencies', 'module' => 'client_billing_currencies', 'label' => 'View Client Billing Currencies', 'description' => 'View Client Billing Currencies'],
-            ['name' => 'create-client-billing-currencies', 'module' => 'client_billing_currencies', 'label' => 'Create Client Billing Currencies', 'description' => 'Can create client billing currencies'],
-            ['name' => 'edit-client-billing-currencies', 'module' => 'client_billing_currencies', 'label' => 'Edit Client Billing Currencies', 'description' => 'Can edit client billing currencies'],
-            ['name' => 'delete-client-billing-currencies', 'module' => 'client_billing_currencies', 'label' => 'Delete Client Billing Currencies', 'description' => 'Can delete client billing currencies'],
-
             // Referral management
             ['name' => 'manage-referral', 'module' => 'referral', 'label' => 'Manage Referral', 'description' => 'Can manage referral program'],
             ['name' => 'manage-any-referral', 'module' => 'referral', 'label' => 'Manage All Referral', 'description' => 'Manage Any Referral'],
