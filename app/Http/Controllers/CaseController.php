@@ -40,7 +40,8 @@ class CaseController extends BaseController
                     ->orWhere('case_id', 'like', '%' . $request->search . '%')
                     ->orWhere('description', 'like', '%' . $request->search . '%')
                     ->orWhereHas('client', function ($clientQuery) use ($request) {
-                        $clientQuery->where('name', 'like', '%' . $request->search . '%');
+                        $clientQuery->where('name', 'like', '%' . $request->search . '%')
+                            ->orWhere('phone', 'like', '%' . $request->search . '%');
                     });
             });
         }

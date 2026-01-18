@@ -82,11 +82,8 @@ class ClientController extends Controller
                 ];
             });
 
-        $locale = app()->getLocale();
         $phoneCountries = Country::where('is_active', true)
             ->whereNotNull('country_code')
-            ->orderByRaw("JSON_EXTRACT(name, '$.{$locale}')")
-            ->orderByRaw("JSON_EXTRACT(name, '$.en')")
             ->get(['id', 'name', 'country_code'])
             ->map(function ($country) {
                 return [
