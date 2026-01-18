@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Save, DollarSign, Check, Info } from 'lucide-react';
 import { SettingsSection } from '@/components/settings-section';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -28,21 +28,47 @@ export default function CurrencySettings() {
     // Currency Settings form state
     const [currencySettings, setCurrencySettings] = useState({
         decimalFormat: systemSettings.decimalFormat || '2',
+        defaultCurrency: systemSettings.defaultCurrency || 'USD',
         decimalSeparator: systemSettings.decimalSeparator || '.',
         thousandsSeparator: systemSettings.thousandsSeparator || ',',
         floatNumber: systemSettings.floatNumber === '0' ? false : true,
         currencySymbolSpace: systemSettings.currencySymbolSpace === '1',
-        currencySymbolPosition: systemSettings.currencySymbolPosition || 'before'
+        currencySymbolPosition: systemSettings.currencySymbolPosition || 'before',
+        currencyName: ''
     });
 
     // Preview amount
     const [previewAmount, setPreviewAmount] = useState(1234.56);
+
+    // Set currency name based on selected currency
+    useEffect(() => {
+        if (currencies && currencies.length > 0) {
+            const selectedCurrency = currencies.find((c: CurrencyProps) => c.code === currencySettings.defaultCurrency);
+            if (selectedCurrency) {
+                setCurrencySettings(prev => ({
+                    ...prev,
+                    currencyName: selectedCurrency.name
+                }));
+            }
+        }
+    }, [currencies, currencySettings.defaultCurrency]);
 
     // Handle currency settings form changes
     const handleCurrencySettingsChange = (field: string, value: string | boolean) => {
         setCurrencySettings(prev => ({
             ...prev,
             [field]: value
+        }));
+    };
+
+    // Handle currency selection change
+    const handleCurrencyChange = (value: string) => {
+        const selectedCurrency = currencies.find((c: CurrencyProps) => c.code === value);
+
+        setCurrencySettings(prev => ({
+            ...prev,
+            defaultCurrency: value,
+            currencyName: selectedCurrency?.name || value
         }));
     };
 
@@ -72,8 +98,8 @@ export default function CurrencySettings() {
             let formattedNumber = parts.join(currencySettings.decimalSeparator);
 
             // Get currency symbol from the currencies array
-            const previewCurrency = currencies?.[0] as CurrencyProps | undefined;
-            const symbol = previewCurrency?.symbol || '$';
+            const selectedCurrency = currencies.find((c: CurrencyProps) => c.code === currencySettings.defaultCurrency);
+            const symbol = selectedCurrency?.symbol || '$';
 
             // Add currency symbol with proper positioning and spacing
             const space = currencySettings.currencySymbolSpace ? ' ' : '';
@@ -150,7 +176,7 @@ export default function CurrencySettings() {
                                                 {formattedPreview()}
                                             </div>
                                             <div className="text-xs text-muted-foreground">
-                                                {currencies?.[0]?.name} ({currencies?.[0]?.code || 'USD'})
+                                                {currencySettings.currencyName} ({currencySettings.defaultCurrency})
                                             </div>
                                         </div>
                                         <div className="w-full md:w-auto md:max-w-[200px]">
@@ -177,6 +203,41 @@ export default function CurrencySettings() {
 
                                     {/* Format Options */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <Label htmlFor="defaultCurrency" className="font-medium">{t("Default Currency")}</Label>
+                                                <Badge variant="outline" className="font-mono">
+                                                    {currencySettings.defaultCurrency}
+                                                </Badge>
+                                            </div>
+                                            <Select
+                                                value={currencySettings.defaultCurrency}
+                                                onValueChange={handleCurrencyChange}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder={t("Select currency")} />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <div className="max-h-[300px] overflow-y-auto">
+                                                        {currencies && currencies.length > 0 ? (
+                                                            currencies.map((currency: CurrencyProps) => (
+                                                                <SelectItem key={currency.id} value={currency.code}>
+                                                                    <div className="flex items-center">
+                                                                        <span className="w-8 text-center">{currency.symbol}</span>
+                                                                        <span>{currency.code} - {currency.name}</span>
+                                                                    </div>
+                                                                </SelectItem>
+                                                            ))
+                                                        ) : (
+                                                            <div className="p-2 text-center text-muted-foreground">
+                                                                {t("No currencies found")}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
                                         <div className="space-y-3">
                                             <div className="flex items-center justify-between">
                                                 <Label htmlFor="decimalFormat" className="font-medium">{t("Decimal Places")}</Label>

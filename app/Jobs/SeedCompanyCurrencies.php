@@ -57,7 +57,6 @@ class SeedCompanyCurrencies implements ShouldQueue
         $companyCurrencies = [];
 
         foreach ($availableCurrencies as $currency) {
-            unset($currency['is_default']);
             $currency['created_by'] = $this->companyUserId;
             $currency['created_at'] = $now;
             $currency['updated_at'] = $now;

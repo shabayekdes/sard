@@ -16,8 +16,18 @@ class CurrencySettingController extends Controller
     public function update(Request $request)
     {
         try {
+            $defaultCurrencyRule = Rule::exists('currencies', 'code');
+            if (auth()->user()->hasRole(['superadmin'])) {
+                $defaultCurrencyRule = $defaultCurrencyRule->whereNull('created_by');
+            } else {
+                $defaultCurrencyRule = $defaultCurrencyRule
+                    ->where('created_by', createdBy())
+                    ->where('status', true);
+            }
+
             $validated = $request->validate([
                 'decimalFormat' => 'required|string|in:0,1,2,3,4',
+                'defaultCurrency' => ['required', 'string', $defaultCurrencyRule],
                 'decimalSeparator' => ['required', 'string', Rule::in(['.', ','])],
                 'thousandsSeparator' => 'required|string',
                 'floatNumber' => 'required|boolean',

@@ -99,6 +99,10 @@ class ClientBillingCurrencyController extends Controller
 
     public function destroy(Currency $clientBillingCurrency)
     {
+        if (getSetting('defaultCurrency') === $clientBillingCurrency->code) {
+            return redirect()->back()->with('error', 'Cannot delete the default currency.');
+        }
+
         $clientBillingCurrency->delete();
 
         return redirect()->back()->with('success', 'Currency deleted successfully.');

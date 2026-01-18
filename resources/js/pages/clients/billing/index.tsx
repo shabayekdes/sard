@@ -308,235 +308,237 @@ export default function ClientBilling() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Client Billing")}
-      url="/clients/billing"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      {/* Search and filters section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'client_id',
-              label: t('Client'),
-              type: 'select',
-              value: selectedClient,
-              onChange: setSelectedClient,
-              options: clientOptions
-            },
-            {
-              name: 'payment_terms',
-              label: t('Payment Terms'),
-              type: 'select',
-              value: selectedPaymentTerms,
-              onChange: setSelectedPaymentTerms,
-              options: paymentTermsOptions
-            },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              value: selectedStatus,
-              onChange: setSelectedStatus,
-              options: statusOptions
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('clients.billing.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              client_id: selectedClient !== 'all' ? selectedClient : undefined,
-              payment_terms: selectedPaymentTerms !== 'all' ? selectedPaymentTerms : undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Client Billing')} url="/clients/billing" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          {/* Search and filters section */}
+          <div className="mb-4 rounded-lg bg-white p-4 shadow dark:bg-gray-900">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'client_id',
+                          label: t('Client'),
+                          type: 'select',
+                          value: selectedClient,
+                          onChange: setSelectedClient,
+                          options: clientOptions,
+                      },
+                      {
+                          name: 'payment_terms',
+                          label: t('Payment Terms'),
+                          type: 'select',
+                          value: selectedPaymentTerms,
+                          onChange: setSelectedPaymentTerms,
+                          options: paymentTermsOptions,
+                      },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: statusOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('clients.billing.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              client_id: selectedClient !== 'all' ? selectedClient : undefined,
+                              payment_terms: selectedPaymentTerms !== 'all' ? selectedPaymentTerms : undefined,
+                              status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
+                      );
+                  }}
+              />
+          </div>
 
-      {/* Content section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={billingInfo?.data || []}
-          from={billingInfo?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-client-billing',
-            create: 'create-client-billing',
-            edit: 'edit-client-billing',
-            delete: 'delete-client-billing'
-          }}
-        />
+          {/* Content section */}
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={billingInfo?.data || []}
+                  from={billingInfo?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-client-billing',
+                      create: 'create-client-billing',
+                      edit: 'edit-client-billing',
+                      delete: 'delete-client-billing',
+                  }}
+              />
 
-        {/* Pagination section */}
-        <Pagination
-          from={billingInfo?.from || 0}
-          to={billingInfo?.to || 0}
-          total={billingInfo?.total || 0}
-          links={billingInfo?.links}
-          entityName={t("billing records")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              {/* Pagination section */}
+              <Pagination
+                  from={billingInfo?.from || 0}
+                  to={billingInfo?.to || 0}
+                  total={billingInfo?.total || 0}
+                  links={billingInfo?.links}
+                  entityName={t('billing records')}
+                  onPageChange={(url) => router.get(url)}
+              />
+          </div>
 
-      {/* Form Modal */}
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            {
-              name: 'client_id',
-              label: t('Client'),
-              type: 'select',
-              required: true,
-              options: clients ? clients.map((client: any) => ({
-                value: client.id.toString(),
-                label: client.name
-              })) : []
-            },
-            { name: 'billing_contact_name', label: t('Billing Contact Name'), type: 'text' },
-            { name: 'billing_contact_email', label: t('Billing Contact Email'), type: 'email' },
-            { name: 'billing_contact_phone', label: t('Billing Contact Phone'), type: 'text' },
-            { name: 'billing_address', label: t('Billing Address'), type: 'textarea' },
-            {
-              name: 'payment_terms',
-              label: t('Payment Terms'),
-              type: 'select',
-              required: true,
-              options: [
-                { value: 'net_15', label: 'Net 15 days' },
-                { value: 'net_30', label: 'Net 30 days' },
-                { value: 'net_45', label: 'Net 45 days' },
-                { value: 'net_60', label: 'Net 60 days' },
-                { value: 'due_on_receipt', label: 'Due on receipt' },
-                { value: 'custom', label: 'Custom terms' }
-              ]
-            },
-            { name: 'custom_payment_terms', label: t('Custom Payment Terms'), type: 'text' },
+          {/* Form Modal */}
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'client_id',
+                          label: t('Client'),
+                          type: 'select',
+                          required: true,
+                          options: clients
+                              ? clients.map((client: any) => ({
+                                    value: client.id.toString(),
+                                    label: client.name,
+                                }))
+                              : [],
+                      },
+                      { name: 'billing_contact_name', label: t('Billing Contact Name'), type: 'text' },
+                      { name: 'billing_contact_email', label: t('Billing Contact Email'), type: 'email' },
+                      { name: 'billing_contact_phone', label: t('Billing Contact Phone'), type: 'text' },
+                      { name: 'billing_address', label: t('Billing Address'), type: 'textarea' },
+                      {
+                          name: 'payment_terms',
+                          label: t('Payment Terms'),
+                          type: 'select',
+                          required: true,
+                          options: [
+                              { value: 'net_15', label: 'Net 15 days' },
+                              { value: 'net_30', label: 'Net 30 days' },
+                              { value: 'net_45', label: 'Net 45 days' },
+                              { value: 'net_60', label: 'Net 60 days' },
+                              { value: 'due_on_receipt', label: 'Due on receipt' },
+                              { value: 'custom', label: 'Custom terms' },
+                          ],
+                      },
+                      { name: 'custom_payment_terms', label: t('Custom Payment Terms'), type: 'text' },
 
-            {
-              name: 'currency',
-              label: t('Currency'),
-              type: 'select',
-              options: currencies ? currencies.map((currency: any) => ({
-                value: currency.code,
-                label: `${getLocalizedValue(currency.name)} (${currency.code}) ${currency.symbol}`
-              })) : [],
-              defaultValue: currencies?.[0]?.code || 'USD'
-            },
-            { name: 'billing_notes', label: t('Billing Notes'), type: 'textarea' },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              options: [
-                { value: 'active', label: t('Active') },
-                { value: 'suspended', label: t('Suspended') },
-                { value: 'closed', label: t('Closed') }
-              ],
-              defaultValue: 'active'
-            }
-          ],
-          modalSize: 'xl'
-        }}
-        initialData={currentItem}
-        title={
-          formMode === 'create'
-            ? t('Add Billing Information')
-            : t('Edit Billing Information')
-        }
-        mode={formMode}
-      />
+                      {
+                          name: 'currency',
+                          label: t('Currency'),
+                          type: 'select',
+                          options: currencies
+                              ? currencies.map((currency: any) => ({
+                                    value: currency.code,
+                                    label: `${getLocalizedValue(currency.name)} (${currency.code}) ${currency.symbol}`,
+                                }))
+                              : [],
+                          defaultValue: window.appSettings.currencySettings.defaultCurrency || 'SAR',
+                      },
+                      { name: 'billing_notes', label: t('Billing Notes'), type: 'textarea' },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: 'active', label: t('Active') },
+                              { value: 'suspended', label: t('Suspended') },
+                              { value: 'closed', label: t('Closed') },
+                          ],
+                          defaultValue: 'active',
+                      },
+                  ],
+                  modalSize: 'xl',
+              }}
+              initialData={currentItem}
+              title={formMode === 'create' ? t('Add Billing Information') : t('Edit Billing Information')}
+              mode={formMode}
+          />
 
-      {/* View Modal */}
-      <CrudFormModal
-        isOpen={isViewModalOpen}
-        onClose={() => setIsViewModalOpen(false)}
-        onSubmit={() => { }}
-        formConfig={{
-          fields: [
-            {
-              name: 'client_id',
-              label: t('Client'),
-              type: 'select',
-              options: clients ? clients.map((client: any) => ({
-                value: client.id.toString(),
-                label: client.name
-              })) : []
-            },
-            { name: 'billing_contact_name', label: t('Billing Contact Name'), type: 'text' },
-            { name: 'billing_contact_email', label: t('Billing Contact Email'), type: 'email' },
-            { name: 'billing_contact_phone', label: t('Billing Contact Phone'), type: 'text' },
-            { name: 'billing_address', label: t('Billing Address'), type: 'textarea' },
-            {
-              name: 'payment_terms',
-              label: t('Payment Terms'),
-              type: 'select',
-              options: [
-                { value: 'net_15', label: 'Net 15 days' },
-                { value: 'net_30', label: 'Net 30 days' },
-                { value: 'net_45', label: 'Net 45 days' },
-                { value: 'net_60', label: 'Net 60 days' },
-                { value: 'due_on_receipt', label: 'Due on receipt' },
-                { value: 'custom', label: 'Custom terms' }
-              ]
-            },
-            { name: 'custom_payment_terms', label: t('Custom Payment Terms'), type: 'text' },
+          {/* View Modal */}
+          <CrudFormModal
+              isOpen={isViewModalOpen}
+              onClose={() => setIsViewModalOpen(false)}
+              onSubmit={() => {}}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'client_id',
+                          label: t('Client'),
+                          type: 'select',
+                          options: clients
+                              ? clients.map((client: any) => ({
+                                    value: client.id.toString(),
+                                    label: client.name,
+                                }))
+                              : [],
+                      },
+                      { name: 'billing_contact_name', label: t('Billing Contact Name'), type: 'text' },
+                      { name: 'billing_contact_email', label: t('Billing Contact Email'), type: 'email' },
+                      { name: 'billing_contact_phone', label: t('Billing Contact Phone'), type: 'text' },
+                      { name: 'billing_address', label: t('Billing Address'), type: 'textarea' },
+                      {
+                          name: 'payment_terms',
+                          label: t('Payment Terms'),
+                          type: 'select',
+                          options: [
+                              { value: 'net_15', label: 'Net 15 days' },
+                              { value: 'net_30', label: 'Net 30 days' },
+                              { value: 'net_45', label: 'Net 45 days' },
+                              { value: 'net_60', label: 'Net 60 days' },
+                              { value: 'due_on_receipt', label: 'Due on receipt' },
+                              { value: 'custom', label: 'Custom terms' },
+                          ],
+                      },
+                      { name: 'custom_payment_terms', label: t('Custom Payment Terms'), type: 'text' },
 
-            { name: 'currency', label: t('Currency'), type: 'text' },
-            { name: 'billing_notes', label: t('Billing Notes'), type: 'textarea' },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              options: [
-                { value: 'active', label: t('Active') },
-                { value: 'suspended', label: t('Suspended') },
-                { value: 'closed', label: t('Closed') }
-              ]
-            },
-            { name: 'created_at', label: t('Created Date'), type: 'text' }
-          ],
-          modalSize: 'xl'
-        }}
-        initialData={{
-          ...currentItem,
-          client_id: currentItem?.client?.name || '',
-          created_at: currentItem?.created_at ? (window.appSettings?.formatDate(currentItem.created_at) || new Date(currentItem.created_at).toLocaleDateString()) : ''
-        }}
-        title={t('View Billing Information')}
-        mode="view"
-      />
+                      { name: 'currency', label: t('Currency'), type: 'text' },
+                      { name: 'billing_notes', label: t('Billing Notes'), type: 'textarea' },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: 'active', label: t('Active') },
+                              { value: 'suspended', label: t('Suspended') },
+                              { value: 'closed', label: t('Closed') },
+                          ],
+                      },
+                      { name: 'created_at', label: t('Created Date'), type: 'text' },
+                  ],
+                  modalSize: 'xl',
+              }}
+              initialData={{
+                  ...currentItem,
+                  client_id: currentItem?.client?.name || '',
+                  created_at: currentItem?.created_at
+                      ? window.appSettings?.formatDate(currentItem.created_at) || new Date(currentItem.created_at).toLocaleDateString()
+                      : '',
+              }}
+              title={t('View Billing Information')}
+              mode="view"
+          />
 
-      {/* Delete Modal */}
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.client?.name || ''}
-        entityName="billing information"
-      />
-    </PageTemplate>
+          {/* Delete Modal */}
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.client?.name || ''}
+              entityName="billing information"
+          />
+      </PageTemplate>
   );
 }

@@ -33,13 +33,8 @@ if (!function_exists('getCacheSize')) {
 }
 
 if (! function_exists('settings')) {
-    function settings($user_id = null)
+    function settings($user_id = null, $key = null)
     {
-        // Skip database queries during installation
-        if (request()->is('install/*') || request()->is('update/*') || !file_exists(storage_path('installed'))) {
-            return [];
-        }
-
         if (is_null($user_id)) {
             if (auth()->user()) {
                 if (!in_array(auth()->user()->type, ['superadmin', 'company'])) {
@@ -74,6 +69,10 @@ if (! function_exists('settings')) {
 
         // Add demo mode flag from config
         $userSettings['is_demo'] = config('app.is_demo', false);
+
+        if ($key) {
+            return data_get($userSettings, $key);
+        }
 
         return $userSettings;
     }

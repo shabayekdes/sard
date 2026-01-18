@@ -94,8 +94,13 @@ class ClientBillingInfoController extends Controller
         $validated['status'] = $validated['status'] ?? 'active';
         $defaultCurrency = Currency::where('created_by', createdBy())
             ->where('status', true)
-            ->orderBy('code')
+            ->where('is_default', true)
             ->value('code');
+        if (!$defaultCurrency) {
+            $defaultCurrency = Currency::where('created_by', createdBy())
+                ->where('status', true)
+                ->value('code');
+        }
         $validated['currency'] = $validated['currency'] ?? $defaultCurrency ?? 'USD';
 
         // Check if client belongs to the current user's company
