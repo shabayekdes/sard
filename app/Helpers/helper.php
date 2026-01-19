@@ -33,7 +33,7 @@ if (!function_exists('getCacheSize')) {
 }
 
 if (! function_exists('settings')) {
-    function settings($user_id = null, $key = null)
+    function settings($user_id = null)
     {
         if (is_null($user_id)) {
             if (auth()->user()) {
@@ -58,7 +58,7 @@ if (! function_exists('settings')) {
         if (auth()->check() && auth()->user()->type !== 'superadmin') {
             $superAdmin = User::where('type', 'superadmin')->first();
             if ($superAdmin) {
-                $superAdminKeys = ['decimalFormat', 'defaultCurrency', 'thousandsSeparator', 'floatNumber', 'currencySymbolSpace', 'currencySymbolPosition', 'dateFormat', 'timeFormat', 'calendarStartDay', 'defaultTimezone'];
+                $superAdminKeys = ['decimalFormat', 'defaultCurrency', 'thousandsSeparator', 'floatNumber', 'currencySymbolSpace', 'currencySymbolPosition', 'dateFormat', 'timeFormat', 'calendarStartDay', 'defaultTimezone', 'defaultCountry'];
                 $superAdminSettings = Setting::where('user_id', $superAdmin->id)
                     ->whereIn('key', $superAdminKeys)
                     ->pluck('value', 'key')
@@ -69,10 +69,6 @@ if (! function_exists('settings')) {
 
         // Add demo mode flag from config
         $userSettings['is_demo'] = config('app.is_demo', false);
-
-        if ($key) {
-            return data_get($userSettings, $key);
-        }
 
         return $userSettings;
     }
@@ -1085,6 +1081,7 @@ if (! function_exists('defaultSettings')) {
     {
         return [
             // System Settings
+            'defaultCountry' => '',
             'defaultLanguage' => 'en',
             'dateFormat' => 'Y-m-d',
             'timeFormat' => 'H:i',

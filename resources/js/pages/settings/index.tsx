@@ -34,7 +34,7 @@ export default function Settings() {
     const { t } = useTranslation();
     const { position } = useLayout();
 
-    const { systemSettings = {}, cacheSize = '0.00', timezones = {}, dateFormats = {}, timeFormats = {}, paymentSettings = {}, webhooks = [], companySettings = [], auth = {}, emailTemplates = [], slackSettings = {}, twilioSettings = {}, notificationTemplates = [] } = usePage().props as any;
+    const { systemSettings = {}, cacheSize = '0.00', timezones = {}, dateFormats = {}, timeFormats = {}, paymentSettings = {}, webhooks = [], companySettings = [], auth = {}, emailTemplates = [], slackSettings = {}, twilioSettings = {}, notificationTemplates = [], countries = [] } = usePage().props as any;
     const [activeSection, setActiveSection] = useState('system-settings');
 
     // Define all possible sidebar navigation items
@@ -310,6 +310,7 @@ export default function Settings() {
                                 timezones={timezones}
                                 dateFormats={dateFormats}
                                 timeFormats={timeFormats}
+                                countries={countries}
                             />
                         </section>
                     )}

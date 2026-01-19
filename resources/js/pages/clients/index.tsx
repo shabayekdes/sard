@@ -18,7 +18,7 @@ import PhoneInput from 'react-phone-input-2';
 
 export default function Clients() {
     const { t, i18n } = useTranslation();
-    const { auth, clients, clientTypes, countries, phoneCountries, planLimits, filters: pageFilters = {} } = usePage().props as any;
+    const { auth, clients, clientTypes, countries, phoneCountries, planLimits, defaultCountry = '', filters: pageFilters = {} } = usePage().props as any;
     const permissions = auth?.permissions || [];
     const currentLocale = i18n.language || 'en';
 
@@ -422,7 +422,10 @@ export default function Clients() {
     const phoneCountryCodes = (phoneCountries || [])
         .map((country: any) => String(country.code || '').toLowerCase())
         .filter((code: string) => code);
-    const defaultPhoneCountry = (phoneCountries || [])[0];
+    const defaultPhoneCountry =
+        phoneCountriesByCode.get(String(defaultCountry).toLowerCase()) ||
+        phoneCountriesByCode.get('sa') ||
+        (phoneCountries || [])[0];
 
     return (
         <PageTemplate title={t('Client Management')} url="/clients" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
@@ -561,7 +564,7 @@ export default function Clients() {
                             name: 'client_type_id',
                             label: t('Client Type'),
                             type: 'select',
-                            required: true,
+                            required: false,
                             options: clientTypes
                                 ? clientTypes.map((type: any) => {
                                     // Use name_translations if available, otherwise fallback to name
@@ -596,7 +599,7 @@ export default function Clients() {
                             name: 'nationality_id',
                             label: t('Nationality'),
                             type: 'select',
-                            required: true,
+                            required: false,
                             options: countries,
                             defaultValue: countries[0] ? countries[0].value : '',
                             conditional: (_, data) => data?.business_type === 'b2c',
@@ -605,14 +608,14 @@ export default function Clients() {
                             name: 'id_number',
                             label: t('ID Number'),
                             type: 'text',
-                            required: true,
+                            required: false,
                             conditional: (_, data) => data?.business_type === 'b2c',
                         },
                         {
                             name: 'gender',
                             label: t('Gender'),
                             type: 'select',
-                            required: true,
+                            required: false,
                             options: [
                                 { value: 'male', label: t('Male') },
                                 { value: 'female', label: t('Female') },
@@ -630,35 +633,35 @@ export default function Clients() {
                             name: 'company_name',
                             label: t('Company Name'),
                             type: 'text',
-                            required: true,
+                            required: false,
                             conditional: (_, data) => data?.business_type === 'b2b',
                         },
                         {
                             name: 'unified_number',
                             label: t('Unified Number'),
                             type: 'text',
-                            required: true,
+                            required: false,
                             conditional: (_, data) => data?.business_type === 'b2b',
                         },
                         {
                             name: 'cr_number',
                             label: t('CR Number'),
                             type: 'text',
-                            required: true,
+                            required: false,
                             conditional: (_, data) => data?.business_type === 'b2b',
                         },
                         {
                             name: 'cr_issuance_date',
                             label: t('CR Issuance Date'),
                             type: 'date',
-                            required: true,
+                            required: false,
                             conditional: (_, data) => data?.business_type === 'b2b',
                         },
                         {
                             name: 'tax_id',
                             label: t('Tax ID'),
                             type: 'text',
-                            required: true,
+                            required: false,
                             conditional: (_, data) => data?.business_type === 'b2b',
                         },
                         { name: 'address', label: t('Address'), type: 'textarea' },

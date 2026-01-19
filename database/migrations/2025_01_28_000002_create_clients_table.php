@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
             $table->text('address')->nullable();
-            $table->foreignId('client_type_id')->constrained('client_types')->onDelete('cascade');
+            $table->foreignId('client_type_id')->nullable()->constrained()->nullOnDelete();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->string('company_name')->nullable(); // For corporate clients
             $table->string('tax_id')->nullable();
@@ -30,7 +30,6 @@ return new class extends Migration
             
             // Index for better performance
             $table->index(['created_by', 'status']);
-            $table->index(['client_type_id']);
         });
     }
 

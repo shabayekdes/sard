@@ -15,15 +15,17 @@ interface SystemSettingsProps {
     timezones?: Record<string, string>;
     dateFormats?: Record<string, string>;
     timeFormats?: Record<string, string>;
+    countries?: Array<{ value: string; label: string }>;
 }
 
-export default function SystemSettings({ settings = {}, timezones = {}, dateFormats = {}, timeFormats = {} }: SystemSettingsProps) {
+export default function SystemSettings({ settings = {}, timezones = {}, dateFormats = {}, timeFormats = {}, countries = [] }: SystemSettingsProps) {
     const { t } = useTranslation();
     const { pageProps, auth } = usePage().props as any;
     const isCompanyUser = auth?.roles?.includes('company');
 
     // Default settings
     const defaultSettings = {
+        defaultCountry: '',
         defaultLanguage: 'en',
         dateFormat: 'MM/DD/YYYY',
         timeFormat: '12h',
@@ -37,8 +39,16 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
     // Combine settings from props and page props
     const settingsData = Object.keys(settings).length > 0 ? settings : pageProps.settings || {};
 
+    const normalizeCountryValue = (value: unknown) => {
+        if (value === null || value === undefined) {
+            return '';
+        }
+        return String(value);
+    };
+
     // Initialize state with merged settings
     const [systemSettings, setSystemSettings] = useState(() => ({
+        defaultCountry: normalizeCountryValue(settingsData.defaultCountry ?? defaultSettings.defaultCountry),
         defaultLanguage: settingsData.defaultLanguage || defaultSettings.defaultLanguage,
         dateFormat: settingsData.dateFormat || defaultSettings.dateFormat,
         timeFormat: settingsData.timeFormat || defaultSettings.timeFormat,
@@ -68,6 +78,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
             setSystemSettings((prevSettings) => ({
                 ...prevSettings,
                 ...mergedSettings,
+                defaultCountry: normalizeCountryValue(settingsData.defaultCountry ?? defaultSettings.defaultCountry),
                 emailVerification:
                     mergedSettings.emailVerification === 'true' ||
                     mergedSettings.emailVerification === true ||
@@ -99,6 +110,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
 
         // Create clean settings object
         const cleanSettings = {
+            defaultCountry: systemSettings.defaultCountry,
             defaultLanguage: systemSettings.defaultLanguage,
             dateFormat: systemSettings.dateFormat,
             timeFormat: systemSettings.timeFormat,
@@ -142,6 +154,31 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
         >
             <form id="system-settings-form" onSubmit={submitSystemSettings} className="space-y-6">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="grid gap-2">
+                        <Label htmlFor="defaultCountry">{t('Default Country')}</Label>
+                        <Select
+                            value={systemSettings.defaultCountry}
+                            onValueChange={(value) => handleSystemSettingsChange('defaultCountry', value)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder={t('Select country')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {countries.length > 0 ? (
+                                    countries.map((country) => (
+                                        <SelectItem key={country.value} value={country.value}>
+                                            {country.label}
+                                        </SelectItem>
+                                    ))
+                                ) : (
+                                    <SelectItem value="__empty" disabled>
+                                        {t('No countries available')}
+                                    </SelectItem>
+                                )}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
                     <div className="grid gap-2">
                         <Label htmlFor="defaultLanguage">{t('Default Language')}</Label>
                         <Select
@@ -322,7 +359,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
                         </div>
                     )}
 
-                  
+
                 </div>
             </form>
         </SettingsSection>

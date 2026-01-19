@@ -121,6 +121,7 @@ class ClientController extends Controller
             'clientTypes' => $clientTypes,
             'countries' => $countries,
             'phoneCountries' => $phoneCountries,
+            'defaultCountry' => getSetting('defaultCountry', ''),
             'planLimits' => $planLimits,
             'filters' => $request->all(['search', 'client_type_id', 'status', 'sort_field', 'sort_direction', 'per_page']),
         ]);
@@ -156,17 +157,17 @@ class ClientController extends Controller
             'country_id' => 'required|exists:countries,id',
             'phone' => 'required|string',
             'business_type' => 'required|string|in:b2c,b2b',
-            'nationality_id' => 'required_if:business_type,b2c|exists:countries,id',
-            'gender' => 'required_if:business_type,b2c|string|in:male,female',
-            'id_number' => 'required_if:business_type,b2c|string|max:100',
-            'unified_number' => 'required_if:business_type,b2b|string|max:100',
-            'cr_number' => 'required_if:business_type,b2b|string|max:100',
-            'cr_issuance_date' => 'required_if:business_type,b2b|date',
-            'tax_id' => 'required_if:business_type,b2b|string|max:100',
+            'nationality_id' => 'nullable|exists:countries,id',
+            'gender' => 'nullable|string|in:male,female',
+            'id_number' => 'nullable|string|max:100',
+            'unified_number' => 'nullable|string|max:100',
+            'cr_number' => 'nullable|string|max:100',
+            'cr_issuance_date' => 'nullable|date',
+            'tax_id' => 'nullable|string|max:100',
             'address' => 'nullable|string',
-            'client_type_id' => 'required|exists:client_types,id',
+            'client_type_id' => 'nullable|exists:client_types,id',
             'status' => 'nullable|in:active,inactive',
-            'company_name' => 'required_if:business_type,b2b|string|max:255',
+            'company_name' => 'nullable|string|max:255',
             'tax_rate' => 'nullable|numeric|min:0|max:100',
             'date_of_birth' => 'nullable|date',
             'notes' => 'nullable|string',
@@ -194,12 +195,14 @@ class ClientController extends Controller
         $validated['status'] = $validated['status'] ?? 'active';
 
         // Check if client type belongs to the current user's company
-        $clientType = ClientType::where('id', $validated['client_type_id'])
-            ->where('created_by', createdBy())
-            ->first();
+        if (! empty($validated['client_type_id'])) {
+            $clientType = ClientType::where('id', $validated['client_type_id'])
+                ->where('created_by', createdBy())
+                ->first();
 
-        if (! $clientType) {
-            return redirect()->back()->with('error', 'Invalid client type selected.');
+            if (! $clientType) {
+                return redirect()->back()->with('error', 'Invalid client type selected.');
+            }
         }
 
         // Check if client with same email already exists for this company
@@ -284,7 +287,7 @@ class ClientController extends Controller
                     'cr_issuance_date' => 'nullable|date',
                     'tax_id' => 'nullable|string|max:100',
                     'address' => 'nullable|string',
-                    'client_type_id' => 'required|exists:client_types,id',
+                    'client_type_id' => 'nullable|exists:client_types,id',
                     'status' => 'nullable|in:active,inactive',
                     'company_name' => 'nullable|string|max:255',
                     'tax_rate' => 'nullable|numeric|min:0|max:100',
@@ -311,12 +314,14 @@ class ClientController extends Controller
                 }
 
                 // Check if client type belongs to the current user's company
-                $clientType = ClientType::withPermissionCheck()
-                    ->where('id', $validated['client_type_id'])
-                    ->first();
+                if (! empty($validated['client_type_id'])) {
+                    $clientType = ClientType::withPermissionCheck()
+                        ->where('id', $validated['client_type_id'])
+                        ->first();
 
-                if (! $clientType) {
-                    return redirect()->back()->with('error', 'Invalid client type selected.');
+                    if (! $clientType) {
+                        return redirect()->back()->with('error', 'Invalid client type selected.');
+                    }
                 }
 
                 // Check if client with same email already exists for this company (excluding current)

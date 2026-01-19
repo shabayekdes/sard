@@ -58,7 +58,7 @@ class SeedCompanySettings implements ShouldQueue
 
         // Settings to copy from superadmin (system settings only, not theme settings)
         $settingsToCopy = [
-            'defaultLanguage', 'dateFormat', 'timeFormat', 'calendarStartDay',
+            'defaultCountry', 'defaultLanguage', 'dateFormat', 'timeFormat', 'calendarStartDay',
             'defaultTimezone', 'emailVerification', 'landingPageEnabled',
             'logoDark', 'logoLight', 'favicon', 'titleText', 'footerText'
         ];

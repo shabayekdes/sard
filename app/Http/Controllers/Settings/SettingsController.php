@@ -10,6 +10,7 @@ use App\Models\Currency;
 use App\Models\PaymentSetting;
 use App\Models\Webhook;
 use App\Models\CompanySetting;
+use App\Models\Country;
 use App\Models\EmailTemplate;
 use App\Models\NotificationTemplate;
 use App\Models\User;
@@ -40,6 +41,15 @@ class SettingsController extends Controller
         $paymentSettings = PaymentSetting::getUserSettings(auth()->id());
         $webhooks = Webhook::where('user_id', auth()->id())->get();
         $companySettings = CompanySetting::where('created_by', createdBy())->get();
+        $countries = Country::where('is_active', true)
+            ->orderByRaw("JSON_EXTRACT(name, '$.en')")
+            ->get(['country_code', 'name'])
+            ->map(function ($country) {
+                return [
+                    'value' => (string) $country->country_code,
+                    'label' => $country->name,
+                ];
+            });
 
         // Get Slack settings
         // $slackSettings = SlackSettingsService::getSettings(auth()->id());
@@ -99,6 +109,7 @@ class SettingsController extends Controller
             'paymentSettings' => $paymentSettings,
             'webhooks' => $webhooks,
             'companySettings' => $companySettings,
+            'countries' => $countries,
             'emailTemplates' => $emailTemplates,
             // 'slackSettings' => $slackSettings,
             'notificationTemplates' => $notificationTemplates,

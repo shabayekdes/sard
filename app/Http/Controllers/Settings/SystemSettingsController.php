@@ -29,6 +29,7 @@ class SystemSettingsController extends Controller
     {
         try {
             $validated = $request->validate([
+                'defaultCountry' => 'nullable|exists:countries,country_code',
                 'defaultLanguage' => 'required|string',
                 'dateFormat' => 'required|string',
                 'timeFormat' => 'required|string',
