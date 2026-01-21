@@ -1,10 +1,10 @@
 @import 'tailwindcss';
-@import 'react-phone-input-2/lib/style.css';
+@import 'react-international-phone/style.css';
 
 @plugin 'tailwindcss-animate';
 @plugin 'tailwind-scrollbar';
 
-/*@import './rtl.css';*/
+/* @import './rtl.css'; */
 @import './template-preview.css';
 @import './template-animations.css';
 
@@ -225,6 +225,75 @@
     .dark svg:not([fill="none"]) {
         fill: currentColor;
     }
+}
+
+/* Phone input (react-international-phone) layout */
+.react-international-phone {
+  width: 100%;
+}
+
+.react-international-phone-input {
+  width: 100%;
+  height: 2.5rem;
+  border-radius: calc(var(--radius) - 2px);
+}
+
+.react-international-phone-country-selector-button {
+  height: 2.5rem;
+}
+
+.react-international-phone-flag-emoji {
+  margin: auto 10px;
+}
+
+/* Ensure Radix popper dropdowns show above modals */
+[data-radix-popper-content-wrapper] {
+  z-index: 60000;
+}
+
+/* RTL select dropdown alignment */
+html[dir="rtl"] [data-radix-select-content] {
+  direction: rtl;
+  text-align: right;
+}
+
+html[dir="rtl"] [data-radix-select-content] [data-radix-select-item],
+html[dir="rtl"] [data-radix-select-content] [role="option"] {
+  direction: rtl !important;
+  text-align: right !important;
+  justify-content: flex-end !important;
+  padding-left: 0.5rem !important;
+  padding-right: 2rem !important;
+  padding-inline-start: 2rem !important;
+  padding-inline-end: 0.5rem !important;
+}
+
+html[dir="rtl"] [data-radix-select-content] [data-radix-select-item] > span,
+html[dir="rtl"] [data-radix-select-content] [role="option"] > span {
+  left: auto !important;
+  right: 0.5rem !important;
+  inset-inline-start: auto !important;
+  inset-inline-end: 0.5rem !important;
+}
+
+html[dir="rtl"] [data-radix-select-content] [role="option"] [data-radix-select-item-text] {
+  text-align: right !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+html[dir="rtl"] [role="listbox"] {
+  direction: rtl !important;
+  text-align: right !important;
+}
+
+html[dir="rtl"] .react-international-phone {
+  direction: rtl;
+}
+
+html[dir="rtl"] .react-international-phone-input {
+  direction: ltr;
+  text-align: right;
 }
 
 /* Theme color variables */

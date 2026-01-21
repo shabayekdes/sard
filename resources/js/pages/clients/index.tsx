@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { hasPermission } from '@/utils/authorization';
@@ -14,7 +15,7 @@ import { router, usePage } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import PhoneInput from 'react-phone-input-2';
+import { PhoneInput, defaultCountries } from 'react-international-phone';
 
 export default function Clients() {
     const { t, i18n } = useTranslation();
@@ -422,6 +423,9 @@ export default function Clients() {
     const phoneCountryCodes = (phoneCountries || [])
         .map((country: any) => String(country.code || '').toLowerCase())
         .filter((code: string) => code);
+    const allowedPhoneCountries = phoneCountryCodes.length
+        ? defaultCountries.filter((country) => phoneCountryCodes.includes(String(country[1]).toLowerCase()))
+        : defaultCountries;
     const defaultPhoneCountry =
         phoneCountriesByCode.get(String(defaultCountry).toLowerCase()) ||
         phoneCountriesByCode.get('sa') ||
@@ -534,24 +538,25 @@ export default function Clients() {
 
                                 return (
                                     <PhoneInput
-                                        country={currentCountryCode || undefined}
+                                        defaultCountry={currentCountryCode || undefined}
                                         value={data?.phone || ''}
-                                        onlyCountries={phoneCountryCodes}
-                                        enableSearch
+                                        countries={allowedPhoneCountries}
                                         inputProps={{ name: 'phone', required: true }}
-                                        containerClass="w-full"
-                                        inputClass="w-full !h-10 !border !border-input !bg-background !text-sm !text-foreground"
-                                        buttonClass="!border !border-input !bg-background"
-                                        dropdownClass="!bg-background !text-foreground"
-                                        onChange={(value, countryData) => {
+                                        className="w-full"
+                                        inputClassName="w-full !h-10 !border !border-input !bg-background !text-sm !text-foreground"
+                                        countrySelectorStyleProps={{
+                                            buttonClassName: '!h-10 !border !border-input !bg-background',
+                                            dropdownStyleProps: {
+                                                className: '!bg-background !text-foreground',
+                                            },
+                                        }}
+                                        onChange={(value, meta) => {
                                             handleChange('phone', value || '');
 
-                                            if (countryData && typeof countryData === 'object' && 'countryCode' in countryData) {
-                                                const code = String((countryData as any).countryCode || '').toLowerCase();
-                                                const selectedCountry = phoneCountriesByCode.get(code);
-                                                if (selectedCountry) {
-                                                    handleChange('country_id', selectedCountry.value);
-                                                }
+                                            const code = String(meta?.country?.iso2 || '').toLowerCase();
+                                            const selectedCountry = phoneCountriesByCode.get(code);
+                                            if (selectedCountry) {
+                                                handleChange('country_id', selectedCountry.value);
                                             }
                                         }}
                                     />

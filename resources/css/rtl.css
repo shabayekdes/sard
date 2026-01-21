@@ -98,7 +98,7 @@ html[dir="rtl"] .grid {
 }
 
 /* Fix media grid items positioning for RTL */
-html[dir="rtl"] .grid > * {
+html[dir="rtl"] .grid>* {
   direction: ltr;
 }
 
