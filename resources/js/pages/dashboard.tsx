@@ -153,12 +153,6 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
   };
   const pageActions: PageAction[] = [
     {
-      label: t('Analytics'),
-      icon: <BarChart3 className="h-4 w-4" />,
-      variant: 'outline',
-      onClick: () => window.location.href = route('dashboard.analytics.index')
-    },
-    {
       label: t('Refresh'),
       icon: <RefreshCw className="h-4 w-4" />,
       variant: 'outline',

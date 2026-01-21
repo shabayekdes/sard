@@ -1,6 +1,7 @@
 import CookieConsentBanner from '@/components/CookieConsentBanner';
 import { FloatingChatGpt } from '@/components/FloatingChatGpt';
 import { FloatingQuickActions } from '@/components/FloatingQuickActions';
+import { GlobalQuickActionModals } from '@/components/GlobalQuickActionModals';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { usePage } from '@inertiajs/react';
 import { useState } from 'react';
@@ -33,6 +34,7 @@ export function AppShell({ children, variant = 'header' }: AppShellProps) {
                 {children}
                 <FloatingQuickActions />
                 <FloatingChatGpt />
+                <GlobalQuickActionModals />
                 {shouldShowCookie && <CookieConsentBanner />}
             </div>
         );
@@ -44,6 +46,7 @@ export function AppShell({ children, variant = 'header' }: AppShellProps) {
                 {children}
                 <FloatingQuickActions />
                 <FloatingChatGpt />
+                <GlobalQuickActionModals />
                 {shouldShowCookie && <CookieConsentBanner />}
             </div>
         </SidebarProvider>

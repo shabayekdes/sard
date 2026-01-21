@@ -38,6 +38,7 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\PlanOrderController;
 use App\Http\Controllers\PlanRequestController;
+use App\Http\Controllers\QuickActionController;
 use App\Http\Controllers\RazorpayController;
 use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\RoleController;
@@ -393,6 +394,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Analytics routes
         Route::get('dashboard/analytics', [\App\Http\Controllers\DashboardAnalyticsController::class, 'index'])->name('dashboard.analytics.index');
+
+        // Quick action form data
+        Route::get('quick-actions/case-data', [QuickActionController::class, 'caseFormData'])->name('quick-actions.case-data');
+        Route::get('quick-actions/client-data', [QuickActionController::class, 'clientFormData'])->name('quick-actions.client-data');
+        Route::get('quick-actions/task-data', [QuickActionController::class, 'taskFormData'])->name('quick-actions.task-data');
 
         Route::get('media-library', function () {
             $storageSettings = \App\Services\StorageConfigService::getStorageConfig();
