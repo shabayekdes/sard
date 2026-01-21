@@ -7,13 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { hasPermission } from '@/utils/authorization';
 import { router, usePage } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PhoneInput, defaultCountries } from 'react-international-phone';
 
@@ -34,6 +33,30 @@ export default function Clients() {
     const [resetPasswordData, setResetPasswordData] = useState({ password: '', password_confirmation: '' });
     const [currentItem, setCurrentItem] = useState<any>(null);
     const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
+
+    // Reload data when language changes to refresh translations
+    useEffect(() => {
+        const handleLanguageChange = () => {
+            router.get(
+                route('clients.index'),
+                {
+                    page: pageFilters.page || 1,
+                    search: searchTerm || undefined,
+                    client_type_id: selectedClientType !== 'all' ? selectedClientType : undefined,
+                    status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                    sort_field: pageFilters.sort_field,
+                    sort_direction: pageFilters.sort_direction,
+                    per_page: pageFilters.per_page,
+                },
+                { preserveState: false, preserveScroll: false },
+            );
+        };
+
+        window.addEventListener('languageChanged', handleLanguageChange);
+        return () => {
+            window.removeEventListener('languageChanged', handleLanguageChange);
+        };
+    }, [pageFilters, searchTerm, selectedClientType, selectedStatus]);
 
     // Check if any filters are active
     const hasActiveFilters = () => {
