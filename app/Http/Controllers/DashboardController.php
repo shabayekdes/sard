@@ -246,18 +246,24 @@ class DashboardController extends Controller
             })
             ->count();
         $successRate = $totalCases > 0 ? round(($closedCases / $totalCases) * 100, 1) : 0;
+
         $avgResolutionDays = CaseModel::where('created_by', $companyId)
             ->whereHas('caseStatus', function ($q) {
                 $q->where('is_closed', true);
             })
             ->selectRaw('AVG(DATEDIFF(updated_at, created_at)) as avg_days')
             ->value('avg_days') ?? 0;
-        $totalInvoiced = Invoice::where('created_by', $companyId)->sum('total_amount') ?? 0;
-        $totalCollected = Payment::where('created_by', $companyId)->sum('amount') ?? 0;
-        $collectionRate = $totalInvoiced > 0 ? round(($totalCollected / $totalInvoiced) * 100, 1) : 0;
-        $billableHours = TimeEntry::where('created_by', $companyId)
-            ->where('is_billable', true)
-            ->sum('hours') ?? 0;
+
+        $totalInvoiced = Invoice::where('created_by', $companyId)
+            ->sum('total_amount');
+        $totalPaid = Invoice::where('created_by', $companyId)
+            ->where('status', 'paid')
+            ->sum('total_amount');
+        $collectionRate = $totalInvoiced > 0 ? round(($totalPaid / $totalInvoiced) * 100, 1) : 0;
+
+        $billableHours = Task::where('created_by', $companyId)
+            ->where('status', 'completed')
+            ->sum('estimated_duration') ?? 0;
 
         // Calculate monthly growth
         $currentMonthClients = Client::where('created_by', $companyId)
@@ -316,13 +322,17 @@ class DashboardController extends Controller
             ->values();
 
         // Upcoming hearings
+        $locale = app()->getLocale();
         $upcomingHearingsList = Hearing::where('created_by', $companyId)
             ->where('hearing_date', '>=', now())
             ->with(['case', 'court.courtType', 'court.circleType', 'judge', 'hearingType'])
             ->orderBy('hearing_date')
             ->take(4)
             ->get()
-            ->map(function ($hearing) {
+            ->map(function ($hearing) use ($locale) {
+                $hearingTypeTranslations = $hearing->hearingType?->getTranslations('name') ?? null;
+                $hearingTypeName = $hearingTypeTranslations[$locale] ?? $hearing->hearingType?->name;
+
                 return [
                     'id' => $hearing->id,
                     'hearing_id' => $hearing->hearing_id,
@@ -341,7 +351,8 @@ class DashboardController extends Controller
                         'name' => $hearing->judge->name,
                     ] : null,
                     'hearing_type' => $hearing->hearingType ? [
-                        'name' => $hearing->hearingType->name,
+                        'name' => $hearingTypeName,
+                        'name_translations' => $hearingTypeTranslations,
                     ] : null,
                     'description' => $hearing->description,
                     'hearing_date' => $hearing->hearing_date?->toDateString(),
@@ -352,7 +363,8 @@ class DashboardController extends Controller
                     'url' => $hearing->url,
                     'date' => $hearing->hearing_date?->format('M d, Y'),
                     'time' => $hearing->hearing_time ? date('H:i A', strtotime($hearing->hearing_time)) : $hearing->hearing_date?->format('H:i A'),
-                    'type' => $hearing->hearingType?->name ?? 'General'
+                    'type' => $hearingTypeName ?? __('General'),
+                    'type_translations' => $hearingTypeTranslations,
                 ];
             });
 
@@ -435,33 +447,34 @@ class DashboardController extends Controller
             }
         }
 
-        $tasksByPriority = [];
+        $tasksByStatus = [];
         for ($year = date('Y') - 4; $year <= date('Y'); $year++) {
             for ($month = 1; $month <= 12; $month++) {
                 $monthData = [
                     'year' => $year,
                     'month' => $month,
                     'month_name' => Carbon::create()->month($month)->format('M'),
-                    'critical' => 0,
-                    'high' => 0,
-                    'medium' => 0,
+                    'not_started' => 0,
+                    'in_progress' => 0,
+                    'completed' => 0,
+                    'on_hold' => 0,
                 ];
 
                 $tasks = Task::where('created_by', $companyId)
                     ->whereYear('created_at', $year)
                     ->whereMonth('created_at', $month)
-                    ->selectRaw('priority, COUNT(*) as count')
-                    ->groupBy('priority')
+                    ->selectRaw('status, COUNT(*) as count')
+                    ->groupBy('status')
                     ->get();
 
                 foreach ($tasks as $task) {
-                    $priority = strtolower($task->priority);
-                    if (isset($monthData[$priority])) {
-                        $monthData[$priority] = $task->count;
+                    $status = strtolower($task->status);
+                    if (isset($monthData[$status])) {
+                        $monthData[$status] = $task->count;
                     }
                 }
 
-                $tasksByPriority[] = $monthData;
+                $tasksByStatus[] = $monthData;
             }
         }
 
@@ -472,11 +485,12 @@ class DashboardController extends Controller
             ->take(5)
             ->get(['id', 'client_id', 'invoice_number', 'total_amount']);
 
-        // Tasks by priority (in progress only)
-        $tasksPriority = [
-            ['priority' => 'High', 'count' => Task::where('created_by', $companyId)->where('priority', 'high')->where('status', 'in_progress')->count(), 'color' => '#ef4444'],
-            ['priority' => 'Medium', 'count' => Task::where('created_by', $companyId)->where('priority', 'medium')->where('status', 'in_progress')->count(), 'color' => '#f59e0b'],
-            ['priority' => 'Low', 'count' => Task::where('created_by', $companyId)->where('priority', 'low')->where('status', 'in_progress')->count(), 'color' => '#10b981']
+        // Tasks by status
+        $tasksStatus = [
+            ['status' => 'not_started', 'count' => Task::where('created_by', $companyId)->where('status', 'not_started')->count(), 'color' => '#94a3b8'],
+            ['status' => 'in_progress', 'count' => Task::where('created_by', $companyId)->where('status', 'in_progress')->count(), 'color' => '#3b82f6'],
+            ['status' => 'completed', 'count' => Task::where('created_by', $companyId)->where('status', 'completed')->count(), 'color' => '#10b981'],
+            ['status' => 'on_hold', 'count' => Task::where('created_by', $companyId)->where('status', 'on_hold')->count(), 'color' => '#f59e0b']
         ];
 
         // Get user's current plan with relationship
@@ -523,8 +537,8 @@ class DashboardController extends Controller
             'casesByYear' => $casesByYear,
             'yearlyRevenue' => $yearlyRevenue,
             'overdueInvoices' => $overdueInvoices,
-            'tasksByPriority' => $tasksByPriority,
-            'tasksPriority' => $tasksPriority,
+            'tasksByStatus' => $tasksByStatus,
+            'tasksStatus' => $tasksStatus,
             'plan' => [
                 'name' => $currentPlan ? $currentPlan->name : 'Free Plan',
                 'storage_limit' => $storageLimit,

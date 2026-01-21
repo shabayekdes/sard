@@ -53,13 +53,14 @@ interface CompanyDashboardData {
     month_name: string;
     revenue: number;
   }>;
-  tasksByPriority?: Array<{
+  tasksByStatus?: Array<{
     year: number;
     month: number;
     month_name: string;
-    critical: number;
-    high: number;
-    medium: number;
+    not_started: number;
+    in_progress: number;
+    completed: number;
+    on_hold: number;
   }>;
   overdueInvoices?: Array<{
     id: number;
@@ -78,7 +79,7 @@ interface CompanyDashboardData {
     } | null;
     court: { name?: string; court_type?: string | null; circle_type?: string | null } | string | null;
     judge?: { name?: string } | null;
-    hearing_type?: { name?: string } | null;
+    hearing_type?: { name?: string; name_translations?: Record<string, string> } | null;
     description?: string | null;
     hearing_date?: string | null;
     hearing_time?: string | null;
@@ -89,6 +90,7 @@ interface CompanyDashboardData {
     date: string;
     time: string;
     type: string;
+    type_translations?: Record<string, string> | null;
   }>;
   recentCases?: Array<{
     id: number;
@@ -107,7 +109,7 @@ interface CompanyDashboardData {
     status?: string | number | null;
     priority?: string | null;
   }>;
-  tasksPriority: Array<{ priority: string; count: number; color: string }>;
+  tasksStatus: Array<{ status: string; count: number; color: string }>;
   plan: {
     name: string;
     storage_limit: number;
@@ -133,7 +135,22 @@ interface PageAction {
 }
 
 export default function Dashboard({ dashboardData }: { dashboardData: CompanyDashboardData }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLocale = i18n.language || 'en';
+
+  const getTranslatedLabel = (translations?: Record<string, string> | null, fallback?: string | null) => {
+    if (translations) {
+      return translations[currentLocale] || translations.en || translations.ar || fallback || '-';
+    }
+    return fallback || '-';
+  };
+
+  const taskStatusLabels: Record<string, string> = {
+    not_started: t('Not Started'),
+    in_progress: t('In Progress'),
+    completed: t('Completed'),
+    on_hold: t('On Hold')
+  };
   const pageActions: PageAction[] = [
     {
       label: t('Analytics'),
@@ -178,11 +195,12 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
   const casesByYear = dashboardData?.casesByYear || [];
   const yearlyRevenue = dashboardData?.yearlyRevenue || [];
   const overdueInvoices = dashboardData?.overdueInvoices || [];
-  const tasksByPriority = dashboardData?.tasksByPriority || [];
-  const tasksPriority = dashboardData?.tasksPriority || [
-    { priority: 'High', count: 8, color: '#ef4444' },
-    { priority: 'Medium', count: 12, color: '#f59e0b' },
-    { priority: 'Low', count: 3, color: '#10b981' }
+  const tasksByStatus = dashboardData?.tasksByStatus || [];
+  const tasksStatus = dashboardData?.tasksStatus || [
+    { status: 'not_started', count: 8, color: '#94a3b8' },
+    { status: 'in_progress', count: 12, color: '#3b82f6' },
+    { status: 'completed', count: 6, color: '#10b981' },
+    { status: 'on_hold', count: 3, color: '#f59e0b' }
   ];
 
   // ShareModal state variables removed
@@ -401,7 +419,7 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
         {/* Main Dashboard Content */}
         <div className="grid gap-6 lg:grid-cols-12">
           {/* Upcoming Sessions */}
-          <Card className="lg:col-span-4">
+          <Card className="lg:col-span-6">
             <CardHeader>
               <Link href={route('hearings.index')} className="block">
                 <CardTitle className="flex items-center justify-between hover:text-primary transition-colors">
@@ -420,7 +438,7 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
                     key={hearing.id}
                     type="button"
                     onClick={() => openSessionView(hearing)}
-                    className="block w-full text-left"
+                    className="block w-full text-start"
                   >
                     <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
                       <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
@@ -433,7 +451,9 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
                         </p>
                         <p className="text-xs text-muted-foreground">{hearing.date} at {hearing.time}</p>
                       </div>
-                      <Badge variant="outline" className="text-xs">{hearing.type}</Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {getTranslatedLabel(hearing.type_translations, hearing.type)}
+                      </Badge>
                     </div>
                   </button>
                 ))}
@@ -448,7 +468,7 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
           </Card>
 
           {/* Recent Cases */}
-          <Card className="lg:col-span-4">
+          <Card className="lg:col-span-6">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -489,7 +509,7 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
           </Card>
 
           {/* Cases by Year */}
-          <Card className="hover:shadow-lg transition-shadow lg:col-span-4">
+          <Card className="hover:shadow-lg transition-shadow lg:col-span-12">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -649,21 +669,21 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
 
         {/* Additional Analytics */}
         <div className="grid gap-6 lg:grid-cols-12">
-          {/* Tasks by Priority (summary) */}
+          {/* Tasks by Status (summary) */}
           <Card className="lg:col-span-4">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="h-5 w-5" />
-                {t('Tasks by Priority')}
+                {t('Tasks by Status')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {tasksPriority.map((task, index) => (
+                {tasksStatus.map((task, index) => (
                   <div key={index} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-4 h-4 rounded-full" style={{ backgroundColor: task.color }} />
-                      <span className="font-medium">{task.priority} Priority</span>
+                      <span className="font-medium">{taskStatusLabels[task.status] || task.status}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-2xl font-bold">{task.count}</span>
@@ -721,13 +741,13 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
             </CardContent>
           </Card>
 
-          {/* Tasks by Priority (chart) */}
+          {/* Tasks by Status (chart) */}
           <Card className="lg:col-span-4">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <Target className="h-5 w-5" />
-                  {t('Tasks by Priority')}
+                  {t('Tasks by Status')}
                 </CardTitle>
                 <Select value={selectedTaskYear.toString()} onValueChange={(value) => setSelectedTaskYear(parseInt(value, 10))}>
                   <SelectTrigger className="w-24">
@@ -744,23 +764,24 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
               </div>
             </CardHeader>
             <CardContent>
-              {tasksByPriority.filter((item) => item.year === selectedTaskYear).length > 0 ? (
+              {tasksByStatus.filter((item) => item.year === selectedTaskYear).length > 0 ? (
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={tasksByPriority.filter((item) => item.year === selectedTaskYear)}>
+                  <BarChart data={tasksByStatus.filter((item) => item.year === selectedTaskYear)}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis dataKey="month_name" tick={{ fontSize: 12 }} />
                     <YAxis tick={{ fontSize: 12 }} />
                     <RechartsTooltip />
-                    <Bar dataKey="critical" fill="#ef4444" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="high" fill="#f59e0b" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="medium" fill="#10b981" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="not_started" fill="#94a3b8" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="in_progress" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="completed" fill="#10b981" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="on_hold" fill="#f59e0b" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
                 <div className="flex items-center justify-center h-[250px] text-muted-foreground">
                   <div className="text-center">
                     <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>{t('No task priority data')}</p>
+                    <p>{t('No task status data')}</p>
                   </div>
                 </div>
               )}
@@ -797,7 +818,10 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
           case: formatCaseLabel(currentSession?.case),
           court: formatCourtLabel(currentSession?.court),
           judge: currentSession?.judge?.name || '-',
-          hearing_type: currentSession?.hearing_type?.name || currentSession?.type || '-',
+          hearing_type: getTranslatedLabel(
+            currentSession?.hearing_type?.name_translations || currentSession?.type_translations,
+            currentSession?.hearing_type?.name || currentSession?.type
+          ),
           hearing_date: currentSession?.hearing_date || currentSession?.date || '-',
           hearing_time: currentSession?.hearing_time || currentSession?.time || '-',
           duration_minutes: currentSession?.duration_minutes ? `${currentSession.duration_minutes} minutes` : '-',
