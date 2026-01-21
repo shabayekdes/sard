@@ -31,8 +31,8 @@ class CountryController extends Controller
         }
 
         // Handle sorting
-        $sortField = $request->input('sort_field', 'created_at');
-        $sortDirection = $request->input('sort_direction', 'desc');
+        $sortField = $request->input('sort_field', 'id');
+        $sortDirection = $request->input('sort_direction', 'asc');
 
         // For translatable fields, sort by the current locale
         if (in_array($sortField, ['name', 'nationality_name'])) {
