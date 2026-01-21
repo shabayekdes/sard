@@ -212,10 +212,20 @@ export function PageCrudWrapper({
   };
 
   const handleAction = (action: string, item: any) => {
-    // Transform translatable fields for currencies and countries
+    // Transform translatable fields for currencies, countries, and tax rates
     let transformedItem = { ...item };
     if (entity.name === 'currencies') {
       // Convert translation objects to flat structure for form fields
+      if (item.name_translations) {
+        transformedItem['name.en'] = item.name_translations.en || '';
+        transformedItem['name.ar'] = item.name_translations.ar || '';
+      }
+      if (item.description_translations) {
+        transformedItem['description.en'] = item.description_translations.en || '';
+        transformedItem['description.ar'] = item.description_translations.ar || '';
+      }
+    }
+    if (entity.name === 'taxRates') {
       if (item.name_translations) {
         transformedItem['name.en'] = item.name_translations.en || '';
         transformedItem['name.ar'] = item.name_translations.ar || '';

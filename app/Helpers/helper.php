@@ -58,7 +58,7 @@ if (! function_exists('settings')) {
         if (auth()->check() && auth()->user()->type !== 'superadmin') {
             $superAdmin = User::where('type', 'superadmin')->first();
             if ($superAdmin) {
-                $superAdminKeys = ['decimalFormat', 'defaultCurrency', 'thousandsSeparator', 'floatNumber', 'currencySymbolSpace', 'currencySymbolPosition', 'dateFormat', 'timeFormat', 'calendarStartDay', 'defaultTimezone', 'defaultCountry'];
+                $superAdminKeys = ['decimalFormat', 'defaultCurrency', 'thousandsSeparator', 'floatNumber', 'currencySymbolSpace', 'currencySymbolPosition', 'dateFormat', 'timeFormat', 'calendarStartDay', 'defaultTimezone', 'defaultCountry', 'defaultTaxRate'];
                 $superAdminSettings = Setting::where('user_id', $superAdmin->id)
                     ->whereIn('key', $superAdminKeys)
                     ->pluck('value', 'key')
@@ -1089,6 +1089,7 @@ if (! function_exists('defaultSettings')) {
             'defaultTimezone' => 'UTC',
             'emailVerification' => false,
             'landingPageEnabled' => true,
+            'defaultTaxRate' => '15',
             'recaptchaEnabled' => false,
             'recaptchaVersion' => 'v3',
             'recaptchaSiteKey' => config('services.recaptcha.site_key', ''),

@@ -19,7 +19,7 @@ import { PhoneInput, defaultCountries } from 'react-international-phone';
 
 export default function Clients() {
     const { t, i18n } = useTranslation();
-    const { auth, clients, clientTypes, countries, phoneCountries, planLimits, defaultCountry = '', filters: pageFilters = {} } = usePage().props as any;
+    const { auth, clients, clientTypes, countries, phoneCountries, planLimits, defaultCountry = '', defaultTaxRate = '', filters: pageFilters = {} } = usePage().props as any;
     const permissions = auth?.permissions || [];
     const currentLocale = i18n.language || 'en';
 
@@ -634,13 +634,7 @@ export default function Clients() {
                             conditional: (_, data) => data?.business_type === 'b2c',
                         },
                         // Business fields
-                        {
-                            name: 'company_name',
-                            label: t('Company Name'),
-                            type: 'text',
-                            required: false,
-                            conditional: (_, data) => data?.business_type === 'b2b',
-                        },
+                        // Company Name field hidden per requirements
                         {
                             name: 'unified_number',
                             label: t('Unified Number'),
@@ -677,9 +671,9 @@ export default function Clients() {
                             step: '0.01',
                             min: '0',
                             max: '100',
-                            defaultValue: 0,
+                            defaultValue: defaultTaxRate ? Number(defaultTaxRate) : 0,
                         },
-                        { name: 'referral_source', label: t('Referral Source'), type: 'text' },
+                        // Referral Source field hidden per requirements
                         { name: 'notes', label: t('Note'), type: 'textarea' },
                         {
                             name: 'status',

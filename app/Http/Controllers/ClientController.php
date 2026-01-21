@@ -122,6 +122,7 @@ class ClientController extends Controller
             'countries' => $countries,
             'phoneCountries' => $phoneCountries,
             'defaultCountry' => getSetting('defaultCountry', ''),
+            'defaultTaxRate' => getSetting('defaultTaxRate', ''),
             'planLimits' => $planLimits,
             'filters' => $request->all(['search', 'client_type_id', 'status', 'sort_field', 'sort_direction', 'per_page']),
         ]);

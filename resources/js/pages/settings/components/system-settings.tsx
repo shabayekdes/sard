@@ -16,12 +16,15 @@ interface SystemSettingsProps {
     dateFormats?: Record<string, string>;
     timeFormats?: Record<string, string>;
     countries?: Array<{ value: string; label: string }>;
+    taxRates?: Array<{ id: number; name: string | Record<string, string>; rate: number }>;
 }
 
-export default function SystemSettings({ settings = {}, timezones = {}, dateFormats = {}, timeFormats = {}, countries = [] }: SystemSettingsProps) {
-    const { t } = useTranslation();
+export default function SystemSettings({ settings = {}, timezones = {}, dateFormats = {}, timeFormats = {}, countries = [], taxRates = [] }: SystemSettingsProps) {
+    const { t, i18n } = useTranslation();
     const { pageProps, auth } = usePage().props as any;
     const isCompanyUser = auth?.roles?.includes('company');
+    const noTaxRateValue = '__none__';
+    const currentLocale = i18n.language || 'en';
 
     // Default settings
     const defaultSettings = {
@@ -34,6 +37,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
         emailVerification: false,
         landingPageEnabled: true,
         strictlyNecessaryCookies: false,
+        defaultTaxRate: '',
     };
 
     // Combine settings from props and page props
@@ -46,6 +50,20 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
         return String(value);
     };
 
+    const normalizeTaxRateValue = (value: unknown) => {
+        if (value === null || value === undefined || value === '') {
+            return '';
+        }
+        return String(Number(value));
+    };
+
+    const resolveTaxRateName = (name: string | Record<string, string>) => {
+        if (typeof name === 'string') {
+            return name;
+        }
+        return name[currentLocale] || name.en || name.ar || '';
+    };
+
     // Initialize state with merged settings
     const [systemSettings, setSystemSettings] = useState(() => ({
         defaultCountry: normalizeCountryValue(settingsData.defaultCountry ?? defaultSettings.defaultCountry),
@@ -54,6 +72,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
         timeFormat: settingsData.timeFormat || defaultSettings.timeFormat,
         calendarStartDay: settingsData.calendarStartDay || defaultSettings.calendarStartDay,
         defaultTimezone: settingsData.defaultTimezone || defaultSettings.defaultTimezone,
+        defaultTaxRate: normalizeTaxRateValue(settingsData.defaultTaxRate ?? defaultSettings.defaultTaxRate),
         emailVerification: settingsData.emailVerification === 'true' || settingsData.emailVerification === true || defaultSettings.emailVerification,
         landingPageEnabled:
             settingsData.landingPageEnabled === 'true' ||
@@ -79,6 +98,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
                 ...prevSettings,
                 ...mergedSettings,
                 defaultCountry: normalizeCountryValue(settingsData.defaultCountry ?? defaultSettings.defaultCountry),
+                defaultTaxRate: normalizeTaxRateValue(settingsData.defaultTaxRate ?? defaultSettings.defaultTaxRate),
                 emailVerification:
                     mergedSettings.emailVerification === 'true' ||
                     mergedSettings.emailVerification === true ||
@@ -116,6 +136,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
             timeFormat: systemSettings.timeFormat,
             calendarStartDay: systemSettings.calendarStartDay,
             defaultTimezone: systemSettings.defaultTimezone,
+            defaultTaxRate: systemSettings.defaultTaxRate === '' ? null : systemSettings.defaultTaxRate,
             emailVerification: Boolean(systemSettings.emailVerification),
             landingPageEnabled: Boolean(systemSettings.landingPageEnabled),
             strictlyNecessaryCookies: Boolean(systemSettings.strictlyNecessaryCookies),
@@ -322,6 +343,37 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
                                         <SelectItem value="America/Chicago">Central Time (CT)</SelectItem>
                                         <SelectItem value="Europe/London">London (GMT)</SelectItem>
                                     </>
+                                )}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="grid gap-2 md:col-span-2">
+                        <Label htmlFor="defaultTaxRate">{t('Default Tax Rate')}</Label>
+                        <Select
+                            value={systemSettings.defaultTaxRate || noTaxRateValue}
+                            onValueChange={(value) =>
+                                handleSystemSettingsChange(
+                                    'defaultTaxRate',
+                                    value === noTaxRateValue ? '' : normalizeTaxRateValue(value),
+                                )
+                            }
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder={t('Select tax rate')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value={noTaxRateValue}>{t('No default tax rate')}</SelectItem>
+                                {taxRates.length > 0 ? (
+                                    taxRates.map((taxRate) => (
+                                        <SelectItem key={taxRate.id} value={normalizeTaxRateValue(taxRate.rate)}>
+                                            {resolveTaxRateName(taxRate.name)} ({taxRate.rate}%)
+                                        </SelectItem>
+                                    ))
+                                ) : (
+                                    <SelectItem value="__empty" disabled>
+                                        {t('No tax rates available')}
+                                    </SelectItem>
                                 )}
                             </SelectContent>
                         </Select>

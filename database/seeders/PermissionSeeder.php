@@ -131,6 +131,15 @@ class PermissionSeeder extends Seeder
             ['name' => 'edit-currencies', 'module' => 'currencies', 'label' => 'Edit Currencies', 'description' => 'Can edit currencies'],
             ['name' => 'delete-currencies', 'module' => 'currencies', 'label' => 'Delete Currencies', 'description' => 'Can delete currencies'],
 
+            // Tax Rate management
+            ['name' => 'manage-tax-rates', 'module' => 'tax_rates', 'label' => 'Manage Tax Rates', 'description' => 'Can manage tax rates'],
+            ['name' => 'manage-any-tax-rates', 'module' => 'tax_rates', 'label' => 'Manage All tax rates', 'description' => 'Manage Any tax rates'],
+            ['name' => 'manage-own-tax-rates', 'module' => 'tax_rates', 'label' => 'Manage Own tax rates', 'description' => 'Manage Limited tax rates that is created by own'],
+            ['name' => 'view-tax-rates', 'module' => 'tax_rates', 'label' => 'View Tax Rates', 'description' => 'View tax rates'],
+            ['name' => 'create-tax-rates', 'module' => 'tax_rates', 'label' => 'Create Tax Rates', 'description' => 'Can create tax rates'],
+            ['name' => 'edit-tax-rates', 'module' => 'tax_rates', 'label' => 'Edit Tax Rates', 'description' => 'Can edit tax rates'],
+            ['name' => 'delete-tax-rates', 'module' => 'tax_rates', 'label' => 'Delete Tax Rates', 'description' => 'Can delete tax rates'],
+
             // Country management
             ['name' => 'manage-countries', 'module' => 'countries', 'label' => 'Manage Countries', 'description' => 'Can manage countries'],
             ['name' => 'manage-any-countries', 'module' => 'countries', 'label' => 'Manage All Countries', 'description' => 'Manage Any Countries'],

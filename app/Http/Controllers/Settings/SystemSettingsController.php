@@ -35,6 +35,7 @@ class SystemSettingsController extends Controller
                 'timeFormat' => 'required|string',
                 'calendarStartDay' => 'required|string',
                 'defaultTimezone' => 'required|string',
+                'defaultTaxRate' => 'nullable|numeric|min:0|max:100',
                 'emailVerification' => 'boolean',
                 'landingPageEnabled' => 'boolean',
             ]);

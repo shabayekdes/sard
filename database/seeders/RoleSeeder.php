@@ -81,6 +81,9 @@ class RoleSeeder extends Seeder
             'manage-currencies',
             'manage-any-currencies',
             'manage-own-currencies',
+            'manage-tax-rates',
+            'manage-any-tax-rates',
+            'manage-own-tax-rates',
             'manage-plan-requests',
             'manage-any-plan-requests',
             'manage-own-plan-requests',
@@ -169,6 +172,15 @@ class RoleSeeder extends Seeder
             'create-currencies',
             'edit-currencies',
             'delete-currencies',
+
+            // Tax Rate permissions
+            'manage-tax-rates',
+            'manage-any-tax-rates',
+            'manage-own-tax-rates',
+            'view-tax-rates',
+            'create-tax-rates',
+            'edit-tax-rates',
+            'delete-tax-rates',
 
             // Company Profile permissions
             'manage-company-profiles',

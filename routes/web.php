@@ -45,6 +45,7 @@ use App\Http\Controllers\SkrillPaymentController;
 use App\Http\Controllers\SSPayPaymentController;
 use App\Http\Controllers\StripePaymentController;
 use App\Http\Controllers\TapPaymentController;
+use App\Http\Controllers\TaxRateController;
 use App\Http\Controllers\ToyyibPayPaymentController;
 use App\Http\Controllers\TranslationController;
 use App\Http\Controllers\UserController;
@@ -876,6 +877,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('currencies/{currency}', [CurrencyController::class, 'update'])->middleware('permission:edit-currencies')->name('currencies.update');
             Route::delete('currencies/{currency}', [CurrencyController::class, 'destroy'])->middleware('permission:delete-currencies')->name('currencies.destroy');
             Route::get('api/currencies', [CurrencyController::class, 'getAllCurrencies'])->name('api.currencies');
+        });
+
+        // Tax Rates routes
+        Route::middleware('permission:manage-tax-rates')->group(function () {
+            Route::get('tax-rates', [TaxRateController::class, 'index'])->name('tax-rates.index');
+            Route::post('tax-rates', [TaxRateController::class, 'store'])->middleware('permission:create-tax-rates')->name('tax-rates.store');
+            Route::put('tax-rates/{taxRate}', [TaxRateController::class, 'update'])->middleware('permission:edit-tax-rates')->name('tax-rates.update');
+            Route::delete('tax-rates/{taxRate}', [TaxRateController::class, 'destroy'])->middleware('permission:delete-tax-rates')->name('tax-rates.destroy');
         });
 
         // Countries routes

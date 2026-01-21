@@ -15,6 +15,7 @@ use App\Models\EmailTemplate;
 use App\Models\NotificationTemplate;
 use App\Models\User;
 use App\Models\UserEmailTemplate;
+use App\Models\TaxRate;
 use App\Http\Resources\CurrencyResource;
 use Illuminate\Http\Request;
 
@@ -35,6 +36,9 @@ class SettingsController extends Controller
         $paymentSettings = PaymentSetting::getUserSettings(auth()->id());
         $webhooks = Webhook::where('user_id', auth()->id())->get();
         $companySettings = CompanySetting::where('created_by', createdBy())->get();
+        $taxRates = TaxRate::where('is_active', true)
+            ->orderByRaw("JSON_EXTRACT(name, '$.en')")
+            ->get(['id', 'name', 'rate']);
         $countries = Country::where('is_active', true)
             ->orderByRaw("JSON_EXTRACT(name, '$.en')")
             ->get(['country_code', 'name'])
@@ -103,6 +107,7 @@ class SettingsController extends Controller
             'paymentSettings' => $paymentSettings,
             'webhooks' => $webhooks,
             'companySettings' => $companySettings,
+            'taxRates' => $taxRates,
             'countries' => $countries,
             'emailTemplates' => $emailTemplates,
             // 'slackSettings' => $slackSettings,

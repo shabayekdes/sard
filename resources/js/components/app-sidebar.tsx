@@ -24,6 +24,7 @@ import {
     Mail,
     MessageSquare,
     Palette,
+    Percent,
     Settings,
     UserCheck,
     Users,
@@ -104,6 +105,11 @@ export function AppSidebar() {
             title: t('Currencies'),
             href: route('currencies.index'),
             icon: DollarSign,
+        },
+        {
+            title: t('Tax Rates'),
+            href: route('tax-rates.index'),
+            icon: Percent,
         },
         {
             title: t('Referral Program'),
