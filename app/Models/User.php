@@ -290,8 +290,4 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
         });
     }
 
-    public function clientBillingCurrencies(): HasMany
-    {
-        return $this->hasMany(Currency::class, 'created_by');
-    }
 }

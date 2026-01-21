@@ -57,8 +57,7 @@ class ClientBillingInfoController extends Controller
             ->get(['id', 'name']);
 
         // Get currencies for form dropdown
-        $currencies = Currency::where('created_by', createdBy())
-            ->where('status', true)
+        $currencies = Currency::where('status', true)
             ->orderByRaw("JSON_EXTRACT(name, '$.ar') ASC")
             ->get(['id', 'name', 'code', 'symbol']);
 
@@ -83,7 +82,6 @@ class ClientBillingInfoController extends Controller
             'currency' => [
                 'nullable',
                 Rule::exists('currencies', 'code')
-                    ->where('created_by', createdBy())
                     ->where('status', true),
             ],
             'billing_notes' => 'nullable|string',
@@ -92,15 +90,8 @@ class ClientBillingInfoController extends Controller
 
         $validated['created_by'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
-        $defaultCurrency = Currency::where('created_by', createdBy())
-            ->where('status', true)
-            ->where('is_default', true)
-            ->value('code');
-        if (!$defaultCurrency) {
-            $defaultCurrency = Currency::where('created_by', createdBy())
-                ->where('status', true)
-                ->value('code');
-        }
+        $defaultCurrency = getSetting('defaultCurrency')
+            ?: Currency::where('status', true)->value('code');
         $validated['currency'] = $validated['currency'] ?? $defaultCurrency ?? 'USD';
 
         // Check if client belongs to the current user's company
@@ -138,7 +129,6 @@ class ClientBillingInfoController extends Controller
                     'currency' => [
                         'nullable',
                         Rule::exists('currencies', 'code')
-                            ->where('created_by', createdBy())
                             ->where('status', true),
                     ],
                     'billing_notes' => 'nullable|string',

@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Translatable\HasTranslations;
 
 class Currency extends Model
@@ -17,7 +16,6 @@ class Currency extends Model
         'code',
         'symbol',
         'description',
-        'created_by',
         'status',
     ];
     
@@ -25,8 +23,4 @@ class Currency extends Model
         'status' => 'boolean',
     ];
 
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
 }

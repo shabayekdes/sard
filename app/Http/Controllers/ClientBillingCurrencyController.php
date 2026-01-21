@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Currency;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
@@ -12,8 +11,7 @@ class ClientBillingCurrencyController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Currency::query()
-            ->where('created_by', createdBy());
+        $query = Currency::query();
 
         if ($request->has('search')) {
             $searchTerm = $request->search;
@@ -53,13 +51,12 @@ class ClientBillingCurrencyController extends Controller
                 'required',
                 'string',
                 'max:10',
-                Rule::unique('currencies', 'code')->where('created_by', createdBy()),
+                Rule::unique('currencies', 'code'),
             ],
             'symbol' => 'required|string|max:10',
             'description' => 'nullable|string',
         ]);
 
-        $validated['created_by'] = Auth::user()->id;
         $validated['status'] = true;
         $validated['name'] = ['en' => $validated['name'], 'ar' => $validated['name']];
         if (!empty($validated['description'])) {
@@ -80,7 +77,6 @@ class ClientBillingCurrencyController extends Controller
                 'string',
                 'max:10',
                 Rule::unique('currencies', 'code')
-                    ->where('created_by', createdBy())
                     ->ignore($clientBillingCurrency->id),
             ],
             'symbol' => 'required|string|max:10',
@@ -111,8 +107,7 @@ class ClientBillingCurrencyController extends Controller
     public function getAllCurrencies()
     {
         $locale = app()->getLocale();
-        $currencies = Currency::where('created_by', createdBy())
-            ->where('status', true)
+        $currencies = Currency::where('status', true)
             ->orderByRaw("JSON_EXTRACT(name, '$.{$locale}') ASC")
             ->get(['id', 'name', 'code', 'symbol']);
         

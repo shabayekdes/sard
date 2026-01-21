@@ -15,7 +15,7 @@ class CurrencyController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Currency::query()->whereNull('created_by');
+        $query = Currency::query();
 
         // Handle search - search in translatable fields
         if ($request->has('search')) {
@@ -71,7 +71,7 @@ class CurrencyController extends Controller
                 'required',
                 'string',
                 'max:10',
-                Rule::unique('currencies', 'code')->whereNull('created_by'),
+                Rule::unique('currencies', 'code'),
             ],
             'symbol' => 'required|string|max:10',
             'description' => 'nullable|array',
@@ -79,7 +79,6 @@ class CurrencyController extends Controller
             'description.ar' => 'nullable|string',
         ]);
 
-        $validated['created_by'] = null;
         $validated['status'] = true;
 
         Currency::create($validated);
@@ -100,7 +99,7 @@ class CurrencyController extends Controller
                 'required',
                 'string',
                 'max:10',
-                Rule::unique('currencies', 'code')->whereNull('created_by')->ignore($currency->id),
+                Rule::unique('currencies', 'code')->ignore($currency->id),
             ],
             'symbol' => 'required|string|max:10',
             'description' => 'nullable|array',
@@ -128,7 +127,7 @@ class CurrencyController extends Controller
      */
     public function getAllCurrencies()
     {
-        $currencies = Currency::whereNull('created_by')->get();
+        $currencies = Currency::all();
 
         return response()->json(CurrencyResource::collection($currencies)->resolve());
     }

@@ -101,6 +101,11 @@ export function AppSidebar() {
             icon: Globe,
         },
         {
+            title: t('Currencies'),
+            href: route('currencies.index'),
+            icon: DollarSign,
+        },
+        {
             title: t('Referral Program'),
             href: route('referral.index'),
             icon: Gift,
@@ -621,16 +626,6 @@ export function AppSidebar() {
             billingConfigChildren.push({
                 title: t('Expense Category'),
                 href: route('billing.expense-categories.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-currencies') ||
-            hasPermission(permissions, 'manage-any-currencies') ||
-            hasPermission(permissions, 'manage-own-currencies')
-        ) {
-            billingConfigChildren.push({
-                title: t('Currencies'),
-                href: route('client-billing-currencies.index'),
             });
         }
         if (billingConfigChildren.length > 0) {

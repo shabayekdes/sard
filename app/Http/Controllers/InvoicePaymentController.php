@@ -112,11 +112,10 @@ class InvoicePaymentController extends Controller
         // Get currency details if company currency is set
         $defaultCurrency = null;
         if ($companyCurrency) {
-            $defaultCurrency = \App\Models\Currency::where('created_by', $invoice->created_by)
-                ->where(function ($query) use ($companyCurrency) {
-                    $query->where('code', $companyCurrency)
-                        ->orWhere('id', $companyCurrency);
-                })
+            $defaultCurrency = \App\Models\Currency::where(function ($query) use ($companyCurrency) {
+                $query->where('code', $companyCurrency)
+                    ->orWhere('id', $companyCurrency);
+            })
                 ->select('id', 'name', 'code', 'symbol')
                 ->first();
         }

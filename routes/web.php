@@ -488,15 +488,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('client/billing/{billing}', [\App\Http\Controllers\ClientBillingInfoController::class, 'destroy'])->middleware('permission:delete-client-billing')->name('clients.billing.destroy');
         });
 
-        // Client Billing Currency routes
-        Route::middleware('permission:manage-currencies')->group(function () {
-            Route::get('client-billing-currencies', [\App\Http\Controllers\ClientBillingCurrencyController::class, 'index'])->name('client-billing-currencies.index');
-            Route::post('client-billing-currencies', [\App\Http\Controllers\ClientBillingCurrencyController::class, 'store'])->middleware('permission:create-currencies')->name('client-billing-currencies.store');
-            Route::put('client-billing-currencies/{clientBillingCurrency}', [\App\Http\Controllers\ClientBillingCurrencyController::class, 'update'])->middleware('permission:edit-currencies')->name('client-billing-currencies.update');
-            Route::delete('client-billing-currencies/{clientBillingCurrency}', [\App\Http\Controllers\ClientBillingCurrencyController::class, 'destroy'])->middleware('permission:delete-currencies')->name('client-billing-currencies.destroy');
-            Route::get('api/client-billing-currencies', [\App\Http\Controllers\ClientBillingCurrencyController::class, 'getAllCurrencies'])->name('api.client-billing-currencies');
-        });
-
         // Company Profile routes
         Route::middleware('permission:manage-company-profiles')->group(function () {
             Route::get('advocate/company-profiles', [\App\Http\Controllers\CompanyProfileController::class, 'index'])->name('advocate.company-profiles.index');
@@ -879,6 +870,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
 
         // Currencies routes
+        Route::middleware('permission:manage-currencies')->group(function () {
+            Route::get('currencies', [CurrencyController::class, 'index'])->name('currencies.index');
+            Route::post('currencies', [CurrencyController::class, 'store'])->middleware('permission:create-currencies')->name('currencies.store');
+            Route::put('currencies/{currency}', [CurrencyController::class, 'update'])->middleware('permission:edit-currencies')->name('currencies.update');
+            Route::delete('currencies/{currency}', [CurrencyController::class, 'destroy'])->middleware('permission:delete-currencies')->name('currencies.destroy');
+            Route::get('api/currencies', [CurrencyController::class, 'getAllCurrencies'])->name('api.currencies');
+        });
 
         // Countries routes
         Route::middleware('permission:manage-countries')->group(function () {

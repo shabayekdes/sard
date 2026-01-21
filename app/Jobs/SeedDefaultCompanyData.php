@@ -68,7 +68,6 @@ class SeedDefaultCompanyData implements ShouldQueue
         SeedCompanySettings::dispatch($this->companyUserId);
         SeedCompanyRoles::dispatch($this->companyUserId);
         SeedNotificationTemplates::dispatch($this->companyUserId);
-        SeedCompanyCurrencies::dispatch($this->companyUserId);
         
         // Data seeding jobs
         SeedExpenseCategories::dispatch($this->companyUserId);

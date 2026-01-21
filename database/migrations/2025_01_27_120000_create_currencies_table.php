@@ -17,11 +17,10 @@ return new class extends Migration
             $table->string('code', 10);
             $table->string('symbol', 10)->nullable();
             $table->json('description')->nullable();
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->boolean('status')->default(true);
             $table->timestamps();
 
-            $table->unique(['code', 'created_by']);
+            $table->unique(['code']);
         });
     }
 

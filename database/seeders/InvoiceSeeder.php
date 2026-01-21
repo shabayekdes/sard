@@ -123,8 +123,7 @@ class InvoiceSeeder extends Seeder
         $taxAmount = $subtotal * ($taxRate / 100);
         $totalAmount = $subtotal + $taxAmount;
         
-        $currencyId = \App\Models\Currency::where('created_by', $company->id)
-            ->where('status', true)
+        $currencyId = \App\Models\Currency::where('status', true)
             ->first()?->id;
         
         $invoiceDate = now()->subDays(rand(1, 30));
