@@ -216,7 +216,7 @@ export function AppSidebar() {
             hasPermission(permissions, 'manage-own-hearings')
         ) {
             caseChildren.push({
-                title: t('Hearings'),
+                title: t('Sessions'),
                 href: route('hearings.index'),
             });
         }
@@ -504,7 +504,7 @@ export function AppSidebar() {
             hasPermission(permissions, 'manage-own-hearing-types')
         ) {
             caseConfigChildren.push({
-                title: t('Hearing Types'),
+                title: t('Session Types'),
                 href: route('hearing-types.index'),
             });
         }

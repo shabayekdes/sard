@@ -3073,5 +3073,16 @@
   "Company & System": "Company & System",
   "New Client": "New Client",
   "Schedule Session": "Schedule Session",
-  "New Task": "New Task"
+  "New Task": "New Task",
+  "Sessions": "Sessions",
+  "Circle": "Circle",
+  "All Court Types": "All Court Types",
+  "All Circle Types": "All Circle Types",
+  "Session Management": "Session Management",
+  "Circle Type": "Circle Type",
+  "Circle Number": "Circle Number",
+  "Select Judge": "Select Judge",
+  "Schedule New Session": "Schedule New Session",
+  "Session Types": "Session Types",
+  "In progress": "In progress"
 }

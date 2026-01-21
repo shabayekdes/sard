@@ -3054,5 +3054,16 @@
   "Schedule Session": "جدولة جلسة",
   "New Task": "مهمة جديدة",
   "Tasks by Status": "المهام حسب الحالة",
-  "No task status data": "لا توجد بيانات لحالة المهام"
+  "No task status data": "لا توجد بيانات لحالة المهام",
+  "Sessions": "جلسات",
+  "Circle": "دائرة",
+  "All Court Types": "جميع أنواع المحاكم",
+  "All Circle Types": "جميع أنواع الدوائر",
+  "Session Management": "إدارة الجلسات",
+  "Circle Type": "نوع الدائرة",
+  "Circle Number": "رقم الدائرة",
+  "Select Judge": "اختر القاضي",
+  "Schedule New Session": "جدولة جلسة جديدة",
+  "Session Types": "أنواع الجلسات",
+  "In progress": "قيد التنفيذ"
 }

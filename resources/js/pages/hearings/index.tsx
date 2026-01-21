@@ -170,7 +170,7 @@ export default function Hearings() {
 
   const breadcrumbs = [
     { title: t('Dashboard'), href: route('dashboard') },
-    { title: t('Court Schedule'), href: route('courts.index') },
+    { title: t('Cases'), href: route('cases.index') },
     { title: t('Sessions') }
   ];
 
@@ -212,7 +212,7 @@ export default function Hearings() {
       }
     },
     {
-      key: 'court',
+      key: 'circle',
       label: t('Circle'),
       render: (value: any) => {
         if (!value) return '-';
