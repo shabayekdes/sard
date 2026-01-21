@@ -417,7 +417,7 @@ export default function Hearings() {
             },
             {
               name: 'hearing_type_id',
-              label: t('Hearing Type'),
+              label: t('Session Type'),
               type: 'select',
               required: true,
               options: [{ value: 'none', label: t('Select Type') }, ...(hearingTypes ? hearingTypes.map((ht: any) => ({
@@ -463,7 +463,7 @@ export default function Hearings() {
         onSubmit={() => { }}
         formConfig={{
           fields: [
-            { name: 'hearing_id', label: t('Hearing ID'), type: 'text', readOnly: true },
+            { name: 'hearing_id', label: t('Session ID'), type: 'text', readOnly: true },
             { name: 'title', label: t('Title'), type: 'text', readOnly: true },
             { name: 'case', label: t('Case'), type: 'text', readOnly: true },
             { name: 'court', label: t('Court'), type: 'text', readOnly: true },

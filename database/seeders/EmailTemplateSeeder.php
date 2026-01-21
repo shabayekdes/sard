@@ -2364,825 +2364,825 @@ class EmailTemplateSeeder extends Seeder
                 ]
             ],
 
-            [
-                'name' => 'New License',
-                'from' => env('APP_NAME'),
-                'translations' => [
-                    'en' => [
-                        'subject' => 'New License Issued: {license_number}',
-                        'content' => '<p>Hello,</p>
-            <p><strong>Team Member:</strong> {team_member}</p>
-            <p><strong>License Type:</strong> {license_type}</p>
-            <p><strong>License Number:</strong> {license_number}</p>
-            <p><strong>Issuing Authority:</strong> {issuing_authority}</p>
-            <p><strong>Jurisdiction:</strong> {jurisdiction}</p>
-            <p><strong>Issue Date:</strong> {issue_date}</p>
-            <p><strong>Expiry Date:</strong> {expiry_date}</p>
-            <p>Please log into the system to view full {license_type} details and manage this license.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Best regards,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'es' => [
-                        'subject' => 'Nueva licencia emitida: {license_number}',
-                        'content' => '<p>Hola,</p>
-            <p><strong>Miembro del equipo:</strong> {team_member}</p>
-            <p><strong>Tipo de licencia:</strong> {license_type}</p>
-            <p><strong>Número de licencia:</strong> {license_number}</p>
-            <p><strong>Autoridad emisora:</strong> {issuing_authority}</p>
-            <p><strong>Jurisdicción:</strong> {jurisdiction}</p>
-            <p><strong>Fecha de emisión:</strong> {issue_date}</p>
-            <p><strong>Fecha de caducidad:</strong> {expiry_date}</p>
-            <p>Por favor, inicia sesión en el sistema para ver los detalles completos de {license_type} y gestionar esta licencia.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Atentamente,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'ar' => [
-                        'subject' => 'رخصة جديدة صادرة: {license_number}',
-                        'content' => '<p style="direction: rtl; text-align: right;">مرحبًا،</p>
-            <p style="direction: rtl; text-align: right;"><strong>عضو الفريق:</strong> {team_member}</p>
-            <p style="direction: rtl; text-align: right;"><strong>نوع الرخصة:</strong> {license_type}</p>
-            <p style="direction: rtl; text-align: right;"><strong>رقم الرخصة:</strong> {license_number}</p>
-            <p style="direction: rtl; text-align: right;"><strong>الجهة المصدرة:</strong> {issuing_authority}</p>
-            <p style="direction: rtl; text-align: right;"><strong>الاختصاص:</strong> {jurisdiction}</p>
-            <p style="direction: rtl; text-align: right;"><strong>تاريخ الإصدار:</strong> {issue_date}</p>
-            <p style="direction: rtl; text-align: right;"><strong>تاريخ الانتهاء:</strong> {expiry_date}</p>
-            <p style="direction: rtl; text-align: right;">يرجى تسجيل الدخول إلى النظام لعرض تفاصيل {license_type} الكاملة وإدارة هذه الرخصة.</p>
-            <div style="text-align: left; margin-top: 30px;">
-                مع أطيب التحيات،<br>
-                {user_name}
-            </div>'
-                    ],
-                    'da' => [
-                        'subject' => 'Ny licens udstedt: {license_number}',
-                        'content' => '<p>Hej,</p>
-            <p><strong>Holdmedlem:</strong> {team_member}</p>
-            <p><strong>Licenstype:</strong> {license_type}</p>
-            <p><strong>Licensnummer:</strong> {license_number}</p>
-            <p><strong>Udstedende myndighed:</strong> {issuing_authority}</p>
-            <p><strong>Jurisdiktion:</strong> {jurisdiction}</p>
-            <p><strong>Udstedelsesdato:</strong> {issue_date}</p>
-            <p><strong>Udløbsdato:</strong> {expiry_date}</p>
-            <p>Log venligst ind i systemet for at se fulde {license_type} detaljer og administrere denne licens.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Med venlig hilsen,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'de' => [
-                        'subject' => 'Neue Lizenz ausgestellt: {license_number}',
-                        'content' => '<p>Hallo,</p>
-            <p><strong>Teammitglied:</strong> {team_member}</p>
-            <p><strong>Lizenztyp:</strong> {license_type}</p>
-            <p><strong>Lizenznummer:</strong> {license_number}</p>
-            <p><strong>Ausstellende Behörde:</strong> {issuing_authority}</p>
-            <p><strong>Jurisdiktion:</strong> {jurisdiction}</p>
-            <p><strong>Ausstellungsdatum:</strong> {issue_date}</p>
-            <p><strong>Ablaufdatum:</strong> {expiry_date}</p>
-            <p>Bitte melde dich im System an, um alle {license_type} Details einzusehen und diese Lizenz zu verwalten.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Mit freundlichen Grüßen,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'fr' => [
-                        'subject' => 'Nouvelle licence émise : {license_number}',
-                        'content' => '<p>Bonjour,</p>
-            <p><strong>Membre de l\'équipe :</strong> {team_member}</p>
-            <p><strong>Type de licence :</strong> {license_type}</p>
-            <p><strong>Numéro de licence :</strong> {license_number}</p>
-            <p><strong>Autorité émettrice :</strong> {issuing_authority}</p>
-            <p><strong>Juridiction :</strong> {jurisdiction}</p>
-            <p><strong>Date d\'émission :</strong> {issue_date}</p>
-            <p><strong>Date d\'expiration :</strong> {expiry_date}</p>
-            <p>Veuillez vous connecter au système pour consulter les détails complets de {license_type} et gérer cette licence.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Cordialement,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'he' => [
-                        'subject' => 'רישיון חדש הונפק: {license_number}',
-                        'content' => '<p style="direction: rtl; text-align: right;">שלום,</p>
-            <p style="direction: rtl; text-align: right;"><strong>חבר צוות:</strong> {team_member}</p>
-            <p style="direction: rtl; text-align: right;"><strong>סוג רישיון:</strong> {license_type}</p>
-            <p style="direction: rtl; text-align: right;"><strong>מספר רישיון:</strong> {license_number}</p>
-            <p style="direction: rtl; text-align: right;"><strong>רשות מנפיקה:</strong> {issuing_authority}</p>
-            <p style="direction: rtl; text-align: right;"><strong>תחום שיפוט:</strong> {jurisdiction}</p>
-            <p style="direction: rtl; text-align: right;"><strong>תאריך הנפקה:</strong> {issue_date}</p>
-            <p style="direction: rtl; text-align: right;"><strong>תאריך תפוגה:</strong> {expiry_date}</p>
-            <p style="direction: rtl; text-align: right;">אנא התחבר למערכת כדי לצפות בפרטי {license_type} המלאים ולנהל רישיון זה.</p>
-            <div style="text-align: left; margin-top: 30px;">
-                בברכה,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'it' => [
-                        'subject' => 'Nuova licenza emessa: {license_number}',
-                        'content' => '<p>Ciao,</p>
-            <p><strong>Membro del team:</strong> {team_member}</p>
-            <p><strong>Tipo di licenza:</strong> {license_type}</p>
-            <p><strong>Numero di licenza:</strong> {license_number}</p>
-            <p><strong>Autorità emittente:</strong> {issuing_authority}</p>
-            <p><strong>Giurisdizione:</strong> {jurisdiction}</p>
-            <p><strong>Data di emissione:</strong> {issue_date}</p>
-            <p><strong>Data di scadenza:</strong> {expiry_date}</p>
-            <p>Accedi al sistema per visualizzare i dettagli completi di {license_type} e gestire questa licenza.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Cordiali saluti,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'ja' => [
-                        'subject' => '新しいライセンス発行: {license_number}',
-                        'content' => '<p>こんにちは、</p>
-            <p><strong>チームメンバー:</strong> {team_member}</p>
-            <p><strong>ライセンスの種類:</strong> {license_type}</p>
-            <p><strong>ライセンス番号:</strong> {license_number}</p>
-            <p><strong>発行機関:</strong> {issuing_authority}</p>
-            <p><strong>管轄:</strong> {jurisdiction}</p>
-            <p><strong>発行日:</strong> {issue_date}</p>
-            <p><strong>有効期限:</strong> {expiry_date}</p>
-            <p>システムにログインして、{license_type} の詳細を確認し、このライセンスを管理してください。</p>
-            <div style="text-align: right; margin-top: 30px;">
-                よろしくお願いいたします、<br>
-                {user_name}
-            </div>'
-                    ],
-                    'nl' => [
-                        'subject' => 'Nieuwe licentie uitgegeven: {license_number}',
-                        'content' => '<p>Hallo,</p>
-            <p><strong>Teamlid:</strong> {team_member}</p>
-            <p><strong>Licentie type:</strong> {license_type}</p>
-            <p><strong>Licentienummer:</strong> {license_number}</p>
-            <p><strong>Uitgevende autoriteit:</strong> {issuing_authority}</p>
-            <p><strong>Jurisdictie:</strong> {jurisdiction}</p>
-            <p><strong>Utgiftedatum:</strong> {issue_date}</p>
-            <p><strong>Vervaldatum:</strong> {expiry_date}</p>
-            <p>Log in op het systeem om de volledige {license_type} details te bekijken en deze licentie te beheren.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Met vriendelijke groet,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'pl' => [
-                        'subject' => 'Nowa licencja wydana: {license_number}',
-                        'content' => '<p>Witaj,</p>
-            <p><strong>Członek zespołu:</strong> {team_member}</p>
-            <p><strong>Typ licencji:</strong> {license_type}</p>
-            <p><strong>Numer licencji:</strong> {license_number}</p>
-            <p><strong>Organ wydający:</strong> {issuing_authority}</p>
-            <p><strong>Jurysdykcja:</strong> {jurisdiction}</p>
-            <p><strong>Data wydania:</strong> {issue_date}</p>
-            <p><strong>Data wygaśnięcia:</strong> {expiry_date}</p>
-            <p>Zaloguj się do systemu, aby zobaczyć pełne szczegóły {license_type} i zarządzać tą licencją.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Z poważaniem,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'pt' => [
-                        'subject' => 'Nova licença emitida: {license_number}',
-                        'content' => '<p>Olá,</p>
-            <p><strong>Membro da equipe:</strong> {team_member}</p>
-            <p><strong>Tipo de licença:</strong> {license_type}</p>
-            <p><strong>Número da licença:</strong> {license_number}</p>
-            <p><strong>Autoridade emissora:</strong> {issuing_authority}</p>
-            <p><strong>Jurisdição:</strong> {jurisdiction}</p>
-            <p><strong>Data de emissão:</strong> {issue_date}</p>
-            <p><strong>Data de expiração:</strong> {expiry_date}</p>
-            <p>Por favor, faça login no sistema para visualizar os detalhes completos de {license_type} e gerenciar esta licença.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Atenciosamente,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'pt-br' => [
-                        'subject' => 'Nova licença emitida: {license_number}',
-                        'content' => '<p>Olá,</p>
-            <p><strong>Membro da equipe:</strong> {team_member}</p>
-            <p><strong>Tipo de licença:</strong> {license_type}</p>
-            <p><strong>Número da licença:</strong> {license_number}</p>
-            <p><strong>Autoridade emissora:</strong> {issuing_authority}</p>
-            <p><strong>Jurisdição:</strong> {jurisdiction}</p>
-            <p><strong>Data de emissão:</strong> {issue_date}</p>
-            <p><strong>Data de expiração:</strong> {expiry_date}</p>
-            <p>Por favor, faça login no sistema para visualizar os detalhes completos de {license_type} e gerenciar esta licença.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Atenciosamente,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'ru' => [
-                        'subject' => 'Новая лицензия выдана: {license_number}',
-                        'content' => '<p>Здравствуйте,</p>
-            <p><strong>Член команды:</strong> {team_member}</p>
-            <p><strong>Тип лицензии:</strong> {license_type}</p>
-            <p><strong>Номер лицензии:</strong> {license_number}</p>
-            <p><strong>Орган, выдавший лицензию:</strong> {issuing_authority}</p>
-            <p><strong>Юрисдикция:</strong> {jurisdiction}</p>
-            <p><strong>Дата выдачи:</strong> {issue_date}</p>
-            <p><strong>Дата истечения:</strong> {expiry_date}</p>
-            <p>Пожалуйста, войдите в систему, чтобы просмотреть полные детали {license_type} и управлять этой лицензией.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                С наилучшими пожеланиями,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'tr' => [
-                        'subject' => 'Yeni lisans verildi: {license_number}',
-                        'content' => '<p>Merhaba,</p>
-            <p><strong>Takım Üyesi:</strong> {team_member}</p>
-            <p><strong>Lisans Türü:</strong> {license_type}</p>
-            <p><strong>Lisans Numarası:</strong> {license_number}</p>
-            <p><strong>Veren Yetkili:</strong> {issuing_authority}</p>
-            <p><strong>Yargı Yetkisi:</strong> {jurisdiction}</p>
-            <p><strong>Veriliş Tarihi:</strong> {issue_date}</p>
-            <p><strong>Son Kullanma Tarihi:</strong> {expiry_date}</p>
-            <p>Lütfen sisteme giriş yaparak {license_type} detaylarını görüntüleyin ve bu lisansı yönetin.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Saygılarımla,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'zh' => [
-                        'subject' => '新许可证颁发：{license_number}',
-                        'content' => '<p>您好，</p>
-            <p><strong>团队成员：</strong> {team_member}</p>
-            <p><strong>许可证类型：</strong> {license_type}</p>
-            <p><strong>许可证编号：</strong> {license_number}</p>
-            <p><strong>颁发机构：</strong> {issuing_authority}</p>
-            <p><strong>管辖权：</strong> {jurisdiction}</p>
-            <p><strong>颁发日期：</strong> {issue_date}</p>
-            <p><strong>到期日期：</strong> {expiry_date}</p>
-            <p>请登录系统查看 {license_type} 的完整详情并管理此许可证。</p>
-            <div style="text-align: right; margin-top: 30px;">
-                此致敬礼，<br>
-                {user_name}
-            </div>'
-                    ],
-                ],
-            ],
-            [
-                'name' => 'New CLE Record',
-                'from' => env('APP_NAME'),
-                'translations' => [
-                    'en' => [
-                        'subject' => 'Training Update for {team_member}',
-                        'content' => '<p>Hello {team_member},</p>
-            <p>A new training record has been updated for you.</p>
-            <h3>Details</h3>
-            <p><strong>Team Member:</strong> {team_member}</p>
-            <p><strong>Course Name:</strong> {course_name}</p>
-            <p><strong>Provider:</strong> {provider}</p>
-            <p><strong>Credit Earned:</strong> {credit_earned}</p>
-            <p><strong>Credit Required:</strong> {credit_required}</p>
-            <p><strong>Certificate Number:</strong> {certificate_num}</p>
-            <p>Please review and confirm this training record in the system.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Best regards,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'es' => [
-                        'subject' => 'Actualización de capacitación para {team_member}',
-                        'content' => '<p>Hola {team_member},</p>
-            <p>Se ha actualizado un nuevo registro de capacitación para ti.</p>
-            <h3>Detalles</h3>
-            <p><strong>Miembro del equipo:</strong> {team_member}</p>
-            <p><strong>Nombre del curso:</strong> {course_name}</p>
-            <p><strong>Proveedor:</strong> {provider}</p>
-            <p><strong>Créditos obtenidos:</strong> {credit_earned}</p>
-            <p><strong>Créditos requeridos:</strong> {credit_required}</p>
-            <p><strong>Número de certificado:</strong> {certificate_num}</p>
-            <p>Por favor, revisa y confirma este registro de capacitación en el sistema.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Atentamente,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'ar' => [
-                        'subject' => 'تحديث تدريب لـ {team_member}',
-                        'content' => '<p style="direction: rtl; text-align: right;">مرحبًا {team_member}،</p>
-            <p style="direction: rtl; text-align: right;">تم تحديث سجل تدريب جديد لك.</p>
-            <h3 style="direction: rtl; text-align: right;">التفاصيل</h3>
-            <p style="direction: rtl; text-align: right;"><strong>عضو الفريق:</strong> {team_member}</p>
-            <p style="direction: rtl; text-align: right;"><strong>اسم الكورس:</strong> {course_name}</p>
-            <p style="direction: rtl; text-align: right;"><strong>المزود:</strong> {provider}</p>
-            <p style="direction: rtl; text-align: right;"><strong>الاعتمادات المكتسبة:</strong> {credit_earned}</p>
-            <p style="direction: rtl; text-align: right;"><strong>الاعتمادات المطلوبة:</strong> {credit_required}</p>
-            <p style="direction: rtl; text-align: right;"><strong>رقم الشهادة:</strong> {certificate_num}</p>
-            <p style="direction: rtl; text-align: right;">يرجى مراجعة وتأكيد هذا السجل التدريبي في النظام.</p>
-            <div style="text-align: left; margin-top: 30px;">
-                مع أطيب التحيات،<br>
-                {user_name}
-            </div>'
-                    ],
-                    'da' => [
-                        'subject' => 'Træningsopdatering for {team_member}',
-                        'content' => '<p>Hej Team Medlem,</p>
-            <p>En ny træningsoptegnelse er blevet opdateret for dig.</p>
-            <h3>Detaljer</h3>
-            <p><strong>Teammedlem:</strong> {team_member}</p>
-            <p><strong>Kursusnavn:</strong> {course_name}</p>
-            <p><strong>Leverandør:</strong> {provider}</p>
-            <p><strong>Tjent kredit:</strong> {credit_earned}</p>
-            <p><strong>Krævet kredit:</strong> {credit_required}</p>
-            <p><strong>Certifikatnummer:</strong> {certificate_num}</p>
-            <p>Venligst gennemgå og bekræft denne træningsoptegnelse i systemet.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Med venlig hilsen,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'de' => [
-                        'subject' => 'Trainingsupdate für {team_member}',
-                        'content' => '<p>Hallo Teammitglied,</p>
-            <p>Ein neuer Trainingsdatensatz wurde für dich aktualisiert.</p>
-            <h3>Details</h3>
-            <p><strong>Teammitglied:</strong> {team_member}</p>
-            <p><strong>Kursname:</strong> {course_name}</p>
-            <p><strong>Anbieter:</strong> {provider}</p>
-            <p><strong>Gewonnene Credits:</strong> {credit_earned}</p>
-            <p><strong>Erforderliche Credits:</strong> {credit_required}</p>
-            <p><strong>Zertifikatsnummer:</strong> {certificate_num}</p>
-            <p>Bitte überprüfe und bestätige diesen Trainingsdatensatz im System.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Mit freundlichen Grüßen,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'fr' => [
-                        'subject' => 'Mise à jour de la formation pour {team_member}',
-                        'content' => '<p>Bonjour Membre de l\'équipe,</p>
-            <p>Un nouveau dossier de formation a été mis à jour pour vous.</p>
-            <h3>Détails</h3>
-            <p><strong>Membre de l\'équipe:</strong> {team_member}</p>
-            <p><strong>Nom du cours:</strong> {course_name}</p>
-            <p><strong>Fournisseur:</strong> {provider}</p>
-            <p><strong>Crédits gagnés:</strong> {credit_earned}</p>
-            <p><strong>Crédits requis:</strong> {credit_required}</p>
-            <p><strong>Numéro de certificat:</strong> {certificate_num}</p>
-            <p>Veuillez vérifier et confirmer ce dossier de formation dans le système.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Cordialement,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'he' => [
-                        'subject' => 'עדכון אימון עבור {team_member}',
-                        'content' => '<p style="direction: rtl; text-align: right;">שלום חבר צוות,</p>
-            <p style="direction: rtl; text-align: right;">רשומת אימון חדשה עודכנה עבורך.</p>
-            <h3 style="direction: rtl; text-align: right;">פרטים</h3>
-            <p style="direction: rtl; text-align: right;"><strong>חבר צוות:</strong> {team_member}</p>
-            <p style="direction: rtl; text-align: right;"><strong>שם הקורס:</strong> {course_name}</p>
-            <p style="direction: rtl; text-align: right;"><strong>ספק:</strong> {provider}</p>
-            <p style="direction: rtl; text-align: right;"><strong>נקודות זכות שנצברו:</strong> {credit_earned}</p>
-            <p style="direction: rtl; text-align: right;"><strong>נקודות זכות נדרשות:</strong> {credit_required}</p>
-            <p style="direction: rtl; text-align: right;"><strong>מספר תעודה:</strong> {certificate_num}</p>
-            <p style="direction: rtl; text-align: right;">אנא בדוק ואשר את רשומת האימון הזו במערכת.</p>
-            <div style="text-align: left; margin-top: 30px;">
-                בברכה,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'it' => [
-                        'subject' => 'Aggiornamento formazione per {team_member}',
-                        'content' => '<p>Ciao Membro del Team,</p>
-            <p>Un nuovo record di formazione è stato aggiornato per te.</p>
-            <h3>Dettagli</h3>
-            <p><strong>Membro del team:</strong> {team_member}</p>
-            <p><strong>Nome del corso:</strong> {course_name}</p>
-            <p><strong>Fornitore:</strong> {provider}</p>
-            <p><strong>Crediti guadagnati:</strong> {credit_earned}</p>
-            <p><strong>Crediti richiesti:</strong> {credit_required}</p>
-            <p><strong>Numero del certificato:</strong> {certificate_num}</p>
-            <p>Si prega di rivedere e confermare questo record di formazione nel sistema.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Cordiali saluti,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'ja' => [
-                        'subject' => '{team_member} 向けのトレーニング更新',
-                        'content' => '<p>こんにちは、チームメンバー様、</p>
-            <p>新しいトレーニング記録があなたのために更新されました。</p>
-            <h3>詳細</h3>
-            <p><strong>チームメンバー:</strong> {team_member}</p>
-            <p><strong>コース名:</strong> {course_name}</p>
-            <p><strong>提供者:</strong> {provider}</p>
-            <p><strong>獲得クレジット:</strong> {credit_earned}</p>
-            <p><strong>必要なクレジット:</strong> {credit_required}</p>
-            <p><strong>証明書番号:</strong> {certificate_num}</p>
-            <p>このトレーニング記録をシステムで確認してください。</p>
-            <div style="text-align: right; margin-top: 30px;">
-                よろしくお願いいたします、<br>
-                {user_name}
-            </div>'
-                    ],
-                    'nl' => [
-                        'subject' => 'Trainingsupdate voor {team_member}',
-                        'content' => '<p>Hallo Teamlid,</p>
-            <p>Een nieuw trainingsrecord is voor jou bijgewerkt.</p>
-            <h3>Details</h3>
-            <p><strong>Teamlid:</strong> {team_member}</p>
-            <p><strong>Cursusnaam:</strong> {course_name}</p>
-            <p><strong>Leverancier:</strong> {provider}</p>
-            <p><strong>Verdiende credits:</strong> {credit_earned}</p>
-            <p><strong>Vereiste credits:</strong> {credit_required}</p>
-            <p><strong>Certificaatnummer:</strong> {certificate_num}</p>
-            <p>Controleer en bevestig dit trainingsrecord in het systeem.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Met vriendelijke groet,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'pl' => [
-                        'subject' => 'Aktualizacja szkolenia dla {team_member}',
-                        'content' => '<p>Witaj Członku Zespołu,</p>
-            <p>Nowy rekord szkolenia został zaktualizowany dla Ciebie.</p>
-            <h3>Szczegóły</h3>
-            <p><strong>Członek zespołu:</strong> {team_member}</p>
-            <p><strong>Nazwa kursu:</strong> {course_name}</p>
-            <p><strong>Dostawca:</strong> {provider}</p>
-            <p><strong>Zdobyte kredyty:</strong> {credit_earned}</p>
-            <p><strong>Wymagane kredyty:</strong> {credit_required}</p>
-            <p><strong>Numer certyfikatu:</strong> {certificate_num}</p>
-            <p>Proszę przejrzyj i potwierdź ten rekord szkolenia w systemie.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Z poważaniem,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'pt' => [
-                        'subject' => 'Atualização de treinamento para {team_member}',
-                        'content' => '<p>Olá Membro da Equipe,</p>
-            <p>Um novo registro de treinamento foi atualizado para você.</p>
-            <h3>Detalhes</h3>
-            <p><strong>Membro da equipe:</strong> {team_member}</p>
-            <p><strong>Nome do curso:</strong> {course_name}</p>
-            <p><strong>Fornecedor:</strong> {provider}</p>
-            <p><strong>Créditos ganhos:</strong> {credit_earned}</p>
-            <p><strong>Créditos requeridos:</strong> {credit_required}</p>
-            <p><strong>Número do certificado:</strong> {certificate_num}</p>
-            <p>Por favor, revise e confirme este registro de treinamento no sistema.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Atenciosamente,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'pt-br' => [
-                        'subject' => 'Atualização de treinamento para {team_member}',
-                        'content' => '<p>Olá Membro da Equipe,</p>
-            <p>Um novo registro de treinamento foi atualizado para você.</p>
-            <h3>Detalhes</h3>
-            <p><strong>Membro da equipe:</strong> {team_member}</p>
-            <p><strong>Nome do curso:</strong> {course_name}</p>
-            <p><strong>Fornecedor:</strong> {provider}</p>
-            <p><strong>Créditos ganhos:</strong> {credit_earned}</p>
-            <p><strong>Créditos requeridos:</strong> {credit_required}</p>
-            <p><strong>Número do certificado:</strong> {certificate_num}</p>
-            <p>Por favor, revise e confirme este registro de treinamento no sistema.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Atenciosamente,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'ru' => [
-                        'subject' => 'Обновление тренинга для {team_member}',
-                        'content' => '<p>Здравствуйте, Член команды,</p>
-            <p>Новый тренировочный рекорд был обновлен для вас.</p>
-            <h3>Детали</h3>
-            <p><strong>Член команды:</strong> {team_member}</p>
-            <p><strong>Название курса:</strong> {course_name}</p>
-            <p><strong>Поставщик:</strong> {provider}</p>
-            <p><strong>Заработанные кредиты:</strong> {credit_earned}</p>
-            <p><strong>Требуемые кредиты:</strong> {credit_required}</p>
-            <p><strong>Номер сертификата:</strong> {certificate_num}</p>
-            <p>Пожалуйста, проверьте и подтвердите этот тренировочный рекорд в системе.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                С наилучшими пожеланиями,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'tr' => [
-                        'subject' => '{team_member} için eğitim güncellemesi',
-                        'content' => '<p>Merhaba Takım Üyesi,</p>
-            <p>Senin için yeni bir eğitim kaydı güncellendi.</p>
-            <h3>Ayrıntılar</h3>
-            <p><strong>Takım üyesi:</strong> {team_member}</p>
-            <p><strong>Kurs adı:</strong> {course_name}</p>
-            <p><strong>Sağlayıcı:</strong> {provider}</p>
-            <p><strong>Kazanılan kredi:</strong> {credit_earned}</p>
-            <p><strong>Gereken kredi:</strong> {credit_required}</p>
-            <p><strong>Sertifika numarası:</strong> {certificate_num}</p>
-            <p>Lütfen bu eğitim kaydını sistemde gözden geçirip onaylayın.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Saygılarımla,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'zh' => [
-                        'subject' => '{team_member} 的培训更新',
-                        'content' => '<p>您好，团队成员，</p>
-            <p>您的培训记录已更新。</p>
-            <h3>详情</h3>
-            <p><strong>团队成员：</strong> {team_member}</p>
-            <p><strong>课程名称：</strong> {course_name}</p>
-            <p><strong>提供者：</strong> {provider}</p>
-            <p><strong>获得的学分：</strong> {credit_earned}</p>
-            <p><strong>所需的学分：</strong> {credit_required}</p>
-            <p><strong>证书编号：</strong> {certificate_num}</p>
-            <p>请查看并确认此培训记录于系统中。</p>
-            <div style="text-align: right; margin-top: 30px;">
-                此致敬礼，<br>
-                {user_name}
-            </div>'
-                    ],
-                ]
-            ],
+            // [
+            //     'name' => 'New License',
+            //     'from' => env('APP_NAME'),
+            //     'translations' => [
+            //         'en' => [
+            //             'subject' => 'New License Issued: {license_number}',
+            //             'content' => '<p>Hello,</p>
+            // <p><strong>Team Member:</strong> {team_member}</p>
+            // <p><strong>License Type:</strong> {license_type}</p>
+            // <p><strong>License Number:</strong> {license_number}</p>
+            // <p><strong>Issuing Authority:</strong> {issuing_authority}</p>
+            // <p><strong>Jurisdiction:</strong> {jurisdiction}</p>
+            // <p><strong>Issue Date:</strong> {issue_date}</p>
+            // <p><strong>Expiry Date:</strong> {expiry_date}</p>
+            // <p>Please log into the system to view full {license_type} details and manage this license.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Best regards,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'es' => [
+            //             'subject' => 'Nueva licencia emitida: {license_number}',
+            //             'content' => '<p>Hola,</p>
+            // <p><strong>Miembro del equipo:</strong> {team_member}</p>
+            // <p><strong>Tipo de licencia:</strong> {license_type}</p>
+            // <p><strong>Número de licencia:</strong> {license_number}</p>
+            // <p><strong>Autoridad emisora:</strong> {issuing_authority}</p>
+            // <p><strong>Jurisdicción:</strong> {jurisdiction}</p>
+            // <p><strong>Fecha de emisión:</strong> {issue_date}</p>
+            // <p><strong>Fecha de caducidad:</strong> {expiry_date}</p>
+            // <p>Por favor, inicia sesión en el sistema para ver los detalles completos de {license_type} y gestionar esta licencia.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Atentamente,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'ar' => [
+            //             'subject' => 'رخصة جديدة صادرة: {license_number}',
+            //             'content' => '<p style="direction: rtl; text-align: right;">مرحبًا،</p>
+            // <p style="direction: rtl; text-align: right;"><strong>عضو الفريق:</strong> {team_member}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>نوع الرخصة:</strong> {license_type}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>رقم الرخصة:</strong> {license_number}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>الجهة المصدرة:</strong> {issuing_authority}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>الاختصاص:</strong> {jurisdiction}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>تاريخ الإصدار:</strong> {issue_date}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>تاريخ الانتهاء:</strong> {expiry_date}</p>
+            // <p style="direction: rtl; text-align: right;">يرجى تسجيل الدخول إلى النظام لعرض تفاصيل {license_type} الكاملة وإدارة هذه الرخصة.</p>
+            // <div style="text-align: left; margin-top: 30px;">
+            //     مع أطيب التحيات،<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'da' => [
+            //             'subject' => 'Ny licens udstedt: {license_number}',
+            //             'content' => '<p>Hej,</p>
+            // <p><strong>Holdmedlem:</strong> {team_member}</p>
+            // <p><strong>Licenstype:</strong> {license_type}</p>
+            // <p><strong>Licensnummer:</strong> {license_number}</p>
+            // <p><strong>Udstedende myndighed:</strong> {issuing_authority}</p>
+            // <p><strong>Jurisdiktion:</strong> {jurisdiction}</p>
+            // <p><strong>Udstedelsesdato:</strong> {issue_date}</p>
+            // <p><strong>Udløbsdato:</strong> {expiry_date}</p>
+            // <p>Log venligst ind i systemet for at se fulde {license_type} detaljer og administrere denne licens.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Med venlig hilsen,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'de' => [
+            //             'subject' => 'Neue Lizenz ausgestellt: {license_number}',
+            //             'content' => '<p>Hallo,</p>
+            // <p><strong>Teammitglied:</strong> {team_member}</p>
+            // <p><strong>Lizenztyp:</strong> {license_type}</p>
+            // <p><strong>Lizenznummer:</strong> {license_number}</p>
+            // <p><strong>Ausstellende Behörde:</strong> {issuing_authority}</p>
+            // <p><strong>Jurisdiktion:</strong> {jurisdiction}</p>
+            // <p><strong>Ausstellungsdatum:</strong> {issue_date}</p>
+            // <p><strong>Ablaufdatum:</strong> {expiry_date}</p>
+            // <p>Bitte melde dich im System an, um alle {license_type} Details einzusehen und diese Lizenz zu verwalten.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Mit freundlichen Grüßen,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'fr' => [
+            //             'subject' => 'Nouvelle licence émise : {license_number}',
+            //             'content' => '<p>Bonjour,</p>
+            // <p><strong>Membre de l\'équipe :</strong> {team_member}</p>
+            // <p><strong>Type de licence :</strong> {license_type}</p>
+            // <p><strong>Numéro de licence :</strong> {license_number}</p>
+            // <p><strong>Autorité émettrice :</strong> {issuing_authority}</p>
+            // <p><strong>Juridiction :</strong> {jurisdiction}</p>
+            // <p><strong>Date d\'émission :</strong> {issue_date}</p>
+            // <p><strong>Date d\'expiration :</strong> {expiry_date}</p>
+            // <p>Veuillez vous connecter au système pour consulter les détails complets de {license_type} et gérer cette licence.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Cordialement,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'he' => [
+            //             'subject' => 'רישיון חדש הונפק: {license_number}',
+            //             'content' => '<p style="direction: rtl; text-align: right;">שלום,</p>
+            // <p style="direction: rtl; text-align: right;"><strong>חבר צוות:</strong> {team_member}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>סוג רישיון:</strong> {license_type}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>מספר רישיון:</strong> {license_number}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>רשות מנפיקה:</strong> {issuing_authority}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>תחום שיפוט:</strong> {jurisdiction}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>תאריך הנפקה:</strong> {issue_date}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>תאריך תפוגה:</strong> {expiry_date}</p>
+            // <p style="direction: rtl; text-align: right;">אנא התחבר למערכת כדי לצפות בפרטי {license_type} המלאים ולנהל רישיון זה.</p>
+            // <div style="text-align: left; margin-top: 30px;">
+            //     בברכה,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'it' => [
+            //             'subject' => 'Nuova licenza emessa: {license_number}',
+            //             'content' => '<p>Ciao,</p>
+            // <p><strong>Membro del team:</strong> {team_member}</p>
+            // <p><strong>Tipo di licenza:</strong> {license_type}</p>
+            // <p><strong>Numero di licenza:</strong> {license_number}</p>
+            // <p><strong>Autorità emittente:</strong> {issuing_authority}</p>
+            // <p><strong>Giurisdizione:</strong> {jurisdiction}</p>
+            // <p><strong>Data di emissione:</strong> {issue_date}</p>
+            // <p><strong>Data di scadenza:</strong> {expiry_date}</p>
+            // <p>Accedi al sistema per visualizzare i dettagli completi di {license_type} e gestire questa licenza.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Cordiali saluti,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'ja' => [
+            //             'subject' => '新しいライセンス発行: {license_number}',
+            //             'content' => '<p>こんにちは、</p>
+            // <p><strong>チームメンバー:</strong> {team_member}</p>
+            // <p><strong>ライセンスの種類:</strong> {license_type}</p>
+            // <p><strong>ライセンス番号:</strong> {license_number}</p>
+            // <p><strong>発行機関:</strong> {issuing_authority}</p>
+            // <p><strong>管轄:</strong> {jurisdiction}</p>
+            // <p><strong>発行日:</strong> {issue_date}</p>
+            // <p><strong>有効期限:</strong> {expiry_date}</p>
+            // <p>システムにログインして、{license_type} の詳細を確認し、このライセンスを管理してください。</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     よろしくお願いいたします、<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'nl' => [
+            //             'subject' => 'Nieuwe licentie uitgegeven: {license_number}',
+            //             'content' => '<p>Hallo,</p>
+            // <p><strong>Teamlid:</strong> {team_member}</p>
+            // <p><strong>Licentie type:</strong> {license_type}</p>
+            // <p><strong>Licentienummer:</strong> {license_number}</p>
+            // <p><strong>Uitgevende autoriteit:</strong> {issuing_authority}</p>
+            // <p><strong>Jurisdictie:</strong> {jurisdiction}</p>
+            // <p><strong>Utgiftedatum:</strong> {issue_date}</p>
+            // <p><strong>Vervaldatum:</strong> {expiry_date}</p>
+            // <p>Log in op het systeem om de volledige {license_type} details te bekijken en deze licentie te beheren.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Met vriendelijke groet,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'pl' => [
+            //             'subject' => 'Nowa licencja wydana: {license_number}',
+            //             'content' => '<p>Witaj,</p>
+            // <p><strong>Członek zespołu:</strong> {team_member}</p>
+            // <p><strong>Typ licencji:</strong> {license_type}</p>
+            // <p><strong>Numer licencji:</strong> {license_number}</p>
+            // <p><strong>Organ wydający:</strong> {issuing_authority}</p>
+            // <p><strong>Jurysdykcja:</strong> {jurisdiction}</p>
+            // <p><strong>Data wydania:</strong> {issue_date}</p>
+            // <p><strong>Data wygaśnięcia:</strong> {expiry_date}</p>
+            // <p>Zaloguj się do systemu, aby zobaczyć pełne szczegóły {license_type} i zarządzać tą licencją.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Z poważaniem,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'pt' => [
+            //             'subject' => 'Nova licença emitida: {license_number}',
+            //             'content' => '<p>Olá,</p>
+            // <p><strong>Membro da equipe:</strong> {team_member}</p>
+            // <p><strong>Tipo de licença:</strong> {license_type}</p>
+            // <p><strong>Número da licença:</strong> {license_number}</p>
+            // <p><strong>Autoridade emissora:</strong> {issuing_authority}</p>
+            // <p><strong>Jurisdição:</strong> {jurisdiction}</p>
+            // <p><strong>Data de emissão:</strong> {issue_date}</p>
+            // <p><strong>Data de expiração:</strong> {expiry_date}</p>
+            // <p>Por favor, faça login no sistema para visualizar os detalhes completos de {license_type} e gerenciar esta licença.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Atenciosamente,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'pt-br' => [
+            //             'subject' => 'Nova licença emitida: {license_number}',
+            //             'content' => '<p>Olá,</p>
+            // <p><strong>Membro da equipe:</strong> {team_member}</p>
+            // <p><strong>Tipo de licença:</strong> {license_type}</p>
+            // <p><strong>Número da licença:</strong> {license_number}</p>
+            // <p><strong>Autoridade emissora:</strong> {issuing_authority}</p>
+            // <p><strong>Jurisdição:</strong> {jurisdiction}</p>
+            // <p><strong>Data de emissão:</strong> {issue_date}</p>
+            // <p><strong>Data de expiração:</strong> {expiry_date}</p>
+            // <p>Por favor, faça login no sistema para visualizar os detalhes completos de {license_type} e gerenciar esta licença.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Atenciosamente,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'ru' => [
+            //             'subject' => 'Новая лицензия выдана: {license_number}',
+            //             'content' => '<p>Здравствуйте,</p>
+            // <p><strong>Член команды:</strong> {team_member}</p>
+            // <p><strong>Тип лицензии:</strong> {license_type}</p>
+            // <p><strong>Номер лицензии:</strong> {license_number}</p>
+            // <p><strong>Орган, выдавший лицензию:</strong> {issuing_authority}</p>
+            // <p><strong>Юрисдикция:</strong> {jurisdiction}</p>
+            // <p><strong>Дата выдачи:</strong> {issue_date}</p>
+            // <p><strong>Дата истечения:</strong> {expiry_date}</p>
+            // <p>Пожалуйста, войдите в систему, чтобы просмотреть полные детали {license_type} и управлять этой лицензией.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     С наилучшими пожеланиями,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'tr' => [
+            //             'subject' => 'Yeni lisans verildi: {license_number}',
+            //             'content' => '<p>Merhaba,</p>
+            // <p><strong>Takım Üyesi:</strong> {team_member}</p>
+            // <p><strong>Lisans Türü:</strong> {license_type}</p>
+            // <p><strong>Lisans Numarası:</strong> {license_number}</p>
+            // <p><strong>Veren Yetkili:</strong> {issuing_authority}</p>
+            // <p><strong>Yargı Yetkisi:</strong> {jurisdiction}</p>
+            // <p><strong>Veriliş Tarihi:</strong> {issue_date}</p>
+            // <p><strong>Son Kullanma Tarihi:</strong> {expiry_date}</p>
+            // <p>Lütfen sisteme giriş yaparak {license_type} detaylarını görüntüleyin ve bu lisansı yönetin.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Saygılarımla,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'zh' => [
+            //             'subject' => '新许可证颁发：{license_number}',
+            //             'content' => '<p>您好，</p>
+            // <p><strong>团队成员：</strong> {team_member}</p>
+            // <p><strong>许可证类型：</strong> {license_type}</p>
+            // <p><strong>许可证编号：</strong> {license_number}</p>
+            // <p><strong>颁发机构：</strong> {issuing_authority}</p>
+            // <p><strong>管辖权：</strong> {jurisdiction}</p>
+            // <p><strong>颁发日期：</strong> {issue_date}</p>
+            // <p><strong>到期日期：</strong> {expiry_date}</p>
+            // <p>请登录系统查看 {license_type} 的完整详情并管理此许可证。</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     此致敬礼，<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //     ],
+            // ],
+            // [
+            //     'name' => 'New CLE Record',
+            //     'from' => env('APP_NAME'),
+            //     'translations' => [
+            //         'en' => [
+            //             'subject' => 'Training Update for {team_member}',
+            //             'content' => '<p>Hello {team_member},</p>
+            // <p>A new training record has been updated for you.</p>
+            // <h3>Details</h3>
+            // <p><strong>Team Member:</strong> {team_member}</p>
+            // <p><strong>Course Name:</strong> {course_name}</p>
+            // <p><strong>Provider:</strong> {provider}</p>
+            // <p><strong>Credit Earned:</strong> {credit_earned}</p>
+            // <p><strong>Credit Required:</strong> {credit_required}</p>
+            // <p><strong>Certificate Number:</strong> {certificate_num}</p>
+            // <p>Please review and confirm this training record in the system.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Best regards,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'es' => [
+            //             'subject' => 'Actualización de capacitación para {team_member}',
+            //             'content' => '<p>Hola {team_member},</p>
+            // <p>Se ha actualizado un nuevo registro de capacitación para ti.</p>
+            // <h3>Detalles</h3>
+            // <p><strong>Miembro del equipo:</strong> {team_member}</p>
+            // <p><strong>Nombre del curso:</strong> {course_name}</p>
+            // <p><strong>Proveedor:</strong> {provider}</p>
+            // <p><strong>Créditos obtenidos:</strong> {credit_earned}</p>
+            // <p><strong>Créditos requeridos:</strong> {credit_required}</p>
+            // <p><strong>Número de certificado:</strong> {certificate_num}</p>
+            // <p>Por favor, revisa y confirma este registro de capacitación en el sistema.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Atentamente,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'ar' => [
+            //             'subject' => 'تحديث تدريب لـ {team_member}',
+            //             'content' => '<p style="direction: rtl; text-align: right;">مرحبًا {team_member}،</p>
+            // <p style="direction: rtl; text-align: right;">تم تحديث سجل تدريب جديد لك.</p>
+            // <h3 style="direction: rtl; text-align: right;">التفاصيل</h3>
+            // <p style="direction: rtl; text-align: right;"><strong>عضو الفريق:</strong> {team_member}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>اسم الكورس:</strong> {course_name}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>المزود:</strong> {provider}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>الاعتمادات المكتسبة:</strong> {credit_earned}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>الاعتمادات المطلوبة:</strong> {credit_required}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>رقم الشهادة:</strong> {certificate_num}</p>
+            // <p style="direction: rtl; text-align: right;">يرجى مراجعة وتأكيد هذا السجل التدريبي في النظام.</p>
+            // <div style="text-align: left; margin-top: 30px;">
+            //     مع أطيب التحيات،<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'da' => [
+            //             'subject' => 'Træningsopdatering for {team_member}',
+            //             'content' => '<p>Hej Team Medlem,</p>
+            // <p>En ny træningsoptegnelse er blevet opdateret for dig.</p>
+            // <h3>Detaljer</h3>
+            // <p><strong>Teammedlem:</strong> {team_member}</p>
+            // <p><strong>Kursusnavn:</strong> {course_name}</p>
+            // <p><strong>Leverandør:</strong> {provider}</p>
+            // <p><strong>Tjent kredit:</strong> {credit_earned}</p>
+            // <p><strong>Krævet kredit:</strong> {credit_required}</p>
+            // <p><strong>Certifikatnummer:</strong> {certificate_num}</p>
+            // <p>Venligst gennemgå og bekræft denne træningsoptegnelse i systemet.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Med venlig hilsen,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'de' => [
+            //             'subject' => 'Trainingsupdate für {team_member}',
+            //             'content' => '<p>Hallo Teammitglied,</p>
+            // <p>Ein neuer Trainingsdatensatz wurde für dich aktualisiert.</p>
+            // <h3>Details</h3>
+            // <p><strong>Teammitglied:</strong> {team_member}</p>
+            // <p><strong>Kursname:</strong> {course_name}</p>
+            // <p><strong>Anbieter:</strong> {provider}</p>
+            // <p><strong>Gewonnene Credits:</strong> {credit_earned}</p>
+            // <p><strong>Erforderliche Credits:</strong> {credit_required}</p>
+            // <p><strong>Zertifikatsnummer:</strong> {certificate_num}</p>
+            // <p>Bitte überprüfe und bestätige diesen Trainingsdatensatz im System.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Mit freundlichen Grüßen,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'fr' => [
+            //             'subject' => 'Mise à jour de la formation pour {team_member}',
+            //             'content' => '<p>Bonjour Membre de l\'équipe,</p>
+            // <p>Un nouveau dossier de formation a été mis à jour pour vous.</p>
+            // <h3>Détails</h3>
+            // <p><strong>Membre de l\'équipe:</strong> {team_member}</p>
+            // <p><strong>Nom du cours:</strong> {course_name}</p>
+            // <p><strong>Fournisseur:</strong> {provider}</p>
+            // <p><strong>Crédits gagnés:</strong> {credit_earned}</p>
+            // <p><strong>Crédits requis:</strong> {credit_required}</p>
+            // <p><strong>Numéro de certificat:</strong> {certificate_num}</p>
+            // <p>Veuillez vérifier et confirmer ce dossier de formation dans le système.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Cordialement,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'he' => [
+            //             'subject' => 'עדכון אימון עבור {team_member}',
+            //             'content' => '<p style="direction: rtl; text-align: right;">שלום חבר צוות,</p>
+            // <p style="direction: rtl; text-align: right;">רשומת אימון חדשה עודכנה עבורך.</p>
+            // <h3 style="direction: rtl; text-align: right;">פרטים</h3>
+            // <p style="direction: rtl; text-align: right;"><strong>חבר צוות:</strong> {team_member}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>שם הקורס:</strong> {course_name}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>ספק:</strong> {provider}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>נקודות זכות שנצברו:</strong> {credit_earned}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>נקודות זכות נדרשות:</strong> {credit_required}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>מספר תעודה:</strong> {certificate_num}</p>
+            // <p style="direction: rtl; text-align: right;">אנא בדוק ואשר את רשומת האימון הזו במערכת.</p>
+            // <div style="text-align: left; margin-top: 30px;">
+            //     בברכה,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'it' => [
+            //             'subject' => 'Aggiornamento formazione per {team_member}',
+            //             'content' => '<p>Ciao Membro del Team,</p>
+            // <p>Un nuovo record di formazione è stato aggiornato per te.</p>
+            // <h3>Dettagli</h3>
+            // <p><strong>Membro del team:</strong> {team_member}</p>
+            // <p><strong>Nome del corso:</strong> {course_name}</p>
+            // <p><strong>Fornitore:</strong> {provider}</p>
+            // <p><strong>Crediti guadagnati:</strong> {credit_earned}</p>
+            // <p><strong>Crediti richiesti:</strong> {credit_required}</p>
+            // <p><strong>Numero del certificato:</strong> {certificate_num}</p>
+            // <p>Si prega di rivedere e confermare questo record di formazione nel sistema.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Cordiali saluti,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'ja' => [
+            //             'subject' => '{team_member} 向けのトレーニング更新',
+            //             'content' => '<p>こんにちは、チームメンバー様、</p>
+            // <p>新しいトレーニング記録があなたのために更新されました。</p>
+            // <h3>詳細</h3>
+            // <p><strong>チームメンバー:</strong> {team_member}</p>
+            // <p><strong>コース名:</strong> {course_name}</p>
+            // <p><strong>提供者:</strong> {provider}</p>
+            // <p><strong>獲得クレジット:</strong> {credit_earned}</p>
+            // <p><strong>必要なクレジット:</strong> {credit_required}</p>
+            // <p><strong>証明書番号:</strong> {certificate_num}</p>
+            // <p>このトレーニング記録をシステムで確認してください。</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     よろしくお願いいたします、<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'nl' => [
+            //             'subject' => 'Trainingsupdate voor {team_member}',
+            //             'content' => '<p>Hallo Teamlid,</p>
+            // <p>Een nieuw trainingsrecord is voor jou bijgewerkt.</p>
+            // <h3>Details</h3>
+            // <p><strong>Teamlid:</strong> {team_member}</p>
+            // <p><strong>Cursusnaam:</strong> {course_name}</p>
+            // <p><strong>Leverancier:</strong> {provider}</p>
+            // <p><strong>Verdiende credits:</strong> {credit_earned}</p>
+            // <p><strong>Vereiste credits:</strong> {credit_required}</p>
+            // <p><strong>Certificaatnummer:</strong> {certificate_num}</p>
+            // <p>Controleer en bevestig dit trainingsrecord in het systeem.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Met vriendelijke groet,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'pl' => [
+            //             'subject' => 'Aktualizacja szkolenia dla {team_member}',
+            //             'content' => '<p>Witaj Członku Zespołu,</p>
+            // <p>Nowy rekord szkolenia został zaktualizowany dla Ciebie.</p>
+            // <h3>Szczegóły</h3>
+            // <p><strong>Członek zespołu:</strong> {team_member}</p>
+            // <p><strong>Nazwa kursu:</strong> {course_name}</p>
+            // <p><strong>Dostawca:</strong> {provider}</p>
+            // <p><strong>Zdobyte kredyty:</strong> {credit_earned}</p>
+            // <p><strong>Wymagane kredyty:</strong> {credit_required}</p>
+            // <p><strong>Numer certyfikatu:</strong> {certificate_num}</p>
+            // <p>Proszę przejrzyj i potwierdź ten rekord szkolenia w systemie.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Z poważaniem,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'pt' => [
+            //             'subject' => 'Atualização de treinamento para {team_member}',
+            //             'content' => '<p>Olá Membro da Equipe,</p>
+            // <p>Um novo registro de treinamento foi atualizado para você.</p>
+            // <h3>Detalhes</h3>
+            // <p><strong>Membro da equipe:</strong> {team_member}</p>
+            // <p><strong>Nome do curso:</strong> {course_name}</p>
+            // <p><strong>Fornecedor:</strong> {provider}</p>
+            // <p><strong>Créditos ganhos:</strong> {credit_earned}</p>
+            // <p><strong>Créditos requeridos:</strong> {credit_required}</p>
+            // <p><strong>Número do certificado:</strong> {certificate_num}</p>
+            // <p>Por favor, revise e confirme este registro de treinamento no sistema.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Atenciosamente,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'pt-br' => [
+            //             'subject' => 'Atualização de treinamento para {team_member}',
+            //             'content' => '<p>Olá Membro da Equipe,</p>
+            // <p>Um novo registro de treinamento foi atualizado para você.</p>
+            // <h3>Detalhes</h3>
+            // <p><strong>Membro da equipe:</strong> {team_member}</p>
+            // <p><strong>Nome do curso:</strong> {course_name}</p>
+            // <p><strong>Fornecedor:</strong> {provider}</p>
+            // <p><strong>Créditos ganhos:</strong> {credit_earned}</p>
+            // <p><strong>Créditos requeridos:</strong> {credit_required}</p>
+            // <p><strong>Número do certificado:</strong> {certificate_num}</p>
+            // <p>Por favor, revise e confirme este registro de treinamento no sistema.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Atenciosamente,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'ru' => [
+            //             'subject' => 'Обновление тренинга для {team_member}',
+            //             'content' => '<p>Здравствуйте, Член команды,</p>
+            // <p>Новый тренировочный рекорд был обновлен для вас.</p>
+            // <h3>Детали</h3>
+            // <p><strong>Член команды:</strong> {team_member}</p>
+            // <p><strong>Название курса:</strong> {course_name}</p>
+            // <p><strong>Поставщик:</strong> {provider}</p>
+            // <p><strong>Заработанные кредиты:</strong> {credit_earned}</p>
+            // <p><strong>Требуемые кредиты:</strong> {credit_required}</p>
+            // <p><strong>Номер сертификата:</strong> {certificate_num}</p>
+            // <p>Пожалуйста, проверьте и подтвердите этот тренировочный рекорд в системе.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     С наилучшими пожеланиями,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'tr' => [
+            //             'subject' => '{team_member} için eğitim güncellemesi',
+            //             'content' => '<p>Merhaba Takım Üyesi,</p>
+            // <p>Senin için yeni bir eğitim kaydı güncellendi.</p>
+            // <h3>Ayrıntılar</h3>
+            // <p><strong>Takım üyesi:</strong> {team_member}</p>
+            // <p><strong>Kurs adı:</strong> {course_name}</p>
+            // <p><strong>Sağlayıcı:</strong> {provider}</p>
+            // <p><strong>Kazanılan kredi:</strong> {credit_earned}</p>
+            // <p><strong>Gereken kredi:</strong> {credit_required}</p>
+            // <p><strong>Sertifika numarası:</strong> {certificate_num}</p>
+            // <p>Lütfen bu eğitim kaydını sistemde gözden geçirip onaylayın.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Saygılarımla,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'zh' => [
+            //             'subject' => '{team_member} 的培训更新',
+            //             'content' => '<p>您好，团队成员，</p>
+            // <p>您的培训记录已更新。</p>
+            // <h3>详情</h3>
+            // <p><strong>团队成员：</strong> {team_member}</p>
+            // <p><strong>课程名称：</strong> {course_name}</p>
+            // <p><strong>提供者：</strong> {provider}</p>
+            // <p><strong>获得的学分：</strong> {credit_earned}</p>
+            // <p><strong>所需的学分：</strong> {credit_required}</p>
+            // <p><strong>证书编号：</strong> {certificate_num}</p>
+            // <p>请查看并确认此培训记录于系统中。</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     此致敬礼，<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //     ]
+            // ],
 
-            [
-                'name' => 'New Regulatory Body',
-                'from' => env('APP_NAME'),
-                'translations' => [
-                    'en' => [
-                        'subject' => 'New Regulatory Body Added: {name}',
-                        'content' => '<p>Hello {name},</p>
-            <p>A new regulatory body has been added to the system.</p>
-            <h3>Details</h3>
-            <p><strong>Name:</strong> {name}</p>
-            <p><strong>Jurisdiction:</strong> {jurisdiction}</p>
-            <p><strong>Email:</strong> {email}</p>
-            <p><strong>Phone Number:</strong> {phoneno}</p>
-            <p><strong>Address:</strong> {address}</p>
-            <p><strong>Website:</strong> <a href="{website}" target="_blank">{website}</a></p>
-            <p>Please review and confirm this regulatory body in the system.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Best regards,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'es' => [
-                        'subject' => 'Nuevo organismo regulador añadido: {name}',
-                        'content' => '<p>Hola {name},</p>
-            <p>Se ha añadido un nuevo organismo regulador al sistema.</p>
-            <h3>Detalles</h3>
-            <p><strong>Nombre:</strong> {name}</p>
-            <p><strong>Jurisdicción:</strong> {jurisdiction}</p>
-            <p><strong>Correo electrónico:</strong> {email}</p>
-            <p><strong>Número de teléfono:</strong> {phoneno}</p>
-            <p><strong>Dirección:</strong> {address}</p>
-            <p><strong>Sitio web:</strong> <a href="{website}" target="_blank">{website}</a></p>
-            <p>Por favor, revisa y confirma este organismo regulador en el sistema.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Atentamente,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'ar' => [
-                        'subject' => 'تم إضافة هيئة تنظيمية جديدة: {name}',
-                        'content' => '<p style="direction: rtl; text-align: right;">مرحبًا {name}،</p>
-            <p style="direction: rtl; text-align: right;">تم إضافة هيئة تنظيمية جديدة إلى النظام.</p>
-            <h3 style="direction: rtl; text-align: right;">التفاصيل</h3>
-            <p style="direction: rtl; text-align: right;"><strong>الاسم:</strong> {name}</p>
-            <p style="direction: rtl; text-align: right;"><strong>الاختصاص:</strong> {jurisdiction}</p>
-            <p style="direction: rtl; text-align: right;"><strong>البريد الإلكتروني:</strong> {email}</p>
-            <p style="direction: rtl; text-align: right;"><strong>رقم الهاتف:</strong> {phoneno}</p>
-            <p style="direction: rtl; text-align: right;"><strong>العنوان:</strong> {address}</p>
-            <p style="direction: rtl; text-align: right;"><strong>الموقع الإلكتروني:</strong> <a href="{website}" target="_blank">{website}</a></p>
-            <p style="direction: rtl; text-align: right;">يرجى مراجعة وتأكيد هذه الهيئة التنظيمية في النظام.</p>
-            <div style="text-align: left; margin-top: 30px;">
-                مع أطيب التحيات،<br>
-                {user_name}
-            </div>'
-                    ],
-                    'da' => [
-                        'subject' => 'Ny regulerende myndighed tilføjet: {name}',
-                        'content' => '<p>Hej {name},</p>
-            <p>En ny regulerende myndighed er blevet tilføjet til systemet.</p>
-            <h3>Detaljer</h3>
-            <p><strong>Navn:</strong> {name}</p>
-            <p><strong>Jurisdiktion:</strong> {jurisdiction}</p>
-            <p><strong>E-mail:</strong> {email}</p>
-            <p><strong>Telefonnummer:</strong> {phoneno}</p>
-            <p><strong>Adresse:</strong> {address}</p>
-            <p><strong>Hjemmeside:</strong> <a href="{website}" target="_blank">{website}</a></p>
-            <p>Venligst gennemgå og bekræft denne regulerende myndighed i systemet.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Med venlig hilsen,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'de' => [
-                        'subject' => 'Neue Regulierungsbehörde hinzugefügt: {name}',
-                        'content' => '<p>Hallo {name},</p>
-            <p>Eine neue Regulierungsbehörde wurde dem System hinzugefügt.</p>
-            <h3>Details</h3>
-            <p><strong>Name:</strong> {name}</p>
-            <p><strong>Jurisdiktion:</strong> {jurisdiction}</p>
-            <p><strong>E-Mail:</strong> {email}</p>
-            <p><strong>Telefonnummer:</strong> {phoneno}</p>
-            <p><strong>Adresse:</strong> {address}</p>
-            <p><strong>Website:</strong> <a href="{website}" target="_blank">{website}</a></p>
-            <p>Bitte überprüfe und bestätige diese Regulierungsbehörde im System.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Mit freundlichen Grüßen,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'fr' => [
-                        'subject' => 'Nouvel organisme de régulation ajouté : {name}',
-                        'content' => '<p>Bonjour {name},</p>
-            <p>Un nouvel organisme de régulation a été ajouté au système.</p>
-            <h3>Détails</h3>
-            <p><strong>Nom :</strong> {name}</p>
-            <p><strong>Juridiction :</strong> {jurisdiction}</p>
-            <p><strong>Courriel :</strong> {email}</p>
-            <p><strong>Numéro de téléphone :</strong> {phoneno}</p>
-            <p><strong>Adresse :</strong> {address}</p>
-            <p><strong>Site web :</strong> <a href="{website}" target="_blank">{website}</a></p>
-            <p>Veuillez vérifier et confirmer cet organisme de régulation dans le système.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Cordialement,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'he' => [
-                        'subject' => 'התווספה רשות רגולטורית חדשה: {name}',
-                        'content' => '<p style="direction: rtl; text-align: right;">שלום {name},</p>
-            <p style="direction: rtl; text-align: right;">רשות רגולטורית חדשה התווספה למערכת.</p>
-            <h3 style="direction: rtl; text-align: right;">פרטים</h3>
-            <p style="direction: rtl; text-align: right;"><strong>שם:</strong> {name}</p>
-            <p style="direction: rtl; text-align: right;"><strong>סמכות שיפוט:</strong> {jurisdiction}</p>
-            <p style="direction: rtl; text-align: right;"><strong>דוא"ל:</strong> {email}</p>
-            <p style="direction: rtl; text-align: right;"><strong>מספר טלפון:</strong> {phoneno}</p>
-            <p style="direction: rtl; text-align: right;"><strong>כתובת:</strong> {address}</p>
-            <p style="direction: rtl; text-align: right;"><strong>אתר אינטרנט:</strong> <a href="{website}" target="_blank">{website}</a></p>
-            <p style="direction: rtl; text-align: right;">אנא בדוק ואשר את רשות זו במערכת.</p>
-            <div style="text-align: left; margin-top: 30px;">
-                בברכה,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'it' => [
-                        'subject' => 'Nuovo organismo di regolamentazione aggiunto: {name}',
-                        'content' => '<p>Ciao {name},</p>
-            <p>Un nuovo organismo di regolamentazione è stato aggiunto al sistema.</p>
-            <h3>Dettagli</h3>
-            <p><strong>Nome:</strong> {name}</p>
-            <p><strong>Giurisdizione:</strong> {jurisdiction}</p>
-            <p><strong>Email:</strong> {email}</p>
-            <p><strong>Numero di telefono:</strong> {phoneno}</p>
-            <p><strong>Indirizzo:</strong> {address}</p>
-            <p><strong>Sito web:</strong> <a href="{website}" target="_blank">{website}</a></p>
-            <p>Si prega di rivedere e confermare questo organismo di regolamentazione nel sistema.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Cordiali saluti,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'ja' => [
-                        'subject' => '新しい規制機関が追加されました: {name}',
-                        'content' => '<p>こんにちは {name} 様、</p>
-            <p>新しい規制機関がシステムに追加されました。</p>
-            <h3>詳細</h3>
-            <p><strong>名前:</strong> {name}</p>
-            <p><strong>管轄区域:</strong> {jurisdiction}</p>
-            <p><strong>メール:</strong> {email}</p>
-            <p><strong>電話番号:</strong> {phoneno}</p>
-            <p><strong>住所:</strong> {address}</p>
-            <p><strong>ウェブサイト:</strong> <a href="{website}" target="_blank">{website}</a></p>
-            <p>この規制機関をシステムで確認してください。</p>
-            <div style="text-align: right; margin-top: 30px;">
-                よろしくお願いいたします、<br>
-                {user_name}
-            </div>'
-                    ],
-                    'nl' => [
-                        'subject' => 'Nieuwe regelgevende instantie toegevoegd: {name}',
-                        'content' => '<p>Hallo {name},</p>
-            <p>Een nieuwe regelgevende instantie is toegevoegd aan het systeem.</p>
-            <h3>Details</h3>
-            <p><strong>Naam:</strong> {name}</p>
-            <p><strong>Jurisdictie:</strong> {jurisdiction}</p>
-            <p><strong>E-mail:</strong> {email}</p>
-            <p><strong>Telefoonnummer:</strong> {phoneno}</p>
-            <p><strong>Adres:</strong> {address}</p>
-            <p><strong>Website:</strong> <a href="{website}" target="_blank">{website}</a></p>
-            <p>Controleer en bevestig deze regelgevende instantie in het systeem.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Met vriendelijke groet,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'pl' => [
-                        'subject' => 'Dodano nowy organ regulacyjny: {name}',
-                        'content' => '<p>Witaj {name},</p>
-            <p>Do systemu dodano nowy organ regulacyjny.</p>
-            <h3>Szczegóły</h3>
-            <p><strong>Nazwa:</strong> {name}</p>
-            <p><strong>Jurysdykcja:</strong> {jurisdiction}</p>
-            <p><strong>E-mail:</strong> {email}</p>
-            <p><strong>Numer telefonu:</strong> {phoneno}</p>
-            <p><strong>Adres:</strong> {address}</p>
-            <p><strong>Strona internetowa:</strong> <a href="{website}" target="_blank">{website}</a></p>
-            <p>Proszę przejrzyj i potwierdź ten organ regulacyjny w systemie.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Z poważaniem,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'pt' => [
-                        'subject' => 'Novo órgão regulador adicionado: {name}',
-                        'content' => '<p>Olá {name},</p>
-            <p>Um novo órgão regulador foi adicionado ao sistema.</p>
-            <h3>Detalhes</h3>
-            <p><strong>Nome:</strong> {name}</p>
-            <p><strong>Jurisdição:</strong> {jurisdiction}</p>
-            <p><strong>E-mail:</strong> {email}</p>
-            <p><strong>Número de telefone:</strong> {phoneno}</p>
-            <p><strong>Endereço:</strong> {address}</p>
-            <p><strong>Site:</strong> <a href="{website}" target="_blank">{website}</a></p>
-            <p>Por favor, revise e confirme este órgão regulador no sistema.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Atenciosamente,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'pt-br' => [
-                        'subject' => 'Novo órgão regulador adicionado: {name}',
-                        'content' => '<p>Olá {name},</p>
-            <p>Um novo órgão regulador foi adicionado ao sistema.</p>
-            <h3>Detalhes</h3>
-            <p><strong>Nome:</strong> {name}</p>
-            <p><strong>Jurisdição:</strong> {jurisdiction}</p>
-            <p><strong>E-mail:</strong> {email}</p>
-            <p><strong>Número de telefone:</strong> {phoneno}</p>
-            <p><strong>Endereço:</strong> {address}</p>
-            <p><strong>Site:</strong> <a href="{website}" target="_blank">{website}</a></p>
-            <p>Por favor, revise e confirme este órgão regulador no sistema.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Atenciosamente,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'ru' => [
-                        'subject' => 'Добавлен новый регулирующий орган: {name}',
-                        'content' => '<p>Здравствуйте, {name},</p>
-            <p>В систему добавлен новый регулирующий орган.</p>
-            <h3>Детали</h3>
-            <p><strong>Название:</strong> {name}</p>
-            <p><strong>Юрисдикция:</strong> {jurisdiction}</p>
-            <p><strong>Электронная почта:</strong> {email}</p>
-            <p><strong>Номер телефона:</strong> {phoneno}</p>
-            <p><strong>Адрес:</strong> {address}</p>
-            <p><strong>Веб-сайт:</strong> <a href="{website}" target="_blank">{website}</a></p>
-            <p>Пожалуйста, проверьте и подтвердите этот регулирующий орган в системе.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                С наилучшими пожеланиями,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'tr' => [
-                        'subject' => 'Yeni düzenleyici kurum eklendi: {name}',
-                        'content' => '<p>Merhaba {name},</p>
-            <p>Sisteme yeni bir düzenleyici kurum eklendi.</p>
-            <h3>Ayrıntılar</h3>
-            <p><strong>İsim:</strong> {name}</p>
-            <p><strong>Yargı Yetkisi:</strong> {jurisdiction}</p>
-            <p><strong>E-posta:</strong> {email}</p>
-            <p><strong>Telefon Numarası:</strong> {phoneno}</p>
-            <p><strong>Adres:</strong> {address}</p>
-            <p><strong>Web Sitesi:</strong> <a href="{website}" target="_blank">{website}</a></p>
-            <p>Lütfen bu düzenleyici kurumu sistemde gözden geçirip onaylayın.</p>
-            <div style="text-align: right; margin-top: 30px;">
-                Saygılarımla,<br>
-                {user_name}
-            </div>'
-                    ],
-                    'zh' => [
-                        'subject' => '新增监管机构：{name}',
-                        'content' => '<p>您好 {name}，</p>
-            <p>系统中新增了一个监管机构。</p>
-            <h3>详情</h3>
-            <p><strong>名称：</strong> {name}</p>
-            <p><strong>管辖范围：</strong> {jurisdiction}</p>
-            <p><strong>电子邮件：</strong> {email}</p>
-            <p><strong>电话号码：</strong> {phoneno}</p>
-            <p><strong>地址：</strong> {address}</p>
-            <p><strong>网站：</strong> <a href="{website}" target="_blank">{website}</a></p>
-            <p>请审查并确认此监管机构于系统中。</p>
-            <div style="text-align: right; margin-top: 30px;">
-                此致敬礼，<br>
-                {user_name}
-            </div>'
-                    ],
-                ],
-            ],
+            // [
+            //     'name' => 'New Regulatory Body',
+            //     'from' => env('APP_NAME'),
+            //     'translations' => [
+            //         'en' => [
+            //             'subject' => 'New Regulatory Body Added: {name}',
+            //             'content' => '<p>Hello {name},</p>
+            // <p>A new regulatory body has been added to the system.</p>
+            // <h3>Details</h3>
+            // <p><strong>Name:</strong> {name}</p>
+            // <p><strong>Jurisdiction:</strong> {jurisdiction}</p>
+            // <p><strong>Email:</strong> {email}</p>
+            // <p><strong>Phone Number:</strong> {phoneno}</p>
+            // <p><strong>Address:</strong> {address}</p>
+            // <p><strong>Website:</strong> <a href="{website}" target="_blank">{website}</a></p>
+            // <p>Please review and confirm this regulatory body in the system.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Best regards,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'es' => [
+            //             'subject' => 'Nuevo organismo regulador añadido: {name}',
+            //             'content' => '<p>Hola {name},</p>
+            // <p>Se ha añadido un nuevo organismo regulador al sistema.</p>
+            // <h3>Detalles</h3>
+            // <p><strong>Nombre:</strong> {name}</p>
+            // <p><strong>Jurisdicción:</strong> {jurisdiction}</p>
+            // <p><strong>Correo electrónico:</strong> {email}</p>
+            // <p><strong>Número de teléfono:</strong> {phoneno}</p>
+            // <p><strong>Dirección:</strong> {address}</p>
+            // <p><strong>Sitio web:</strong> <a href="{website}" target="_blank">{website}</a></p>
+            // <p>Por favor, revisa y confirma este organismo regulador en el sistema.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Atentamente,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'ar' => [
+            //             'subject' => 'تم إضافة هيئة تنظيمية جديدة: {name}',
+            //             'content' => '<p style="direction: rtl; text-align: right;">مرحبًا {name}،</p>
+            // <p style="direction: rtl; text-align: right;">تم إضافة هيئة تنظيمية جديدة إلى النظام.</p>
+            // <h3 style="direction: rtl; text-align: right;">التفاصيل</h3>
+            // <p style="direction: rtl; text-align: right;"><strong>الاسم:</strong> {name}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>الاختصاص:</strong> {jurisdiction}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>البريد الإلكتروني:</strong> {email}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>رقم الهاتف:</strong> {phoneno}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>العنوان:</strong> {address}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>الموقع الإلكتروني:</strong> <a href="{website}" target="_blank">{website}</a></p>
+            // <p style="direction: rtl; text-align: right;">يرجى مراجعة وتأكيد هذه الهيئة التنظيمية في النظام.</p>
+            // <div style="text-align: left; margin-top: 30px;">
+            //     مع أطيب التحيات،<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'da' => [
+            //             'subject' => 'Ny regulerende myndighed tilføjet: {name}',
+            //             'content' => '<p>Hej {name},</p>
+            // <p>En ny regulerende myndighed er blevet tilføjet til systemet.</p>
+            // <h3>Detaljer</h3>
+            // <p><strong>Navn:</strong> {name}</p>
+            // <p><strong>Jurisdiktion:</strong> {jurisdiction}</p>
+            // <p><strong>E-mail:</strong> {email}</p>
+            // <p><strong>Telefonnummer:</strong> {phoneno}</p>
+            // <p><strong>Adresse:</strong> {address}</p>
+            // <p><strong>Hjemmeside:</strong> <a href="{website}" target="_blank">{website}</a></p>
+            // <p>Venligst gennemgå og bekræft denne regulerende myndighed i systemet.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Med venlig hilsen,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'de' => [
+            //             'subject' => 'Neue Regulierungsbehörde hinzugefügt: {name}',
+            //             'content' => '<p>Hallo {name},</p>
+            // <p>Eine neue Regulierungsbehörde wurde dem System hinzugefügt.</p>
+            // <h3>Details</h3>
+            // <p><strong>Name:</strong> {name}</p>
+            // <p><strong>Jurisdiktion:</strong> {jurisdiction}</p>
+            // <p><strong>E-Mail:</strong> {email}</p>
+            // <p><strong>Telefonnummer:</strong> {phoneno}</p>
+            // <p><strong>Adresse:</strong> {address}</p>
+            // <p><strong>Website:</strong> <a href="{website}" target="_blank">{website}</a></p>
+            // <p>Bitte überprüfe und bestätige diese Regulierungsbehörde im System.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Mit freundlichen Grüßen,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'fr' => [
+            //             'subject' => 'Nouvel organisme de régulation ajouté : {name}',
+            //             'content' => '<p>Bonjour {name},</p>
+            // <p>Un nouvel organisme de régulation a été ajouté au système.</p>
+            // <h3>Détails</h3>
+            // <p><strong>Nom :</strong> {name}</p>
+            // <p><strong>Juridiction :</strong> {jurisdiction}</p>
+            // <p><strong>Courriel :</strong> {email}</p>
+            // <p><strong>Numéro de téléphone :</strong> {phoneno}</p>
+            // <p><strong>Adresse :</strong> {address}</p>
+            // <p><strong>Site web :</strong> <a href="{website}" target="_blank">{website}</a></p>
+            // <p>Veuillez vérifier et confirmer cet organisme de régulation dans le système.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Cordialement,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'he' => [
+            //             'subject' => 'התווספה רשות רגולטורית חדשה: {name}',
+            //             'content' => '<p style="direction: rtl; text-align: right;">שלום {name},</p>
+            // <p style="direction: rtl; text-align: right;">רשות רגולטורית חדשה התווספה למערכת.</p>
+            // <h3 style="direction: rtl; text-align: right;">פרטים</h3>
+            // <p style="direction: rtl; text-align: right;"><strong>שם:</strong> {name}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>סמכות שיפוט:</strong> {jurisdiction}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>דוא"ל:</strong> {email}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>מספר טלפון:</strong> {phoneno}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>כתובת:</strong> {address}</p>
+            // <p style="direction: rtl; text-align: right;"><strong>אתר אינטרנט:</strong> <a href="{website}" target="_blank">{website}</a></p>
+            // <p style="direction: rtl; text-align: right;">אנא בדוק ואשר את רשות זו במערכת.</p>
+            // <div style="text-align: left; margin-top: 30px;">
+            //     בברכה,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'it' => [
+            //             'subject' => 'Nuovo organismo di regolamentazione aggiunto: {name}',
+            //             'content' => '<p>Ciao {name},</p>
+            // <p>Un nuovo organismo di regolamentazione è stato aggiunto al sistema.</p>
+            // <h3>Dettagli</h3>
+            // <p><strong>Nome:</strong> {name}</p>
+            // <p><strong>Giurisdizione:</strong> {jurisdiction}</p>
+            // <p><strong>Email:</strong> {email}</p>
+            // <p><strong>Numero di telefono:</strong> {phoneno}</p>
+            // <p><strong>Indirizzo:</strong> {address}</p>
+            // <p><strong>Sito web:</strong> <a href="{website}" target="_blank">{website}</a></p>
+            // <p>Si prega di rivedere e confermare questo organismo di regolamentazione nel sistema.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Cordiali saluti,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'ja' => [
+            //             'subject' => '新しい規制機関が追加されました: {name}',
+            //             'content' => '<p>こんにちは {name} 様、</p>
+            // <p>新しい規制機関がシステムに追加されました。</p>
+            // <h3>詳細</h3>
+            // <p><strong>名前:</strong> {name}</p>
+            // <p><strong>管轄区域:</strong> {jurisdiction}</p>
+            // <p><strong>メール:</strong> {email}</p>
+            // <p><strong>電話番号:</strong> {phoneno}</p>
+            // <p><strong>住所:</strong> {address}</p>
+            // <p><strong>ウェブサイト:</strong> <a href="{website}" target="_blank">{website}</a></p>
+            // <p>この規制機関をシステムで確認してください。</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     よろしくお願いいたします、<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'nl' => [
+            //             'subject' => 'Nieuwe regelgevende instantie toegevoegd: {name}',
+            //             'content' => '<p>Hallo {name},</p>
+            // <p>Een nieuwe regelgevende instantie is toegevoegd aan het systeem.</p>
+            // <h3>Details</h3>
+            // <p><strong>Naam:</strong> {name}</p>
+            // <p><strong>Jurisdictie:</strong> {jurisdiction}</p>
+            // <p><strong>E-mail:</strong> {email}</p>
+            // <p><strong>Telefoonnummer:</strong> {phoneno}</p>
+            // <p><strong>Adres:</strong> {address}</p>
+            // <p><strong>Website:</strong> <a href="{website}" target="_blank">{website}</a></p>
+            // <p>Controleer en bevestig deze regelgevende instantie in het systeem.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Met vriendelijke groet,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'pl' => [
+            //             'subject' => 'Dodano nowy organ regulacyjny: {name}',
+            //             'content' => '<p>Witaj {name},</p>
+            // <p>Do systemu dodano nowy organ regulacyjny.</p>
+            // <h3>Szczegóły</h3>
+            // <p><strong>Nazwa:</strong> {name}</p>
+            // <p><strong>Jurysdykcja:</strong> {jurisdiction}</p>
+            // <p><strong>E-mail:</strong> {email}</p>
+            // <p><strong>Numer telefonu:</strong> {phoneno}</p>
+            // <p><strong>Adres:</strong> {address}</p>
+            // <p><strong>Strona internetowa:</strong> <a href="{website}" target="_blank">{website}</a></p>
+            // <p>Proszę przejrzyj i potwierdź ten organ regulacyjny w systemie.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Z poważaniem,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'pt' => [
+            //             'subject' => 'Novo órgão regulador adicionado: {name}',
+            //             'content' => '<p>Olá {name},</p>
+            // <p>Um novo órgão regulador foi adicionado ao sistema.</p>
+            // <h3>Detalhes</h3>
+            // <p><strong>Nome:</strong> {name}</p>
+            // <p><strong>Jurisdição:</strong> {jurisdiction}</p>
+            // <p><strong>E-mail:</strong> {email}</p>
+            // <p><strong>Número de telefone:</strong> {phoneno}</p>
+            // <p><strong>Endereço:</strong> {address}</p>
+            // <p><strong>Site:</strong> <a href="{website}" target="_blank">{website}</a></p>
+            // <p>Por favor, revise e confirme este órgão regulador no sistema.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Atenciosamente,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'pt-br' => [
+            //             'subject' => 'Novo órgão regulador adicionado: {name}',
+            //             'content' => '<p>Olá {name},</p>
+            // <p>Um novo órgão regulador foi adicionado ao sistema.</p>
+            // <h3>Detalhes</h3>
+            // <p><strong>Nome:</strong> {name}</p>
+            // <p><strong>Jurisdição:</strong> {jurisdiction}</p>
+            // <p><strong>E-mail:</strong> {email}</p>
+            // <p><strong>Número de telefone:</strong> {phoneno}</p>
+            // <p><strong>Endereço:</strong> {address}</p>
+            // <p><strong>Site:</strong> <a href="{website}" target="_blank">{website}</a></p>
+            // <p>Por favor, revise e confirme este órgão regulador no sistema.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Atenciosamente,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'ru' => [
+            //             'subject' => 'Добавлен новый регулирующий орган: {name}',
+            //             'content' => '<p>Здравствуйте, {name},</p>
+            // <p>В систему добавлен новый регулирующий орган.</p>
+            // <h3>Детали</h3>
+            // <p><strong>Название:</strong> {name}</p>
+            // <p><strong>Юрисдикция:</strong> {jurisdiction}</p>
+            // <p><strong>Электронная почта:</strong> {email}</p>
+            // <p><strong>Номер телефона:</strong> {phoneno}</p>
+            // <p><strong>Адрес:</strong> {address}</p>
+            // <p><strong>Веб-сайт:</strong> <a href="{website}" target="_blank">{website}</a></p>
+            // <p>Пожалуйста, проверьте и подтвердите этот регулирующий орган в системе.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     С наилучшими пожеланиями,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'tr' => [
+            //             'subject' => 'Yeni düzenleyici kurum eklendi: {name}',
+            //             'content' => '<p>Merhaba {name},</p>
+            // <p>Sisteme yeni bir düzenleyici kurum eklendi.</p>
+            // <h3>Ayrıntılar</h3>
+            // <p><strong>İsim:</strong> {name}</p>
+            // <p><strong>Yargı Yetkisi:</strong> {jurisdiction}</p>
+            // <p><strong>E-posta:</strong> {email}</p>
+            // <p><strong>Telefon Numarası:</strong> {phoneno}</p>
+            // <p><strong>Adres:</strong> {address}</p>
+            // <p><strong>Web Sitesi:</strong> <a href="{website}" target="_blank">{website}</a></p>
+            // <p>Lütfen bu düzenleyici kurumu sistemde gözden geçirip onaylayın.</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     Saygılarımla,<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //         'zh' => [
+            //             'subject' => '新增监管机构：{name}',
+            //             'content' => '<p>您好 {name}，</p>
+            // <p>系统中新增了一个监管机构。</p>
+            // <h3>详情</h3>
+            // <p><strong>名称：</strong> {name}</p>
+            // <p><strong>管辖范围：</strong> {jurisdiction}</p>
+            // <p><strong>电子邮件：</strong> {email}</p>
+            // <p><strong>电话号码：</strong> {phoneno}</p>
+            // <p><strong>地址：</strong> {address}</p>
+            // <p><strong>网站：</strong> <a href="{website}" target="_blank">{website}</a></p>
+            // <p>请审查并确认此监管机构于系统中。</p>
+            // <div style="text-align: right; margin-top: 30px;">
+            //     此致敬礼，<br>
+            //     {user_name}
+            // </div>'
+            //         ],
+            //     ],
+            // ],
 
 
 
