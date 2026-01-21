@@ -493,11 +493,6 @@ export default function Cases() {
         onSubmit={handleFormSubmit}
         formConfig={{
           fields: [
-            { name: 'title', label: t('Case Title'), type: 'text', required: true },
-            { name: 'case_id', label: t('Case ID'), type: 'text' },
-            { name: 'case_number', label: t('Case Number'), type: 'text' },
-            { name: 'file_number', label: t('File Number'), type: 'text' },
-            { name: 'description', label: t('Description'), type: 'textarea' },
             {
               name: 'client_id',
               label: t('Client'),
@@ -518,81 +513,6 @@ export default function Cases() {
               }]
             },
             {
-              name: 'case_type_id',
-              label: t('Case Type'),
-              type: 'select',
-              required: true,
-              options: caseTypes ? caseTypes.map((type: any) => ({
-                value: type.id.toString(),
-                label: type.name
-              })) : []
-            },
-            {
-              name: 'case_category_subcategory',
-              type: 'dependent-dropdown',
-              dependentConfig: [
-                {
-                  name: 'case_category_id',
-                  label: t('Case Category'),
-                  options: caseCategories ? [
-                    { value: 'none', label: t('None') },
-                    ...caseCategories.map((cat: any) => {
-                      // Handle translatable name
-                      let displayName = cat.name;
-                      if (typeof cat.name === 'object' && cat.name !== null) {
-                        displayName = cat.name[i18n.language] || cat.name.en || cat.name.ar || '';
-                      } else if (cat.name_translations && typeof cat.name_translations === 'object') {
-                        displayName = cat.name_translations[i18n.language] || cat.name_translations.en || cat.name_translations.ar || '';
-                      }
-                      return {
-                        value: cat.id.toString(),
-                        label: displayName
-                      };
-                    })
-                  ] : [{ value: 'none', label: t('None') }]
-                },
-                {
-                  name: 'case_subcategory_id',
-                  label: t('Case Subcategory'),
-                  apiEndpoint: '/case/case-categories/{case_category_id}/subcategories',
-                  showCurrentValue: true
-                }
-              ]
-            },
-            {
-              name: 'case_status_id',
-              label: t('Case Status'),
-              type: 'select',
-              required: true,
-              options: caseStatuses ? caseStatuses.map((status: any) => ({
-                value: status.id.toString(),
-                label: status.name
-              })) : []
-            },
-            {
-              name: 'court_id',
-              label: t('Court'),
-              type: 'select',
-              required: true,
-              options: courts ? courts.map((court: any) => ({
-                value: court.id.toString(),
-                label: court.name,
-                key: `court-${court.id}`
-              })) : []
-            },
-            {
-              name: 'priority',
-              label: t('Priority'),
-              type: 'select',
-              required: true,
-              options: [
-                { value: 'low', label: t('Low') },
-                { value: 'medium', label: t('Medium') },
-                { value: 'high', label: t('High') }
-              ],
-              defaultValue: 'medium'
-            },
-            {
               name: 'attributes',
               label: t('Attributes'),
               type: 'radio',
@@ -608,7 +528,6 @@ export default function Cases() {
               label: t('Opposite Party'),
               type: 'custom',
               render: (field: any, formData: any, onChange: (name: string, value: any) => void) => {
-                // Prepare countries options for the select dropdown
                 const repeaterFields: RepeaterField[] = [
                   { name: 'name', label: t('Name'), type: 'text', required: true },
                   { name: 'id_number', label: t('ID'), type: 'text' },
@@ -635,9 +554,85 @@ export default function Cases() {
                 );
               }
             },
-            { name: 'filing_date', label: t('Filing Date'), type: 'date' },
-            { name: 'expected_completion_date', label: t('Expected Completion'), type: 'date' },
+            { name: 'title', label: t('Case Title'), type: 'text', required: true },
+            { name: 'case_number', label: t('Case Number'), type: 'text' },
+            { name: 'file_number', label: t('File Number'), type: 'text' },
+            {
+              name: 'case_category_subcategory',
+              type: 'dependent-dropdown',
+              required: true,
+              dependentConfig: [
+                {
+                  name: 'case_category_id',
+                  label: t('Case Main Category'),
+                  options: caseCategories ? caseCategories.map((cat: any) => {
+                    // Handle translatable name
+                    let displayName = cat.name;
+                    if (typeof cat.name === 'object' && cat.name !== null) {
+                      displayName = cat.name[i18n.language] || cat.name.en || cat.name.ar || '';
+                    } else if (cat.name_translations && typeof cat.name_translations === 'object') {
+                      displayName = cat.name_translations[i18n.language] || cat.name_translations.en || cat.name_translations.ar || '';
+                    }
+                    return {
+                      value: cat.id.toString(),
+                      label: displayName
+                    };
+                  }) : []
+                },
+                {
+                  name: 'case_subcategory_id',
+                  label: t('Case Sub Category'),
+                  apiEndpoint: '/case/case-categories/{case_category_id}/subcategories',
+                  showCurrentValue: true
+                }
+              ]
+            },
+            {
+              name: 'case_type_id',
+              label: t('Case Type'),
+              type: 'select',
+              required: true,
+              options: caseTypes ? caseTypes.map((type: any) => ({
+                value: type.id.toString(),
+                label: type.name
+              })) : []
+            },
+            {
+              name: 'case_status_id',
+              label: t('Case Status'),
+              type: 'select',
+              required: true,
+              options: caseStatuses ? caseStatuses.map((status: any) => ({
+                value: status.id.toString(),
+                label: status.name
+              })) : []
+            },
+            {
+              name: 'priority',
+              label: t('Priority'),
+              type: 'select',
+              required: true,
+              options: [
+                { value: 'low', label: t('Low') },
+                { value: 'medium', label: t('Medium') },
+                { value: 'high', label: t('High') }
+              ],
+              defaultValue: 'medium'
+            },
+            {
+              name: 'court_id',
+              label: t('Court'),
+              type: 'select',
+              options: courts ? courts.map((court: any) => ({
+                value: court.id.toString(),
+                label: court.name,
+                key: `court-${court.id}`
+              })) : []
+            },
+            { name: 'filing_date', label: t('Filling Date'), type: 'date' },
+            { name: 'expected_completion_date', label: t('Expecting Completion'), type: 'date' },
             { name: 'estimated_value', label: t('Estimated Value'), type: 'number' },
+            { name: 'description', label: t('Description'), type: 'textarea' },
             {
               name: 'status',
               label: t('Status'),
@@ -660,8 +655,8 @@ export default function Cases() {
           currentItem
             ? {
               ...currentItem,
-              'case_category_id': currentItem.case_category_id ? currentItem.case_category_id.toString() : 'none',
-              'case_subcategory_id': currentItem.case_subcategory_id ? currentItem.case_subcategory_id.toString() : 'none',
+              'case_category_id': currentItem.case_category_id ? currentItem.case_category_id.toString() : '',
+              'case_subcategory_id': currentItem.case_subcategory_id ? currentItem.case_subcategory_id.toString() : '',
               'opposite_parties': currentItem.opposite_parties ? currentItem.opposite_parties.map((party: any) => ({
                 name: party.name || '',
                 id_number: party.id_number || '',
@@ -669,7 +664,7 @@ export default function Cases() {
                 lawyer_name: party.lawyer_name || ''
               })) : []
             }
-            : { case_category_id: 'none', case_subcategory_id: 'none', opposite_parties: [] }
+            : { case_category_id: '', case_subcategory_id: '', opposite_parties: [] }
         }
         title={
           formMode === 'create'

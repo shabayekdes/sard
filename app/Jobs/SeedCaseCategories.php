@@ -1,22 +1,54 @@
 <?php
 
-namespace Database\Seeders;
+namespace App\Jobs;
 
 use App\Models\CaseCategory;
-use App\Models\User;
-use Illuminate\Database\Seeder;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
-class CaseCategorySeeder extends Seeder
+/**
+ * Job to seed default case categories for a company
+ */
+class SeedCaseCategories implements ShouldQueue
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
-    {
-        $companyUsers = User::where('type', 'company')->get();
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-        if ($companyUsers->isEmpty()) {
-            $this->command->warn('No company users found. Please run UserSeeder first.');
+    /**
+     * The number of times the job may be attempted.
+     *
+     * @var int
+     */
+    public $tries = 3;
+
+    /**
+     * The number of seconds to wait before retrying the job.
+     *
+     * @var int
+     */
+    public $backoff = 30;
+
+    /**
+     * Create a new job instance.
+     */
+    public function __construct(
+        public int $companyUserId
+    ) {
+        $this->onQueue('default');
+    }
+
+    /**
+     * Execute the job.
+     */
+    public function handle(): void
+    {
+        if (CaseCategory::where('created_by', $this->companyUserId)->exists()) {
+            Log::info('SeedCaseCategories: Categories already exist, skipping', [
+                'company_id' => $this->companyUserId,
+            ]);
             return;
         }
 
@@ -71,63 +103,62 @@ class CaseCategorySeeder extends Seeder
             ['name' => '{"en":"Endowments and Inheritance Terminations in Al-Ahsa and Al-Qatif","ar":"إنهاءات الأوقاف والمواريث في الأحساء والقطيف"}', 'parent_id' => 75],
         ];
 
-        foreach ($companyUsers as $companyUser) {
-            $parentIdMap = [];
+        $parentIdMap = [];
 
-            foreach ($seedData as $item) {
-                if ($item['parent_id'] !== null) {
-                    continue;
-                }
-
-                $name = json_decode($item['name'], true) ?? ['en' => $item['name']];
-                $existing = CaseCategory::query()
-                    ->where('created_by', $companyUser->id)
-                    ->whereNull('parent_id')
-                    ->where('name->en', $name['en'] ?? $item['name'])
-                    ->first();
-
-                $category = $existing ?: CaseCategory::create([
-                    'name' => $name,
-                    'parent_id' => null,
-                    'created_by' => $companyUser->id,
-                    'status' => 'active',
-                ]);
-
-                if (!empty($item['seed_id'])) {
-                    $parentIdMap[$item['seed_id']] = $category->id;
-                }
+        foreach ($seedData as $item) {
+            if ($item['parent_id'] !== null) {
+                continue;
             }
 
-            foreach ($seedData as $item) {
-                if ($item['parent_id'] === null) {
-                    continue;
-                }
+            $name = json_decode($item['name'], true) ?? ['en' => $item['name']];
+            $category = CaseCategory::create([
+                'name' => $name,
+                'parent_id' => null,
+                'created_by' => $this->companyUserId,
+                'status' => 'active',
+            ]);
 
-                $parentId = $parentIdMap[$item['parent_id']] ?? null;
-                if (!$parentId) {
-                    continue;
-                }
-
-                $name = json_decode($item['name'], true) ?? ['en' => $item['name']];
-                $exists = CaseCategory::query()
-                    ->where('created_by', $companyUser->id)
-                    ->where('parent_id', $parentId)
-                    ->where('name->en', $name['en'] ?? $item['name'])
-                    ->exists();
-
-                if (!$exists) {
-                    CaseCategory::create([
-                        'name' => $name,
-                        'parent_id' => $parentId,
-                        'created_by' => $companyUser->id,
-                        'status' => 'active',
-                    ]);
-                }
+            if (!empty($item['seed_id'])) {
+                $parentIdMap[$item['seed_id']] = $category->id;
             }
-
-            $totalCategories = CaseCategory::where('created_by', $companyUser->id)->count();
-            $this->command->info("Created {$totalCategories} case categories for company user: {$companyUser->name}");
         }
+
+        $createdCount = count($parentIdMap);
+
+        foreach ($seedData as $item) {
+            if ($item['parent_id'] === null) {
+                continue;
+            }
+
+            $parentId = $parentIdMap[$item['parent_id']] ?? null;
+            if (!$parentId) {
+                continue;
+            }
+
+            $name = json_decode($item['name'], true) ?? ['en' => $item['name']];
+            CaseCategory::create([
+                'name' => $name,
+                'parent_id' => $parentId,
+                'created_by' => $this->companyUserId,
+                'status' => 'active',
+            ]);
+            $createdCount++;
+        }
+
+        Log::info('SeedCaseCategories: Completed', [
+            'company_id' => $this->companyUserId,
+            'created' => $createdCount,
+        ]);
+    }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(\Throwable $exception): void
+    {
+        Log::error('SeedCaseCategories: Job failed', [
+            'company_id' => $this->companyUserId,
+            'error' => $exception->getMessage(),
+        ]);
     }
 }
-
