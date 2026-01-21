@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('hearing_id')->unique();
             $table->foreignId('case_id')->constrained('cases')->onDelete('cascade');
             $table->foreignId('court_id')->constrained('courts')->onDelete('cascade');
+            $table->string('circle_number')->nullable();
             $table->foreignId('judge_id')->nullable()->constrained('judges')->onDelete('set null');
             $table->foreignId('hearing_type_id')->nullable()->constrained('hearing_types')->onDelete('set null');
             $table->string('title');
@@ -21,6 +22,7 @@ return new class extends Migration
             $table->time('hearing_time');
             $table->integer('duration_minutes')->default(60);
             $table->enum('status', ['scheduled', 'in_progress', 'completed', 'postponed', 'cancelled'])->default('scheduled');
+            $table->string('url')->nullable();
             $table->text('notes')->nullable();
             $table->text('outcome')->nullable();
             $table->json('attendees')->nullable();

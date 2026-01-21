@@ -977,7 +977,7 @@ export default function CaseShow() {
                             {latestHearing ? (
                                 <div className="space-y-3 text-sm">
                                     <div>
-                                        <span className="font-medium text-gray-500 dark:text-gray-400">{t('Hearing Title')}:</span>
+                                        <span className="font-medium text-gray-500 dark:text-gray-400">{t('Sessions Title')}:</span>
                                         <p className="text-gray-900 dark:text-white">{latestHearing.title || '-'}</p>
                                     </div>
                                     <div>
@@ -1004,37 +1004,7 @@ export default function CaseShow() {
                                         </p>
                                     </div>
                                     <div>
-                                        <span className="font-medium text-gray-500 dark:text-gray-400">{t('Court')}:</span>
-                                        <p className="text-gray-900 dark:text-white">
-                                            {latestHearing.court
-                                                ? (() => {
-                                                    // Handle translatable court_type name
-                                                    let courtTypeName = '-';
-                                                    if (latestHearing.court.court_type?.name) {
-                                                        if (typeof latestHearing.court.court_type.name === 'object' && latestHearing.court.court_type.name !== null) {
-                                                            courtTypeName = latestHearing.court.court_type.name[i18n.language] || latestHearing.court.court_type.name.en || latestHearing.court.court_type.name.ar || '-';
-                                                        } else {
-                                                            courtTypeName = latestHearing.court.court_type.name;
-                                                        }
-                                                    }
-
-                                                    // Handle translatable circle_type name
-                                                    let circleTypeName = '';
-                                                    if (latestHearing.court.circle_type?.name) {
-                                                        if (typeof latestHearing.court.circle_type.name === 'object' && latestHearing.court.circle_type.name !== null) {
-                                                            circleTypeName = latestHearing.court.circle_type.name[i18n.language] || latestHearing.court.circle_type.name.en || latestHearing.court.circle_type.name.ar || '';
-                                                        } else {
-                                                            circleTypeName = latestHearing.court.circle_type.name;
-                                                        }
-                                                    }
-
-                                                    return circleTypeName ? `${courtTypeName} + ${circleTypeName}` : courtTypeName;
-                                                })()
-                                                : '-'}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-gray-500 dark:text-gray-400">{t('Hearing Status')}:</span>
+                                        <span className="font-medium text-gray-500 dark:text-gray-400">{t('Session Status')}:</span>
                                         <p className="mt-1 text-gray-900 dark:text-white">
                                             <span
                                                 className={`inline-flex items-center rounded px-2 py-1 text-xs font-medium ${latestHearing.status === 'completed'
@@ -1054,7 +1024,7 @@ export default function CaseShow() {
                                     </div>
                                 </div>
                             ) : (
-                                <p className="text-sm text-gray-500 dark:text-gray-400">{t('No upcoming or recent hearings')}</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">{t('No upcoming or recent sessions')}</p>
                             )}
                         </div>
                     </div>
@@ -1282,11 +1252,6 @@ export default function CaseShow() {
                                         <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Client')}*:</span>
                                         <p className="mt-1 text-sm text-gray-900 dark:text-white">
                                             {caseData.client?.name || '-'}
-                                            {caseData.client?.client_type && (
-                                                <span className="ml-2 inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-200">
-                                                    {getTranslatedValue(caseData.client.client_type.name)}
-                                                </span>
-                                            )}
                                         </p>
                                     </div>
                                     <div>
@@ -3401,7 +3366,7 @@ export default function CaseShow() {
                                 },
                                 {
                                     name: 'hearing_type_id',
-                                    label: t('Hearing Type'),
+                                    label: t('Session Type'),
                                     type: 'select',
                                     required: true,
                                     options: [{ value: 'none', label: t('Select Type') }, ...(hearingTypes ? hearingTypes.map((ht: any) => ({

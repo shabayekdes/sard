@@ -13,7 +13,7 @@ import { Check, ChevronsUpDown } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { FormField } from '@/types/crud';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import DependentDropdown from './DependentDropdown';
 import { log } from 'node:console';
@@ -40,14 +40,17 @@ interface CrudFormModalProps {
     title: string;
     mode: 'create' | 'edit' | 'view';
     description?: string;
+    externalErrors?: Record<string, string | string[]>;
 }
 
-export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialData = {}, title, mode, description }: CrudFormModalProps) {
+export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialData = {}, title, mode, description, externalErrors = {} }: CrudFormModalProps) {
     const { t } = useTranslation();
     const [formData, setFormData] = useState<Record<string, any>>({});
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [relationOptions, setRelationOptions] = useState<Record<string, any[]>>({});
     const { position } = useLayout();
+    const wasOpenRef = useRef(false);
+    const lastInitKeyRef = useRef<string | null>(null);
 
     // Calculate total price for price summary
     const calculateTotal = () => {
@@ -58,52 +61,83 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
 
     // Load initial data when modal opens
     useEffect(() => {
-        if (isOpen) {
-            // Create a clean copy of the initial data
-            const cleanData = { ...initialData };
-
-            // Process fields and set default values
-            formConfig.fields.forEach((field) => {
-                if (field.type === 'multi-select') {
-                    if (cleanData[field.name] && !Array.isArray(cleanData[field.name])) {
-                        // Convert to array if it's not already
-                        cleanData[field.name] = Array.isArray(cleanData[field.name])
-                            ? cleanData[field.name]
-                            : cleanData[field.name]
-                                ? [cleanData[field.name].toString()]
-                                : [];
-                    }
-                }
-
-                // Set default values for fields that don't have values yet (create mode)
-                if (mode === 'create' && (cleanData[field.name] === undefined || cleanData[field.name] === null)) {
-                    if (field.defaultValue !== undefined) {
-                        cleanData[field.name] = field.defaultValue;
-                    }
-                }
-            });
-
-            setFormData(cleanData || {});
-            setErrors({});
-
-            // Load relation data for select fields
-            formConfig.fields.forEach((field) => {
-                if (field.relation && field.relation.endpoint) {
-                    fetch(field.relation.endpoint)
-                        .then((res) => res.json())
-                        .then((data) => {
-                            setRelationOptions((prev) => ({
-                                ...prev,
-                                [field.name]: Array.isArray(data) ? data : data.data || [],
-                            }));
-                        })
-                        .catch((err) => {
-                            // Silent error handling
-                        });
-                }
-            });
+        if (!isOpen) {
+            wasOpenRef.current = false;
+            lastInitKeyRef.current = null;
+            return;
         }
-    }, [isOpen, initialData, formConfig.fields, mode]);
+
+        const initKey = mode === 'edit' ? `edit:${initialData?.id ?? 'new'}` : 'create';
+        if (wasOpenRef.current && lastInitKeyRef.current === initKey) {
+            return;
+        }
+
+        wasOpenRef.current = true;
+        lastInitKeyRef.current = initKey;
+
+        // Create a clean copy of the initial data
+        const cleanData = { ...initialData };
+
+        // Process fields and set default values
+        formConfig.fields.forEach((field) => {
+            if (field.type === 'multi-select') {
+                if (cleanData[field.name] && !Array.isArray(cleanData[field.name])) {
+                    // Convert to array if it's not already
+                    cleanData[field.name] = Array.isArray(cleanData[field.name])
+                        ? cleanData[field.name]
+                        : cleanData[field.name]
+                            ? [cleanData[field.name].toString()]
+                            : [];
+                }
+            }
+
+            // Set default values for fields that don't have values yet (create mode)
+            if (mode === 'create' && (cleanData[field.name] === undefined || cleanData[field.name] === null)) {
+                if (field.defaultValue !== undefined) {
+                    cleanData[field.name] = field.defaultValue;
+                }
+            }
+        });
+
+        setFormData(cleanData || {});
+        setErrors({});
+
+        // Load relation data for select fields
+        formConfig.fields.forEach((field) => {
+            if (field.relation && field.relation.endpoint) {
+                fetch(field.relation.endpoint)
+                    .then((res) => res.json())
+                    .then((data) => {
+                        setRelationOptions((prev) => ({
+                            ...prev,
+                            [field.name]: Array.isArray(data) ? data : data.data || [],
+                        }));
+                    })
+                    .catch(() => {
+                        // Silent error handling
+                    });
+            }
+        });
+    }, [isOpen, initialData, mode, formConfig.fields]);
+
+    useEffect(() => {
+        if (!isOpen) {
+            return;
+        }
+
+        const normalizedErrors: Record<string, string> = {};
+        Object.entries(externalErrors || {}).forEach(([key, value]) => {
+            if (Array.isArray(value)) {
+                normalizedErrors[key] = value[0] || '';
+            } else if (value) {
+                normalizedErrors[key] = value;
+            }
+        });
+
+        if (Object.keys(normalizedErrors).length > 0) {
+            setErrors((prev) => ({ ...prev, ...normalizedErrors }));
+        }
+    }, [externalErrors, isOpen]);
 
     const handleChange = (name: string, value: any) => {
         setFormData((prev) => ({ ...prev, [name]: value }));

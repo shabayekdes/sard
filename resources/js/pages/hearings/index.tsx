@@ -39,6 +39,7 @@ export default function Hearings() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<any>(null);
   const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,6 +92,7 @@ export default function Hearings() {
   const handleAddNew = () => {
     setCurrentItem(null);
     setFormMode('create');
+    setFormErrors({});
     setIsFormModalOpen(true);
   };
 
@@ -98,8 +100,11 @@ export default function Hearings() {
     if (formMode === 'create') {
       toast.loading(t('Scheduling hearing...'));
       router.post(route('hearings.store'), formData, {
+        preserveState: true,
+        preserveScroll: true,
         onSuccess: (page) => {
           setIsFormModalOpen(false);
+          setFormErrors({});
           toast.dismiss();
           if (page.props.flash.success) {
             toast.success(page.props.flash.success);
@@ -107,14 +112,18 @@ export default function Hearings() {
         },
         onError: (errors) => {
           toast.dismiss();
+          setFormErrors(errors as Record<string, string>);
           toast.error(`Failed to schedule hearing: ${Object.values(errors).join(', ')}`);
         }
       });
     } else if (formMode === 'edit') {
       toast.loading(t('Updating hearing...'));
       router.put(route('hearings.update', currentItem.id), formData, {
+        preserveState: true,
+        preserveScroll: true,
         onSuccess: (page) => {
           setIsFormModalOpen(false);
+          setFormErrors({});
           toast.dismiss();
           if (page.props.flash.success) {
             toast.success(page.props.flash.success);
@@ -122,6 +131,7 @@ export default function Hearings() {
         },
         onError: (errors) => {
           toast.dismiss();
+          setFormErrors(errors as Record<string, string>);
           toast.error(`Failed to update hearing: ${Object.values(errors).join(', ')}`);
         }
       });
@@ -372,8 +382,12 @@ export default function Hearings() {
 
       <CrudFormModal
         isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
+        onClose={() => {
+          setIsFormModalOpen(false);
+          setFormErrors({});
+        }}
         onSubmit={handleFormSubmit}
+        externalErrors={formErrors}
         formConfig={{
           fields: [
             {
