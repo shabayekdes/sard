@@ -420,9 +420,9 @@ export default function ClientShow() {
                                         <strong>{t('Notes')}:</strong>
                                     </div>
                                     <div className="rounded bg-gray-50 p-3 text-sm text-gray-600 dark:bg-gray-800 dark:text-gray-300">{client.notes || t('No notes available')}</div>
-                                    <div>
-                                        <strong>{t('Referral Source')}:</strong> {client.referral_source || '-'}
-                                    </div>
+                                    {/*<div>*/}
+                                    {/*    <strong>{t('Referral Source')}:</strong> {client.referral_source || '-'}*/}
+                                    {/*</div>*/}
                                     <div>
                                         <strong>{t('Created')}:</strong>{' '}
                                         {window.appSettings?.formatDate(client.created_at) || new Date(client.created_at).toLocaleDateString()}
