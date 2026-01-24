@@ -40,6 +40,34 @@ export default function EditInvoice() {
   const [filteredCases, setFilteredCases] = useState([]);
   const [unbilledTimeEntries, setUnbilledTimeEntries] = useState([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const paymentTermsText = (() => {
+    if (!formData.client_id) {
+      return null;
+    }
+    console.log('clientBillingInfo:', clientBillingInfo);
+    const billing = clientBillingInfo?.[formData.client_id];
+    if (!billing) {
+      return null;
+    }
+    if (billing.custom_payment_terms) {
+      return billing.custom_payment_terms;
+    }
+    if (billing.formatted_payment_terms) {
+      return billing.formatted_payment_terms;
+    }
+    if (billing.payment_terms) {
+      const termsMap: Record<string, string> = {
+        net_15: t('Net 15 days'),
+        net_30: t('Net 30 days'),
+        net_45: t('Net 45 days'),
+        net_60: t('Net 60 days'),
+        due_on_receipt: t('Due on receipt'),
+        custom: billing.custom_payment_terms || t('Custom terms')
+      };
+      return termsMap[billing.payment_terms] || billing.payment_terms;
+    }
+    return null;
+  })();
 
   // Initialize form data when invoice is loaded
   useEffect(() => {
@@ -277,6 +305,11 @@ export default function EditInvoice() {
                         ))}
                       </SelectContent>
                     </Select>
+                    {paymentTermsText && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {t('Payment terms')}: {paymentTermsText}
+                      </p>
+                    )}
                   </div>
                   
                   <div>

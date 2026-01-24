@@ -163,7 +163,7 @@ class InvoiceController extends BaseController
 
         // Load client billing info
         $clientBillingInfo = ClientBillingInfo::withPermissionCheck()
-            ->select('client_id', 'currency')
+            ->select('client_id', 'currency', 'payment_terms', 'custom_payment_terms')
             ->get()
             ->keyBy('client_id');
 
