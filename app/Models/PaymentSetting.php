@@ -169,7 +169,7 @@ class PaymentSetting extends Model
         );
     }
 
-    public static function getUserSettings($userId)
+    public static function getUserSettings($userId): array
     {
         if (!$userId) {
             return [];

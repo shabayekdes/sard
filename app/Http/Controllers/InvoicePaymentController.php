@@ -163,48 +163,15 @@ class InvoicePaymentController extends Controller
         $paymentMethod = $request->payment_method;
 
         // Call specific invoice payment methods
-        $controllerMap = [
-            'bank' => '\App\Http\Controllers\BankPaymentController',
-            'stripe' => '\App\Http\Controllers\StripePaymentController',
-            'paypal' => '\App\Http\Controllers\PayPalPaymentController',
-            'razorpay' => '\App\Http\Controllers\RazorpayController',
-            'paystack' => '\App\Http\Controllers\PaystackPaymentController',
-            'flutterwave' => '\App\Http\Controllers\FlutterwavePaymentController',
-            'paytabs' => '\App\Http\Controllers\PayTabsPaymentController',
-            'skrill' => '\App\Http\Controllers\SkrillPaymentController',
-            'coingate' => '\App\Http\Controllers\CoinGatePaymentController',
-            'payfast' => '\App\Http\Controllers\PayfastPaymentController',
-            'tap' => '\App\Http\Controllers\TapPaymentController',
-            'xendit' => '\App\Http\Controllers\XenditPaymentController',
-            'paytr' => '\App\Http\Controllers\PayTRPaymentController',
-            'mollie' => '\App\Http\Controllers\MolliePaymentController',
-            'toyyibpay' => '\App\Http\Controllers\ToyyibPayPaymentController',
-            'iyzipay' => '\App\Http\Controllers\IyzipayPaymentController',
-            'benefit' => '\App\Http\Controllers\BenefitPaymentController',
-            'ozow' => '\App\Http\Controllers\OzowPaymentController',
-            'easebuzz' => '\App\Http\Controllers\EasebuzzPaymentController',
-            'authorizenet' => '\App\Http\Controllers\AuthorizeNetPaymentController',
-            'fedapay' => '\App\Http\Controllers\FedaPayPaymentController',
-            'payhere' => '\App\Http\Controllers\PayHerePaymentController',
-            'cinetpay' => '\App\Http\Controllers\CinetPayPaymentController',
-            'paiement' => '\App\Http\Controllers\PaiementPaymentController',
-            'yookassa' => '\App\Http\Controllers\YooKassaPaymentController',
-            'aamarpay' => '\App\Http\Controllers\AamarpayPaymentController',
-            'midtrans' => '\App\Http\Controllers\MidtransPaymentController',
-            'paymentwall' => '\App\Http\Controllers\PaymentWallPaymentController',
-            'sspay' => '\App\Http\Controllers\SSPayPaymentController',
-            'cashfree' => '\App\Http\Controllers\CashfreeController',
-            'khalti' => '\App\Http\Controllers\KhaltiPaymentController',
-            'nepalste' => '\App\Http\Controllers\NepalstePaymentController'
+        $controller = config('payment_methods.' . $paymentMethod . '.controller', '');
 
-        ];
 
-        if (!isset($controllerMap[$paymentMethod])) {
+        if (!isset($controller)) {
             return back()->withErrors(['error' => 'Payment method not supported']);
         }
 
         try {
-            $controller = app($controllerMap[$paymentMethod]);
+            $controller = app($controller);
             return $controller->processInvoicePayment($request);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors());
@@ -238,47 +205,14 @@ class InvoicePaymentController extends Controller
         $settings = PaymentSetting::where('user_id', $invoiceCreatorId)->pluck('value', 'key')->toArray();
 
         $gateways = [];
-        $paymentGateways = [
-            'bank' => ['name' => 'Bank Transfer', 'icon' => '🏦'],
-            'stripe' => ['name' => 'Credit Card (Stripe)', 'icon' => '💳'],
-            'paypal' => ['name' => 'PayPal', 'icon' => '🅿️'],
-            'razorpay' => ['name' => 'Razorpay', 'icon' => '💰'],
-            'paystack' => ['name' => 'Paystack', 'icon' => '🅿️'],
-            'flutterwave' => ['name' => 'Flutterwave', 'icon' => '💳'],
-            'paytabs' => ['name' => 'Paytabs', 'icon' => '🅿️'],
-            'skrill' => ['name' => 'Skrill', 'icon' => '💳'],
-            'coingate' => ['name' => 'Coin Gate', 'icon' => '💳'],
-            'payfast' => ['name' => 'Pay Fast', 'icon' => '🅿️'],
-            'tap' => ['name' => 'Tap', 'icon' => '💳'],
-            'xendit' => ['name' => 'Xendit', 'icon' => '💳'],
-            'paytr' => ['name' => 'PayTR', 'icon' => '🅿️'],
-            'mollie' => ['name' => 'Mollie', 'icon' => '💳'],
-            'toyyibpay' => ['name' => 'Toyyib Pay', 'icon' => '💳'],
-            'iyzipay' => ['name' => 'Iyzipay', 'icon' => '💳'],
-            'benefit' => ['name' => 'Benefit', 'icon' => '💳'],
-            'ozow' => ['name' => 'Ozow', 'icon' => '💳'],
-            'easebuzz' => ['name' => 'Easebuzz', 'icon' => '💳'],
-            'authorizenet' => ['name' => 'Authorize.net', 'icon' => '💳'],
-            'payhere' => ['name' => 'Pay Here', 'icon' => '🅿️'],
-            'cinetpay' => ['name' => 'Cinet Pay', 'icon' => '💳'],
-            'paiement' => ['name' => 'Paiement Pro', 'icon' => '🅿️'],
-            'yookassa' => ['name' => 'Yoo Kassa', 'icon' => '💳'],
-            'aamarpay' => ['name' => 'Aamar Pay', 'icon' => '💳'],
-            'midtrans' => ['name' => 'Midtrans', 'icon' => '💳'],
-            'paymentwall' => ['name' => 'Payment Wall', 'icon' => '🅿️'],
-            'sspay' => ['name' => 'SS Pay', 'icon' => '💳'],
-            'cashfree' => ['name' => 'Cashfree', 'icon' => '💳'],
-            'khalti' => ['name' => 'Khalti', 'icon' => '💳'],
-            'fedapay' =>['name'=> 'Fedapay', 'icon' => '💳'],
-
-        ];
+        $paymentGateways = config('payment_methods');
 
         foreach ($paymentGateways as $key => $config) {
-            $enabledKey = "is_{$key}_enabled";
+            $enabledKey = "{$key}_enabled";
             if (($settings[$enabledKey] ?? '0') === '1') {
                 $gateways[] = [
                     'id' => $key,
-                    'name' => $config['name'],
+                    'name' => $config['name'][app()->getLocale()],
                     'icon' => $config['icon']
                 ];
             }

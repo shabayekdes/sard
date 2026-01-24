@@ -271,7 +271,7 @@ if (! function_exists('isPaymentMethodEnabled')) {
     {
         $userId = $userId ?: getPaymentSettingsUserId();
         $settings = getPaymentSettings($userId);
-        $key = "is_{$method}_enabled";
+        $key = "{$method}_enabled";
 
         return isset($settings[$key]) && ($settings[$key] === true || $settings[$key] === '1');
     }
