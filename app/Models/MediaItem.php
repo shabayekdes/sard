@@ -26,6 +26,7 @@ class MediaItem extends BaseModel implements HasMedia
         $config = StorageConfigService::getStorageConfig();
         $allowedExtensions = array_map('trim', explode(',', strtolower($config['allowed_file_types'])));
         $maxSizeBytes = ($config['max_file_size_mb'] ?? 2) * 1024 * 1024; // Convert MB to bytes
+        $activeDisk = StorageConfigService::getActiveDisk();
         
         $this->addMediaCollection('images')
             ->acceptsFile(function ($file) use ($allowedExtensions, $maxSizeBytes) {
@@ -45,7 +46,25 @@ class MediaItem extends BaseModel implements HasMedia
                 
                 return true;
             })
-            ->useDisk(StorageConfigService::getActiveDisk());
+            ->useDisk($activeDisk);
+
+        $this->addMediaCollection('files')
+            ->acceptsFile(function ($file) use ($allowedExtensions, $maxSizeBytes) {
+                $fileName = $file->name ?? $file->getFilename();
+                $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+                if (!in_array($extension, $allowedExtensions)) {
+                    return false;
+                }
+
+                $fileSize = $file->size ?? filesize($file->getPathname());
+                if ($fileSize > $maxSizeBytes) {
+                    return false;
+                }
+
+                return true;
+            })
+            ->useDisk($activeDisk);
     }
 
     public function registerMediaConversions(Media $media = null): void

@@ -147,15 +147,15 @@ class SystemSettingsController extends Controller
     {
         try {
             $validated = $request->validate([
-                'storage_type' => 'required|in:local,aws_s3,wasabi',
+                'storage_type' => 'required|in:local,s3,wasabi',
                 'allowedFileTypes' => 'required|string',
                 'maxUploadSize' => 'required|numeric|min:1',
-                'awsAccessKeyId' => 'required_if:storage_type,aws_s3|string',
-                'awsSecretAccessKey' => 'required_if:storage_type,aws_s3|string',
-                'awsDefaultRegion' => 'required_if:storage_type,aws_s3|string',
-                'awsBucket' => 'required_if:storage_type,aws_s3|string',
-                'awsUrl' => 'required_if:storage_type,aws_s3|string',
-                'awsEndpoint' => 'required_if:storage_type,aws_s3|string',
+                'awsAccessKeyId' => 'required_if:storage_type,s3|string',
+                'awsSecretAccessKey' => 'required_if:storage_type,s3|string',
+                'awsDefaultRegion' => 'required_if:storage_type,s3|string',
+                'awsBucket' => 'required_if:storage_type,s3|string',
+                'awsUrl' => 'required_if:storage_type,s3|string',
+                'awsEndpoint' => 'required_if:storage_type,s3|string',
                 'wasabiAccessKey' => 'required_if:storage_type,wasabi|string',
                 'wasabiSecretKey' => 'required_if:storage_type,wasabi|string',
                 'wasabiRegion' => 'required_if:storage_type,wasabi|string',
@@ -172,7 +172,7 @@ class SystemSettingsController extends Controller
                 'storage_max_upload_size' => $validated['maxUploadSize'],
             ];
 
-            if ($validated['storage_type'] === 'aws_s3') {
+            if ($validated['storage_type'] === 's3') {
                 $settings['aws_access_key_id'] = $validated['awsAccessKeyId'];
                 $settings['aws_secret_access_key'] = $validated['awsSecretAccessKey'];
                 $settings['aws_default_region'] = $validated['awsDefaultRegion'];

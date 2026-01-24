@@ -22,9 +22,9 @@ class DynamicStorageService
                 'secret' => $config['s3']['secret'],
                 'region' => $config['s3']['region'],
                 'bucket' => $config['s3']['bucket'],
-                'url' => null,
-                'endpoint' => null,
-                'use_path_style_endpoint' => false,
+                'url' => $config['s3']['url'] ?: null,
+                'endpoint' => $config['s3']['endpoint'] ?: null,
+                'use_path_style_endpoint' => !empty($config['s3']['endpoint']),
                 'visibility' => 'public',
             ]);
         }

@@ -28,7 +28,7 @@ return [
         ],
         'icon' => '💳',
         'controller' => \App\Http\Controllers\StripePaymentController::class,
-        'key' => env('PAYMENT_STRIPE_KEY', 'pk_test_51St9r0GsNMVvXQDfPCwd5M9x3NDIlNyV1eelY9FCu76zNfcAvSSZyHRoTpWIYG9bEvGQnPaIcDPOYIjesyIg88wo008TC0WEIW'),
+        'key' => env('PAYMENT_STRIPE_KEY', ''),
         'secret' => env('PAYMENT_STRIPE_SECRET', ''),
     ],
     'paypal' => [

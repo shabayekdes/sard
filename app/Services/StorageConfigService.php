@@ -22,10 +22,20 @@ class StorageConfigService
         
         $cacheKey = 'active_storage_config_' . $userId;
         $config = Cache::remember($cacheKey, 300, function() use ($userId) {
-            return self::loadStorageConfigFromDB($userId);
+            return self::loadStorageConfigFromDB();
         });
-        
-        return $config['disk'] ?? 'public';
+
+        $disk = $config['disk'] ?? 'public';
+
+        if ($disk === 's3' && !self::hasValidS3Config($config)) {
+            return 'public';
+        }
+
+        if ($disk === 'wasabi' && !self::hasValidWasabiConfig($config)) {
+            return 'public';
+        }
+
+        return $disk;
     }
 
     /**
@@ -145,6 +155,24 @@ class StorageConfigService
             \Log::error('Failed to load global storage config from DB', ['error' => $e->getMessage()]);
             return self::getDefaultConfig();
         }
+    }
+
+    private static function hasValidS3Config(array $config): bool
+    {
+        $s3 = $config['s3'] ?? [];
+        return !empty($s3['key'])
+            && !empty($s3['secret'])
+            && !empty($s3['bucket'])
+            && !empty($s3['region']);
+    }
+
+    private static function hasValidWasabiConfig(array $config): bool
+    {
+        $wasabi = $config['wasabi'] ?? [];
+        return !empty($wasabi['key'])
+            && !empty($wasabi['secret'])
+            && !empty($wasabi['bucket'])
+            && !empty($wasabi['region']);
     }
     
     /**

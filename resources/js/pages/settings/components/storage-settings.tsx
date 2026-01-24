@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { router } from '@inertiajs/react';
 import { toast } from '@/components/custom-toast';
 
-type StorageType = 'local' | 'aws_s3' | 'wasabi';
+type StorageType = 'local' | 's3' | 'wasabi';
 
 interface StorageSettings {
   storageType: StorageType;
@@ -208,7 +208,7 @@ export default function StorageSettings({ settings = {} }: StorageSettingsProps)
       maxUploadSize: storageSettings.maxUploadSize,
     };
 
-    if (storageSettings.storageType === 'aws_s3') {
+    if (storageSettings.storageType === 's3') {
       formData.awsAccessKeyId = storageSettings.awsAccessKeyId;
       formData.awsSecretAccessKey = storageSettings.awsSecretAccessKey;
       formData.awsDefaultRegion = storageSettings.awsDefaultRegion;
@@ -496,7 +496,7 @@ export default function StorageSettings({ settings = {} }: StorageSettingsProps)
               <HardDrive className="h-4 w-4" />
               {t("Local Storage")}
             </TabsTrigger>
-            <TabsTrigger value="aws_s3" className="flex items-center gap-2">
+            <TabsTrigger value="s3" className="flex items-center gap-2">
               <span>☁️</span>
               {t("AWS S3")}
             </TabsTrigger>
@@ -511,7 +511,7 @@ export default function StorageSettings({ settings = {} }: StorageSettingsProps)
             {renderLocalStorageFields()}
           </TabsContent>
           
-          <TabsContent value="aws_s3" className="mt-6">
+          <TabsContent value="s3" className="mt-6">
             <h3 className="text-base font-medium mb-4">{t("AWS S3 Storage Settings")}</h3>
             {renderAwsS3Fields()}
           </TabsContent>

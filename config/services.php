@@ -40,4 +40,13 @@ return [
         'secret_key' => env('RECAPTCHA_SECRET_KEY'),
     ],
 
+    'aws' => [
+        'access_key_id' => env('AWS_ACCESS_KEY_ID'),
+        'secret_access_key' => env('AWS_SECRET_ACCESS_KEY'),
+        'default_region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
+        'bucket' => env('AWS_BUCKET'),
+        'url' => env('AWS_URL', 'https://' . env('AWS_BUCKET') . '.s3.' . env('AWS_DEFAULT_REGION', 'us-east-1') . '.amazonaws.com'),
+        'endpoint' => env('AWS_ENDPOINT', 'https://s3.' . env('AWS_DEFAULT_REGION', 'us-east-1') . '.amazonaws.com'),
+    ],
+
 ];

@@ -22,6 +22,9 @@ class PaymentSettingSeeder extends Seeder
 
             if (is_array($method)) {
                 foreach ($method as $subKey => $subValue) {
+                    if (in_array($subKey, ['name', 'icon'])) {
+                        continue;
+                    }
                     $fullKey = $key . '_' . $subKey;
                     $keys[$fullKey] = $subValue;
                 }
