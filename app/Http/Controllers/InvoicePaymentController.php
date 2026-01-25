@@ -62,6 +62,9 @@ class InvoicePaymentController extends Controller
             ->where('type', 'company')
             ->select('id', 'name')
             ->first();
+
+        $companyProfile = \App\Models\CompanyProfile::where('created_by', $invoice->created_by)
+            ->first();
             
         // Get favicon and app name from settings table
         $settings = \App\Models\Setting::where('user_id', $invoice->created_by)
@@ -71,6 +74,12 @@ class InvoicePaymentController extends Controller
             
         $favicon = $settings['favicon'] ?? null;
         $appName = $settings['app_name'] ?? 'Advocate Saas';
+
+        $brandSettings = \App\Models\Setting::where('user_id', $invoice->created_by)
+            ->whereIn('key', ['logoLight', 'logoDark'])
+            ->pluck('value', 'key')
+            ->toArray();
+        $companyLogo = $brandSettings['logoDark'] ?? null;
 
         // Handle success/error parameters from Iyzipay callback
         if ($request->has('success')) {
@@ -132,6 +141,8 @@ class InvoicePaymentController extends Controller
             'tapPublicKey' => $paymentSettings['tap_secret_key'] ?? null,
             'paystackPublicKey' => $paymentSettings['paystack_public_key'] ?? null,
             'company' => $company,
+            'companyProfile' => $companyProfile,
+            'companyLogo' => $companyLogo,
             'favicon' => $favicon,
             'appName' => $appName
         ]);

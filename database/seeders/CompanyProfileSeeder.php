@@ -19,26 +19,30 @@ class CompanyProfileSeeder extends Seeder
         }
 
         $advocateNames = [
-            'Rajesh Kumar Patel', 'Sarah Williams Johnson', 'Michael Davis Brown', 
-            'Emily Rodriguez Garcia', 'David Wilson Martinez', 'Jennifer Taylor Anderson'
+            'Abdullah Al-Qahtani', 'Maha Al-Harbi', 'Fahad Al-Otaibi',
+            'Noura Al-Ghamdi', 'Yousef Al-Zahrani', 'Hanan Al-Dosari'
         ];
         
         $specializations = [
-            'Corporate Law, Contract Law, Intellectual Property Rights',
-            'Family Law, Divorce, Child Custody, Domestic Relations',
-            'Criminal Defense, White Collar Crime, Appeals',
+            'Commercial Law, Contracts, Corporate Governance',
+            'Family Law, Personal Status, Custody',
+            'Criminal Defense, Appeals, Investigations',
             'Personal Injury, Medical Malpractice, Insurance Claims',
-            'Real Estate, Property Law, Commercial Transactions',
-            'Employment Law, Labor Relations, Workplace Disputes'
+            'Real Estate, Property Law, Lease Disputes',
+            'Labor Law, Employment Contracts, Workplace Disputes'
         ];
         
         $universities = [
-            'Harvard Law School', 'Yale Law School', 'Stanford Law School',
-            'Columbia Law School', 'NYU School of Law', 'Georgetown University Law Center'
+            'King Saud University College of Law',
+            'King Abdulaziz University Faculty of Law',
+            'Imam Mohammad Ibn Saud Islamic University',
+            'Princess Nourah University College of Law',
+            'Umm Al-Qura University Faculty of Law',
+            'Qassim University College of Law'
         ];
         
         foreach ($companyUsers as $index => $companyUser) {
-            $establishmentYear = rand(2010, 2020);
+            $establishmentYear = rand(2005, 2020);
             $experience = date('Y') - $establishmentYear;
             
             CompanyProfile::firstOrCreate([
@@ -46,14 +50,14 @@ class CompanyProfileSeeder extends Seeder
             ], [
                 // Personal Details
                 'advocate_name' => $advocateNames[$index % count($advocateNames)],
-                'bar_registration_number' => 'BAR/' . $establishmentYear . '/' . str_pad($companyUser->id, 5, '0', STR_PAD_LEFT),
+                'bar_registration_number' => 'SCBA/' . $establishmentYear . '/' . str_pad($companyUser->id, 5, '0', STR_PAD_LEFT),
                 'years_of_experience' => $experience,
                 
                 // Contact Details
                 'email' => $companyUser->email,
-                'phone' => '+1-555-' . str_pad($companyUser->id, 4, '0', STR_PAD_LEFT),
-                'website' => 'https://' . strtolower(str_replace(' ', '', $companyUser->name)) . '.com',
-                'address' => ($index + 1) . '00 Legal Plaza, Suite ' . ($index + 1) . '0, New York, NY 1000' . ($index + 1),
+                'phone' => '+966-5' . rand(10000000, 99999999),
+                'website' => 'https://' . strtolower(str_replace(' ', '', $companyUser->name)) . '.sa',
+                'address' => 'Prince Turki St, Al Khobar ' . (31952 + $index),
                 
                 // Professional Details
                 'law_degree' => 'JD, LLM (' . explode(',', $specializations[$index % count($specializations)])[0] . ')',
@@ -61,17 +65,17 @@ class CompanyProfileSeeder extends Seeder
                 'specialization' => $specializations[$index % count($specializations)],
                 
                 // Court & Jurisdiction
-                'court_jurisdictions' => 'New York State Courts, Federal District Court, Court of Appeals',
-                'languages_spoken' => 'English, Spanish',
+                'court_jurisdictions' => 'Saudi Courts, Board of Grievances, Commercial Courts',
+                'languages_spoken' => 'Arabic, English',
                 
                 // Business Details
-                'consultation_fees' => rand(200, 500),
-                'office_hours' => 'Monday to Friday: 9:00 AM - 6:00 PM, Saturday: 10:00 AM - 2:00 PM',
+                'consultation_fees' => rand(300, 1200),
+                'office_hours' => 'Sunday to Thursday: 9:00 AM - 6:00 PM',
                 'success_rate' => rand(75, 95),
                 
                 // Company Details
                 'name' => $companyUser->name,
-                'registration_number' => 'NY/LAW/' . $establishmentYear . '/' . str_pad($companyUser->id, 3, '0', STR_PAD_LEFT),
+                'registration_number' => 'CR-' . $establishmentYear . '-' . str_pad($companyUser->id, 6, '0', STR_PAD_LEFT),
                 'establishment_date' => $establishmentYear . '-' . str_pad(rand(1, 12), 2, '0', STR_PAD_LEFT) . '-' . str_pad(rand(1, 28), 2, '0', STR_PAD_LEFT),
                 'company_size' => ['small', 'medium', 'large'][rand(0, 2)],
                 'business_type' => 'law_firm',

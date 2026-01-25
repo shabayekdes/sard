@@ -149,8 +149,8 @@ export default function CompanyProfiles() {
 
   const breadcrumbs = [
     { title: t('Dashboard'), href: route('dashboard') },
-    { title: t('Advocate'), href: route('advocate.company-profiles.index') },
-    { title: t('Advocate Profile') }
+    { title: t('Settings'), href: route('advocate.company-profiles.index') },
+    { title: t('Company Profile') }
   ];
 
   const pageActions = [

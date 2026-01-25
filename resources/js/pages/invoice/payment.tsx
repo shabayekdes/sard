@@ -43,7 +43,7 @@ import { YooKassaPaymentModal } from '@/components/payment-modals/yookassa-payme
 import { SkrillPaymentModal } from '@/components/payment-modals/skrill-payment-modal';
 
 export default function InvoicePayment() {
-    const { invoice, enabledGateways, remainingAmount, clientBillingInfo, currencies, paypalClientId, flutterwavePublicKey, tapPublicKey, paystackPublicKey, flash, company, favicon, appName } = usePage().props as any;
+    const { invoice, enabledGateways, remainingAmount, clientBillingInfo, currencies, paypalClientId, flutterwavePublicKey, tapPublicKey, paystackPublicKey, flash, company, companyProfile, companyLogo, favicon, appName } = usePage().props as any;
     const [selectedGateway, setSelectedGateway] = useState<string | null>(null);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [showGatewayModal, setShowGatewayModal] = useState(false);
@@ -52,6 +52,15 @@ export default function InvoicePayment() {
     const [paymentAmount, setPaymentAmount] = useState(remainingAmount || invoice.total_amount || 0);
 
     // Payment method icons mapping with Lucide React icons (same as plans)
+    const getLogoUrl = (url?: string) => {
+        if (!url) return '';
+        if (url.startsWith('http')) return url;
+        if (url.startsWith('/')) {
+            return `${window.appSettings?.imageUrl || ''}${url}`;
+        }
+        return `${window.appSettings?.imageUrl || ''}/${url}`;
+    };
+
     const getPaymentMethodIcon = (gatewayId: string) => {
         const iconMap = {
             bank: <Banknote className="h-5 w-5" />,
@@ -274,17 +283,17 @@ export default function InvoicePayment() {
     return (
         <>
             <Head title={`Invoice - ${company?.name || 'Advocate Saas'}`}>
-            {favicon && (
-                <link rel="icon" type="image/x-icon" href={favicon} />
-            )}
-        </Head >
-            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100">
+                {favicon && (
+                    <link rel="icon" type="image/x-icon" href={favicon} />
+                )}
+            </Head >
+            <div className="min-h-screen bg-gray-50">
                 {/* Modern Header */}
                 <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-10">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-4">
-                                <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-3 rounded-xl shadow-lg">
+                                <div className="theme-bg p-3 rounded-xl shadow-lg">
                                     <FileText className="h-7 w-7 text-white" />
                                 </div>
                                 <div>
@@ -326,7 +335,7 @@ export default function InvoicePayment() {
                                 }}
                             >
                                 {showCopiedMessage ? (
-                                    <span className="flex items-center text-green-600">
+                                    <span className="flex items-center theme-color">
                                         ✓ Copied!
                                     </span>
                                 ) : (
@@ -336,7 +345,7 @@ export default function InvoicePayment() {
 
                             {(invoice.status === 'partial_paid' || (invoice.status !== 'paid' && remainingAmount > 0)) && (
                                 <Button
-                                    className="h-10 px-4 text-sm font-medium bg-green-600 hover:bg-green-700"
+                                    className="h-10 px-4 text-sm font-medium theme-bg text-white hover:opacity-90"
                                     onClick={() => {
                                         try {
                                             setShowGatewayModal(true);
@@ -349,6 +358,14 @@ export default function InvoicePayment() {
                                     💳 Pay Invoice
                                 </Button>
                             )}
+
+                            <Button
+                                variant="outline"
+                                className="h-10 px-4 text-sm font-medium"
+                                onClick={() => window.open(`/billing/invoices/${invoice.id}/generate`, '_blank')}
+                            >
+                                ⬇️ Download Tax Invoice
+                            </Button>
                         </div>
                     </div>
 
@@ -363,14 +380,13 @@ export default function InvoicePayment() {
                                 <div className="text-right">
                                     <Badge
                                         variant={invoice.status === 'paid' ? 'default' : 'outline'}
-                                        className={`mb-2 ${
-                                            invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
+                                        className={`mb-2 ${invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
                                             invoice.status === 'partial_paid' ? 'bg-yellow-100 text-yellow-800' :
-                                            'bg-red-100 text-red-800'
-                                        }`}
+                                                'bg-red-100 text-red-800'
+                                            }`}
                                     >
-                                        {invoice.status === 'paid' ? 'Paid' : 
-                                         invoice.status === 'partial_paid' ? 'Partial Paid' : 'Unpaid'}
+                                        {invoice.status === 'paid' ? 'Paid' :
+                                            invoice.status === 'partial_paid' ? 'Partial Paid' : 'Unpaid'}
                                     </Badge>
                                     <p className="text-sm text-gray-600">{invoice.invoice_number}</p>
                                 </div>
@@ -380,43 +396,43 @@ export default function InvoicePayment() {
 
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <Card className="border-l-4 border-l-green-500 shadow-sm">
+                        <Card className="border-l-4 theme-border shadow-sm">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">TOTAL AMOUNT</p>
-                                        <p className="text-2xl font-bold text-green-600 mt-1">{formatAmount(invoice.total_amount)}</p>
+                                        <p className="text-2xl font-bold theme-color mt-1">{formatAmount(invoice.total_amount)}</p>
                                     </div>
-                                    <div className="bg-green-100 p-3 rounded-full">
-                                        <span className="text-green-600 text-xl">💰</span>
+                                    <div className="bg-gray-100 p-3 rounded-full">
+                                        <span className="theme-color text-xl">💰</span>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card className="border-l-4 border-l-blue-500 shadow-sm">
+                        <Card className="border-l-4 theme-border shadow-sm">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">PAID AMOUNT</p>
-                                        <p className="text-2xl font-bold text-blue-600 mt-1">{formatAmount((invoice.total_amount - remainingAmount) || 0)}</p>
+                                        <p className="text-2xl font-bold theme-color mt-1">{formatAmount((invoice.total_amount - remainingAmount) || 0)}</p>
                                     </div>
-                                    <div className="bg-blue-100 p-3 rounded-full">
-                                        <span className="text-blue-600 text-xl">💳</span>
+                                    <div className="bg-gray-100 p-3 rounded-full">
+                                        <span className="theme-color text-xl">💳</span>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card className="border-l-4 border-l-red-500 shadow-sm">
+                        <Card className="border-l-4 theme-border shadow-sm">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">DUE AMOUNT</p>
-                                        <p className="text-2xl font-bold text-red-600 mt-1">{formatAmount(remainingAmount)}</p>
+                                        <p className="text-2xl font-bold theme-color mt-1">{formatAmount(remainingAmount)}</p>
                                     </div>
-                                    <div className="bg-red-100 p-3 rounded-full">
-                                        <span className="text-red-600 text-xl">⏰</span>
+                                    <div className="bg-gray-100 p-3 rounded-full">
+                                        <span className="theme-color text-xl">⏰</span>
                                     </div>
                                 </div>
                             </CardContent>
@@ -424,43 +440,43 @@ export default function InvoicePayment() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <Card className="border-l-4 border-l-purple-500 shadow-sm">
+                        <Card className="border-l-4 theme-border shadow-sm">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">PRODUCTS</p>
-                                        <p className="text-2xl font-bold text-purple-600 mt-1">{invoice.line_items?.length || 1}</p>
+                                        <p className="text-2xl font-bold theme-color mt-1">{invoice.line_items?.length || 1}</p>
                                     </div>
-                                    <div className="bg-purple-100 p-3 rounded-full">
-                                        <span className="text-purple-600 text-xl">📦</span>
+                                    <div className="bg-gray-100 p-3 rounded-full">
+                                        <span className="theme-color text-xl">📦</span>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card className="border-l-4 border-l-orange-500 shadow-sm">
+                        <Card className="border-l-4 theme-border shadow-sm">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">INVOICE DATE</p>
-                                        <p className="text-lg font-bold text-orange-600 mt-1">{new Date(invoice.invoice_date).toLocaleDateString()}</p>
+                                        <p className="text-lg font-bold theme-color mt-1">{new Date(invoice.invoice_date).toLocaleDateString()}</p>
                                     </div>
-                                    <div className="bg-orange-100 p-3 rounded-full">
-                                        <span className="text-orange-600 text-xl">📅</span>
+                                    <div className="bg-gray-100 p-3 rounded-full">
+                                        <span className="theme-color text-xl">📅</span>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card className="border-l-4 border-l-yellow-500 shadow-sm">
+                        <Card className="border-l-4 theme-border shadow-sm">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">DUE DATE</p>
-                                        <p className="text-lg font-bold text-yellow-600 mt-1">{new Date(invoice.due_date).toLocaleDateString()}</p>
+                                        <p className="text-lg font-bold theme-color mt-1">{new Date(invoice.due_date).toLocaleDateString()}</p>
                                     </div>
-                                    <div className="bg-yellow-100 p-3 rounded-full">
-                                        <span className="text-yellow-600 text-xl">📋</span>
+                                    <div className="bg-gray-100 p-3 rounded-full">
+                                        <span className="theme-color text-xl">📋</span>
                                     </div>
                                 </div>
                             </CardContent>
@@ -472,7 +488,7 @@ export default function InvoicePayment() {
                         <div className="xl:col-span-3 space-y-6">
                             {/* Client & Invoice Info */}
                             <Card className="shadow-xl border-0 overflow-hidden">
-                                <CardHeader className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 text-white">
+                                <CardHeader className="theme-bg text-white">
                                     <CardTitle className="flex items-center space-x-2 text-lg">
                                         <Building2 className="h-5 w-5" />
                                         <span>Invoice Information</span>
@@ -482,21 +498,49 @@ export default function InvoicePayment() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div className="space-y-6">
                                             <div className="flex items-start space-x-4">
-                                                <div className="bg-blue-100 p-2 rounded-lg">
-                                                    <User className="h-5 w-5 text-blue-600" />
+                                                <div className="bg-gray-100 p-2 rounded-lg">
+                                                    <Building2 className="h-5 w-5 theme-color" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Bill To</p>
-                                                    <p className="text-xl font-bold text-gray-900 mt-1">{invoice.client?.name}</p>
-                                                    {invoice.client?.email && (
-                                                        <p className="text-sm text-gray-600 mt-1">{invoice.client.email}</p>
-                                                    )}
+                                                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Bill From</p>
+                                                    <div className="mt-1 flex items-center space-x-3">
+                                                        {companyLogo ? (
+                                                            <img
+                                                                src={getLogoUrl(companyLogo)}
+                                                                alt={companyProfile?.name || company?.name || appName}
+                                                                className="h-10 w-10 rounded-full object-cover"
+                                                            />
+                                                        ) : null}
+                                                        <p className="text-xl font-bold text-gray-900">
+                                                            {companyProfile?.name || company?.name || appName}
+                                                        </p>
+                                                    </div>
+                                                    <p className="text-sm text-gray-600 mt-1">
+                                                        <span className="font-semibold text-gray-700">CR:</span>{' '}
+                                                        {companyProfile?.cr || companyProfile?.registration_number || '-'}
+                                                    </p>
+                                                    <p className="text-sm text-gray-600">
+                                                        <span className="font-semibold text-gray-700">Tax Number:</span>{' '}
+                                                        {companyProfile?.tax_number || companyProfile?.tax_id || '-'}
+                                                    </p>
+                                                    <p className="text-sm text-gray-600">
+                                                        <span className="font-semibold text-gray-700">Address:</span>{' '}
+                                                        {companyProfile?.address || '-'}
+                                                    </p>
+                                                    <p className="text-sm text-gray-600">
+                                                        <span className="font-semibold text-gray-700">Phone:</span>{' '}
+                                                        {companyProfile?.phone || '-'}
+                                                    </p>
+                                                    <p className="text-sm text-gray-600">
+                                                        <span className="font-semibold text-gray-700">Email:</span>{' '}
+                                                        {companyProfile?.email || '-'}
+                                                    </p>
                                                 </div>
                                             </div>
                                             {invoice.case && (
                                                 <div className="flex items-start space-x-4">
-                                                    <div className="bg-green-100 p-2 rounded-lg">
-                                                        <FileText className="h-5 w-5 text-green-600" />
+                                                    <div className="bg-gray-100 p-2 rounded-lg">
+                                                        <FileText className="h-5 w-5 theme-color" />
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Case</p>
@@ -507,8 +551,41 @@ export default function InvoicePayment() {
                                         </div>
                                         <div className="space-y-6">
                                             <div className="flex items-start space-x-4">
-                                                <div className="bg-purple-100 p-2 rounded-lg">
-                                                    <Calendar className="h-5 w-5 text-purple-600" />
+                                                <div className="bg-gray-100 p-2 rounded-lg">
+                                                    <User className="h-5 w-5 theme-color" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Bill To</p>
+                                                    <p className="text-xl font-bold text-gray-900 mt-1">{invoice.client?.name || '-'}</p>
+                                                    {invoice.client?.business_type === 'b2b' && (
+                                                        <>
+                                                            <p className="text-sm text-gray-600 mt-1">
+                                                                <span className="font-semibold text-gray-700">CR:</span>{' '}
+                                                                {invoice.client?.cr_number || '-'}
+                                                            </p>
+                                                            <p className="text-sm text-gray-600">
+                                                                <span className="font-semibold text-gray-700">Tax Number:</span>{' '}
+                                                                {invoice.client?.tax_id || '-'}
+                                                            </p>
+                                                        </>
+                                                    )}
+                                                    <p className="text-sm text-gray-600 mt-1">
+                                                        <span className="font-semibold text-gray-700">Address:</span>{' '}
+                                                        {invoice.client?.address || '-'}
+                                                    </p>
+                                                    <p className="text-sm text-gray-600">
+                                                        <span className="font-semibold text-gray-700">Phone:</span>{' '}
+                                                        {invoice.client?.phone || '-'}
+                                                    </p>
+                                                    <p className="text-sm text-gray-600">
+                                                        <span className="font-semibold text-gray-700">Email:</span>{' '}
+                                                        {invoice.client?.email || '-'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-start space-x-4">
+                                                <div className="bg-gray-100 p-2 rounded-lg">
+                                                    <Calendar className="h-5 w-5 theme-color" />
                                                 </div>
                                                 <div>
                                                     <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Invoice Date</p>
@@ -516,8 +593,8 @@ export default function InvoicePayment() {
                                                 </div>
                                             </div>
                                             <div className="flex items-start space-x-4">
-                                                <div className={`p-2 rounded-lg ${isOverdue ? 'bg-red-100' : 'bg-orange-100'}`}>
-                                                    <Clock className={`h-5 w-5 ${isOverdue ? 'text-red-600' : 'text-orange-600'}`} />
+                                                <div className={`p-2 rounded-lg ${isOverdue ? 'bg-red-100' : 'bg-gray-100'}`}>
+                                                    <Clock className={`h-5 w-5 ${isOverdue ? 'text-red-600' : 'theme-color'}`} />
                                                 </div>
                                                 <div>
                                                     <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Due Date</p>
@@ -526,7 +603,6 @@ export default function InvoicePayment() {
                                                     </p>
                                                 </div>
                                             </div>
-
                                         </div>
                                     </div>
                                 </CardContent>
@@ -673,8 +749,8 @@ export default function InvoicePayment() {
                                         <div
                                             key={gateway.id}
                                             className={`flex items-center p-4 border rounded-lg cursor-pointer transition-all ${selectedGateway === gateway.id
-                                                    ? 'border-blue-500 bg-blue-50'
-                                                    : 'border-gray-200 hover:border-gray-300'
+                                                ? 'border-blue-500 bg-blue-50'
+                                                : 'border-gray-200 hover:border-gray-300'
                                                 }`}
                                             onClick={() => {
                                                 try {
@@ -744,6 +820,6 @@ export default function InvoicePayment() {
                 {/* Payment Modals */}
                 {renderPaymentModal()}
             </div>
-    </>
-  );
+        </>
+    );
 }

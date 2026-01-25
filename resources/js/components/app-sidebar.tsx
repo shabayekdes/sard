@@ -678,21 +678,15 @@ export function AppSidebar() {
             hasPermission(permissions, 'manage-any-company-profiles') ||
             hasPermission(permissions, 'manage-own-company-profiles')
         ) {
-            companySystemChildren.push({
-                title: t('Company Profile'),
-                href: route('advocate.company-profiles.index'),
-            });
+          settingsChildren.push({
+              title: t('Company Profile'),
+              href: route('advocate.company-profiles.index'),
+          });
         }
         if (hasPermission(permissions, 'manage-settings')) {
-            companySystemChildren.push({
+          settingsChildren.push({
                 title: t('System Settings'),
                 href: route('settings'),
-            });
-        }
-        if (companySystemChildren.length > 0) {
-            settingsChildren.push({
-                title: t('Company & System'),
-                children: companySystemChildren,
             });
         }
 
