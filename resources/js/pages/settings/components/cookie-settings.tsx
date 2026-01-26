@@ -22,12 +22,17 @@ export default function CookieSettings({ settings = {} }: CookieSettingsProps) {
   const defaultSettings = {
     enableLogging: false,
     strictlyNecessaryCookies: true,
-    cookieTitle: 'Cookie Consent',
-    strictlyCookieTitle: 'Strictly Necessary Cookies',
-    cookieDescription: 'We use cookies to enhance your browsing experience and provide personalized content.',
-    strictlyCookieDescription: 'These cookies are essential for the website to function properly.',
-    contactUsDescription: 'If you have any questions about our cookie policy, please contact us.',
-    contactUsUrl: 'https://example.com/contact'
+    cookieTitleEn: 'Cookie Consent',
+    cookieTitleAr: 'إشعار ملفات تعريف الارتباط',
+    strictlyCookieTitleEn: 'Strictly Necessary Cookies',
+    strictlyCookieTitleAr: 'ملفات تعريف الارتباط الضرورية',
+    cookieDescriptionEn: 'We use cookies to improve your browsing experience, analyze website performance, and provide content tailored to your preferences.',
+    cookieDescriptionAr: 'نستخدم ملفات تعريف الارتباط لتحسين تجربة التصفح، وتحليل أداء الموقع، وتقديم محتوى يتناسب مع تفضيلاتك.',
+    strictlyCookieDescriptionEn: 'These cookies are essential for the proper functioning of the website and cannot be disabled as they enable core features such as security and accessibility.',
+    strictlyCookieDescriptionAr: 'تُعد ملفات تعريف الارتباط هذه ضرورية لعمل الموقع بشكل صحيح، ولا يمكن تعطيلها، حيث تُمكّن الميزات الأساسية مثل الأمان وإمكانية الوصول.',
+    contactUsDescriptionEn: 'If you have any questions or concerns regarding our cookie policy, please feel free to contact us.',
+    contactUsDescriptionAr: 'إذا كان لديك أي استفسار أو ملاحظات بخصوص سياسة ملفات تعريف الارتباط، يُرجى التواصل معنا.',
+    contactUsUrl: 'info@sard.app'
   };
   
   // Combine settings from props and page props
@@ -37,14 +42,21 @@ export default function CookieSettings({ settings = {} }: CookieSettingsProps) {
   
   // Initialize state with merged settings
   const [cookieSettings, setCookieSettings] = useState(() => ({
-    enableLogging: settingsData.enableLogging === '1' || settingsData.enableLogging === true || defaultSettings.enableLogging,
-    strictlyNecessaryCookies: settingsData.strictlyNecessaryCookies === '1' || settingsData.strictlyNecessaryCookies === true || defaultSettings.strictlyNecessaryCookies,
-    cookieTitle: settingsData.cookieTitle || defaultSettings.cookieTitle,
-    strictlyCookieTitle: settingsData.strictlyCookieTitle || defaultSettings.strictlyCookieTitle,
-    cookieDescription: settingsData.cookieDescription || defaultSettings.cookieDescription,
-    strictlyCookieDescription: settingsData.strictlyCookieDescription || defaultSettings.strictlyCookieDescription,
-    contactUsDescription: settingsData.contactUsDescription || defaultSettings.contactUsDescription,
-    contactUsUrl: settingsData.contactUsUrl || defaultSettings.contactUsUrl
+      enableLogging: settingsData.enableLogging === '1' || settingsData.enableLogging === true || defaultSettings.enableLogging,
+      strictlyNecessaryCookies:
+          settingsData.strictlyNecessaryCookies === '1' || settingsData.strictlyNecessaryCookies === true || defaultSettings.strictlyNecessaryCookies,
+      cookieTitleEn: settingsData.cookieTitleEn || settingsData.cookieTitle || defaultSettings.cookieTitleEn,
+      cookieTitleAr: settingsData.cookieTitleAr || defaultSettings.cookieTitleAr,
+      strictlyCookieTitleEn: settingsData.strictlyCookieTitleEn || settingsData.strictlyCookieTitle || defaultSettings.strictlyCookieTitleEn,
+      strictlyCookieTitleAr: settingsData.strictlyCookieTitleAr || defaultSettings.strictlyCookieTitleAr,
+      cookieDescriptionEn: settingsData.cookieDescriptionEn || settingsData.cookieDescription || defaultSettings.cookieDescriptionEn,
+      cookieDescriptionAr: settingsData.cookieDescriptionAr || defaultSettings.cookieDescriptionAr,
+      strictlyCookieDescriptionEn:
+          settingsData.strictlyCookieDescriptionEn || settingsData.strictlyCookieDescription || defaultSettings.strictlyCookieDescriptionEn,
+      strictlyCookieDescriptionAr: settingsData.strictlyCookieDescriptionAr || defaultSettings.strictlyCookieDescriptionAr,
+      contactUsDescriptionEn: settingsData.contactUsDescriptionEn || settingsData.contactUsDescription || defaultSettings.contactUsDescriptionEn,
+      contactUsDescriptionAr: settingsData.contactUsDescriptionAr || defaultSettings.contactUsDescriptionAr,
+      contactUsUrl: settingsData.contactUsUrl || defaultSettings.contactUsUrl,
   }));
   
   // Update state when settings change
@@ -54,12 +66,17 @@ export default function CookieSettings({ settings = {} }: CookieSettingsProps) {
         ...prevSettings,
         enableLogging: settingsData.enableLogging === '1' || settingsData.enableLogging === true || defaultSettings.enableLogging,
         strictlyNecessaryCookies: settingsData.strictlyNecessaryCookies === '1' || settingsData.strictlyNecessaryCookies === true || defaultSettings.strictlyNecessaryCookies,
-        cookieTitle: settingsData.cookieTitle || defaultSettings.cookieTitle,
-        strictlyCookieTitle: settingsData.strictlyCookieTitle || defaultSettings.strictlyCookieTitle,
-        cookieDescription: settingsData.cookieDescription || defaultSettings.cookieDescription,
-        strictlyCookieDescription: settingsData.strictlyCookieDescription || defaultSettings.strictlyCookieDescription,
-        contactUsDescription: settingsData.contactUsDescription || defaultSettings.contactUsDescription,
-        contactUsUrl: settingsData.contactUsUrl || defaultSettings.contactUsUrl
+        cookieTitleEn: settingsData.cookieTitleEn || settingsData.cookieTitle || defaultSettings.cookieTitleEn,
+        cookieTitleAr: settingsData.cookieTitleAr || defaultSettings.cookieTitleAr,
+        strictlyCookieTitleEn: settingsData.strictlyCookieTitleEn || settingsData.strictlyCookieTitle || defaultSettings.strictlyCookieTitleEn,
+        strictlyCookieTitleAr: settingsData.strictlyCookieTitleAr || defaultSettings.strictlyCookieTitleAr,
+        cookieDescriptionEn: settingsData.cookieDescriptionEn || settingsData.cookieDescription || defaultSettings.cookieDescriptionEn,
+        cookieDescriptionAr: settingsData.cookieDescriptionAr || defaultSettings.cookieDescriptionAr,
+        strictlyCookieDescriptionEn: settingsData.strictlyCookieDescriptionEn || settingsData.strictlyCookieDescription || defaultSettings.strictlyCookieDescriptionEn,
+        strictlyCookieDescriptionAr: settingsData.strictlyCookieDescriptionAr || defaultSettings.strictlyCookieDescriptionAr,
+        contactUsDescriptionEn: settingsData.contactUsDescriptionEn || settingsData.contactUsDescription || defaultSettings.contactUsDescriptionEn,
+        contactUsDescriptionAr: settingsData.contactUsDescriptionAr || defaultSettings.contactUsDescriptionAr,
+        contactUsUrl: settingsData.contactUsUrl || settingsData.contactUsUrl || defaultSettings.contactUsUrl,
       }));
     }
   }, [settingsData]);
@@ -79,7 +96,7 @@ export default function CookieSettings({ settings = {} }: CookieSettingsProps) {
     // Submit to backend using Inertia
     router.post(route('settings.cookie.update'), cookieSettings, {
       preserveScroll: true,
-      onSuccess: (page) => {
+      onSuccess: (page: any) => {
         const successMessage = page.props.flash?.success;
         const errorMessage = page.props.flash?.error;
         
@@ -146,51 +163,103 @@ export default function CookieSettings({ settings = {} }: CookieSettingsProps) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Cookie Title */}
+          {/* Cookie Title EN */}
           <div className="grid gap-2">
-            <Label htmlFor="cookieTitle">{t("Cookie Title")}</Label>
+            <Label htmlFor="cookieTitleEn">{t("Cookie Title (EN)")}</Label>
             <Input
-              id="cookieTitle"
+              id="cookieTitleEn"
               type="text"
-              value={cookieSettings.cookieTitle}
-              onChange={(e) => handleCookieSettingsChange('cookieTitle', e.target.value)}
+              value={cookieSettings.cookieTitleEn}
+              onChange={(e) => handleCookieSettingsChange('cookieTitleEn', e.target.value)}
               placeholder={t("Enter the main cookie consent title")}
             />
           </div>
 
-          {/* Strictly Cookie Title */}
+          {/* Cookie Title AR */}
           <div className="grid gap-2">
-            <Label htmlFor="strictlyCookieTitle">{t("Strictly Cookie Title")}</Label>
+            <Label htmlFor="cookieTitleAr">{t("Cookie Title (AR)")}</Label>
             <Input
-              id="strictlyCookieTitle"
+              id="cookieTitleAr"
               type="text"
-              value={cookieSettings.strictlyCookieTitle}
-              onChange={(e) => handleCookieSettingsChange('strictlyCookieTitle', e.target.value)}
+              value={cookieSettings.cookieTitleAr}
+              onChange={(e) => handleCookieSettingsChange('cookieTitleAr', e.target.value)}
+              placeholder={t("Enter the main cookie consent title")}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Strictly Cookie Title EN */}
+          <div className="grid gap-2">
+            <Label htmlFor="strictlyCookieTitleEn">{t("Strictly Cookie Title (EN)")}</Label>
+            <Input
+              id="strictlyCookieTitleEn"
+              type="text"
+              value={cookieSettings.strictlyCookieTitleEn}
+              onChange={(e) => handleCookieSettingsChange('strictlyCookieTitleEn', e.target.value)}
+              placeholder={t("Enter the strictly necessary cookies title")}
+            />
+          </div>
+
+          {/* Strictly Cookie Title AR */}
+          <div className="grid gap-2">
+            <Label htmlFor="strictlyCookieTitleAr">{t("Strictly Cookie Title (AR)")}</Label>
+            <Input
+              id="strictlyCookieTitleAr"
+              type="text"
+              value={cookieSettings.strictlyCookieTitleAr}
+              onChange={(e) => handleCookieSettingsChange('strictlyCookieTitleAr', e.target.value)}
               placeholder={t("Enter the strictly necessary cookies title")}
             />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Cookie Description */}
+          {/* Cookie Description EN */}
           <div className="grid gap-2">
-            <Label htmlFor="cookieDescription">{t("Cookie Description")}</Label>
+            <Label htmlFor="cookieDescriptionEn">{t("Cookie Description (EN)")}</Label>
             <Textarea
-              id="cookieDescription"
-              value={cookieSettings.cookieDescription}
-              onChange={(e) => handleCookieSettingsChange('cookieDescription', e.target.value)}
+              id="cookieDescriptionEn"
+              value={cookieSettings.cookieDescriptionEn}
+              onChange={(e) => handleCookieSettingsChange('cookieDescriptionEn', e.target.value)}
               placeholder={t("Enter the cookie consent description")}
               rows={4}
             />
           </div>
 
-          {/* Strictly Cookie Description */}
+          {/* Cookie Description AR */}
           <div className="grid gap-2">
-            <Label htmlFor="strictlyCookieDescription">{t("Strictly Cookie Description")}</Label>
+            <Label htmlFor="cookieDescriptionAr">{t("Cookie Description (AR)")}</Label>
             <Textarea
-              id="strictlyCookieDescription"
-              value={cookieSettings.strictlyCookieDescription}
-              onChange={(e) => handleCookieSettingsChange('strictlyCookieDescription', e.target.value)}
+              id="cookieDescriptionAr"
+              value={cookieSettings.cookieDescriptionAr}
+              onChange={(e) => handleCookieSettingsChange('cookieDescriptionAr', e.target.value)}
+              placeholder={t("Enter the cookie consent description")}
+              rows={4}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Strictly Cookie Description EN */}
+          <div className="grid gap-2">
+            <Label htmlFor="strictlyCookieDescriptionEn">{t("Strictly Cookie Description (EN)")}</Label>
+            <Textarea
+              id="strictlyCookieDescriptionEn"
+              value={cookieSettings.strictlyCookieDescriptionEn}
+              onChange={(e) => handleCookieSettingsChange('strictlyCookieDescriptionEn', e.target.value)}
+              placeholder={t("Enter the strictly necessary cookies description")}
+              rows={4}
+            />
+          </div>
+
+          {/* Strictly Cookie Description AR */}
+          <div className="grid gap-2">
+            <Label htmlFor="strictlyCookieDescriptionAr">{t("Strictly Cookie Description (AR)")}</Label>
+            <Textarea
+              id="strictlyCookieDescriptionAr"
+              value={cookieSettings.strictlyCookieDescriptionAr}
+              onChange={(e) => handleCookieSettingsChange('strictlyCookieDescriptionAr', e.target.value)}
               placeholder={t("Enter the strictly necessary cookies description")}
               rows={4}
             />
@@ -198,13 +267,25 @@ export default function CookieSettings({ settings = {} }: CookieSettingsProps) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Contact Us Description */}
+          {/* Contact Us Description EN */}
           <div className="grid gap-2">
-            <Label htmlFor="contactUsDescription">{t("Contact Us Description")}</Label>
+            <Label htmlFor="contactUsDescriptionEn">{t("Contact Us Description (EN)")}</Label>
             <Textarea
-              id="contactUsDescription"
-              value={cookieSettings.contactUsDescription}
-              onChange={(e) => handleCookieSettingsChange('contactUsDescription', e.target.value)}
+              id="contactUsDescriptionEn"
+              value={cookieSettings.contactUsDescriptionEn}
+              onChange={(e) => handleCookieSettingsChange('contactUsDescriptionEn', e.target.value)}
+              placeholder={t("Enter the contact us description for cookie inquiries")}
+              rows={3}
+            />
+          </div>
+
+          {/* Contact Us Description AR */}
+          <div className="grid gap-2">
+            <Label htmlFor="contactUsDescriptionAr">{t("Contact Us Description (AR)")}</Label>
+            <Textarea
+              id="contactUsDescriptionAr"
+              value={cookieSettings.contactUsDescriptionAr}
+              onChange={(e) => handleCookieSettingsChange('contactUsDescriptionAr', e.target.value)}
               placeholder={t("Enter the contact us description for cookie inquiries")}
               rows={3}
             />

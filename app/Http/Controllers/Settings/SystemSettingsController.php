@@ -215,18 +215,44 @@ class SystemSettingsController extends Controller
     public function updateCookie(Request $request)
     {
         try {
+            $urlOrEmailRule = function ($attribute, $value, $fail) {
+                if (!filter_var($value, FILTER_VALIDATE_URL) && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                    $fail(__('Contact us URL must be a valid URL or email address.'));
+                }
+            };
+
             $validated = $request->validate([
                 'enableLogging' => 'required|boolean',
                 'strictlyNecessaryCookies' => 'required|boolean',
-                'cookieTitle' => 'required|string|max:255',
-                'strictlyCookieTitle' => 'required|string|max:255',
-                'cookieDescription' => 'required|string',
-                'strictlyCookieDescription' => 'required|string',
-                'contactUsDescription' => 'required|string',
-                'contactUsUrl' => 'required|url',
+                'cookieTitleEn' => 'required|string|max:255',
+                'cookieTitleAr' => 'required|string|max:255',
+                'strictlyCookieTitleEn' => 'required|string|max:255',
+                'strictlyCookieTitleAr' => 'required|string|max:255',
+                'cookieDescriptionEn' => 'required|string',
+                'cookieDescriptionAr' => 'required|string',
+                'strictlyCookieDescriptionEn' => 'required|string',
+                'strictlyCookieDescriptionAr' => 'required|string',
+                'contactUsDescriptionEn' => 'required|string',
+                'contactUsDescriptionAr' => 'required|string',
+                'contactUsUrlEn' => ['required', 'string', 'max:255', $urlOrEmailRule],
+                'contactUsUrlAr' => ['required', 'string', 'max:255', $urlOrEmailRule],
+                'cookieTitle' => 'nullable|string|max:255',
+                'strictlyCookieTitle' => 'nullable|string|max:255',
+                'cookieDescription' => 'nullable|string',
+                'strictlyCookieDescription' => 'nullable|string',
+                'contactUsDescription' => 'nullable|string',
+                'contactUsUrl' => ['nullable', 'string', 'max:255', $urlOrEmailRule],
             ]);
 
-            foreach ($validated as $key => $value) {
+            $settings = $validated;
+            $settings['cookieTitle'] = $validated['cookieTitleEn'];
+            $settings['strictlyCookieTitle'] = $validated['strictlyCookieTitleEn'];
+            $settings['cookieDescription'] = $validated['cookieDescriptionEn'];
+            $settings['strictlyCookieDescription'] = $validated['strictlyCookieDescriptionEn'];
+            $settings['contactUsDescription'] = $validated['contactUsDescriptionEn'];
+            $settings['contactUsUrl'] = $validated['contactUsUrlEn'];
+
+            foreach ($settings as $key => $value) {
                 updateSetting($key, is_bool($value) ? ($value ? '1' : '0') : $value);
             }
 

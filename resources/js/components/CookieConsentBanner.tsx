@@ -10,7 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from '@/components/custom-toast';
 
 export default function CookieConsentBanner() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { props } = usePage();
   const [isVisible, setIsVisible] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -19,14 +19,38 @@ export default function CookieConsentBanner() {
   const primaryColor = themeColor === 'custom' ? customColor : THEME_COLORS[themeColor as keyof typeof THEME_COLORS];
 
   const globalSettings = (props as any).globalSettings || {};
-  const settings = {
-    cookieTitle: globalSettings.cookieTitle || 'Cookie Consent',
-    cookieDescription: globalSettings.cookieDescription || 'We use cookies to enhance your browsing experience and provide personalized content.',
-    strictlyCookieTitle: globalSettings.strictlyCookieTitle || 'Strictly Necessary Cookies',
-    strictlyCookieDescription: globalSettings.strictlyCookieDescription || 'These cookies are essential for the website to function properly.',
-    contactUsDescription: globalSettings.contactUsDescription || 'If you have any questions about our cookie policy, please contact us.',
-    contactUsUrl: globalSettings.contactUsUrl || '#'
+  const isArabic = i18n.language?.startsWith('ar');
+  const selectSetting = (enKey: string, arKey: string, legacyKey: string, fallbackValue: string) => {
+    const localizedValue = (isArabic ? globalSettings[arKey] : globalSettings[enKey]) as string | undefined;
+    return localizedValue || globalSettings[legacyKey] || fallbackValue;
   };
+
+  const settings = {
+    cookieTitle: selectSetting('cookieTitleEn', 'cookieTitleAr', 'cookieTitle', 'Cookie Consent'),
+    cookieDescription: selectSetting(
+      'cookieDescriptionEn',
+      'cookieDescriptionAr',
+      'cookieDescription',
+      'We use cookies to improve your browsing experience, analyze website performance, and provide content tailored to your preferences.'
+    ),
+    strictlyCookieTitle: selectSetting('strictlyCookieTitleEn', 'strictlyCookieTitleAr', 'strictlyCookieTitle', 'Strictly Necessary Cookies'),
+    strictlyCookieDescription: selectSetting(
+      'strictlyCookieDescriptionEn',
+      'strictlyCookieDescriptionAr',
+      'strictlyCookieDescription',
+      'These cookies are essential for the proper functioning of the website and cannot be disabled as they enable core features such as security and accessibility.'
+    ),
+    contactUsDescription: selectSetting(
+      'contactUsDescriptionEn',
+      'contactUsDescriptionAr',
+      'contactUsDescription',
+      'If you have any questions or concerns regarding our cookie policy, please feel free to contact us.'
+    ),
+    contactUsUrl: selectSetting('contactUsUrlEn', 'contactUsUrlAr', 'contactUsUrl', 'info@sard.app')
+  };
+  const contactHref = settings.contactUsUrl && settings.contactUsUrl.includes('@') && !settings.contactUsUrl.startsWith('mailto:') && !settings.contactUsUrl.startsWith('http')
+    ? `mailto:${settings.contactUsUrl}`
+    : settings.contactUsUrl;
 
   useEffect(() => {
     // Only show when enableLogging is explicitly '1'
@@ -208,7 +232,7 @@ export default function CookieConsentBanner() {
           </div>
 
           <p className="text-sm text-muted-foreground mb-4">
-            {settings.cookieDescription || t('We use cookies to enhance your browsing experience and provide personalized content.')}
+            {settings.cookieDescription || t('We use cookies to improve your browsing experience, analyze website performance, and provide content tailored to your preferences.')}
           </p>
 
           <div className="flex flex-col gap-2">
@@ -245,8 +269,8 @@ export default function CookieConsentBanner() {
 
           {settings.contactUsUrl && (
             <p className="text-xs text-muted-foreground mt-2">
-              {settings.contactUsDescription || t('Questions about our cookie policy?')}{' '}
-              <a href={settings.contactUsUrl} className="underline">
+              {settings.contactUsDescription || t('If you have any questions or concerns regarding our cookie policy, please feel free to contact us.')}{' '}
+              <a href={contactHref} className="underline">
                 {t('Contact us')}
               </a>
             </p>
@@ -277,7 +301,7 @@ export default function CookieConsentBanner() {
                   <div className="flex-1">
                     <h4 className="font-medium text-sm">{settings.strictlyCookieTitle || t('Strictly Necessary Cookies')}</h4>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {settings.strictlyCookieDescription || t('These cookies are essential for the website to function properly.')}
+                      {settings.strictlyCookieDescription || t('These cookies are essential for the proper functioning of the website and cannot be disabled as they enable core features such as security and accessibility.')}
                     </p>
                   </div>
                   <Switch checked={true} disabled={true} />

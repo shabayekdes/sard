@@ -1148,21 +1148,23 @@ if (! function_exists('defaultSettings')) {
             'email_encryption' => config('mail.mailers.smtp.encryption', 'tls'),
             'email_from_address' => config('mail.from.address', 'no-reply@sard.app'),
             'email_from_name' => config('mail.from.name', config('app.name', 'Sard')),
+
+            'enableLogging' => true,
+            'strictlyNecessaryCookies' => true,
+            'contactUsUrl' => 'https://sard.app',
+            'cookieTitleEn' => 'Cookie Consent',
+            'cookieTitleAr' => 'إشعار ملفات تعريف الارتباط',
+            'strictlyCookieTitleEn' => 'Strictly Necessary Cookies',
+            'strictlyCookieTitleAr' => 'ملفات تعريف الارتباط الضرورية',
+            'cookieDescriptionEn' => 'We use cookies to improve your browsing experience, analyze website performance, and provide content tailored to your preferences.',
+            'cookieDescriptionAr' => 'نستخدم ملفات تعريف الارتباط لتحسين تجربة التصفح، وتحليل أداء الموقع، وتقديم محتوى يتناسب مع تفضيلاتك.',
+            'strictlyCookieDescriptionEn' => 'These cookies are essential for the proper functioning of the website and cannot be disabled as they enable core features such as security and accessibility.',
+            'strictlyCookieDescriptionAr' => 'تُعد ملفات تعريف الارتباط هذه ضرورية لعمل الموقع بشكل صحيح، ولا يمكن تعطيلها، حيث تُمكّن الميزات الأساسية مثل الأمان وإمكانية الوصول.',
+            'contactUsTitleEn' => 'Contact Us',
+            'contactUsTitleAr' => 'إشعار ملفات تعريف الارتباط',
+            'contactUsDescriptionEn' => 'If you have any questions or concerns regarding our cookie policy, please feel free to contact us.',
+            'contactUsDescriptionAr' => 'إذا كان لديك أي استفسار أو ملاحظات بخصوص سياسة ملفات تعريف الارتباط، يُرجى التواصل معنا.',
         ];
-        if (IsDemo()) {
-            $cookieSettingArray = [
-                'enableLogging' => true,
-                'strictlyNecessaryCookies' => true,
-                'cookieTitle' => 'Cookie Consent',
-                'strictlyCookieTitle' => 'Strictly Necessary Cookies',
-                'cookieDescription' => 'We use cookies to enhance your browsing experience and provide personalized content.',
-                'strictlyCookieDescription' => 'These cookies are essential for the website to function properly.',
-                'contactUsDescription' => 'If you have any questions about our cookie policy, please contact us.',
-                'contactUsUrl' => 'https://example.com/contact',
-            ];
-            $settings = array_merge($settings, $cookieSettingArray);
-        }
-        return $settings;
     }
 }
 
