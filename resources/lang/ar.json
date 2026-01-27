@@ -3072,5 +3072,22 @@
   "Select Judge": "اختر القاضي",
   "Schedule New Session": "جدولة جلسة جديدة",
   "Session Types": "أنواع الجلسات",
-  "In progress": "قيد التنفيذ"
+  "In progress": "قيد التنفيذ",
+  "Secure Payment Portal": "بوابة دفع آمنة",
+  "View and manage your invoice": "عرض وإدارة فاتورتك",
+  "Pay Invoice": "دفع الفاتورة",
+  "Download Simplified Tax Invoice": "تنزيل فاتورة ضريبية مبسطة",
+  "Invoice for professional services and software licenses.": "فاتورة للخدمات المهنية وتراخيص البرمجيات.",
+  "Partial Paid": "مدفوع جزئيا",
+  "Paid Amount": "المبلغ المدفوع",
+  "Due Amount": "المبلغ المستحق",
+  "Invoice Information": "معلومات الفاتورة",
+  "Bill From": "مفوتر من",
+  "Product": "المنتج",
+  "Terms": "الشروط",
+  "Net 30 days. Late payment fee of 1.5% per month applies.": "صافي 30 يوما. يتم تطبيق رسوم تأخير 1.5% شهريا.",
+  "Remaining": "المتبقي",
+  "Payment Amount": "مبلغ الدفع",
+  "Enter amount to pay": "أدخل المبلغ المراد دفعه",
+  "Full Amount": "المبلغ الكامل"
 }

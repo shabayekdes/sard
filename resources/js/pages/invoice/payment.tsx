@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { usePage, router, Head } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
@@ -41,8 +42,10 @@ import { SSPayPaymentModal } from '@/components/payment-modals/sspay-payment-mod
 import { ToyyibPayPaymentModal } from '@/components/payment-modals/toyyibpay-payment-modal';
 import { YooKassaPaymentModal } from '@/components/payment-modals/yookassa-payment-modal';
 import { SkrillPaymentModal } from '@/components/payment-modals/skrill-payment-modal';
+import { LanguageSwitcher } from '@/components/language-switcher';
 
 export default function InvoicePayment() {
+    const { t } = useTranslation();
     const { invoice, enabledGateways, remainingAmount, clientBillingInfo, currencies, paypalClientId, flutterwavePublicKey, tapPublicKey, paystackPublicKey, flash, company, companyProfile, companyLogo, favicon, appName } = usePage().props as any;
     const [selectedGateway, setSelectedGateway] = useState<string | null>(null);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -129,7 +132,7 @@ export default function InvoicePayment() {
         const paymentStatus = urlParams.get('status');
 
         if (paymentSuccess === 'true' || paymentStatus === 'success') {
-            toast.success('Payment successful');
+            toast.success(t('Payment successful'));
             // Clean URL parameters
             const newUrl = window.location.pathname;
             window.history.replaceState({}, document.title, newUrl);
@@ -140,7 +143,7 @@ export default function InvoicePayment() {
     useEffect(() => {
         const checkPaymentStatus = () => {
             if (invoice?.status === 'paid' && remainingAmount === 0 && !flash?.success) {
-                toast.success('Payment successful');
+                toast.success(t('Payment successful'));
             }
         };
 
@@ -165,7 +168,7 @@ export default function InvoicePayment() {
             setShowPaymentModal(true);
         } catch (error) {
             console.error('Error selecting payment gateway:', error);
-            toast.error('Failed to select payment method. Please try again.');
+            toast.error(t('Failed to select payment method. Please try again.'));
         }
     };
 
@@ -175,12 +178,12 @@ export default function InvoicePayment() {
             setSelectedGateway(null);
         } catch (error) {
             console.error('Error closing modal:', error);
-            toast.error('An error occurred. Please refresh the page.');
+            toast.error(t('An error occurred. Please refresh the page.'));
         }
     };
 
     const handlePaymentSuccess = () => {
-        toast.success('Payment successful');
+        toast.success(t('Payment successful'));
         closeModal();
         // Reload page after a short delay to show updated status
         setTimeout(() => {
@@ -282,7 +285,7 @@ export default function InvoicePayment() {
 
     return (
         <>
-            <Head title={`Invoice - ${company?.name || 'Advocate Saas'}`}>
+            <Head title={`${t('Invoice')} - ${company?.name || appName || 'Advocate Saas'}`}>
                 {favicon && (
                     <link rel="icon" type="image/x-icon" href={favicon} />
                 )}
@@ -297,16 +300,21 @@ export default function InvoicePayment() {
                                     <FileText className="h-7 w-7 text-white" />
                                 </div>
                                 <div>
-                                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Invoice #{invoice.invoice_number}</h1>
+                                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                                        {t('Invoice')} #{invoice.invoice_number}
+                                    </h1>
                                     <p className="text-gray-600 text-sm sm:text-base flex items-center mt-1">
                                         <Shield className="h-4 w-4 mr-1" />
-                                        Secure Payment Portal
+                                        {t('Secure Payment Portal')}
                                     </p>
                                 </div>
                             </div>
-                            <Badge variant={isOverdue ? 'destructive' : 'secondary'} className="text-xs sm:text-sm px-3 py-1.5 font-medium">
-                                {isOverdue ? 'Overdue' : 'Due'} {new Date(invoice.due_date).toLocaleDateString()}
-                            </Badge>
+                            <div className="flex items-center gap-3">
+                                <Badge variant={isOverdue ? 'destructive' : 'secondary'} className="text-xs sm:text-sm px-3 py-1.5 font-medium">
+                                    {isOverdue ? t('Overdue') : t('Due')} {new Date(invoice.due_date).toLocaleDateString()}
+                                </Badge>
+                                <LanguageSwitcher />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -315,8 +323,8 @@ export default function InvoicePayment() {
                     {/* Header with Title and Buttons */}
                     <div className="flex justify-between items-start mb-8">
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900">Invoice Details</h1>
-                            <p className="text-gray-600 mt-1">View and manage your invoice</p>
+                            <h1 className="text-2xl font-bold text-gray-900">{t('Invoice Details')}</h1>
+                            <p className="text-gray-600 mt-1">{t('View and manage your invoice')}</p>
                         </div>
                         <div className="flex gap-3">
                             <Button
@@ -327,19 +335,19 @@ export default function InvoicePayment() {
                                         await navigator.clipboard.writeText(window.location.href);
                                         setShowCopiedMessage(true);
                                         setTimeout(() => setShowCopiedMessage(false), 2000);
-                                        toast.success('Link copied to clipboard!');
+                                        toast.success(t('Link copied to clipboard!'));
                                     } catch (error) {
                                         console.error('Error copying link:', error);
-                                        toast.error('Failed to copy link. Please try again.');
+                                        toast.error(t('Failed to copy link. Please try again.'));
                                     }
                                 }}
                             >
                                 {showCopiedMessage ? (
                                     <span className="flex items-center theme-color">
-                                        ✓ Copied!
+                                        ✓ {t('Copied!')}
                                     </span>
                                 ) : (
-                                    "📋 Copy Link"
+                                    `📋 ${t('Copy Link')}`
                                 )}
                             </Button>
 
@@ -351,11 +359,11 @@ export default function InvoicePayment() {
                                             setShowGatewayModal(true);
                                         } catch (error) {
                                             console.error('Error opening payment modal:', error);
-                                            toast.error('Failed to open payment options. Please try again.');
+                                            toast.error(t('Failed to open payment options. Please try again.'));
                                         }
                                     }}
                                 >
-                                    💳 Pay Invoice
+                                    💳 {t('Pay Invoice')}
                                 </Button>
                             )}
 
@@ -367,7 +375,7 @@ export default function InvoicePayment() {
                                     window.open(route('invoices.pdf', invoice.id) + `?type=${pdfType}`, '_blank');
                                 }}
                             >
-                                ⬇️ {invoice.client?.business_type === 'b2b' ? 'Download Tax Invoice' : 'Download Simplified Tax Invoice'}
+                                ⬇️ {invoice.client?.business_type === 'b2b' ? t('Download Tax Invoice') : t('Download Simplified Tax Invoice')}
                             </Button>
                         </div>
                     </div>
@@ -378,7 +386,7 @@ export default function InvoicePayment() {
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h2 className="text-xl font-bold text-gray-900">{invoice.invoice_number} {invoice.client?.name}</h2>
-                                    <p className="text-gray-600 mt-1">Invoice for professional services and software licenses.</p>
+                                    <p className="text-gray-600 mt-1">{t('Invoice for professional services and software licenses.')}</p>
                                 </div>
                                 <div className="text-right">
                                     <Badge
@@ -388,8 +396,8 @@ export default function InvoicePayment() {
                                                 'bg-red-100 text-red-800'
                                             }`}
                                     >
-                                        {invoice.status === 'paid' ? 'Paid' :
-                                            invoice.status === 'partial_paid' ? 'Partial Paid' : 'Unpaid'}
+                                        {invoice.status === 'paid' ? t('Paid') :
+                                            invoice.status === 'partial_paid' ? t('Partial Paid') : t('Unpaid')}
                                     </Badge>
                                     <p className="text-sm text-gray-600">{invoice.invoice_number}</p>
                                 </div>
@@ -403,7 +411,7 @@ export default function InvoicePayment() {
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">TOTAL AMOUNT</p>
+                                        <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">{t('Total Amount')}</p>
                                         <p className="text-2xl font-bold theme-color mt-1">{formatAmount(invoice.total_amount)}</p>
                                     </div>
                                     <div className="bg-gray-100 p-3 rounded-full">
@@ -417,7 +425,7 @@ export default function InvoicePayment() {
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">PAID AMOUNT</p>
+                                        <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">{t('Paid Amount')}</p>
                                         <p className="text-2xl font-bold theme-color mt-1">{formatAmount((invoice.total_amount - remainingAmount) || 0)}</p>
                                     </div>
                                     <div className="bg-gray-100 p-3 rounded-full">
@@ -431,7 +439,7 @@ export default function InvoicePayment() {
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">DUE AMOUNT</p>
+                                        <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">{t('Due Amount')}</p>
                                         <p className="text-2xl font-bold theme-color mt-1">{formatAmount(remainingAmount)}</p>
                                     </div>
                                     <div className="bg-gray-100 p-3 rounded-full">
@@ -447,7 +455,7 @@ export default function InvoicePayment() {
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">PRODUCTS</p>
+                                        <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">{t('Products')}</p>
                                         <p className="text-2xl font-bold theme-color mt-1">{invoice.line_items?.length || 1}</p>
                                     </div>
                                     <div className="bg-gray-100 p-3 rounded-full">
@@ -461,7 +469,7 @@ export default function InvoicePayment() {
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">INVOICE DATE</p>
+                                        <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">{t('Invoice Date')}</p>
                                         <p className="text-lg font-bold theme-color mt-1">{new Date(invoice.invoice_date).toLocaleDateString()}</p>
                                     </div>
                                     <div className="bg-gray-100 p-3 rounded-full">
@@ -475,7 +483,7 @@ export default function InvoicePayment() {
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">DUE DATE</p>
+                                        <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">{t('Due Date')}</p>
                                         <p className="text-lg font-bold theme-color mt-1">{new Date(invoice.due_date).toLocaleDateString()}</p>
                                     </div>
                                     <div className="bg-gray-100 p-3 rounded-full">
@@ -494,7 +502,7 @@ export default function InvoicePayment() {
                                 <CardHeader className="theme-bg text-white">
                                     <CardTitle className="flex items-center space-x-2 text-lg">
                                         <Building2 className="h-5 w-5" />
-                                        <span>Invoice Information</span>
+                                        <span>{t('Invoice Information')}</span>
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-6">
@@ -505,7 +513,7 @@ export default function InvoicePayment() {
                                                     <Building2 className="h-5 w-5 theme-color" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Bill From</p>
+                                                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{t('Bill From')}</p>
                                                     <div className="mt-1 flex items-center space-x-3">
                                                         {companyLogo ? (
                                                             <img
@@ -519,23 +527,23 @@ export default function InvoicePayment() {
                                                         </p>
                                                     </div>
                                                     <p className="text-sm text-gray-600 mt-1">
-                                                        <span className="font-semibold text-gray-700">CR:</span>{' '}
+                                                        <span className="font-semibold text-gray-700">{t('CR Number')}:</span>{' '}
                                                         {companyProfile?.cr || companyProfile?.registration_number || '-'}
                                                     </p>
                                                     <p className="text-sm text-gray-600">
-                                                        <span className="font-semibold text-gray-700">Tax Number:</span>{' '}
-                                                        {companyProfile?.tax_number || companyProfile?.tax_id || '-'}
+                                                        <span className="font-semibold text-gray-700">{t('Tax ID')}:</span>{' '}
+                                                        {companyProfile?.tax_id || companyProfile?.tax_number || '-'}
                                                     </p>
                                                     <p className="text-sm text-gray-600">
-                                                        <span className="font-semibold text-gray-700">Address:</span>{' '}
+                                                        <span className="font-semibold text-gray-700">{t('Address')}:</span>{' '}
                                                         {companyProfile?.address || '-'}
                                                     </p>
                                                     <p className="text-sm text-gray-600">
-                                                        <span className="font-semibold text-gray-700">Phone:</span>{' '}
+                                                        <span className="font-semibold text-gray-700">{t('Phone')}:</span>{' '}
                                                         {companyProfile?.phone || '-'}
                                                     </p>
                                                     <p className="text-sm text-gray-600">
-                                                        <span className="font-semibold text-gray-700">Email:</span>{' '}
+                                                        <span className="font-semibold text-gray-700">{t('Email')}:</span>{' '}
                                                         {companyProfile?.email || '-'}
                                                     </p>
                                                 </div>
@@ -546,7 +554,7 @@ export default function InvoicePayment() {
                                                         <FileText className="h-5 w-5 theme-color" />
                                                     </div>
                                                     <div>
-                                                        <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Case</p>
+                                                        <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{t('Case')}</p>
                                                         <p className="text-lg font-semibold text-gray-900 mt-1">{invoice.case.title}</p>
                                                     </div>
                                                 </div>
@@ -558,30 +566,30 @@ export default function InvoicePayment() {
                                                     <User className="h-5 w-5 theme-color" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Bill To</p>
+                                                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{t('Bill To')}</p>
                                                     <p className="text-xl font-bold text-gray-900 mt-1">{invoice.client?.name || '-'}</p>
                                                     {invoice.client?.business_type === 'b2b' && (
                                                         <>
                                                             <p className="text-sm text-gray-600 mt-1">
-                                                                <span className="font-semibold text-gray-700">CR:</span>{' '}
+                                                                <span className="font-semibold text-gray-700">{t('CR Number')}:</span>{' '}
                                                                 {invoice.client?.cr_number || '-'}
                                                             </p>
                                                             <p className="text-sm text-gray-600">
-                                                                <span className="font-semibold text-gray-700">Tax Number:</span>{' '}
+                                                                <span className="font-semibold text-gray-700">{t('Tax ID')}:</span>{' '}
                                                                 {invoice.client?.tax_id || '-'}
                                                             </p>
                                                         </>
                                                     )}
                                                     <p className="text-sm text-gray-600 mt-1">
-                                                        <span className="font-semibold text-gray-700">Address:</span>{' '}
+                                                        <span className="font-semibold text-gray-700">{t('Address')}:</span>{' '}
                                                         {invoice.client?.address || '-'}
                                                     </p>
                                                     <p className="text-sm text-gray-600">
-                                                        <span className="font-semibold text-gray-700">Phone:</span>{' '}
+                                                        <span className="font-semibold text-gray-700">{t('Phone')}:</span>{' '}
                                                         {invoice.client?.phone || '-'}
                                                     </p>
                                                     <p className="text-sm text-gray-600">
-                                                        <span className="font-semibold text-gray-700">Email:</span>{' '}
+                                                        <span className="font-semibold text-gray-700">{t('Email')}:</span>{' '}
                                                         {invoice.client?.email || '-'}
                                                     </p>
                                                 </div>
@@ -591,7 +599,7 @@ export default function InvoicePayment() {
                                                     <Calendar className="h-5 w-5 theme-color" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Invoice Date</p>
+                                                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{t('Invoice Date')}</p>
                                                     <p className="text-lg font-semibold text-gray-900 mt-1">{new Date(invoice.invoice_date).toLocaleDateString()}</p>
                                                 </div>
                                             </div>
@@ -600,7 +608,7 @@ export default function InvoicePayment() {
                                                     <Clock className={`h-5 w-5 ${isOverdue ? 'text-red-600' : 'theme-color'}`} />
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Due Date</p>
+                                                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{t('Due Date')}</p>
                                                     <p className={`text-lg font-semibold mt-1 ${isOverdue ? 'text-red-600' : 'text-gray-900'}`}>
                                                         {new Date(invoice.due_date).toLocaleDateString()}
                                                     </p>
@@ -617,7 +625,7 @@ export default function InvoicePayment() {
                                     <CardHeader className="bg-gray-50 border-b">
                                         <CardTitle className="flex items-center space-x-2 text-lg text-gray-900">
                                             <span>📦</span>
-                                            <span>Products</span>
+                                        <span>{t('Products')}</span>
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="p-0">
@@ -625,11 +633,11 @@ export default function InvoicePayment() {
                                             <table className="w-full">
                                                 <thead className="bg-gray-100">
                                                     <tr>
-                                                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Product</th>
-                                                        <th className="px-6 py-4 text-center text-sm font-bold text-gray-700">Quantity</th>
-                                                        <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">Unit Price</th>
-                                                        <th className="px-6 py-4 text-center text-sm font-bold text-gray-700">Tax</th>
-                                                        <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">Total</th>
+                                                    <th className="px-6 py-4 text-start text-sm font-bold text-gray-700">{t('Product')}</th>
+                                                    <th className="px-6 py-4 text-center text-sm font-bold text-gray-700">{t('Quantity')}</th>
+                                                    <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">{t('Unit Price')}</th>
+                                                    <th className="px-6 py-4 text-center text-sm font-bold text-gray-700">{t('Tax')}</th>
+                                                    <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">{t('Total')}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-gray-200">
@@ -638,7 +646,7 @@ export default function InvoicePayment() {
                                                             <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.description}</td>
                                                             <td className="px-6 py-4 text-sm text-gray-700 text-center font-medium">{item.quantity}</td>
                                                             <td className="px-6 py-4 text-sm text-gray-700 text-right font-medium">{formatAmount(item.rate)}</td>
-                                                            <td className="px-6 py-4 text-sm text-gray-700 text-center font-medium">GST</td>
+                                                        <td className="px-6 py-4 text-sm text-gray-700 text-center font-medium">{t('Tax')}</td>
                                                             <td className="px-6 py-4 text-sm font-bold text-green-600 text-right">{formatAmount(item.amount)}</td>
                                                         </tr>
                                                     ))}
@@ -648,18 +656,18 @@ export default function InvoicePayment() {
                                         <div className="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-6 border-t">
                                             <div className="space-y-3">
                                                 <div className="flex justify-between text-sm">
-                                                    <span className="text-gray-600 font-medium">Subtotal</span>
+                                                <span className="text-gray-600 font-medium">{t('Subtotal')}</span>
                                                     <span className="font-semibold text-gray-900">{formatAmount(invoice.subtotal)}</span>
                                                 </div>
                                                 {invoice.tax_amount > 0 && (
                                                     <div className="flex justify-between text-sm">
-                                                        <span className="text-gray-600 font-medium">Tax</span>
+                                                    <span className="text-gray-600 font-medium">{t('Tax')}</span>
                                                         <span className="font-semibold text-gray-900">{formatAmount(invoice.tax_amount)}</span>
                                                     </div>
                                                 )}
                                                 <Separator className="my-3" />
                                                 <div className="flex justify-between text-xl font-bold">
-                                                    <span className="text-gray-900">Total</span>
+                                                <span className="text-gray-900">{t('Total')}</span>
                                                     <span className="text-blue-600">{formatAmount(invoice.total_amount)}</span>
                                                 </div>
                                             </div>
@@ -671,20 +679,20 @@ export default function InvoicePayment() {
                             {/* Additional Information */}
                             <Card className="shadow-sm border-0">
                                 <CardHeader className="bg-gray-50 border-b">
-                                    <CardTitle className="text-lg text-gray-900">Additional Information</CardTitle>
+                                    <CardTitle className="text-lg text-gray-900">{t('Additional Information')}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div>
-                                            <h4 className="text-sm font-semibold text-gray-700 mb-2">NOTES</h4>
+                                            <h4 className="text-sm font-semibold text-gray-700 mb-2">{t('Notes')}</h4>
                                             <p className="text-sm text-gray-600">
-                                                {invoice.notes || "Thank you for your business. Please remit payment by due date."}
+                                                {invoice.notes || t('Thank you for your business. Please remit payment by due date.')}
                                             </p>
                                         </div>
                                         <div>
-                                            <h4 className="text-sm font-semibold text-gray-700 mb-2">TERMS</h4>
+                                            <h4 className="text-sm font-semibold text-gray-700 mb-2">{t('Terms')}</h4>
                                             <p className="text-sm text-gray-600">
-                                                Net 30 days. Late payment fee of 1.5% per month applies.
+                                                {t('Net 30 days. Late payment fee of 1.5% per month applies.')}
                                             </p>
                                         </div>
                                     </div>
@@ -700,21 +708,21 @@ export default function InvoicePayment() {
                 <Dialog open={showGatewayModal} onOpenChange={setShowGatewayModal}>
                     <DialogContent className="max-w-md max-h-[80vh]">
                         <DialogHeader>
-                            <DialogTitle className="text-center">Pay Invoice #{invoice.invoice_number}</DialogTitle>
+                            <DialogTitle className="text-center">{t('Pay Invoice')} #{invoice.invoice_number}</DialogTitle>
                         </DialogHeader>
 
                         <div className="space-y-4">
                             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                                 <div className="flex justify-between items-center">
-                                    <span className="text-sm text-blue-700">Invoice #{invoice.invoice_number}</span>
+                                    <span className="text-sm text-blue-700">{t('Invoice')} #{invoice.invoice_number}</span>
                                     <span className="font-bold text-blue-900">{formatAmount(invoice.total_amount)}</span>
                                 </div>
                                 <div className="text-xs text-blue-600 mt-1">{invoice.client?.name}</div>
-                                <div className="text-xs text-blue-600 mt-1">Remaining: {formatAmount(remainingAmount)}</div>
+                                <div className="text-xs text-blue-600 mt-1">{t('Remaining')}: {formatAmount(remainingAmount)}</div>
                             </div>
 
                             <div>
-                                <label className="text-sm font-medium text-gray-700 mb-2 block">Payment Amount</label>
+                                <label className="text-sm font-medium text-gray-700 mb-2 block">{t('Payment Amount')}</label>
                                 <Input
                                     type="number"
                                     step="0.01"
@@ -722,7 +730,7 @@ export default function InvoicePayment() {
                                     max={remainingAmount}
                                     value={paymentAmount}
                                     onChange={(e) => setPaymentAmount(Number(e.target.value))}
-                                    placeholder="Enter amount to pay"
+                                    placeholder={t('Enter amount to pay')}
                                     className="w-full"
                                 />
                                 <div className="flex gap-2 mt-2">
@@ -738,7 +746,7 @@ export default function InvoicePayment() {
                                         size="sm"
                                         onClick={() => setPaymentAmount(remainingAmount)}
                                     >
-                                        Full Amount
+                                        {t('Full Amount')}
                                     </Button>
                                 </div>
                             </div>
@@ -746,7 +754,7 @@ export default function InvoicePayment() {
 
 
                             <div>
-                                <label className="text-sm font-medium text-gray-700 mb-3 block">Select Payment Method</label>
+                                <label className="text-sm font-medium text-gray-700 mb-3 block">{t('Select Payment Method')}</label>
                                 <div className="space-y-3 max-h-64 overflow-y-auto">
                                     {gatewaysWithIcons.map((gateway) => (
                                         <div
@@ -760,7 +768,7 @@ export default function InvoicePayment() {
                                                     setSelectedGateway(gateway.id);
                                                 } catch (error) {
                                                     console.error('Error selecting gateway:', error);
-                                                    toast.error('Failed to select payment method. Please try again.');
+                                                    toast.error(t('Failed to select payment method. Please try again.'));
                                                 }
                                             }}
                                         >
@@ -782,38 +790,38 @@ export default function InvoicePayment() {
                                             setShowGatewayModal(false);
                                         } catch (error) {
                                             console.error('Error closing modal:', error);
-                                            toast.error('An error occurred. Please refresh the page.');
+                                            toast.error(t('An error occurred. Please refresh the page.'));
                                         }
                                     }}
                                 >
-                                    Cancel
+                                    {t('Cancel')}
                                 </Button>
                                 <Button
                                     className="flex-1 h-12 bg-blue-600 hover:bg-blue-700"
                                     onClick={() => {
                                         try {
                                             if (!selectedGateway) {
-                                                toast.error('Please select a payment method first.');
+                                                toast.error(t('Please select a payment method first.'));
                                                 return;
                                             }
                                             if (!paymentAmount || paymentAmount <= 0) {
-                                                toast.error('Please enter a valid payment amount.');
+                                                toast.error(t('Please enter a valid payment amount.'));
                                                 return;
                                             }
                                             if (paymentAmount > remainingAmount) {
-                                                toast.error('Payment amount cannot exceed remaining balance.');
+                                                toast.error(t('Payment amount cannot exceed remaining balance.'));
                                                 return;
                                             }
                                             setShowGatewayModal(false);
                                             setShowPaymentModal(true);
                                         } catch (error) {
                                             console.error('Error processing payment:', error);
-                                            toast.error('Failed to process payment. Please try again.');
+                                            toast.error(t('Failed to process payment. Please try again.'));
                                         }
                                     }}
                                     disabled={!selectedGateway || !paymentAmount || paymentAmount <= 0}
                                 >
-                                    Pay {formatAmount(paymentAmount)}
+                                    {t('Pay')} {formatAmount(paymentAmount)}
                                 </Button>
                             </div>
                         </div>
