@@ -34,14 +34,11 @@ class CaseController extends BaseController
         $query = CaseModel::withPermissionCheck()
             ->with(['client', 'caseType', 'caseStatus', 'court', 'creator', 'oppositeParties.nationality']);
 
-        if ($request->has('search') && !empty($request->search)) {
-            $query->where(function ($q) use ($request) {
-                $q->where('title', 'like', '%' . $request->search . '%')
-                    ->orWhere('case_id', 'like', '%' . $request->search . '%')
-                    ->orWhere('description', 'like', '%' . $request->search . '%')
-                    ->orWhereHas('client', function ($clientQuery) use ($request) {
-                        $clientQuery->where('name', 'like', '%' . $request->search . '%')
-                            ->orWhere('phone', 'like', '%' . $request->search . '%');
+        if ($keyword = $request->get('search')) {
+            $query->where(function ($q) use ($keyword) {
+                $q->whereAny(['title', 'case_id', 'case_number'], 'like', "%{$keyword}%")
+                    ->orWhereHas('client', function ($clientQuery) use ($keyword) {
+                        $clientQuery->whereAny(['name', 'phone'], 'like', "%{$keyword}%");
                     });
             });
         }

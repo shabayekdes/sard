@@ -4,7 +4,6 @@ return [
 
     'available_currencies' => [
         ['name' => '{"en":"Tunisian Dinar","ar":"الدينار التونسي"}', 'code' => 'TND', 'symbol' => 'د.ت', 'description' => '{"en":"Tunisian Dinar","ar":"الدينار التونسي"}', 'status' => true, 'created_at' => '2025-01-20 10:00', 'updated_at' => '2025-01-20 10:00'],
-        ['name' => '{"en":"Icelandic Krona","ar":"الكرونا الآيسلندية"}', 'code' => 'ISK', 'symbol' => 'kr', 'description' => '{"en":"Icelandic Krona","ar":"الكرونا الآيسلندية"}', 'status' => true, 'created_at' => '2025-01-20 10:00', 'updated_at' => '2025-01-20 10:00'],
         ['name' => '{"en":"Pakistani Rupee","ar":"الروبية الباكستانية"}', 'code' => 'PKR', 'symbol' => '₨', 'description' => '{"en":"Pakistani Rupee","ar":"الروبية الباكستانية"}', 'status' => true, 'created_at' => '2025-01-20 10:00', 'updated_at' => '2025-01-20 10:00'],
         ['name' => '{"en":"Lebanese Pound","ar":"الليرة اللبنانية"}', 'code' => 'LBP', 'symbol' => '£', 'description' => '{"en":"Lebanese Pound","ar":"الليرة اللبنانية"}', 'status' => true, 'created_at' => '2025-01-20 10:00', 'updated_at' => '2025-01-20 10:00'],
         ['name' => '{"en":"Jordanian Dinar","ar":"الدينار الأردني"}', 'code' => 'JOD', 'symbol' => 'د.ا', 'description' => '{"en":"Jordanian Dinar","ar":"الدينار الأردني"}', 'status' => true, 'created_at' => '2025-01-20 10:00', 'updated_at' => '2025-01-20 10:00'],
