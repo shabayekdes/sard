@@ -362,9 +362,12 @@ export default function InvoicePayment() {
                             <Button
                                 variant="outline"
                                 className="h-10 px-4 text-sm font-medium"
-                                onClick={() => window.open(`/billing/invoices/${invoice.id}/generate`, '_blank')}
+                                onClick={() => {
+                                    const pdfType = invoice.client?.business_type === 'b2b' ? 'tax' : 'simplified';
+                                    window.open(route('invoices.pdf', invoice.id) + `?type=${pdfType}`, '_blank');
+                                }}
                             >
-                                ⬇️ Download Tax Invoice
+                                ⬇️ {invoice.client?.business_type === 'b2b' ? 'Download Tax Invoice' : 'Download Simplified Tax Invoice'}
                             </Button>
                         </div>
                     </div>

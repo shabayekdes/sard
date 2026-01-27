@@ -6,7 +6,7 @@ export default function InvoiceGenerate() {
     const { invoice, companyProfile, timeEntries, invoiceItems, clientBillingInfo, currencies } = usePage().props as any;
 
     const handlePayment = () => {
-        router.get(route('billing.payments.index', { 
+        router.get(route('billing.payments.index', {
             invoice_id: invoice.id,
             invoice_number: invoice.invoice_number,
             amount: invoice.total_amount,
@@ -70,7 +70,7 @@ export default function InvoiceGenerate() {
                             </div>
                         </div>
                     </div>
-                    
+
                     {/* Case Information */}
                     {invoice.case && (
                         <div className="mb-6 p-4 bg-gray-50 rounded-lg">
@@ -152,10 +152,9 @@ export default function InvoiceGenerate() {
                             <div className="flex justify-between items-center">
                                 <div>
                                     <p className="text-sm text-gray-600">{t('Payment Status')}:</p>
-                                    <p className={`font-semibold ${
-                                        invoice.status === 'paid' ? 'text-green-600' : 
-                                        invoice.status === 'overdue' ? 'text-red-600' : 'text-yellow-600'
-                                    }`}>
+                                    <p className={`font-semibold ${invoice.status === 'paid' ? 'text-green-600' :
+                                            invoice.status === 'overdue' ? 'text-red-600' : 'text-yellow-600'
+                                        }`}>
                                         {t(invoice.status?.charAt(0).toUpperCase() + invoice.status?.slice(1))}
                                     </p>
                                 </div>
@@ -182,8 +181,8 @@ export default function InvoiceGenerate() {
                     {/* Footer */}
                     <div className="border-t pt-6">
                         <div className="flex justify-between items-center">
-                            <button 
-                                onClick={() => window.print()} 
+                            <button
+                                onClick={() => window.print()}
                                 className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 print:hidden"
                             >
                                 {t('Print Invoice')}

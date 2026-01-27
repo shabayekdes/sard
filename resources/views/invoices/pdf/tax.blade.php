@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Simplified Tax Invoice - فاتورة ضريبية مبسطة</title>
+    <title>Tax Invoice - فاتورة ضريبية</title>
     <style>
         {!! file_get_contents(public_path('css/pdf-invoice.css')) !!}
     </style>
@@ -96,8 +96,8 @@
                 <tr>
                     <th colspan="3">
                         <div class="flex gap-2 align-items-center justify-content-between table-header">
-                            <span>Vehicle Information</span>
-                            <span class="text-right">بيانات المركبة</span>
+                            <span>Case Information</span>
+                            <span class="text-right">بيانات القضية</span>
                         </div>
                     </th>
                 </tr>
@@ -105,21 +105,24 @@
 
                 <tbody>
                 <tr>
-                    <td>Name</td>
-                    <td class="break-word px-2">
-                        <div class="vehicle-name flex align-items-center justify-content-center gap-1">
-                            <div class="vehicle-logo"></div>
-                            {{ '-' }}
-                        </div>
-                    </td>
-                    <td class="text-right">الأسم</td>
+                    <td>Case ID</td>
+                    <td class="text-center break-word px-2">{{ $invoice->case?->case_id ?: '-' }}</td>
+                    <td class="text-right">رقم القضية</td>
                 </tr>
                 <tr>
-                    <td>Plate No.</td>
-                    <td class="text-center break-word px-2">
-                        {{ '-' }}
-                    </td>
-                    <td class="text-right">رقم اللوحة</td>
+                    <td>Case No.</td>
+                    <td class="text-center break-word px-2">{{ $invoice->case?->case_number ?: '-' }}</td>
+                    <td class="text-right">رقم الدعوى</td>
+                </tr>
+                <tr>
+                    <td>Title</td>
+                    <td class="text-center break-word px-2">{{ $invoice->case?->title ?: '-' }}</td>
+                    <td class="text-right">عنوان القضية</td>
+                </tr>
+                <tr>
+                    <td>File No.</td>
+                    <td class="text-center break-word px-2">{{ $invoice->case?->file_number ?: '-' }}</td>
+                    <td class="text-right">رقم الملف</td>
                 </tr>
                 </tbody>
             </table>
@@ -160,77 +163,53 @@
     </div>
     <!-- end customer info -->
 
-    <!-- products table -->
-    <div class="products-table table-container">
-        <table class="app-table">
-            <thead>
-            <tr>
-                <th>
-                    <div>الإجمالي</div>
-                    <div>Total</div>
-                </th>
-                <th>
-                    <div>الضمان</div>
-                    <div>Warranty</div>
-                </th>
-                <th>
-                    <div>الضرائب</div>
-                    <div>Tax</div>
-                </th>
-                <th>
-                    <div>الخصم ٪</div>
-                    <div>Discount%</div>
-                </th>
-                <th>
-                    <div>خصومات</div>
-                    <div>Discount</div>
-                </th>
-                <th>
-                    <div>السعر</div>
-                    <div>Price</div>
-                </th>
-                <th>
-                    <div>الكمية</div>
-                    <div>qty</div>
-                </th>
-                <th>
-                    <div>النوع</div>
-                    <div>Type</div>
-                </th>
-                <th>
-                    <div>SKU</div>
-                </th>
-                <th>
-                    <div>البيانات</div>
-                    <div>Description</div>
-                </th>
-                <th>
-                    <div>الرقم</div>
-                    <div>NO</div>
-                </th>
-            </tr>
-            </thead>
-
-            <tbody>
-            @foreach ($items as $index => $item)
+    <!-- line items -->
+    <div class="mb-8">
+        <table class="w-full border border-gray-200 items-table-rtl">
+            <thead class="bg-gray-50">
                 <tr>
-                    <td><span class="sar-symbol">{{ $format($item['line_total']) }}</span></td>
-                    <td>-</td>
-                    <td><span class="sar-symbol">{{ $format($item['vat_amount']) }}</span></td>
-                    <td><span class="sar-symbol">0</span></td>
-                    <td><span class="sar-symbol">0</span></td>
-                    <td><span class="sar-symbol">{{ $format($item['unit_price']) }}</span></td>
-                    <td>{{ $format($item['quantity']) }}</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>{{ $item['description'] }}</td>
-                    <td>{{ $index + 1 }}</td>
+                    <th class="px-4 py-3 desc-right text-sm font-semibold text-gray-900 border-b">Description</th>
+                    <th class="px-4 py-3 text-center text-sm font-semibold text-gray-900 border-b">Qty</th>
+                    <th class="px-4 py-3 text-right text-sm font-semibold text-gray-900 border-b">Rate</th>
+                    <th class="px-4 py-3 text-right text-sm font-semibold text-gray-900 border-b">Amount</th>
                 </tr>
-            @endforeach
+            </thead>
+            <tbody>
+                @if ($items && $items->count() > 0)
+                    @foreach ($items as $item)
+                        <tr class="border-b {{ ($item['type'] ?? '') === 'expense' ? 'bg-orange-50' : '' }}">
+                            <td class="px-4 py-4 text-sm text-gray-900 desc-right">
+                                <div class="space-y-1">
+                                    <div>{{ $item['description'] }}</div>
+                                    @if (($item['type'] ?? '') === 'expense')
+                                        <div class="text-xs text-orange-600 flex items-center">
+                                            <span class="bg-orange-100 px-2 py-1 rounded text-orange-700 font-medium">Expense</span>
+                                            @if (!empty($item['expense_date']))
+                                                <span class="ml-2">{{ \Carbon\Carbon::parse($item['expense_date'])->format('Y-m-d') }}</span>
+                                            @endif
+                                        </div>
+                                    @endif
+                                    @if (($item['type'] ?? '') === 'time')
+                                        <div class="text-xs text-blue-600 flex items-center">
+                                            <span class="bg-blue-100 px-2 py-1 rounded text-blue-700 font-medium">Time Entry</span>
+                                        </div>
+                                    @endif
+                                </div>
+                            </td>
+                            <td class="px-4 py-4 text-sm text-gray-900 text-center">{{ $format($item['quantity']) }}</td>
+                            <td class="px-4 py-4 text-sm text-gray-900 text-right">{{ $format($item['unit_price']) }} {{ $currency_code }}</td>
+                            <td class="px-4 py-4 text-sm text-gray-900 text-right">{{ $format($item['line_total']) }} {{ $currency_code }}</td>
+                        </tr>
+                    @endforeach
+                @else
+                    <tr>
+                        <td colspan="4" class="px-4 py-4 text-center text-gray-500">No items found</td>
+                    </tr>
+                @endif
             </tbody>
         </table>
     </div>
-    <!-- end products table -->
+    <!-- end line items -->
 
     <!-- products summary -->
     <div class="summary-info flex gap-2">

@@ -28,9 +28,6 @@ class InvoicePdfService
         $pdf = Pdf::view($view, $data)
             ->format('a4')
             ->name($filename);
-            // ->withBrowsershot(function ($browsershot) {
-            //     $browsershot->timeout(120)->protocolTimeout(120)->waitUntilNetworkIdle(false);
-            // });
 
         return $disposition === 'inline'
             ? $pdf->inline($filename)
@@ -62,6 +59,7 @@ class InvoicePdfService
                 'description' => $item['description'] ?? '',
                 'quantity' => $quantity,
                 'unit_price' => $unitPrice,
+                'type' => $item['type'] ?? 'manual',
                 'taxable_amount' => $taxableAmount,
                 'vat_rate' => $vatRate,
                 'vat_amount' => $vatAmount,
