@@ -55,6 +55,10 @@ use App\Http\Controllers\YooKassaPaymentController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+Route::get('invoices/{invoice}/pdf', [\App\Http\Controllers\InvoicePdfController::class, 'show'])
+    // ->middleware('permission:view-invoices')
+    ->name('invoices.pdf');
+
 // AamarPay invoice success route - must be outside CSRF protection
 Route::match(['GET', 'POST'], 'aamarpay/invoice/success', [AamarpayPaymentController::class, 'invoiceSuccess'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])->name('aamarpay.invoice.success');
 
@@ -1067,6 +1071,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('billing/invoices/{invoice}', [\App\Http\Controllers\InvoiceController::class, 'show'])->middleware('permission:view-invoices')->name('billing.invoices.show');
             Route::get('billing/invoices/{invoice}/edit', [\App\Http\Controllers\InvoiceController::class, 'edit'])->middleware('permission:edit-invoices')->name('billing.invoices.edit');
             Route::get('billing/invoices/{invoice}/generate', [\App\Http\Controllers\InvoiceController::class, 'generate'])->middleware('permission:view-invoices')->name('billing.invoices.generate');
+            // Route::get('invoices/{invoice}/pdf', [\App\Http\Controllers\InvoicePdfController::class, 'show'])->middleware('permission:view-invoices')->name('invoices.pdf');
             Route::post('billing/invoices', [\App\Http\Controllers\InvoiceController::class, 'store'])->middleware('permission:create-invoices')->name('billing.invoices.store');
             Route::put('billing/invoices/{invoice}', [\App\Http\Controllers\InvoiceController::class, 'update'])->middleware('permission:edit-invoices')->name('billing.invoices.update');
             Route::delete('billing/invoices/{invoice}', [\App\Http\Controllers\InvoiceController::class, 'destroy'])->middleware('permission:delete-invoices')->name('billing.invoices.destroy');

@@ -117,11 +117,12 @@ export default function ShowInvoice() {
 
     if (hasPermission(permissions, 'view-invoices')) {
         const pdfLabel = invoice.client?.business_type === 'b2b' ? t('Tax Invoice') : t('Simplified Tax Invoice');
+        const pdfType = invoice.client?.business_type === 'b2b' ? 'tax' : 'simplified';
         pageActions.push({
             label: pdfLabel,
             icon: <Download className="h-4 w-4 mr-2" />,
             variant: 'outline' as const,
-            onClick: () => window.open(route('billing.invoices.generate', invoice.id), '_blank')
+            onClick: () => window.open(route('invoices.pdf', invoice.id) + `?type=${pdfType}`, '_blank')
         });
     }
 
