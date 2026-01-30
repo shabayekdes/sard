@@ -10,7 +10,7 @@ class NewTaskListener
 {
     public function handle(NewTaskCreated $event)
     {
-         if(isEmailTemplateEnabled('New Task', createdBy()) && !IsDemo()){
+         if(isEmailTemplateEnabled('New Task', createdBy())){
 
         try {
 

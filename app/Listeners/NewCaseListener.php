@@ -10,7 +10,7 @@ class NewCaseListener
 {
     public function handle(NewCaseCreated $event)
     {
-         if(isEmailTemplateEnabled('New Case', createdBy()) && !IsDemo()){
+         if(isEmailTemplateEnabled('New Case', createdBy())){
 
         try {
 

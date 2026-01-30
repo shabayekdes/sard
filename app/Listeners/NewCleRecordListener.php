@@ -10,7 +10,7 @@ class NewCleRecordListener
 {
     public function handle(NewCleRecordCreated $event)
     {
-         if(isEmailTemplateEnabled('New CLE Record', createdBy()) && !IsDemo()){
+         if(isEmailTemplateEnabled('New CLE Record', createdBy())){
 
         try {
 

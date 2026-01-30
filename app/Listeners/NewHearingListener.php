@@ -10,7 +10,7 @@ class NewHearingListener
 {
     public function handle(NewHearingCreated $event)
     {
-         if(isEmailTemplateEnabled('New Hearing', createdBy()) && !IsDemo()){
+         if(isEmailTemplateEnabled('New Hearing', createdBy())){
 
         try {
 

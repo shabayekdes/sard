@@ -98,9 +98,7 @@ class CleTrackingController extends BaseController
         $cleRecord = CleTracking::create($validated);
 
         // Trigger notifications
-        if ($cleRecord && !IsDemo()) {
-            event(new \App\Events\NewCleRecordCreated($cleRecord, $request->all()));
-        }
+        event(new \App\Events\NewCleRecordCreated($cleRecord, $request->all()));
 
         // Check for errors and combine them
         $emailError = session()->pull('email_error');

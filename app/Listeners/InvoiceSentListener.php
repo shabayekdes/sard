@@ -10,7 +10,7 @@ class InvoiceSentListener
 {
     public function handle(InvoiceSent $event)
     {
-         if(isEmailTemplateEnabled('Invoice Sent', createdBy()) && !IsDemo()){
+         if(isEmailTemplateEnabled('Invoice Sent', createdBy())){
 
         try {
 

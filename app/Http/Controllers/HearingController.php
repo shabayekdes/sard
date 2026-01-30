@@ -151,9 +151,7 @@ class HearingController extends BaseController
         $this->createDefaultNotifications($hearing);
 
         // Trigger notifications
-        if ($hearing && !IsDemo()) {
-            event(new \App\Events\NewHearingCreated($hearing, $request->all()));
-        }
+        event(new \App\Events\NewHearingCreated($hearing, $request->all()));
 
         // Check for errors and combine them
         $emailError = session()->pull('email_error');

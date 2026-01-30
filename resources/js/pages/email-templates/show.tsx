@@ -41,8 +41,9 @@ interface Props {
 export default function EmailTemplateShow({ template, languages, variables }: Props) {
   const { t } = useTranslation()
   const { flash } = usePage().props as any
+  const allowedLanguages = languages.filter((language) => ['en', 'ar'].includes(language.code))
   const [fromName, setFromName] = useState(template.from)
-  const [currentLang, setCurrentLang] = useState(languages[0]?.code || 'en')
+  const [currentLang, setCurrentLang] = useState(allowedLanguages[0]?.code || 'en')
   const [templateLangs, setTemplateLangs] = useState(
     template.email_template_langs.reduce((acc, lang) => {
       acc[lang.lang] = {
@@ -166,11 +167,11 @@ export default function EmailTemplateShow({ template, languages, variables }: Pr
               </div>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue={languages[0]?.code} onValueChange={setCurrentLang} className="w-full">
+              <Tabs defaultValue={allowedLanguages[0]?.code} onValueChange={setCurrentLang} className="w-full">
                 <div className="mb-4">
                   <div className="overflow-x-auto">
                     <TabsList className="inline-flex h-auto p-1 w-max">
-                      {languages.map((language) => (
+                      {allowedLanguages.map((language) => (
                         <TabsTrigger 
                           key={language.code} 
                           value={language.code} 
@@ -183,7 +184,7 @@ export default function EmailTemplateShow({ template, languages, variables }: Pr
                   </div>
                 </div>
                 
-                {languages.map((language) => (
+                {allowedLanguages.map((language) => (
                   <TabsContent key={language.code} value={language.code} className="space-y-6 mt-6">
                     <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                       <Badge variant="default" className="px-3 py-1">

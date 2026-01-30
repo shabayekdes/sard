@@ -64,9 +64,7 @@ class RegulatoryBodyController extends Controller
         $regulatoryBody = RegulatoryBody::create($validated);
 
         // Trigger notifications
-        if ($regulatoryBody && !IsDemo()) {
-            event(new \App\Events\NewRegulatoryBodyCreated($regulatoryBody, $request->all()));
-        }
+        event(new \App\Events\NewRegulatoryBodyCreated($regulatoryBody, $request->all()));
 
         // Check for errors and combine them
         $emailError = session()->pull('email_error');

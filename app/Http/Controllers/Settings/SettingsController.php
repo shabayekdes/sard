@@ -78,13 +78,10 @@ class SettingsController extends Controller
                     ]);
                 }
 
-                // Switch ON only if is_active = 1 AND not in demo mode
-                $isActive = $userSetting->is_active == 1 && !config('app.is_demo', true);
-
                 return [
                     'id' => $template->id,
                     'name' => $template->name,
-                    'is_active' => $isActive,
+                    'is_active' => $userSetting->is_active,
                     'template' => [
                         'id' => $template->id,
                         'name' => $template->name,
@@ -93,7 +90,6 @@ class SettingsController extends Controller
                 ];
             });
         }
-
 
 
         return Inertia::render('settings/index', [

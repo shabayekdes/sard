@@ -75,9 +75,7 @@ class ProfessionalLicenseController extends Controller
         $license = ProfessionalLicense::create($validated);
 
         // Trigger notifications
-        if ($license && !IsDemo()) {
-            event(new \App\Events\NewLicenseCreated($license, $request->all()));
-        }
+        event(new \App\Events\NewLicenseCreated($license, $request->all()));
 
         // Check for errors and combine them
         $emailError = session()->pull('email_error');

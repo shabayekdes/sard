@@ -146,7 +146,6 @@ export default function PaymentSettings({ settings = {} }: PaymentSettingsProps)
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'enabled' | 'disabled'>('all');
 
-  console.log(settings)
   // Form state
   const { data, setData, post, processing, errors } = useForm<PaymentSettings>({
       currency: settings.currency || 'USD',

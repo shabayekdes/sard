@@ -10,7 +10,7 @@ class TeamMemberCreateListener
 {
     public function handle(TeamMemberCreated $event)
     {
-         if(isEmailTemplateEnabled('New Team Member', createdBy()) && !IsDemo()){
+         if(isEmailTemplateEnabled('New Team Member', createdBy())){
 
         try {
 

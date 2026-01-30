@@ -238,9 +238,7 @@ class ClientController extends Controller
         }
 
         // Trigger notifications
-        if ($client && ! IsDemo()) {
-            event(new \App\Events\NewClientCreated($client, $request->all()));
-        }
+        event(new \App\Events\NewClientCreated($client, $request->all()));
 
         // Check for errors and combine them
         $emailError = session()->pull('email_error');

@@ -87,9 +87,7 @@ class JudgeController extends Controller
         $judge = Judge::create($validated);
 
         // Trigger notifications
-        if ($judge && !IsDemo()) {
-            event(new \App\Events\NewJudgeCreated($judge, $request->all()));
-        }
+        event(new \App\Events\NewJudgeCreated($judge, $request->all()));
 
         // Check for errors and combine them
         $emailError = session()->pull('email_error');

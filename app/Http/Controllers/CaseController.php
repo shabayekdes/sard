@@ -579,9 +579,7 @@ class CaseController extends BaseController
         }
 
         // Trigger notifications
-        if ($case && !IsDemo()) {
-            event(new \App\Events\NewCaseCreated($case, $request->all()));
-        }
+        event(new \App\Events\NewCaseCreated($case, $request->all()));
 
         // Check for errors and combine them
         $emailError = session()->pull('email_error');

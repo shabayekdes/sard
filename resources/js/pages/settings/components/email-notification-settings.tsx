@@ -28,7 +28,6 @@ interface Props {
 export default function EmailNotificationSettings({ templates: initialTemplates = [] }: Props) {
     const { t } = useTranslation();
     const { props } = usePage();
-    const isDemo = (props as any).is_demo;
 
     const [templates, setTemplates] = useState<EmailTemplate[]>(initialTemplates);
     const [loading, setLoading] = useState(false);
@@ -126,6 +125,7 @@ export default function EmailNotificationSettings({ templates: initialTemplates 
                                             {template.name}
                                         </span>
                                     </div>
+                                  
                                     <Switch
                                         id={`template-${template.id}`}
                                         checked={template.is_active}

@@ -12,8 +12,7 @@ class EmailTemplateSeeder extends Seeder
 {
     public function run(): void
     {
-
-        $langCodes = ['en', 'es', 'ar', 'da', 'de', 'fr', 'he', 'it', 'ja', 'nl', 'pl', 'pt', 'pt-br', 'ru', 'tr', 'zh'];
+        $langCodes = ['en', 'ar'];
 
         $templates = [
 
@@ -3188,12 +3187,25 @@ class EmailTemplateSeeder extends Seeder
 
         ];
 
+        $allowedLangs = array_flip($langCodes);
+        $templates = array_map(function ($template) use ($allowedLangs) {
+            if (isset($template['translations'])) {
+                $template['translations'] = array_intersect_key($template['translations'], $allowedLangs);
+            }
+
+            return $template;
+        }, $templates);
+
         foreach ($templates as $templateData) {
             $template = EmailTemplate::updateOrCreate([
                 'name' => $templateData['name'],
                 'from' => $templateData['from'],
                 'user_id' => 1
             ]);
+
+            EmailTemplateLang::where('parent_id', $template->id)
+                ->whereNotIn('lang', $langCodes)
+                ->delete();
 
             foreach ($langCodes as $langCode) {
                 $translation = $templateData['translations'][$langCode] ?? $templateData['translations']['en'];

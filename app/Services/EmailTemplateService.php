@@ -255,5 +255,6 @@ class EmailTemplateService
             'mail.mailers.smtp.password' => $emailPassword,
             'mail.mailers.smtp.encryption' => $emailEncryption,
         ]);
+
     }
 }

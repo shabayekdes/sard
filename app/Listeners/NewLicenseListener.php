@@ -10,7 +10,7 @@ class NewLicenseListener
 {
     public function handle(NewLicenseCreated $event)
     {
-         if(isEmailTemplateEnabled('New License', createdBy()) && !IsDemo()){
+         if(isEmailTemplateEnabled('New License', createdBy())){
 
 
         try {

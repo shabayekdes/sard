@@ -224,9 +224,7 @@ class InvoiceController extends BaseController
         ]);
 
         // Trigger notifications
-        if ($invoice && !IsDemo()) {
-            event(new \App\Events\NewInvoiceCreated($invoice, $request->all()));
-        }
+        event(new \App\Events\NewInvoiceCreated($invoice, $request->all()));
 
         // Check for errors and combine them
         $emailError = session()->pull('email_error');
@@ -302,9 +300,7 @@ class InvoiceController extends BaseController
         $invoice->update(['status' => 'sent']);
 
         // Trigger notifications
-        if ($invoice && !IsDemo()) {
-            event(new \App\Events\InvoiceSent($invoice, []));
-        }
+        event(new \App\Events\InvoiceSent($invoice, []));
 
         // Check for errors and combine them
         $emailError = session()->pull('email_error');

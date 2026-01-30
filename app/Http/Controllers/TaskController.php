@@ -165,9 +165,7 @@ class TaskController extends BaseController
         }
 
         // Trigger notifications
-        if ($task && !IsDemo()) {
-            event(new \App\Events\NewTaskCreated($task, $request->all()));
-        }
+        event(new \App\Events\NewTaskCreated($task, $request->all()));
 
         // Check for errors and combine them
         $emailError = session()->pull('email_error');

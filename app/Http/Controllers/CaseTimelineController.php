@@ -196,7 +196,7 @@ class CaseTimelineController extends Controller
     private function sendMeetingLinkNotification($case, $timeline, $meetingLink)
     {
         try {
-            if (isEmailTemplateEnabled('Timeline Meeting Link', createdBy()) && !IsDemo()) {
+            if (isEmailTemplateEnabled('Timeline Meeting Link', createdBy())) {
                 $emailService = new EmailTemplateService();
                 $client = $case->client;
 

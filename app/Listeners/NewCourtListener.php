@@ -10,7 +10,7 @@ class NewCourtListener
 {
     public function handle(NewCourtCreated $event)
     {
-         if(isEmailTemplateEnabled('New Court', createdBy()) && !IsDemo()){
+         if(isEmailTemplateEnabled('New Court', createdBy())){
 
         try {
 

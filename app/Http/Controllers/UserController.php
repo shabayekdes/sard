@@ -171,9 +171,7 @@ class UserController extends BaseController
             // Trigger team member created event if user is not a client
             if ($role->name !== 'client') {
                 // Trigger notifications
-                if ($user && !IsDemo()) {
-                    event(new \App\Events\TeamMemberCreated($user, $request->all()));
-                }
+                event(new \App\Events\TeamMemberCreated($user, $request->all()));
 
                 // Check for errors and combine them
                 $emailError = session()->pull('email_error');

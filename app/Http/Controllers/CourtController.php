@@ -136,9 +136,7 @@ class CourtController extends Controller
         $court = Court::create($validated);
 
         // Trigger notifications
-        if ($court && !IsDemo()) {
-            event(new \App\Events\NewCourtCreated($court, $request->all()));
-        }
+        event(new \App\Events\NewCourtCreated($court, $request->all()));
 
         // Check for errors and combine them
         $emailError = session()->pull('email_error');

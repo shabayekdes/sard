@@ -144,6 +144,12 @@ if (! function_exists('getSetting')) {
     }
 }
 if (! function_exists('IsDemo')) {
+    /**
+     * Check if the application is in demo mode
+     *
+     * @return bool
+     * @deprecated
+     */
     function IsDemo()
     {
         if (config('app.is_demo')) {

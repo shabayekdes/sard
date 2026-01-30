@@ -10,7 +10,7 @@ class NewClientListener
 {
     public function handle(NewClientCreated $event)
     {
-         if(isEmailTemplateEnabled('New Client', createdBy()) && !IsDemo()){
+         if(isEmailTemplateEnabled('New Client', createdBy())){
 
         try {
 

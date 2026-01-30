@@ -60,17 +60,17 @@ class EmailNotificationController extends Controller
 
     public function updateNotificationSettings(Request $request)
     {
-         try {
+        try {
             $user = Auth::user();
             $settings = $request->input('settings', []);
 
-        $hiddenNames = hiddenEmailTemplateNames();
+            $hiddenNames = hiddenEmailTemplateNames();
 
-        foreach ($settings as $setting) {
-            $template = EmailTemplate::find($setting['template_id'] ?? null);
-            if ($template && in_array($template->name, $hiddenNames, true)) {
-                continue;
-            }
+            foreach ($settings as $setting) {
+                $template = EmailTemplate::find($setting['template_id'] ?? null);
+                if ($template && in_array($template->name, $hiddenNames, true)) {
+                    continue;
+                }
 
                 UserEmailTemplate::updateOrCreate(
                     [

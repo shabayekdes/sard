@@ -10,7 +10,7 @@ class NewRegulatoryBodyListener
 {
     public function handle(NewRegulatoryBodyCreated $event)
     {
-         if(isEmailTemplateEnabled('New Regulatory Body', createdBy()) && !IsDemo()){
+         if(isEmailTemplateEnabled('New Regulatory Body', createdBy())){
 
         try {
 
