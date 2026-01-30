@@ -23,7 +23,7 @@ export default function EmailSettings() {
     host: settings.email_host || 'smtp.example.com',
     port: settings.email_port || '587',
     username: settings.email_username || 'user@example.com',
-    password: settings.email_password ? '••••••••••••' : '',
+    password: settings.email_password || '',
     encryption: settings.email_encryption || 'tls',
     fromAddress: settings.email_from_address || 'no-reply@sard.app',
     fromName: settings.email_from_name || 'Sard App'

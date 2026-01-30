@@ -1090,7 +1090,7 @@ if (! function_exists('defaultSettings')) {
             'emailVerification' => false,
             'landingPageEnabled' => true,
             'defaultTaxRate' => '15',
-            'recaptchaEnabled' => false,
+            'recaptchaEnabled' => true,
             'recaptchaVersion' => 'v3',
             'recaptchaSiteKey' => config('services.recaptcha.site_key', ''),
             'recaptchaSecretKey' => config('services.recaptcha.secret_key', ''),
