@@ -399,6 +399,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('quick-actions/case-data', [QuickActionController::class, 'caseFormData'])->name('quick-actions.case-data');
         Route::get('quick-actions/client-data', [QuickActionController::class, 'clientFormData'])->name('quick-actions.client-data');
         Route::get('quick-actions/task-data', [QuickActionController::class, 'taskFormData'])->name('quick-actions.task-data');
+        Route::get('quick-actions/hearing-data', [QuickActionController::class, 'hearingFormData'])->name('quick-actions.hearing-data');
 
         Route::get('media-library', function () {
             $storageSettings = \App\Services\StorageConfigService::getStorageConfig();

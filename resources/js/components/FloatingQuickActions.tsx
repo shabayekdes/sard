@@ -9,7 +9,7 @@ interface QuickActionItem {
   icon: React.ReactNode;
   routeName: string;
   openModal?: boolean;
-  modalKey?: 'cases' | 'clients' | 'tasks';
+  modalKey?: 'cases' | 'clients' | 'tasks' | 'hearings';
 }
 
 export function FloatingQuickActions() {
@@ -20,7 +20,7 @@ export function FloatingQuickActions() {
       { label: t('New Case'), icon: <Scale className="h-4 w-4" />, routeName: 'cases.index', openModal: true, modalKey: 'cases' },
       { label: t('New Client'), icon: <Users className="h-4 w-4" />, routeName: 'clients.index', openModal: true, modalKey: 'clients' },
       { label: t('Messages'), icon: <MessageSquare className="h-4 w-4" />, routeName: 'communication.messages.index' },
-      { label: t('Schedule Session'), icon: <Gavel className="h-4 w-4" />, routeName: 'hearings.index' },
+      { label: t('Schedule Session'), icon: <Gavel className="h-4 w-4" />, routeName: 'hearings.index', openModal: true, modalKey: 'hearings' },
       { label: t('New Task'), icon: <ClipboardList className="h-4 w-4" />, routeName: 'tasks.index', openModal: true, modalKey: 'tasks' },
     ],
     [t]

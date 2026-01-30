@@ -10,6 +10,8 @@ use App\Models\Client;
 use App\Models\ClientType;
 use App\Models\Country;
 use App\Models\Court;
+use App\Models\HearingType;
+use App\Models\Judge;
 use App\Models\Setting;
 use App\Models\TaskStatus;
 use App\Models\TaskType;
@@ -171,6 +173,37 @@ class QuickActionController extends Controller
             'taskStatuses' => $taskStatuses,
             'users' => $users,
             'cases' => $cases,
+            'googleCalendarEnabled' => $googleCalendarEnabled,
+        ]);
+    }
+
+    public function hearingFormData(Request $request)
+    {
+        $cases = CaseModel::withPermissionCheck()
+            ->get(['id', 'case_id', 'title', 'file_number']);
+
+        $courts = Court::withPermissionCheck()
+            ->with(['courtType', 'circleType'])
+            ->where('status', 'active')
+            ->get(['id', 'name', 'court_type_id', 'circle_type_id']);
+
+        $judges = Judge::withPermissionCheck()
+            ->where('status', 'active')
+            ->get(['id', 'name']);
+
+        $hearingTypes = HearingType::withPermissionCheck()
+            ->where('status', 'active')
+            ->get(['id', 'name']);
+
+        $googleCalendarEnabled = Setting::where('user_id', createdBy())
+            ->where('key', 'googleCalendarEnabled')
+            ->value('value') == '1';
+
+        return response()->json([
+            'cases' => $cases,
+            'courts' => $courts,
+            'judges' => $judges,
+            'hearingTypes' => $hearingTypes,
             'googleCalendarEnabled' => $googleCalendarEnabled,
         ]);
     }

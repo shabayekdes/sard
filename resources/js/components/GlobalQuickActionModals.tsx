@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { PhoneInput, defaultCountries } from 'react-international-phone';
 import { Repeater, RepeaterField } from '@/components/ui/repeater';
 
-type ModalKey = 'cases' | 'clients' | 'tasks';
+type ModalKey = 'cases' | 'clients' | 'tasks' | 'hearings';
 
 interface CaseFormData {
   caseTypes: Array<{ id: number; name: string | Record<string, string> }>;
@@ -37,6 +37,19 @@ interface TaskFormData {
   googleCalendarEnabled?: boolean;
 }
 
+interface HearingFormData {
+  cases: Array<{ id: number; case_id?: string | null; title?: string | null; file_number?: string | null }>;
+  courts: Array<{
+    id: number;
+    name: string;
+    court_type?: { name: string | Record<string, string> };
+    circle_type?: { name: string | Record<string, string> };
+  }>;
+  judges: Array<{ id: number; name: string }>;
+  hearingTypes: Array<{ id: number; name: string | Record<string, string> }>;
+  googleCalendarEnabled?: boolean;
+}
+
 export function GlobalQuickActionModals() {
   const { t, i18n } = useTranslation();
   const currentLocale = i18n.language || 'en';
@@ -46,6 +59,7 @@ export function GlobalQuickActionModals() {
   const [caseData, setCaseData] = useState<CaseFormData | null>(null);
   const [clientData, setClientData] = useState<ClientFormData | null>(null);
   const [taskData, setTaskData] = useState<TaskFormData | null>(null);
+  const [hearingData, setHearingData] = useState<HearingFormData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const resolveName = (name: string | Record<string, string>) => {
@@ -53,6 +67,15 @@ export function GlobalQuickActionModals() {
       return name;
     }
     return name[currentLocale] || name.en || name.ar || '';
+  };
+
+  const getTranslatedValue = (value: any): string => {
+    if (!value) return '-';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'object' && value !== null) {
+      return value[currentLocale] || value.en || value.ar || '-';
+    }
+    return '-';
   };
 
   const resolveCategoryName = (category: { name: string | Record<string, string>; name_translations?: Record<string, string> }) => {
@@ -106,6 +129,19 @@ export function GlobalQuickActionModals() {
     }
   };
 
+  const loadHearingData = async () => {
+    if (hearingData || isLoading) return;
+    setIsLoading(true);
+    try {
+      const response = await axios.get(route('quick-actions.hearing-data'));
+      setHearingData(response.data);
+    } catch (error) {
+      toast.error(t('Failed to load session form data'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     const handleQuickAction = (event: Event) => {
       const detail = (event as CustomEvent).detail as { key?: ModalKey } | undefined;
@@ -117,6 +153,8 @@ export function GlobalQuickActionModals() {
         loadClientData();
       } else if (detail.key === 'tasks') {
         loadTaskData();
+      } else if (detail.key === 'hearings') {
+        loadHearingData();
       }
     };
 
@@ -124,7 +162,7 @@ export function GlobalQuickActionModals() {
     return () => {
       window.removeEventListener('quickAction:openModal', handleQuickAction);
     };
-  }, [caseData, clientData, taskData, isLoading]);
+  }, [caseData, clientData, taskData, hearingData, isLoading]);
 
   const caseFormConfig = useMemo(() => {
     if (!caseData) return null;
@@ -580,6 +618,103 @@ export function GlobalQuickActionModals() {
     };
   }, [taskData, t, currentLocale]);
 
+  const hearingFormConfig = useMemo(() => {
+    if (!hearingData) return null;
+    const statusOptions = [
+      { value: 'scheduled', label: t('Scheduled') },
+      { value: 'in_progress', label: t('In Progress') },
+      { value: 'completed', label: t('Completed') },
+      { value: 'postponed', label: t('Postponed') },
+      { value: 'cancelled', label: t('Cancelled') },
+    ];
+
+    return {
+      fields: [
+        {
+          name: 'case_id',
+          label: t('Case'),
+          type: 'select',
+          required: true,
+          options: hearingData.cases
+            ? hearingData.cases.map((c) => ({
+              value: c.id.toString(),
+              label: `${c.case_id || '-'} - ${c.title || '-'}`,
+            }))
+            : [],
+        },
+        {
+          name: 'court_id',
+          label: t('Court'),
+          type: 'select',
+          required: true,
+          options: hearingData.courts
+            ? hearingData.courts.map((c) => {
+              const courtName = c.name || '';
+              const courtType = c.court_type ? getTranslatedValue(c.court_type.name) : '';
+              const circleType = c.circle_type ? getTranslatedValue(c.circle_type.name) : '';
+              const parts = [courtName];
+              if (courtType) parts.push(courtType);
+              if (circleType) parts.push(circleType);
+              return {
+                value: c.id.toString(),
+                label: parts.join(' + '),
+              };
+            })
+            : [],
+        },
+        { name: 'circle_number', label: t('Circle Number'), type: 'text' },
+        {
+          name: 'judge_id',
+          label: t('Judge'),
+          type: 'select',
+          options: [{ value: 'none', label: t('Select Judge') }, ...(hearingData.judges
+            ? hearingData.judges.map((j) => ({
+              value: j.id.toString(),
+              label: j.name,
+            }))
+            : [])],
+        },
+        {
+          name: 'hearing_type_id',
+          label: t('Session Type'),
+          type: 'select',
+          required: true,
+          options: [{ value: 'none', label: t('Select Type') }, ...(hearingData.hearingTypes
+            ? hearingData.hearingTypes.map((ht) => ({
+              value: ht.id.toString(),
+              label: getTranslatedValue(ht.name),
+            }))
+            : [])],
+        },
+        { name: 'title', label: t('Title'), type: 'text', required: true },
+        { name: 'description', label: t('Description'), type: 'textarea' },
+        { name: 'hearing_date', label: t('Date'), type: 'date', required: true },
+        { name: 'hearing_time', label: t('Time'), type: 'time', required: true },
+        { name: 'duration_minutes', label: t('Duration (minutes)'), type: 'number', defaultValue: 60 },
+        { name: 'url', label: t('URL'), type: 'text' },
+        {
+          name: 'status',
+          label: t('Status'),
+          type: 'select',
+          options: statusOptions,
+          defaultValue: 'scheduled',
+        },
+        { name: 'notes', label: t('Notes'), type: 'textarea' },
+        ...(hearingData.googleCalendarEnabled
+          ? [
+            {
+              name: 'sync_with_google_calendar',
+              label: t('Synchronize in Google Calendar'),
+              type: 'switch',
+              defaultValue: false,
+            },
+          ]
+          : []),
+      ],
+      modalSize: 'xl',
+    };
+  }, [hearingData, t, currentLocale]);
+
   const handleSubmit = (routeName: string) => (formData: any) => {
     if (routeName === 'cases.store') {
       if (formData.case_category_id === 'none' || formData.case_category_id === '') {
@@ -638,6 +773,16 @@ export function GlobalQuickActionModals() {
         formConfig={(taskFormConfig as any) || { fields: [], modalSize: 'xl' }}
         initialData={null}
         title={t('Add New Task')}
+        mode="create"
+      />
+
+      <CrudFormModal
+        isOpen={activeModal === 'hearings'}
+        onClose={closeModal}
+        onSubmit={handleSubmit('hearings.store')}
+        formConfig={(hearingFormConfig as any) || { fields: [], modalSize: 'xl' }}
+        initialData={null}
+        title={t('Schedule New Session')}
         mode="create"
       />
     </>
