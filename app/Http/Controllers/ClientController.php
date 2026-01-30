@@ -73,12 +73,13 @@ class ClientController extends Controller
         // Get countries for nationality dropdown
         $countries = Country::where('is_active', true)
             ->orderByRaw("JSON_EXTRACT(name, '$.en')")
-            ->get(['id', 'name', 'nationality_name'])
+            ->get(['id', 'name', 'nationality_name', 'country_code'])
             ->map(function ($country) {
                 return [
                     'value' => $country->id,
                     'name' => $country->name, // Spatie automatically returns translated value
                     'label' => $country->nationality_name, // Spatie automatically returns translated value
+                    'code' => $country->country_code,
                 ];
             });
 

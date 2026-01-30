@@ -453,6 +453,8 @@ export default function Clients() {
         phoneCountriesByCode.get(String(defaultCountry).toLowerCase()) ||
         phoneCountriesByCode.get('sa') ||
         (phoneCountries || [])[0];
+    const countriesByCode = new Map((countries || []).map((country: any) => [String(country.code || '').toLowerCase(), country]));
+    const defaultNationality = countriesByCode.get(String(defaultCountry).toLowerCase()) || (countries || [])[0];
 
     return (
         <PageTemplate title={t('Client Management')} url="/clients" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
@@ -629,7 +631,7 @@ export default function Clients() {
                             type: 'select',
                             required: false,
                             options: countries,
-                            defaultValue: countries[0] ? countries[0].value : '',
+                            defaultValue: defaultNationality ? defaultNationality.value : '',
                             conditional: (_, data) => data?.business_type === 'b2c',
                         },
                         {
