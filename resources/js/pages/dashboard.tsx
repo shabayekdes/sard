@@ -338,7 +338,6 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
                     <div>
                       <p className="text-xs font-medium text-muted-foreground">{t('Pending Tasks')}</p>
                       <h3 className="mt-2 text-2xl font-bold">{stats.pendingTasks}</h3>
-                      <p className="text-xs text-orange-600 mt-1">{stats.upcomingHearings} {t('hearings due')}</p>
                     </div>
                     <div className="rounded-full bg-orange-100 p-3 dark:bg-orange-900">
                       <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400" />
