@@ -632,18 +632,21 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
               <div className="space-y-4">
                 {overdueInvoices.length > 0 ? (
                   overdueInvoices.slice(0, 5).map((invoice) => (
-                    <div
+                    <Link
                       key={invoice.id}
-                      className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 p-4 hover:bg-red-100 transition-colors"
+                      href={route('billing.invoices.show', invoice.id)}
+                      className="block"
                     >
-                      <div>
-                        <p className="font-semibold text-sm">{invoice.invoice_number}</p>
-                        <p className="text-xs text-muted-foreground">{invoice.client?.name || t('No client')}</p>
+                      <div className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 p-4 hover:bg-red-100 transition-colors">
+                        <div>
+                          <p className="font-semibold text-sm">{invoice.invoice_number}</p>
+                          <p className="text-xs text-muted-foreground">{invoice.client?.name || t('No client')}</p>
+                        </div>
+                        <span className="font-bold text-red-600 text-lg">
+                          {formatCurrency(invoice.total_amount)}
+                        </span>
                       </div>
-                      <span className="font-bold text-red-600 text-lg">
-                        {formatCurrency(invoice.total_amount)}
-                      </span>
-                    </div>
+                    </Link>
                   ))
                 ) : (
                   <div className="flex items-center justify-center py-12 text-muted-foreground">
