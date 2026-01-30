@@ -1081,7 +1081,7 @@ if (! function_exists('defaultSettings')) {
     {
         return [
             // System Settings
-            'defaultCountry' => '',
+            'defaultCountry' => 'SA',
             'defaultLanguage' => 'en',
             'dateFormat' => 'Y-m-d',
             'timeFormat' => 'H:i',

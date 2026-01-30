@@ -4,6 +4,7 @@ import { useAxios } from '@/hooks/use-axios';
 import { router } from '@inertiajs/react';
 import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
+import { PhoneInput, defaultCountries } from 'react-international-phone';
 
 type ModalKey = 'cases' | 'clients' | 'tasks';
 
@@ -17,7 +18,10 @@ interface CaseFormData {
 interface ClientFormData {
   clientTypes: Array<{ id: number; name: string | Record<string, string> }>;
   countries: Array<{ id: number; name: string | Record<string, string> }>;
+  phoneCountries?: Array<{ value: number; label: string | Record<string, string>; code: string }>;
   defaultTaxRate?: string;
+  defaultCountryId?: number | null;
+  defaultCountry?: string;
 }
 
 interface TaskFormData {
@@ -180,20 +184,67 @@ export function GlobalQuickActionModals() {
 
   const clientFormConfig = useMemo(() => {
     if (!clientData) return null;
+    const phoneCountries = clientData.phoneCountries || [];
+    const phoneCountriesById = new Map(phoneCountries.map((country) => [String(country.value), country]));
+    const phoneCountriesByCode = new Map(phoneCountries.map((country) => [String(country.code || '').toLowerCase(), country]));
+    const phoneCountryCodes = phoneCountries
+      .map((country) => String(country.code || '').toLowerCase())
+      .filter((code) => code);
+    const allowedPhoneCountries = phoneCountryCodes.length
+      ? defaultCountries.filter((country) => phoneCountryCodes.includes(String(country[1]).toLowerCase()))
+      : defaultCountries;
+    const defaultPhoneCountry =
+      phoneCountriesByCode.get(String(clientData.defaultCountry || '').toLowerCase()) ||
+      phoneCountriesByCode.get('sa') ||
+      phoneCountries[0];
+
     return {
       fields: [
         { name: 'name', label: t('Client Name'), type: 'text', required: true },
         {
           name: 'country_id',
           label: t('Phone Country'),
-          type: 'select',
-          required: true,
-          options: clientData.countries.map((country) => ({
-            value: country.id.toString(),
-            label: resolveName(country.name),
-          })),
+          type: 'text',
+          defaultValue: clientData.defaultCountryId ? clientData.defaultCountryId.toString() : undefined,
+          conditional: () => false,
         },
-        { name: 'phone', label: t('Phone Number'), type: 'text', required: true },
+        {
+          name: 'phone',
+          label: t('Phone Number'),
+          type: 'text',
+          required: true,
+          render: (_: any, data: any, handleChange: (name: string, value: any) => void) => {
+            const currentCountryId = data?.country_id || clientData.defaultCountryId || defaultPhoneCountry?.value;
+            const currentCountry = phoneCountriesById.get(String(currentCountryId));
+            const currentCountryCode = (currentCountry?.code || defaultPhoneCountry?.code || '').toLowerCase();
+
+            return (
+              <PhoneInput
+                defaultCountry={currentCountryCode || undefined}
+                value={data?.phone || ''}
+                countries={allowedPhoneCountries}
+                inputProps={{ name: 'phone', required: true }}
+                className="w-full"
+                inputClassName="w-full !h-10 !border !border-input !bg-background !text-sm !text-foreground"
+                countrySelectorStyleProps={{
+                  buttonClassName: '!h-10 !border !border-input !bg-background',
+                  dropdownStyleProps: {
+                    className: '!bg-background !text-foreground',
+                  },
+                }}
+                onChange={(value, meta) => {
+                  handleChange('phone', value || '');
+
+                  const code = String(meta?.country?.iso2 || '').toLowerCase();
+                  const selectedCountry = phoneCountriesByCode.get(code);
+                  if (selectedCountry) {
+                    handleChange('country_id', String(selectedCountry.value));
+                  }
+                }}
+              />
+            );
+          },
+        },
         { name: 'email', label: t('Email'), type: 'email', required: true },
         { name: 'password', label: t('Password'), type: 'password', required: true },
         {
@@ -298,12 +349,17 @@ export function GlobalQuickActionModals() {
           })),
         },
         { name: 'notes', label: t('Notes'), type: 'textarea' },
-      ].concat(taskData.googleCalendarEnabled ? [{
-        name: 'sync_with_google_calendar',
-        label: t('Synchronize in Google Calendar'),
-        type: 'switch',
-        defaultValue: false,
-      }] : []),
+        ...(taskData.googleCalendarEnabled
+          ? [
+              {
+                name: 'sync_with_google_calendar',
+                label: t('Synchronize in Google Calendar'),
+                type: 'switch',
+                defaultValue: false,
+              },
+            ]
+          : []),
+      ],
       modalSize: 'xl',
     };
   }, [taskData, t, currentLocale]);
@@ -333,7 +389,7 @@ export function GlobalQuickActionModals() {
         isOpen={activeModal === 'cases'}
         onClose={closeModal}
         onSubmit={handleSubmit('cases.store')}
-        formConfig={caseFormConfig || { fields: [], modalSize: 'xl' }}
+        formConfig={(caseFormConfig as any) || { fields: [], modalSize: 'xl' }}
         initialData={null}
         title={t('Add New Case')}
         mode="create"
@@ -343,7 +399,7 @@ export function GlobalQuickActionModals() {
         isOpen={activeModal === 'clients'}
         onClose={closeModal}
         onSubmit={handleSubmit('clients.store')}
-        formConfig={clientFormConfig || { fields: [], modalSize: 'xl' }}
+        formConfig={(clientFormConfig as any) || { fields: [], modalSize: 'xl' }}
         initialData={null}
         title={t('Add New Client')}
         mode="create"
@@ -353,7 +409,7 @@ export function GlobalQuickActionModals() {
         isOpen={activeModal === 'tasks'}
         onClose={closeModal}
         onSubmit={handleSubmit('tasks.store')}
-        formConfig={taskFormConfig || { fields: [], modalSize: 'xl' }}
+        formConfig={(taskFormConfig as any) || { fields: [], modalSize: 'xl' }}
         initialData={null}
         title={t('Add New Task')}
         mode="create"

@@ -51,12 +51,32 @@ class QuickActionController extends Controller
 
         $countries = Country::where('is_active', true)
             ->orderBy('id')
-            ->get(['id', 'name']);
+            ->get(['id', 'name', 'country_code']);
+
+        $defaultCountryCode = getSetting('defaultCountry', '');
+        $defaultCountryId = $defaultCountryCode
+            ? $countries->firstWhere('country_code', $defaultCountryCode)?->id
+            : null;
+
+        $phoneCountries = Country::where('is_active', true)
+            ->whereNotNull('country_code')
+            ->get(['id', 'name', 'country_code'])
+            ->map(function ($country) {
+                return [
+                    'value' => $country->id,
+                    'label' => $country->name,
+                    'code' => $country->country_code,
+                ];
+            })
+            ->values();
 
         return response()->json([
             'clientTypes' => $clientTypes,
             'countries' => $countries,
             'defaultTaxRate' => getSetting('defaultTaxRate', '0'),
+            'defaultCountryId' => $defaultCountryId,
+            'defaultCountry' => $defaultCountryCode,
+            'phoneCountries' => $phoneCountries,
         ]);
     }
 
