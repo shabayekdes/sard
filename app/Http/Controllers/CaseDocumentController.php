@@ -89,7 +89,7 @@ class CaseDocumentController extends Controller
         CaseDocument::create([
             'document_name' => $validated['document_name'],
             'document_type_id' => $validated['document_type_id'],
-            'description' => $validated['description'],
+            'description' => $validated['description'] ?? null,
             'confidentiality' => $validated['confidentiality'],
             'document_date' => $validated['document_date'],
             'case_id' => $validated['case_id'],
