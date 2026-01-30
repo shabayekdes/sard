@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CaseModel;
 use App\Models\CaseStatus;
+use App\Models\CaseCategory;
 use App\Models\CaseType;
 use App\Models\Client;
 use App\Models\ClientType;
@@ -23,6 +24,18 @@ class QuickActionController extends Controller
             ->where('status', 'active')
             ->get(['id', 'name']);
 
+        $caseCategories = CaseCategory::where('created_by', createdBy())
+            ->where('status', 'active')
+            ->whereNull('parent_id')
+            ->get(['id', 'name'])
+            ->map(function ($category) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'name_translations' => $category->getTranslations('name'),
+                ];
+            });
+
         $caseStatuses = CaseStatus::where('created_by', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
@@ -35,11 +48,44 @@ class QuickActionController extends Controller
             ->where('status', 'active')
             ->get(['id', 'name']);
 
+        $locale = app()->getLocale();
+        $countries = Country::where('is_active', true)
+            ->orderByRaw("JSON_EXTRACT(nationality_name, '$.{$locale}')")
+            ->orderByRaw("JSON_EXTRACT(nationality_name, '$.en')")
+            ->get(['id', 'name', 'nationality_name'])
+            ->map(function ($country) {
+                $nationalityLabel = $country->nationality_name;
+                $countryName = $country->name;
+                $label = !empty($nationalityLabel) ? $nationalityLabel : $countryName;
+
+                return [
+                    'value' => $country->id,
+                    'label' => $label,
+                ];
+            })
+            ->filter(function ($country) {
+                return !empty($country['label']);
+            })
+            ->values();
+
+        $googleCalendarEnabled = Setting::where('user_id', createdBy())
+            ->where('key', 'googleCalendarEnabled')
+            ->value('value') == '1';
+
+        $currentUser = auth()->user();
+
         return response()->json([
             'caseTypes' => $caseTypes,
+            'caseCategories' => $caseCategories,
             'caseStatuses' => $caseStatuses,
             'clients' => $clients,
             'courts' => $courts,
+            'countries' => $countries,
+            'googleCalendarEnabled' => $googleCalendarEnabled,
+            'currentUser' => $currentUser ? [
+                'id' => $currentUser->id,
+                'name' => $currentUser->name,
+            ] : null,
         ]);
     }
 
@@ -47,16 +93,32 @@ class QuickActionController extends Controller
     {
         $clientTypes = ClientType::where('created_by', createdBy())
             ->where('status', 'active')
-            ->get(['id', 'name']);
+            ->get()
+            ->map(function ($type) {
+                /** @var \App\Models\ClientType $type */
+                return [
+                    'id' => $type->id,
+                    'name' => $type->name,
+                    'name_translations' => $type->getTranslations('name'),
+                ];
+            });
 
-        $countries = Country::where('is_active', true)
+        $countryModels = Country::where('is_active', true)
             ->orderBy('id')
-            ->get(['id', 'name', 'country_code']);
+            ->get(['id', 'name', 'nationality_name', 'country_code']);
 
         $defaultCountryCode = getSetting('defaultCountry', '');
         $defaultCountryId = $defaultCountryCode
-            ? $countries->firstWhere('country_code', $defaultCountryCode)?->id
+            ? $countryModels->firstWhere('country_code', $defaultCountryCode)?->id
             : null;
+
+        $countries = $countryModels->map(function ($country) {
+            return [
+                'value' => $country->id,
+                'label' => $country->nationality_name,
+                'code' => $country->country_code,
+            ];
+        });
 
         $phoneCountries = Country::where('is_active', true)
             ->whereNotNull('country_code')

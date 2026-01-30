@@ -5,19 +5,24 @@ import { router } from '@inertiajs/react';
 import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { PhoneInput, defaultCountries } from 'react-international-phone';
+import { Repeater, RepeaterField } from '@/components/ui/repeater';
 
 type ModalKey = 'cases' | 'clients' | 'tasks';
 
 interface CaseFormData {
   caseTypes: Array<{ id: number; name: string | Record<string, string> }>;
   caseStatuses: Array<{ id: number; name: string | Record<string, string> }>;
+  caseCategories: Array<{ id: number; name: string | Record<string, string>; name_translations?: Record<string, string> }>;
   clients: Array<{ id: number; name: string }>;
   courts: Array<{ id: number; name: string }>;
+  countries: Array<{ value: number; label: string }>;
+  googleCalendarEnabled?: boolean;
+  currentUser?: { id: number; name: string };
 }
 
 interface ClientFormData {
-  clientTypes: Array<{ id: number; name: string | Record<string, string> }>;
-  countries: Array<{ id: number; name: string | Record<string, string> }>;
+  clientTypes: Array<{ id: number; name: string | Record<string, string>; name_translations?: Record<string, string> }>;
+  countries: Array<{ value: number; label: string | Record<string, string>; code?: string }>;
   phoneCountries?: Array<{ value: number; label: string | Record<string, string>; code: string }>;
   defaultTaxRate?: string;
   defaultCountryId?: number | null;
@@ -48,6 +53,16 @@ export function GlobalQuickActionModals() {
       return name;
     }
     return name[currentLocale] || name.en || name.ar || '';
+  };
+
+  const resolveCategoryName = (category: { name: string | Record<string, string>; name_translations?: Record<string, string> }) => {
+    if (typeof category.name === 'string') {
+      return category.name;
+    }
+    if (category.name_translations) {
+      return category.name_translations[currentLocale] || category.name_translations.en || category.name_translations.ar || '';
+    }
+    return resolveName(category.name);
   };
 
   const closeModal = () => setActiveModal(null);
@@ -113,18 +128,96 @@ export function GlobalQuickActionModals() {
 
   const caseFormConfig = useMemo(() => {
     if (!caseData) return null;
+    const clientOptions = [
+      ...(caseData.clients || []).map((client) => ({
+        value: client.id.toString(),
+        label: client.name,
+      })),
+    ];
+
+    if (caseData.currentUser) {
+      clientOptions.push({
+        value: caseData.currentUser.id.toString(),
+        label: `${caseData.currentUser.name} (Me)`,
+      });
+    }
+
     return {
       fields: [
-        { name: 'title', label: t('Case Title'), type: 'text', required: true },
         {
           name: 'client_id',
           label: t('Client'),
           type: 'select',
           required: true,
-          options: caseData.clients.map((client) => ({
-            value: client.id.toString(),
-            label: client.name,
-          })),
+          options: clientOptions,
+        },
+        {
+          name: 'attributes',
+          label: t('Attributes'),
+          type: 'radio',
+          required: true,
+          defaultValue: 'petitioner',
+          options: [
+            { value: 'petitioner', label: t('Petitioner') },
+            { value: 'respondent', label: t('Respondent') },
+          ],
+        },
+        {
+          name: 'opposite_parties',
+          label: t('Opposite Party'),
+          type: 'custom',
+          render: (_field: any, formData: any, onChange: (name: string, value: any) => void) => {
+            const repeaterFields: RepeaterField[] = [
+              { name: 'name', label: t('Name'), type: 'text', required: true },
+              { name: 'id_number', label: t('ID'), type: 'text' },
+              {
+                name: 'nationality_id',
+                label: t('Nationality'),
+                type: 'select',
+                options: caseData.countries || [],
+                placeholder: (caseData.countries || []).length > 0 ? t('Select Nationality') : t('No nationalities available'),
+              },
+              { name: 'lawyer_name', label: t('Lawyer Name'), type: 'text' },
+            ];
+
+            return (
+              <Repeater
+                fields={repeaterFields}
+                value={formData.opposite_parties || []}
+                onChange={(value) => onChange('opposite_parties', value)}
+                minItems={1}
+                maxItems={-1}
+                addButtonText={t('Add Opposite Party')}
+                removeButtonText={t('Remove')}
+              />
+            );
+          },
+        },
+        { name: 'title', label: t('Case Title'), type: 'text', required: true },
+        { name: 'case_number', label: t('Case Number'), type: 'text' },
+        { name: 'file_number', label: t('File Number'), type: 'text' },
+        {
+          name: 'case_category_subcategory',
+          type: 'dependent-dropdown',
+          required: true,
+          dependentConfig: [
+            {
+              name: 'case_category_id',
+              label: t('Case Main Category'),
+              options: caseData.caseCategories
+                ? caseData.caseCategories.map((category) => ({
+                  value: category.id.toString(),
+                  label: resolveCategoryName(category),
+                }))
+                : [],
+            },
+            {
+              name: 'case_subcategory_id',
+              label: t('Case Sub Category'),
+              apiEndpoint: '/case/case-categories/{case_category_id}/subcategories',
+              showCurrentValue: true,
+            },
+          ],
         },
         {
           name: 'case_type_id',
@@ -147,16 +240,6 @@ export function GlobalQuickActionModals() {
           })),
         },
         {
-          name: 'court_id',
-          label: t('Court'),
-          type: 'select',
-          required: true,
-          options: caseData.courts.map((court) => ({
-            value: court.id.toString(),
-            label: court.name,
-          })),
-        },
-        {
           name: 'priority',
           label: t('Priority'),
           type: 'select',
@@ -169,14 +252,39 @@ export function GlobalQuickActionModals() {
           defaultValue: 'medium',
         },
         {
-          name: 'attributes',
-          label: t('Attributes'),
-          type: 'radio',
-          options: [
-            { value: 'petitioner', label: t('Petitioner') },
-            { value: 'respondent', label: t('Respondent') },
-          ],
+          name: 'court_id',
+          label: t('Court'),
+          type: 'select',
+          options: caseData.courts.map((court) => ({
+            value: court.id.toString(),
+            label: court.name,
+            key: `court-${court.id}`,
+          })),
         },
+        { name: 'filing_date', label: t('Filling Date'), type: 'date' },
+        { name: 'expected_completion_date', label: t('Expecting Completion'), type: 'date' },
+        { name: 'estimated_value', label: t('Estimated Value'), type: 'number' },
+        { name: 'description', label: t('Description'), type: 'textarea' },
+        {
+          name: 'status',
+          label: t('Status'),
+          type: 'select',
+          options: [
+            { value: 'active', label: 'Active' },
+            { value: 'inactive', label: 'Inactive' },
+          ],
+          defaultValue: 'active',
+        },
+        ...(caseData.googleCalendarEnabled
+          ? [
+            {
+              name: 'sync_with_google_calendar',
+              label: t('Synchronize in Google Calendar'),
+              type: 'switch',
+              defaultValue: false,
+            },
+          ]
+          : []),
       ],
       modalSize: 'xl',
     };
@@ -197,6 +305,8 @@ export function GlobalQuickActionModals() {
       phoneCountriesByCode.get(String(clientData.defaultCountry || '').toLowerCase()) ||
       phoneCountriesByCode.get('sa') ||
       phoneCountries[0];
+    const countriesByCode = new Map((clientData.countries || []).map((country) => [String(country.code || '').toLowerCase(), country]));
+    const defaultNationality = countriesByCode.get(String(clientData.defaultCountry || '').toLowerCase()) || (clientData.countries || [])[0];
 
     return {
       fields: [
@@ -205,7 +315,7 @@ export function GlobalQuickActionModals() {
           name: 'country_id',
           label: t('Phone Country'),
           type: 'text',
-          defaultValue: clientData.defaultCountryId ? clientData.defaultCountryId.toString() : undefined,
+          defaultValue: defaultPhoneCountry?.value,
           conditional: () => false,
         },
         {
@@ -238,7 +348,7 @@ export function GlobalQuickActionModals() {
                   const code = String(meta?.country?.iso2 || '').toLowerCase();
                   const selectedCountry = phoneCountriesByCode.get(code);
                   if (selectedCountry) {
-                    handleChange('country_id', String(selectedCountry.value));
+                    handleChange('country_id', selectedCountry.value);
                   }
                 }}
               />
@@ -248,23 +358,103 @@ export function GlobalQuickActionModals() {
         { name: 'email', label: t('Email'), type: 'email', required: true },
         { name: 'password', label: t('Password'), type: 'password', required: true },
         {
-          name: 'business_type',
-          label: t('Business Type'),
-          type: 'select',
-          required: true,
-          options: [
-            { value: 'b2c', label: t('B2C') },
-            { value: 'b2b', label: t('B2B') },
-          ],
-        },
-        {
           name: 'client_type_id',
           label: t('Client Type'),
           type: 'select',
-          options: clientData.clientTypes.map((type) => ({
-            value: type.id.toString(),
-            label: resolveName(type.name),
-          })),
+          required: false,
+          options: clientData.clientTypes
+            ? clientData.clientTypes.map((type) => {
+              const translations = type.name_translations || (typeof type.name === 'object' ? type.name : null);
+              let displayName: string | Record<string, string> = type.name;
+              if (translations && typeof translations === 'object') {
+                displayName = translations[currentLocale] || translations.en || translations.ar || type.name || '';
+              } else if (typeof type.name === 'object') {
+                displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+              }
+              return {
+                value: type.id.toString(),
+                label: displayName,
+              };
+            })
+            : [],
+        },
+        {
+          name: 'business_type',
+          label: t('Business Type'),
+          type: 'radio',
+          required: true,
+          colSpan: 12,
+          options: [
+            { value: 'b2c', label: t('Individual') },
+            { value: 'b2b', label: t('Business') },
+          ],
+          defaultValue: 'b2c',
+        },
+        {
+          name: 'nationality_id',
+          label: t('Nationality'),
+          type: 'select',
+          required: false,
+          options: clientData.countries || [],
+          defaultValue: defaultNationality ? defaultNationality.value : '',
+          conditional: (_: any, data: any) => data?.business_type === 'b2c',
+        },
+        {
+          name: 'id_number',
+          label: t('ID Number'),
+          type: 'text',
+          required: false,
+          conditional: (_: any, data: any) => data?.business_type === 'b2c',
+        },
+        {
+          name: 'gender',
+          label: t('Gender'),
+          type: 'select',
+          required: false,
+          options: [
+            { value: 'male', label: t('Male') },
+            { value: 'female', label: t('Female') },
+          ],
+          conditional: (_: any, data: any) => data?.business_type === 'b2c',
+        },
+        {
+          name: 'date_of_birth',
+          label: t('Date of Birth'),
+          type: 'date',
+          conditional: (_: any, data: any) => data?.business_type === 'b2c',
+        },
+        {
+          name: 'unified_number',
+          label: t('Unified Number'),
+          type: 'text',
+          required: false,
+          conditional: (_: any, data: any) => data?.business_type === 'b2b',
+        },
+        {
+          name: 'cr_number',
+          label: t('CR Number'),
+          type: 'text',
+          required: false,
+          conditional: (_: any, data: any) => data?.business_type === 'b2b',
+        },
+        {
+          name: 'cr_issuance_date',
+          label: t('CR Issuance Date'),
+          type: 'date',
+          required: false,
+          conditional: (_: any, data: any) => data?.business_type === 'b2b',
+        },
+        {
+          name: 'tax_id',
+          label: t('Tax ID'),
+          type: 'text',
+          required: false,
+          conditional: (_: any, data: any) => data?.business_type === 'b2b',
+        },
+        {
+          name: 'address',
+          label: t('Address'),
+          type: 'textarea',
         },
         {
           name: 'tax_rate',
@@ -275,10 +465,36 @@ export function GlobalQuickActionModals() {
           max: '100',
           defaultValue: clientData.defaultTaxRate ? Number(clientData.defaultTaxRate) : 0,
         },
+        { name: 'notes', label: t('Note'), type: 'textarea' },
+        {
+          name: 'status',
+          label: t('Status'),
+          type: 'select',
+          options: [
+            { value: 'active', label: t('Active') },
+            { value: 'inactive', label: t('Inactive') },
+          ],
+          defaultValue: 'active',
+        },
       ],
       modalSize: 'xl',
     };
   }, [clientData, t, currentLocale]);
+
+  const clientInitialData = useMemo(() => {
+    if (!clientData) return null;
+    const countriesByCode = new Map((clientData.countries || []).map((country) => [String(country.code || '').toLowerCase(), country]));
+    const defaultNationality = countriesByCode.get(String(clientData.defaultCountry || '').toLowerCase()) || (clientData.countries || [])[0];
+
+    return {
+      business_type: 'b2c',
+      nationality_id: defaultNationality ? defaultNationality.value : '',
+    };
+  }, [clientData]);
+
+  const clientModalKey = activeModal === 'clients'
+    ? `clients-${clientData ? 'ready' : 'loading'}`
+    : 'clients-closed';
 
   const taskFormConfig = useMemo(() => {
     if (!taskData) return null;
@@ -365,6 +581,15 @@ export function GlobalQuickActionModals() {
   }, [taskData, t, currentLocale]);
 
   const handleSubmit = (routeName: string) => (formData: any) => {
+    if (routeName === 'cases.store') {
+      if (formData.case_category_id === 'none' || formData.case_category_id === '') {
+        formData.case_category_id = null;
+      }
+      if (formData.case_subcategory_id === 'none' || formData.case_subcategory_id === '') {
+        formData.case_subcategory_id = null;
+      }
+    }
+
     router.post(route(routeName), formData, {
       preserveScroll: true,
       onSuccess: (page) => {
@@ -390,17 +615,18 @@ export function GlobalQuickActionModals() {
         onClose={closeModal}
         onSubmit={handleSubmit('cases.store')}
         formConfig={(caseFormConfig as any) || { fields: [], modalSize: 'xl' }}
-        initialData={null}
+        initialData={{ case_category_id: '', case_subcategory_id: '', opposite_parties: [] }}
         title={t('Add New Case')}
         mode="create"
       />
 
       <CrudFormModal
+        key={clientModalKey}
         isOpen={activeModal === 'clients'}
         onClose={closeModal}
         onSubmit={handleSubmit('clients.store')}
         formConfig={(clientFormConfig as any) || { fields: [], modalSize: 'xl' }}
-        initialData={null}
+        initialData={clientInitialData}
         title={t('Add New Client')}
         mode="create"
       />
