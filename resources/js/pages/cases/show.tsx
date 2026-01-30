@@ -1004,6 +1004,36 @@ export default function CaseShow() {
                                         </p>
                                     </div>
                                     <div>
+                                    <span className="font-medium text-gray-500 dark:text-gray-400">{t('Court')}:</span>
+                                    <p className="text-gray-900 dark:text-white">
+                                      {latestHearing.court
+                                        ? (() => {
+                                          // Handle translatable court_type name
+                                          let courtTypeName = '-';
+                                          if (latestHearing.court.court_type?.name) {
+                                            if (typeof latestHearing.court.court_type.name === 'object' && latestHearing.court.court_type.name !== null) {
+                                              courtTypeName = latestHearing.court.court_type.name[i18n.language] || latestHearing.court.court_type.name.en || latestHearing.court.court_type.name.ar || '-';
+                                            } else {
+                                              courtTypeName = latestHearing.court.court_type.name;
+                                            }
+                                          }
+                                          
+                                          // Handle translatable circle_type name
+                                          let circleTypeName = '';
+                                          if (latestHearing.court.circle_type?.name) {
+                                            if (typeof latestHearing.court.circle_type.name === 'object' && latestHearing.court.circle_type.name !== null) {
+                                              circleTypeName = latestHearing.court.circle_type.name[i18n.language] || latestHearing.court.circle_type.name.en || latestHearing.court.circle_type.name.ar || '';
+                                            } else {
+                                              circleTypeName = latestHearing.court.circle_type.name;
+                                            }
+                                          }
+                                          
+                                          return circleTypeName ? `${courtTypeName} + ${circleTypeName}` : courtTypeName;
+                                        })()
+                                        : '-'}
+                                    </p>
+                                  </div>
+                                    <div>
                                         <span className="font-medium text-gray-500 dark:text-gray-400">{t('Session Status')}:</span>
                                         <p className="mt-1 text-gray-900 dark:text-white">
                                             <span
@@ -1029,65 +1059,6 @@ export default function CaseShow() {
                         </div>
                     </div>
 
-                    {caseData.court && (
-                        <div className="mt-4 border-t border-gray-200 pt-4 dark:border-gray-700">
-                            <span className="font-medium text-gray-500 dark:text-gray-400">{t('Court Details')}:</span>
-                            <div className="mt-2 grid grid-cols-2 gap-4 text-sm md:grid-cols-5">
-                                <div>
-                                    <span className="font-medium text-gray-500 dark:text-gray-400">{t('Court Name')}:</span>
-                                    <p className="text-gray-900 dark:text-white">{caseData.court.name || '-'}</p>
-                                </div>
-
-                                <div>
-                                    <span className="font-medium text-gray-500 dark:text-gray-400">{t('Court Type')}:</span>
-                                    <p className="text-gray-900 dark:text-white">{caseData.court.court_type ? getTranslatedValue(caseData.court.court_type.name) : '-'}</p>
-                                </div>
-                                <div>
-                                    <span className="font-medium text-gray-500 dark:text-gray-400">{t('Address')}:</span>
-                                    <p className="text-gray-900 dark:text-white">{caseData.court.address || '-'}</p>
-                                </div>
-                                <div>
-                                    <span className="font-medium text-gray-500 dark:text-gray-400">{t('Phone')}:</span>
-                                    <p className="text-gray-900 dark:text-white">{caseData.court.phone || '-'}</p>
-                                </div>
-                                <div>
-                                    <span className="font-medium text-gray-500 dark:text-gray-400">{t('Email')}:</span>
-                                    <p className="text-gray-900 dark:text-white">{caseData.court.email || '-'}</p>
-                                </div>
-                                <div>
-                                    <span className="font-medium text-gray-500 dark:text-gray-400">{t('Jurisdiction')}:</span>
-                                    <p className="text-gray-900 dark:text-white">{caseData.court.jurisdiction || '-'}</p>
-                                </div>
-                            </div>
-                            {caseData.court.judges && caseData.court.judges.length > 0 && (
-                                <div className="mt-3">
-                                    <span className="font-medium text-gray-500 dark:text-gray-400">{t('Judges')}:</span>
-                                    <div className="mt-1 space-y-2">
-                                        {caseData.court.judges.map((judge: any) => (
-                                            <div key={judge.id} className="rounded-md bg-gray-50 p-3 dark:bg-gray-800">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="font-medium text-gray-900 dark:text-white">{judge.name}</span>
-                                                    <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-200">
-                                                        {judge.designation || t('Judge')}
-                                                    </span>
-                                                </div>
-                                                {judge.specialization && (
-                                                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                                        <span className="font-medium">{t('Specialization')}:</span> {judge.specialization}
-                                                    </p>
-                                                )}
-                                                {judge.contact_info && (
-                                                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                                        <span className="font-medium">{t('Contact')}:</span> {judge.contact_info}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
 
                     <div className="hidden"></div>
 
