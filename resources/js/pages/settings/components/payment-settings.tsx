@@ -348,7 +348,6 @@ export default function PaymentSettings({ settings = {} }: PaymentSettingsProps)
         }
       },
       onError: (errors) => {
-        console.log('Payment settings errors:', errors);
         toast.error(t('Failed to update payment settings'));
       }
     });
@@ -641,7 +640,7 @@ export default function PaymentSettings({ settings = {} }: PaymentSettingsProps)
                   <Alert>
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
-                      {t("Important: Do not use your Public Key here. The Access Token is different and is required for server-side operations.")}
+                      <strong>{t('Important')}</strong>: {t('Do not use your Public Key here. The Access Token is different and is required for server-side operations.')}
                     </AlertDescription>
                   </Alert>
                 </div>
@@ -1633,7 +1632,7 @@ export default function PaymentSettings({ settings = {} }: PaymentSettingsProps)
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              <strong>{t("Important:")}</strong> {t("These payment settings will be used for all subscription plan payments. Make sure to test your configuration before going live.")}
+              <strong>{t('Important')}</strong>: {t('These payment settings will be used for all subscription plan payments. Make sure to test your configuration before going live.')}
             </AlertDescription>
           </Alert>
         </div>

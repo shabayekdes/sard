@@ -659,10 +659,10 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
 
                             <div className="mt-4 border-t pt-4">
                                 <div className="text-muted-foreground mb-2 text-xs">
-                                    {t('Title:')} <span className="text-foreground font-medium">{settings.titleText}</span>
+                                    {t('Title')}: <span className="text-foreground font-medium">{settings.titleText}</span>
                                 </div>
                                 <div className="text-muted-foreground text-xs">
-                                    {t('Footer:')} <span className="text-foreground font-medium">{settings.footerText}</span>
+                                    {t('Footer')}: <span className="text-foreground font-medium">{settings.footerText}</span>
                                 </div>
                             </div>
                         </div>

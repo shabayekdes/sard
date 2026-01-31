@@ -3127,5 +3127,13 @@
   "Please enter a valid payment amount.": "Please enter a valid payment amount.",
   "Payment amount cannot exceed remaining balance.": "Payment amount cannot exceed remaining balance.",
   "Failed to process payment. Please try again.": "Failed to process payment. Please try again.",
-  "Failed to open payment options. Please try again.": "Failed to open payment options. Please try again."
+  "Failed to open payment options. Please try again.": "Failed to open payment options. Please try again.",
+  "Important": "Important",
+  "Do not use your Public Key here. The Access Token is different and is required for server-side operations.": "Do not use your Public Key here. The Access Token is different and is required for server-side operations.",
+  "Phone Country": "Phone Country",
+  "Business": "Business",
+  "Deactivate": "Deactivate",
+  "Activate": "Activate",
+  "Home": "Home",
+  "Mobile footer navigation": "Mobile footer navigation"
 }

@@ -101,16 +101,6 @@ export const getStatusAction = (item: any, t: (key: string) => string, permissio
   };
 };
 
-export const getIsDemo = () => {
-  try {
-    const { is_demo } = usePage().props as any;
-    console.log('is_demo value:', is_demo);
-    return is_demo === true || is_demo === 'true';
-  } catch {
-    return false;
-  }
-};
-
 // Format currency using super admin settings for plans and referrals
 export const formatCurrencyForPlansAndReferrals = (amount: string | number) => {
   if (typeof window !== 'undefined' && window.appSettings?.formatCurrencyWithSuperAdminSettings) {

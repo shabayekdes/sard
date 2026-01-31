@@ -188,7 +188,7 @@ export default function SlackSettings() {
                                     </div>
                                     <Input
                                         type="url"
-                                        placeholder={t("https://hooks.slack.com/services/...")}
+                                        placeholder="https://hooks.slack.com/services/..."
                                         value={webhookUrl}
                                         onChange={(e) => setWebhookUrl(e.target.value)}
                                         disabled={!isEnabled}
