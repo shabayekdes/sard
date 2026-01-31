@@ -13,14 +13,16 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
 
     return (
         <>
-            <header className="border-sidebar-border/50 flex h-14 shrink-0 items-center gap-2 border-b px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-3">
-            <div className="flex w-full items-center justify-between">
-                <div className="flex items-center gap-2">
+            <header className="border-sidebar-border/50 sticky top-0 z-30 flex min-h-[3.5rem] shrink-0 items-center gap-2 border-b bg-background/95 px-4 py-2 backdrop-blur transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:static md:z-auto md:bg-transparent md:py-0 md:backdrop-blur-0 md:px-3">
+            <div className="flex w-full flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                     {position === 'left' && <SidebarTrigger className="-ml-1" />}
                     {position === 'right' && <SidebarTrigger className="-ml-1" />}
-                    <Breadcrumbs items={breadcrumbs.map(b => ({ label: b.title, href: b.href }))} />
+                    <div className="hidden md:flex">
+                        <Breadcrumbs items={breadcrumbs.map(b => ({ label: b.title, href: b.href }))} />
+                    </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                     {(usePage().props as any).isImpersonating && (
                         <button 
                             onClick={() => router.post(route('impersonate.leave'))}

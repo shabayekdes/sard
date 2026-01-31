@@ -2,6 +2,7 @@ import { Head, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
+import { Breadcrumbs } from '@/components/breadcrumbs';
 import { ReactNode } from 'react';
 import { FloatingChatGpt } from '@/components/FloatingChatGpt';
 
@@ -44,10 +45,17 @@ export function PageTemplate({
       <Head title={`${title} - ${(usePage().props as any).globalSettings?.titleText || 'Advocate'}`} />
 
 
-      <div className="flex h-full flex-1 flex-col gap-4 p-4">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden p-4">
         {/* Header with action buttons */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold">{title}</h1>
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex min-w-0 flex-col gap-1">
+            <h1 className="text-xl font-semibold">{title}</h1>
+            {pageBreadcrumbs.length > 0 && (
+              <div className="text-xs text-muted-foreground md:hidden">
+                <Breadcrumbs items={pageBreadcrumbs.map((item) => ({ label: item.title, href: item.href }))} />
+              </div>
+            )}
+          </div>
           {actions && actions.length > 0 && (
             <div className="flex items-center gap-2">
               {actions.map((action, index) => (
@@ -58,8 +66,8 @@ export function PageTemplate({
                   onClick={action.onClick}
                   className="cursor-pointer"
                 >
-                  {action.icon && <span className="mr-1">{action.icon}</span>}
-                  {action.label}
+                  {action.icon && <span className="sm:mr-1">{action.icon}</span>}
+                  <span className="sr-only sm:not-sr-only">{action.label}</span>
                 </Button>
               ))}
             </div>

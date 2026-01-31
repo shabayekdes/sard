@@ -59,10 +59,10 @@ export function SearchAndFilterBar({
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <form onSubmit={onSearch} className="flex gap-2">
-            <div className="relative w-64">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <form onSubmit={onSearch} className="flex min-w-0 flex-1 gap-2">
+            <div className="relative min-w-0 flex-1 sm:w-64 sm:flex-none">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder={t("Search...")}
@@ -71,9 +71,9 @@ export function SearchAndFilterBar({
                 className="w-full pl-9"
               />
             </div>
-            <Button type="submit" size="sm">
-              <Search className="h-4 w-4 mr-1.5" />
-              {t("Search")}
+            <Button type="submit" size="sm" className="w-9 px-0 sm:w-auto sm:px-3">
+              <Search className="h-4 w-4 sm:mr-1.5" />
+              <span className="sr-only sm:not-sr-only">{t("Search")}</span>
             </Button>
           </form>
           
@@ -82,13 +82,13 @@ export function SearchAndFilterBar({
               <Button
                 variant={hasActiveFilters() ? "default" : "outline"}
                 size="sm"
-                className="h-8 px-2 py-1"
+                className="relative h-8 gap-1.5 px-2.5"
                 onClick={() => setShowFilters(!showFilters)}
               >
-                <Filter className="h-3.5 w-3.5 mr-1.5" />
-                {showFilters ? t('Hide Filters') : t('Filters')}
+                <Filter className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">{showFilters ? t('Hide Filters') : t('Filters')}</span>
                 {hasActiveFilters() && (
-                  <span className="ml-1 bg-primary-foreground text-primary rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary-foreground text-[10px] text-primary">
                     {activeFilterCount()}
                   </span>
                 )}
@@ -97,7 +97,7 @@ export function SearchAndFilterBar({
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-2 whitespace-nowrap">
           {showViewToggle && onViewChange && (
             <div className="border rounded-md p-0.5 mr-2">
               <Button 
@@ -119,7 +119,7 @@ export function SearchAndFilterBar({
             </div>
           )}
           
-          <Label className="text-xs text-muted-foreground">{t("Per Page:")}</Label>
+          <Label className="text-xs text-muted-foreground hidden sm:inline">{t("Per Page:")}</Label>
           <Select
             value={currentPerPage}
             onValueChange={onPerPageChange}
