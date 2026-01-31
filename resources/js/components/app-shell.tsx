@@ -2,6 +2,7 @@ import CookieConsentBanner from '@/components/CookieConsentBanner';
 import { FloatingChatGpt } from '@/components/FloatingChatGpt';
 import { FloatingQuickActions } from '@/components/FloatingQuickActions';
 import { GlobalQuickActionModals } from '@/components/GlobalQuickActionModals';
+import { MobileFooterNav } from '@/components/MobileFooterNav';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { usePage } from '@inertiajs/react';
 import { useState } from 'react';
@@ -15,6 +16,7 @@ export function AppShell({ children, variant = 'header' }: AppShellProps) {
     const [isOpen, setIsOpen] = useState(() => (typeof window !== 'undefined' ? localStorage.getItem('sidebar') !== 'false' : true));
     const { props } = usePage();
     const globalSettings = (props as any).globalSettings || {};
+    const isAuthenticated = !!(props as any).auth?.user;
     const isAuthPage =
         typeof window !== 'undefined' &&
         (window.location.pathname.includes('/login') || window.location.pathname.includes('/register') || window.location.pathname.includes('/auth'));
@@ -35,6 +37,7 @@ export function AppShell({ children, variant = 'header' }: AppShellProps) {
                 <FloatingQuickActions />
                 <FloatingChatGpt />
                 <GlobalQuickActionModals />
+                {isAuthenticated && !isAuthPage && <MobileFooterNav />}
                 {shouldShowCookie && <CookieConsentBanner />}
             </div>
         );
@@ -47,6 +50,7 @@ export function AppShell({ children, variant = 'header' }: AppShellProps) {
                 <FloatingQuickActions />
                 <FloatingChatGpt />
                 <GlobalQuickActionModals />
+                {isAuthenticated && !isAuthPage && <MobileFooterNav />}
                 {shouldShowCookie && <CookieConsentBanner />}
             </div>
         </SidebarProvider>
