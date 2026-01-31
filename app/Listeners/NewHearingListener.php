@@ -16,7 +16,6 @@ class NewHearingListener
         try {
 
 
-            // Check if New Hearing email template is active for current user
             $emailService = new EmailTemplateService();
 
             $hearing = $event->hearing;

@@ -168,7 +168,6 @@ class UserController extends BaseController
             $user->type = $role->name;
             $user->save();
 
-            // Trigger team member created event if user is not a client
             if ($role->name !== 'client') {
                 // Trigger notifications
                 event(new \App\Events\TeamMemberCreated($user, $request->all()));

@@ -16,7 +16,6 @@ class NewCleRecordListener
         try {
 
 
-            // Check if New CLE Record email template is active for current user
             $emailService = new EmailTemplateService();
 
             $cleRecord = $event->cleRecord;

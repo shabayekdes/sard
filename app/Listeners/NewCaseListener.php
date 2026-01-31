@@ -16,7 +16,6 @@ class NewCaseListener
         try {
 
 
-            // Check if New Case email template is active for current user
             $emailService = new EmailTemplateService();
 
             $case = $event->case;

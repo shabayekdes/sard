@@ -168,7 +168,7 @@ class NotificationTemplateController extends Controller
                 '{completion_date}' => 'Completion Date',
                 '{provider}' => 'Course Provider'
             ],
-            'Team Member Created' => [
+            EmailTemplateName::NEW_TEAM_MEMBER => [
                 '{member_name}' => 'Team Member Name',
                 '{email}' => 'Team Member Email',
                 '{role}' => 'Team Member Role'

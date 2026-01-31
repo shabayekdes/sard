@@ -16,7 +16,6 @@ class NewRegulatoryBodyListener
         try {
 
 
-            // Check if New Regulatory Body email template is active for current user
             $emailService = new EmailTemplateService();
 
             $regulatoryBody = $event->regulatoryBody;

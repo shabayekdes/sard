@@ -16,7 +16,6 @@ class TeamMemberCreateListener
         try {
 
 
-            // Check if New Team Member email template is active for current user
             $emailService = new EmailTemplateService();
 
             $teamMember = $event->teamMember;
