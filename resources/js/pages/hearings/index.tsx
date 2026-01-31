@@ -195,10 +195,19 @@ export default function Hearings() {
         const caseId = value.case_id || '-';
         const caseName = value.title || '-';
         const caseNumber = value.file_number || '';
-        if (caseNumber) {
-          return `${caseId} + ${caseName} + ${caseNumber}`;
-        }
-        return `${caseId} + ${caseName}`;
+        const displayText = caseNumber
+          ? `${caseId} + ${caseName} + ${caseNumber}`
+          : `${caseId} + ${caseName}`;
+
+        return (
+          <button
+            type="button"
+            onClick={() => router.get(route('cases.show', value.id))}
+            className="text-primary hover:text-primary/80 hover:underline focus:outline-none cursor-pointer"
+          >
+            {displayText}
+          </button>
+        );
       }
     },
     {

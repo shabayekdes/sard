@@ -261,12 +261,16 @@ export default function Cases() {
       render: (value: any, row: any) => {
         if (!row.client) return '-';
         return (
-          <div className="flex flex-col">
+          <button
+            type="button"
+            onClick={() => router.get(route('clients.show', row.client.id))}
+            className="flex flex-col text-left text-primary hover:text-primary/80 hover:underline focus:outline-none cursor-pointer"
+          >
             <span>{row.client.name || '-'}</span>
             {row.client.phone && (
               <span className="text-sm text-gray-500 dark:text-gray-400">{row.client.phone}</span>
             )}
-          </div>
+          </button>
         );
       }
     },
