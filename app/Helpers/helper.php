@@ -1,5 +1,6 @@
 <?php
 
+use App\EmailTemplateName;
 use App\Models\ClientType;
 use App\Models\Setting;
 use App\Models\User;
@@ -1311,13 +1312,13 @@ if (! function_exists('isEmailTemplateEnabled')) {
     /**
      * Check if an email template is enabled for a user
      *
-     * @param string $templateName
-     * @param int|null $userId
+     * @param EmailTemplateName $templateName
+     * @param null $userId
      * @return bool
      */
-    function isEmailTemplateEnabled($templateName, $userId = null)
+    function isEmailTemplateEnabled(EmailTemplateName $templateName, $userId = null): bool
     {
-        if (in_array($templateName, hiddenEmailTemplateNames(), true)) {
+        if (in_array($templateName->value, hiddenEmailTemplateNames(), true)) {
             return false;
         }
 
@@ -1325,7 +1326,7 @@ if (! function_exists('isEmailTemplateEnabled')) {
             $userId = createdBy();
         }
 
-        $template = \App\Models\EmailTemplate::where('name', $templateName)->first();
+        $template = \App\Models\EmailTemplate::where('name', $templateName->value)->first();
         if (!$template) {
             return false;
         }
@@ -1445,18 +1446,18 @@ if (! function_exists('isNotificationTemplateEnabled')) {
     /**
      * Check if a notification template is enabled for a user and specific type
      *
-     * @param string $templateName
-     * @param int|null $userId
-     * @param string|null $type (slack, twilio, email)
+     * @param EmailTemplateName $templateName
+     * @param null $userId
+     * @param null $type (slack, twilio, email)
      * @return bool
      */
-    function isNotificationTemplateEnabled($templateName, $userId = null, $type = null)
+    function isNotificationTemplateEnabled(\App\EmailTemplateName $templateName, $userId = null, $type = null)
     {
         if (is_null($userId)) {
             $userId = createdBy();
         }
 
-        $templateQuery = \App\Models\NotificationTemplate::where('name', $templateName);
+        $templateQuery = \App\Models\NotificationTemplate::where('name', $templateName->value);
 
         // If type is specified, filter by type in notification template
         if ($type) {

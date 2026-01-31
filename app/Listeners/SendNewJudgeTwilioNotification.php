@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\EmailTemplateName;
 use App\Events\NewJudgeCreated;
 use App\Models\User;
 use App\Services\TwilioService;
@@ -20,7 +21,7 @@ class SendNewJudgeTwilioNotification
         $judge = $event->judge;
         $contact = $judge->phone;
 
-        if (isNotificationTemplateEnabled('New Judge', createdBy(), 'twilio')) {
+        if (isNotificationTemplateEnabled(EmailTemplateName::NEW_JUDGE, createdBy(), 'twilio')) {
             $variables = [
                 '{judge_name}' => $judge->name ?? '-',
                 '{court}' => $judge->court->name ?? '-',
@@ -40,7 +41,7 @@ class SendNewJudgeTwilioNotification
                     $createdByUser = User::find(createdBy());
                     $userLanguage = $createdByUser->lang ?? 'en';
                     $this->twilioService->sendTemplateMessageToPhone(
-                        templateName: 'New Judge',
+                        templateName: EmailTemplateName::NEW_JUDGE,
                         variables: $variables,
                         toPhone: $contact,
                         language: $userLanguage,

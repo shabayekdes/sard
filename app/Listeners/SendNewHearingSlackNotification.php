@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\EmailTemplateName;
 use App\Events\NewHearingCreated;
 use App\Models\User;
 use App\Services\SlackService;
@@ -20,7 +21,7 @@ class SendNewHearingSlackNotification
     {
         $hearing = $event->hearing;
 
-       if (isNotificationTemplateEnabled('New Hearing', createdBy(), 'slack')) {
+       if (isNotificationTemplateEnabled(EmailTemplateName::NEW_HEARING, createdBy(), 'slack')) {
             $variables = [
                 '{hearing_number}' => $hearing->hearing_id ?? '-',
                 '{case_number}' => $hearing->case->case_id ?? '-',
@@ -40,7 +41,7 @@ class SendNewHearingSlackNotification
                     $createdByUser = User::find(createdBy());
                     $userLanguage = $createdByUser->lang ?? 'en';
                     $this->slackService->sendTemplateMessageWithLanguage(
-                        templateName: 'New Hearing',
+                        templateName: EmailTemplateName::NEW_HEARING,
                         variables: $variables,
                         webhookUrl: $slackWebhookUrl,
                         language: $userLanguage

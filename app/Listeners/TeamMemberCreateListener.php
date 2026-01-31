@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\EmailTemplateName;
 use App\Events\TeamMemberCreated;
 use App\Services\EmailTemplateService;
 use Exception;
@@ -10,7 +11,7 @@ class TeamMemberCreateListener
 {
     public function handle(TeamMemberCreated $event)
     {
-         if(isEmailTemplateEnabled('New Team Member', createdBy())){
+         if(isEmailTemplateEnabled(EmailTemplateName::NEW_TEAM_MEMBER, createdBy())){
 
         try {
 
@@ -45,7 +46,7 @@ class TeamMemberCreateListener
             $userLanguage = auth()->user()->lang ?? 'en';
 
             $emailService->sendTemplateEmailWithLanguage(
-                'New Team Member',
+                EmailTemplateName::NEW_TEAM_MEMBER,
                 $variables,
                 (string) $teamMember->email,
                 (string) $teamMember->name,

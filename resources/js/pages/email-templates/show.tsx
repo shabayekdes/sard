@@ -105,7 +105,7 @@ export default function EmailTemplateShow({ template, languages, variables }: Pr
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle>{t("Template Settings")}</CardTitle>
-                <Button 
+                <Button
                   onClick={() => {
                     router.put(route('email-templates.update-settings', template.id), {
                       from: fromName
@@ -124,7 +124,7 @@ export default function EmailTemplateShow({ template, languages, variables }: Pr
                 <Input value={template.name} disabled className="bg-muted" />
                 <p className="text-xs text-muted-foreground">{t("Template name cannot be changed")}</p>
               </div>
-              
+
               <div className="grid gap-2">
                 <Label htmlFor="from">{t("From Name")}</Label>
                 <Input
@@ -147,7 +147,7 @@ export default function EmailTemplateShow({ template, languages, variables }: Pr
                     {t("Customize email content for different languages")}
                   </p>
                 </div>
-                <Button 
+                <Button
                   onClick={() => {
                     const currentContent = templateLangs[currentLang]
                     if (currentContent) {
@@ -172,9 +172,9 @@ export default function EmailTemplateShow({ template, languages, variables }: Pr
                   <div className="overflow-x-auto">
                     <TabsList className="inline-flex h-auto p-1 w-max">
                       {allowedLanguages.map((language) => (
-                        <TabsTrigger 
-                          key={language.code} 
-                          value={language.code} 
+                        <TabsTrigger
+                          key={language.code}
+                          value={language.code}
                           className="text-xs px-3 py-2 whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                         >
                           {language.code.toUpperCase()}
@@ -183,7 +183,7 @@ export default function EmailTemplateShow({ template, languages, variables }: Pr
                     </TabsList>
                   </div>
                 </div>
-                
+
                 {allowedLanguages.map((language) => (
                   <TabsContent key={language.code} value={language.code} className="space-y-6 mt-6">
                     <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
@@ -195,7 +195,7 @@ export default function EmailTemplateShow({ template, languages, variables }: Pr
                         <p className="text-xs text-muted-foreground">{t("Edit email content for this language")}</p>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-4">
                       <div className="grid gap-3">
                         <Label htmlFor={`subject-${language.code}`} className="text-sm font-medium">
@@ -209,7 +209,7 @@ export default function EmailTemplateShow({ template, languages, variables }: Pr
                           className="focus:ring-2 focus:ring-primary"
                         />
                       </div>
-                      
+
                       <div className="space-y-3">
                         <RichTextField
                           label="Email Content"
@@ -246,8 +246,8 @@ export default function EmailTemplateShow({ template, languages, variables }: Pr
             <CardContent>
               <div className="space-y-3">
                 {Object.entries(variables).map(([variable, description]) => (
-                  <div 
-                    key={variable} 
+                  <div
+                    key={variable}
                     className="group p-3 bg-muted/50 rounded-lg border hover:bg-muted/80 cursor-pointer transition-colors"
                     onClick={async () => {
                       try {

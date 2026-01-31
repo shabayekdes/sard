@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\EmailTemplateName;
 use App\Events\NewTaskCreated;
 use App\Services\EmailTemplateService;
 use Exception;
@@ -10,7 +11,7 @@ class NewTaskListener
 {
     public function handle(NewTaskCreated $event)
     {
-         if(isEmailTemplateEnabled('New Task', createdBy())){
+         if(isEmailTemplateEnabled(EmailTemplateName::NEW_TASK, createdBy())){
 
         try {
 
@@ -53,7 +54,7 @@ class NewTaskListener
             $userLanguage = auth()->user()->lang ?? 'en';
 
             $emailService->sendTemplateEmailWithLanguage(
-                'New Task',
+                EmailTemplateName::NEW_TASK,
                 $variables,
                 (string) $assignedUser->email,
                 (string) $assignedUser->name,

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\EmailTemplateName;
 use App\Models\EmailTemplate;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -41,7 +42,7 @@ class EmailTemplateController extends Controller
         // Template-specific variables
         $variables = [];
 
-        if ($template->name === 'New Invoice') {
+        if ($template->name === EmailTemplateName::NEW_INVOICE->value) {
             $variables = [
                 '{user_name}' => 'User Name',
                 '{client}' => 'Client Name',
@@ -52,7 +53,7 @@ class EmailTemplateController extends Controller
                 '{invoice_number}' => 'Invoice Number',
                 '{app_name}' => 'App Name'
             ];
-        } elseif ($template->name === 'Invoice Sent') {
+        } elseif ($template->name === EmailTemplateName::INVOICE_SENT->value) {
             $variables = [
                 '{user_name}' => 'User Name',
                 '{client}' => 'Client Name',
@@ -62,7 +63,7 @@ class EmailTemplateController extends Controller
                 '{total_amount}' => 'Total Amount',
                 '{app_name}' => 'App Name'
             ];
-        } elseif ($template->name === 'New Team Member') {
+        } elseif ($template->name === EmailTemplateName::NEW_TEAM_MEMBER->value) {
             $variables = [
                 '{name}' => 'Member Name',
                 '{email}' => 'Member Email',
@@ -72,7 +73,7 @@ class EmailTemplateController extends Controller
                 '{user_name}' => 'User Name',
                 '{app_name}' => 'App Name'
             ];
-        } elseif ($template->name === 'New Client') {
+        } elseif ($template->name === EmailTemplateName::NEW_CLIENT->value) {
             $variables = [
                 '{user_name}' => 'User Name',
                 '{name}' => 'Client Name',
@@ -86,7 +87,7 @@ class EmailTemplateController extends Controller
                 '{tax_rate}' => 'Tax Rate',
                 '{app_name}' => 'App Name'
             ];
-        } elseif ($template->name === 'New Case') {
+        } elseif ($template->name === EmailTemplateName::NEW_CASE->value) {
             $variables = [
                 '{user_name}' => 'User Name',
                 '{client}' => 'Client Name',
@@ -98,7 +99,7 @@ class EmailTemplateController extends Controller
                 '{app_name}' => 'App Name',
 
             ];
-        } elseif ($template->name === 'New Hearing') {
+        } elseif ($template->name === EmailTemplateName::NEW_HEARING->value) {
             $variables = [
                 '{user_name}' => 'User Name',
                 '{hearing_number}' => 'Hearing Number',
@@ -111,7 +112,7 @@ class EmailTemplateController extends Controller
                 '{client_name}' => 'Client Name',
                 '{app_name}' => 'App Name'
             ];
-        } elseif ($template->name === 'New Judge') {
+        } elseif ($template->name === EmailTemplateName::NEW_JUDGE->value) {
             $variables = [
                 '{user_name}' => 'User Name',
                 '{judge_name}' => 'Judge Name',
@@ -120,7 +121,7 @@ class EmailTemplateController extends Controller
                 '{contact_no}' => 'Contact Number',
                 '{app_name}' => 'App Name'
             ];
-        } elseif ($template->name === 'New Court') {
+        } elseif ($template->name === EmailTemplateName::NEW_COURT->value) {
             $variables = [
                 '{user_name}' => 'User Name',
                 '{name}' => 'Court Name',
@@ -131,7 +132,7 @@ class EmailTemplateController extends Controller
                 '{address}' => 'Address',
                 '{app_name}' => 'App Name'
             ];
-        } elseif ($template->name === 'New Task') {
+        } elseif ($template->name === EmailTemplateName::NEW_TASK->value) {
             $variables = [
                 '{user_name}' => 'Assigned By',
                 '{assigned_to}' => 'Assigned To',
@@ -142,7 +143,7 @@ class EmailTemplateController extends Controller
                 '{task_type}' => 'Task Type',
                 '{app_name}' => 'App Name'
             ];
-        } elseif ($template->name === 'New License') {
+        } elseif ($template->name === EmailTemplateName::NEW_LICENSE->value) {
             $variables = [
                 '{user_name}' => 'User Name',
                 '{team_member}' => 'Team Member',
@@ -158,7 +159,7 @@ class EmailTemplateController extends Controller
                 '{license_holder_email}' => 'License Holder Email',
                 '{app_name}' => 'App Name'
             ];
-        } elseif ($template->name === 'New CLE Record') {
+        } elseif ($template->name === EmailTemplateName::NEW_CLE_RECORD->value) {
             $variables = [
                 '{user_name}' => 'User Name',
                 '{team_member}' => 'Team Member',
@@ -169,7 +170,7 @@ class EmailTemplateController extends Controller
                 '{certificate_num}' => 'Certificate Number',
                 '{app_name}' => 'App Name'
             ];
-        } elseif ($template->name === 'New Regulatory Body') {
+        } elseif ($template->name === EmailTemplateName::NEW_REGULATORY_BODY->value) {
             $variables = [
                 '{user_name}' => 'User Name',
                 '{name}' => 'Regulatory Body Name',
@@ -219,7 +220,7 @@ class EmailTemplateController extends Controller
                 ->where('lang', $request->lang)
                 ->update([
                     'subject' => $request->subject,
-                    'content' => $request->content
+                    'content' => $request->get('content')
                 ]);
 
             return redirect()->back()->with('success', __('Email content updated successfully.'));

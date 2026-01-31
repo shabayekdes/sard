@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\EmailTemplateName;
 use App\Events\NewClientCreated;
 use App\Models\User;
 use App\Services\TwilioService;
@@ -20,7 +21,7 @@ class SendNewClientTwilioNotification
         $client = $event->client;
         $contact =$client->phone;
 
-        if (isNotificationTemplateEnabled('New Client', createdBy(), 'twilio')) {
+        if (isNotificationTemplateEnabled(EmailTemplateName::NEW_CLIENT, createdBy(), 'twilio')) {
             $variables = [
                 '{client_name}' => $client->name ?? '-',
                 '{client_type}' => $client->clientType->name ?? '-',
@@ -38,9 +39,9 @@ class SendNewClientTwilioNotification
                     $createdByUser = User::find(createdBy());
                     $userLanguage = $createdByUser->lang ?? 'en';
                     $this->twilioService->sendTemplateMessageToPhone(
-                        templateName: 'New Client',
-                        toPhone: $contact,
+                        templateName: EmailTemplateName::NEW_CLIENT,
                         variables: $variables,
+                        toPhone: $contact,
                         language: $userLanguage,
                         userId: createdBy()
                     );

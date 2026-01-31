@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\EmailTemplateName;
 use App\Models\NotificationTemplate;
 use App\Models\User;
 use Exception;
@@ -11,7 +12,7 @@ class TwilioService
 {
    
 
-    public function sendTemplateMessageToPhone(string $templateName, array $variables, string $toPhone, string $language = 'en', int $userId = null)
+    public function sendTemplateMessageToPhone(EmailTemplateName $templateName, array $variables, string $toPhone, string $language = 'en', int $userId = null)
     {
         try {
             // Check if Twilio notification is enabled for this template
@@ -20,12 +21,12 @@ class TwilioService
             }
 
             // Get notification template with type check
-            $template = NotificationTemplate::where('name', $templateName)
+            $template = NotificationTemplate::where('name', $templateName->value)
                 ->where('type', 'twilio')
                 ->first();
 
             if (!$template) {
-                throw new Exception("Notification template '{$templateName}' not found");
+                throw new Exception("Notification template '{$templateName->value}' not found");
             }
 
             // Get template content for the specified language
@@ -43,7 +44,7 @@ class TwilioService
             }
 
             if (!$templateLang) {
-                throw new Exception("No content found for template '{$templateName}'");
+                throw new Exception("No content found for template '{$templateName->value}'");
             }
 
             // Replace variables in content
@@ -63,7 +64,7 @@ class TwilioService
         return str_replace(array_keys($variables), array_values($variables), $content);
     }
 
-    private function isTwilioNotificationEnabled(string $templateName): bool
+    private function isTwilioNotificationEnabled(EmailTemplateName $templateName): bool
     {
         return isNotificationTemplateEnabled($templateName, createdBy(), 'twilio');
     }

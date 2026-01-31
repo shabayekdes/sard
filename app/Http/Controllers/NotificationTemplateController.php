@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\EmailTemplateName;
 use App\Models\NotificationTemplate;
 use App\Models\NotificationTemplateLang;
 use Illuminate\Http\Request;
@@ -39,7 +40,7 @@ class NotificationTemplateController extends Controller
         $template = $notificationTemplate->load('notificationTemplateLangs');
         $languages = json_decode(file_get_contents(resource_path('lang/language.json')), true);
 
-        $variables = $this->getVariablesByNameAndType($template->name, $template->type);
+        $variables = $this->getVariablesByNameAndType(EmailTemplateName::from($template->name), $template->type);
 
         return Inertia::render('notification-templates/show', [
             'template' => $template,
@@ -48,155 +49,132 @@ class NotificationTemplateController extends Controller
         ]);
     }
 
-    private function getVariablesByNameAndType($name, $type)
+    private function getVariablesByNameAndType(EmailTemplateName $name, $type)
     {
-        $key = $name . '_' . $type;
+        $key = $name->value . '_' . $type;
 
-        switch ($key) {
-            case 'New Case_slack':
-                return [
-                    '{case_number}' => 'Case Number',
-                    '{client_name}' => 'Client Name',
-                    '{case_type}' => 'Case Type',
-                    '{created_by}' => 'Created By User',
-                    '{channel}' => 'Slack Channel'
-                ];
-            case 'New Case_twilio':
-                return [
-                    '{case_number}' => 'Case Number',
-                    '{case_type}' => 'Case Type',
-                    '{created_by}' => 'Created By User',
+        return match ($key) {
+            'New Case_slack' => [
+                '{case_number}' => 'Case Number',
+                '{client_name}' => 'Client Name',
+                '{case_type}' => 'Case Type',
+                '{created_by}' => 'Created By User',
+                '{channel}' => 'Slack Channel'
+            ],
+            'New Case_twilio' => [
+                '{case_number}' => 'Case Number',
+                '{case_type}' => 'Case Type',
+                '{created_by}' => 'Created By User',
 
-                ];
-            case 'New Court_slack':
-                return [
-                    '{court_name}' => 'Court Name',
-                    '{court_type}' => 'Court Type',
-                    '{location}' => 'Court Location'
-                ];
-            case 'New Court_twilio':
-                return [
-                    '{court_name}' => 'Court Name',
-                    '{location}' => 'Court Location'
-                ];
-            case 'Invoice Sent_slack':
-                return [
-                    '{invoice_number}' => 'Invoice Number',
-                    '{client_name}' => 'Client Name',
-                    '{amount}' => 'Invoice Amount',
-                    '{sent_date}' => 'Date Sent'
-                ];
-            case 'Invoice Sent_twilio':
-                return [
-                    '{invoice_number}' => 'Invoice Number',
-                    '{due_date}' => 'Due Sent'
-                ];
-            case 'New Client_slack':
-                return [
-                    '{client_name}' => 'Client Name',
-                    '{client_type}' => 'Client Type',
-                    '{email}' => 'Client Email',
-                    '{created_by}' => 'Created By User'
-                ];
-            case 'New Client_twilio':
-                return [
-                    '{client_name}' => 'Client Name',
-                    '{client_type}' => 'Client Type',
+            ],
+            'New Court_slack' => [
+                '{court_name}' => 'Court Name',
+                '{court_type}' => 'Court Type',
+                '{location}' => 'Court Location'
+            ],
+            'New Court_twilio' => [
+                '{court_name}' => 'Court Name',
+                '{location}' => 'Court Location'
+            ],
+            'Invoice Sent_slack' => [
+                '{invoice_number}' => 'Invoice Number',
+                '{client_name}' => 'Client Name',
+                '{amount}' => 'Invoice Amount',
+                '{sent_date}' => 'Date Sent'
+            ],
+            'Invoice Sent_twilio' => [
+                '{invoice_number}' => 'Invoice Number',
+                '{due_date}' => 'Due Sent'
+            ],
+            'New Client_slack' => [
+                '{client_name}' => 'Client Name',
+                '{client_type}' => 'Client Type',
+                '{email}' => 'Client Email',
+                '{created_by}' => 'Created By User'
+            ],
+            'New Client_twilio' => [
+                '{client_name}' => 'Client Name',
+                '{client_type}' => 'Client Type',
 
-                ];
-
-            default:
-                return $this->getDefaultVariablesByName($name);
-        }
+            ],
+            default => $this->getDefaultVariablesByName($name),
+        };
     }
 
-    private function getDefaultVariablesByName($name)
+    private function getDefaultVariablesByName(EmailTemplateName $name)
     {
-        switch ($name) {
-            case 'New Case':
-                return [
-                    '{case_number}' => 'Case Number',
-                    '{client_name}' => 'Client Name',
-                    '{case_type}' => 'Case Type',
-                    '{created_by}' => 'Created By User'
-                ];
-            case 'New Client':
-                return [
-                    '{client_name}' => 'Client Name',
-                    '{client_type}' => 'Client Type',
-                    '{email}' => 'Client Email',
-                    '{created_by}' => 'Created By User'
-                ];
-            case 'New Task':
-                return [
-                    '{task_title}' => 'Task Title',
-                    '{priority}' => 'Task Priority',
-                    '{due_date}' => 'Task Due Date',
-                    '{assigned_to}' => 'Assigned To User'
-                ];
-            case 'New Hearing':
-                return [
-                    '{case_number}' => 'Case Number',
-                    '{hearing_date}' => 'Hearing Date',
-                    '{court}' => 'Court Name',
-                    '{judge}' => 'Judge Name'
-                ];
-            case 'New Invoice':
-                return [
-                    '{invoice_number}' => 'Invoice Number',
-                    '{client_name}' => 'Client Name',
-                    '{amount}' => 'Invoice Amount',
-                    '{due_date}' => 'Invoice Due Date'
-                ];
-            case 'Invoice Sent':
-                return [
-                    '{invoice_number}' => 'Invoice Number',
-                    '{client_name}' => 'Client Name',
-                    '{amount}' => 'Invoice Amount',
-                    '{sent_date}' => 'Date Sent'
-                ];
-            case 'New Court':
-                return [
-                    '{court_name}' => 'Court Name',
-                    '{court_type}' => 'Court Type',
-                    '{circle_type}' => 'Circle Type',
-                    '{location}' => 'Court Location'
-                ];
-            case 'New Judge':
-                return [
-                    '{judge_name}' => 'Judge Name',
-                    '{court}' => 'Court Name',
-                    '{specialization}' => 'Judge Specialization'
-                ];
-            case 'New License':
-                return [
-                    '{license_number}' => 'License Number',
-                    '{license_type}' => 'License Type',
-                    '{issuing_authority}' => 'Issuing Authority',
-                    '{expiry_date}' => 'Expiry Date'
-                ];
-            case 'New Regulatory Body':
-                return [
-                    '{body_name}' => 'Regulatory Body Name',
-                    '{jurisdiction}' => 'Jurisdiction',
-                    '{contact_info}' => 'Contact Information'
-                ];
-            case 'New CLE Record':
-                return [
-                    '{course_title}' => 'Course Title',
-                    '{credits_earned}' => 'Credits Earned',
-                    '{completion_date}' => 'Completion Date',
-                    '{provider}' => 'Course Provider'
-                ];
-            case 'Team Member Created':
-                return [
-                    '{member_name}' => 'Team Member Name',
-                    '{email}' => 'Team Member Email',
-                    '{role}' => 'Team Member Role'
-                ];
-            default:
-                return [];
-        }
+        return match ($name) {
+            EmailTemplateName::NEW_CASE => [
+                '{case_number}' => 'Case Number',
+                '{client_name}' => 'Client Name',
+                '{case_type}' => 'Case Type',
+                '{created_by}' => 'Created By User'
+            ],
+            EmailTemplateName::NEW_CLIENT => [
+                '{client_name}' => 'Client Name',
+                '{client_type}' => 'Client Type',
+                '{email}' => 'Client Email',
+                '{created_by}' => 'Created By User'
+            ],
+            EmailTemplateName::NEW_TASK => [
+                '{task_title}' => 'Task Title',
+                '{priority}' => 'Task Priority',
+                '{due_date}' => 'Task Due Date',
+                '{assigned_to}' => 'Assigned To User'
+            ],
+            EmailTemplateName::NEW_HEARING => [
+                '{case_number}' => 'Case Number',
+                '{hearing_date}' => 'Hearing Date',
+                '{court}' => 'Court Name',
+                '{judge}' => 'Judge Name'
+            ],
+            EmailTemplateName::NEW_INVOICE => [
+                '{invoice_number}' => 'Invoice Number',
+                '{client_name}' => 'Client Name',
+                '{amount}' => 'Invoice Amount',
+                '{due_date}' => 'Invoice Due Date'
+            ],
+            EmailTemplateName::INVOICE_SENT => [
+                '{invoice_number}' => 'Invoice Number',
+                '{client_name}' => 'Client Name',
+                '{amount}' => 'Invoice Amount',
+                '{sent_date}' => 'Date Sent'
+            ],
+            EmailTemplateName::NEW_COURT => [
+                '{court_name}' => 'Court Name',
+                '{court_type}' => 'Court Type',
+                '{circle_type}' => 'Circle Type',
+                '{location}' => 'Court Location'
+            ],
+            EmailTemplateName::NEW_JUDGE => [
+                '{judge_name}' => 'Judge Name',
+                '{court}' => 'Court Name',
+                '{specialization}' => 'Judge Specialization'
+            ],
+            EmailTemplateName::NEW_LICENSE => [
+                '{license_number}' => 'License Number',
+                '{license_type}' => 'License Type',
+                '{issuing_authority}' => 'Issuing Authority',
+                '{expiry_date}' => 'Expiry Date'
+            ],
+            EmailTemplateName::NEW_REGULATORY_BODY => [
+                '{body_name}' => 'Regulatory Body Name',
+                '{jurisdiction}' => 'Jurisdiction',
+                '{contact_info}' => 'Contact Information'
+            ],
+            EmailTemplateName::NEW_CLE_RECORD => [
+                '{course_title}' => 'Course Title',
+                '{credits_earned}' => 'Credits Earned',
+                '{completion_date}' => 'Completion Date',
+                '{provider}' => 'Course Provider'
+            ],
+            'Team Member Created' => [
+                '{member_name}' => 'Team Member Name',
+                '{email}' => 'Team Member Email',
+                '{role}' => 'Team Member Role'
+            ],
+            default => [],
+        };
     }
 
     public function updateSettings(NotificationTemplate $notificationTemplate, Request $request)
@@ -232,7 +210,7 @@ class NotificationTemplateController extends Controller
                 ],
                 [
                     'title' => $request->title,
-                    'content' => $request->content
+                    'content' => $request->get('content')
                 ]
             );
 

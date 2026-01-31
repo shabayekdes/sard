@@ -10,7 +10,7 @@ class NotificationTemplateSeeder extends Seeder
 {
     public function run(): void
     {
-        $supportedLanguages = ['en', 'es', 'ar', 'da', 'de', 'fr', 'he', 'it', 'ja', 'nl', 'pl', 'pt', 'pt-br', 'ru', 'tr', 'zh'];
+        $supportedLanguages = ['en', 'ar'];
         $langCodes = $supportedLanguages;
 
         $templates = [

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\EmailTemplateName;
 use App\Models\EmailTemplate;
 use App\Models\Business;
 use App\Mail\CommonTemplateMail;
@@ -122,7 +123,7 @@ class EmailTemplateService
         return str_replace(array_keys($variables), array_values($variables), $content);
     }
 
-    public function sendTemplateEmailWithLanguage(string $templateName, array $variables, string $toEmail, string $toName = null, string $language = 'en')
+    public function sendTemplateEmailWithLanguage(EmailTemplateName $templateName, array $variables, string $toEmail, string $toName = null, string $language = 'en')
     {
         // Prevent duplicate emails within same request
         $emailKey = md5($templateName . $toEmail . serialize($variables));

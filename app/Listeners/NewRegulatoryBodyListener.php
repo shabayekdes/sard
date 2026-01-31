@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\EmailTemplateName;
 use App\Events\NewRegulatoryBodyCreated;
 use App\Services\EmailTemplateService;
 use Exception;
@@ -10,7 +11,7 @@ class NewRegulatoryBodyListener
 {
     public function handle(NewRegulatoryBodyCreated $event)
     {
-         if(isEmailTemplateEnabled('New Regulatory Body', createdBy())){
+         if(isEmailTemplateEnabled(EmailTemplateName::NEW_REGULATORY_BODY, createdBy())){
 
         try {
 
@@ -46,7 +47,7 @@ class NewRegulatoryBodyListener
             $userLanguage = auth()->user()->lang ?? 'en';
 
             $emailService->sendTemplateEmailWithLanguage(
-                'New Regulatory Body',
+                EmailTemplateName::NEW_REGULATORY_BODY,
                 $variables,
                 (string) $adminUser->email,
                 (string) $adminUser->name,

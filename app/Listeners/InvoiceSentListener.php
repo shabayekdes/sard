@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\EmailTemplateName;
 use App\Events\InvoiceSent;
 use App\Services\EmailTemplateService;
 use Exception;
@@ -10,7 +11,7 @@ class InvoiceSentListener
 {
     public function handle(InvoiceSent $event)
     {
-         if(isEmailTemplateEnabled('Invoice Sent', createdBy())){
+         if(isEmailTemplateEnabled(EmailTemplateName::INVOICE_SENT, createdBy())){
 
         try {
 
@@ -47,7 +48,7 @@ class InvoiceSentListener
             $userLanguage = auth()->user()->lang ?? 'en';
 
             $emailService->sendTemplateEmailWithLanguage(
-                'Invoice Sent',
+                EmailTemplateName::INVOICE_SENT,
                 $variables,
                 (string) $client->email,
                 (string) $client->name,

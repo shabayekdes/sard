@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\EmailTemplateName;
 use App\Events\InvoiceSent;
 use App\Models\User;
 use App\Services\SlackService;
@@ -20,7 +21,7 @@ class SendInvoiceSentSlackNotification
     {
         $invoice = $event->invoice;
 
-       if (isNotificationTemplateEnabled('Invoice Sent', createdBy(), 'slack')) {
+       if (isNotificationTemplateEnabled(EmailTemplateName::INVOICE_SENT, createdBy(), 'slack')) {
             $variables = [
                 '{invoice_number}' => $invoice->invoice_number ?? '-',
                 '{client_name}' => $invoice->client->name ?? '-',
@@ -39,7 +40,7 @@ class SendInvoiceSentSlackNotification
                     $createdByUser = User::find(createdBy());
                     $userLanguage = $createdByUser->lang ?? 'en';
                     $this->slackService->sendTemplateMessageWithLanguage(
-                        templateName: 'Invoice Sent',
+                        templateName: EmailTemplateName::INVOICE_SENT,
                         variables: $variables,
                         webhookUrl: $slackWebhookUrl,
                         language: $userLanguage

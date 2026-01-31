@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\EmailTemplateName;
 use App\Events\NewTaskCreated;
 use App\Models\User;
 use App\Services\SlackService;
@@ -20,7 +21,7 @@ class SendNewTaskSlackNotification
     {
         $task = $event->task;
 
-       if (isNotificationTemplateEnabled('New Task', createdBy(), 'slack')) {
+       if (isNotificationTemplateEnabled(EmailTemplateName::NEW_TASK, createdBy(), 'slack')) {
             $variables = [
                 '{task_title}' => $task->title ?? '-',
                 '{priority}' => $task->priority ?? '-',
@@ -39,7 +40,7 @@ class SendNewTaskSlackNotification
                     $createdByUser = User::find(createdBy());
                     $userLanguage = $createdByUser->lang ?? 'en';
                     $this->slackService->sendTemplateMessageWithLanguage(
-                        templateName: 'New Task',
+                        templateName: EmailTemplateName::NEW_TASK,
                         variables: $variables,
                         webhookUrl: $slackWebhookUrl,
                         language: $userLanguage

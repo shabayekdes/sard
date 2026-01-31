@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\EmailTemplateName;
 use App\Models\UserNotificationTemplate;
 use App\Models\Setting;
 
@@ -61,7 +62,7 @@ class SlackService
         return $httpCode === 200 && empty($curlError);
     }
 
-    public function sendTemplateMessageWithLanguage($templateName, $variables, $webhookUrl, $language = 'en')
+    public function sendTemplateMessageWithLanguage(EmailTemplateName $templateName, $variables, $webhookUrl, $language = 'en')
     {
         if (!$webhookUrl) {
             return false;
@@ -72,22 +73,22 @@ class SlackService
 
         $payload = [
             'text' => $message,
-            'username' => config('app.name', 'Advocate SaaS'),
+            'username' => config('app.name', 'Sard App'),
             'icon_emoji' => ':bell:'
         ];
 
         return $this->sendCurlRequest($webhookUrl, $payload);
     }
 
-    private function getTemplateMessage($templateName, $variables, $language)
+    private function getTemplateMessage(EmailTemplateName $templateName, $variables, $language)
     {
         // Get template from database with type check
-        $template = \App\Models\NotificationTemplate::where('name', $templateName)
+        $template = \App\Models\NotificationTemplate::where('name', $templateName->value)
             ->where('type', 'slack')
             ->first();
 
         if (!$template) {
-            return "*{$templateName} Notification*\n\nTemplate not found.";
+            return "*{$templateName->value} Notification*\n\nTemplate not found.";
         }
 
         // Get template content for the language
@@ -103,15 +104,11 @@ class SlackService
         }
 
         if (!$templateLang) {
-            return "*{$templateName} Notification*\n\nTemplate content not found.";
+            return "*{$templateName->value} Notification*\n\nTemplate content not found.";
         }
 
         // Replace variables in template content
-            $message = $this->replaceVariables($templateLang->content, $variables);
-
-
-
-        return $message;
+        return $this->replaceVariables($templateLang->content, $variables);
     }
       private function replaceVariables(string $content, array $variables): string
     {

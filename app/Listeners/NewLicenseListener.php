@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\EmailTemplateName;
 use App\Events\NewLicenseCreated;
 use App\Services\EmailTemplateService;
 use Exception;
@@ -10,7 +11,7 @@ class NewLicenseListener
 {
     public function handle(NewLicenseCreated $event)
     {
-         if(isEmailTemplateEnabled('New License', createdBy())){
+         if(isEmailTemplateEnabled(EmailTemplateName::NEW_LICENSE, createdBy())){
 
 
         try {
@@ -52,7 +53,7 @@ class NewLicenseListener
             $userLanguage = auth()->user()->lang ?? 'en';
 
             $emailService->sendTemplateEmailWithLanguage(
-                'New License',
+                EmailTemplateName::NEW_LICENSE,
                 $variables,
                 $user->email,
                 $user->name,

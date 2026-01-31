@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\EmailTemplateName;
 use App\Events\NewCourtCreated;
 use App\Models\User;
 use App\Services\SlackService;
@@ -20,7 +21,7 @@ class SendNewCourtSlackNotification
     {
         $court = $event->court;
 
-       if (isNotificationTemplateEnabled('New Court', createdBy(), 'slack')) {
+       if (isNotificationTemplateEnabled(EmailTemplateName::NEW_COURT, createdBy(), 'slack')) {
             // Load circle type relationship if not already loaded
             if (!$court->relationLoaded('circleType')) {
                 $court->load('circleType');
@@ -49,7 +50,7 @@ class SendNewCourtSlackNotification
                     $createdByUser = User::find(createdBy());
                     $userLanguage = $createdByUser->lang ?? 'en';
                     $this->slackService->sendTemplateMessageWithLanguage(
-                        templateName: 'New Court',
+                        templateName: EmailTemplateName::NEW_COURT,
                         variables: $variables,
                         webhookUrl: $slackWebhookUrl,
                         language: $userLanguage

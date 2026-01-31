@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\EmailTemplateName;
 use App\Events\NewLicenseCreated;
 use App\Models\User;
 use App\Services\SlackService;
@@ -20,7 +21,7 @@ class SendNewLicenseSlackNotification
     {
         $license = $event->license;
 
-       if (isNotificationTemplateEnabled('New License', createdBy(), 'slack')) {
+       if (isNotificationTemplateEnabled(EmailTemplateName::NEW_LICENSE, createdBy(), 'slack')) {
             $variables = [
                 '{license_number}' => $license->license_number ?? '-',
                 '{license_type}' => $license->license_type ?? '-',
@@ -39,7 +40,7 @@ class SendNewLicenseSlackNotification
                     $createdByUser = User::find(createdBy());
                     $userLanguage = $createdByUser->lang ?? 'en';
                     $this->slackService->sendTemplateMessageWithLanguage(
-                        templateName: 'New License',
+                        templateName: EmailTemplateName::NEW_LICENSE,
                         variables: $variables,
                         webhookUrl: $slackWebhookUrl,
                         language: $userLanguage

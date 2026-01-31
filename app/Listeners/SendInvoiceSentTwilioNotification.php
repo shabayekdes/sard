@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\EmailTemplateName;
 use App\Events\InvoiceSent;
 use App\Models\User;
 use App\Services\TwilioService;
@@ -20,7 +21,7 @@ class SendInvoiceSentTwilioNotification
         $invoice = $event->invoice;
         $contact =$invoice->client->phone;
 
-        if (isNotificationTemplateEnabled('Invoice Sent', createdBy(), 'twilio')) {
+        if (isNotificationTemplateEnabled(EmailTemplateName::INVOICE_SENT, createdBy(), 'twilio')) {
             $variables = [
                 '{invoice_number}' => $invoice->invoice_number ?? '-',
                 '{due_date}' => $invoice->due_date ?? '-',
@@ -37,7 +38,7 @@ class SendInvoiceSentTwilioNotification
                     $createdByUser = User::find(createdBy());
                     $userLanguage = $createdByUser->lang ?? 'en';
                     $this->twilioService->sendTemplateMessageToPhone(
-                        templateName: 'Invoice Sent',
+                        templateName: EmailTemplateName::INVOICE_SENT,
                         variables: $variables,
                         toPhone: $contact,
                         language: $userLanguage,

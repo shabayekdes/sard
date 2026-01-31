@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\EmailTemplateName;
 use App\Events\NewCaseCreated;
 use App\Services\TwilioService;
 use App\Models\User;
@@ -11,7 +12,9 @@ class SendNewCaseTwilioNotification
 {
     public function __construct(
         private TwilioService $twilioService
-    ) {}
+    )
+    {
+    }
 
     public function handle(NewCaseCreated $event): void
     {
@@ -25,33 +28,32 @@ class SendNewCaseTwilioNotification
         if (!$userId) {
             return;
         }
-                if (isNotificationTemplateEnabled('New Court', createdBy(), 'twilio')) {
+        if (isNotificationTemplateEnabled(EmailTemplateName::NEW_COURT, createdBy(), 'twilio')) {
+
+            $variables = [
+                '{case_number}' => $case->case_id ?? '-',
+                '{case_type}' => $case->caseType->name ?? '-',
+                '{created_by}' => $case->creator->name ?? '-',
+            ];
+
+            try {
+                $createdByUser = User::find($userId);
+                $userLanguage = $createdByUser->lang ?? 'en';
 
 
-        $variables = [
-            '{case_number}' => $case->case_id ?? '-',
-            '{case_type}' => $case->caseType->name ?? '-',
-            '{created_by}' => $case->creator->name ?? '-',
-        ];
-
-        try {
-            $createdByUser = User::find($userId);
-            $userLanguage = $createdByUser->lang ?? 'en';
-
-
-            // Send notification to client if they have a phone number
-            if ($client && !empty($client->phone)) {
-                $this->twilioService->sendTemplateMessageToPhone(
-                    templateName: 'New Case',
-                    variables: $variables,
-                    toPhone: $contact,
-                    language: $userLanguage,
-                    userId: $userId
-                );
+                // Send notification to client if they have a phone number
+                if ($client && !empty($client->phone)) {
+                    $this->twilioService->sendTemplateMessageToPhone(
+                        templateName: EmailTemplateName::NEW_CASE,
+                        variables: $variables,
+                        toPhone: $contact,
+                        language: $userLanguage,
+                        userId: $userId
+                    );
+                }
+            } catch (Exception $e) {
+                \Log::error('Failed to send New Case Twilio notification: ' . $e->getMessage());
             }
-        } catch (Exception $e) {
-            \Log::error('Failed to send New Case Twilio notification: ' . $e->getMessage());
         }
     }
-}
 }
