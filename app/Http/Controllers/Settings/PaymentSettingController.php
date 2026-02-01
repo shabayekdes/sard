@@ -562,15 +562,15 @@ class PaymentSettingController extends Controller
         
         // Only include enabled status and safe configuration
         $enabledKeys = [
-            'is_manually_enabled', 'is_bank_enabled', 'is_stripe_enabled', 'is_paypal_enabled',
-            'is_razorpay_enabled', 'is_mercadopago_enabled', 'is_paystack_enabled', 'is_flutterwave_enabled',
-            'is_paytabs_enabled', 'is_skrill_enabled', 'is_coingate_enabled', 'is_payfast_enabled',
-            'is_tap_enabled', 'is_xendit_enabled', 'is_paytr_enabled', 'is_mollie_enabled',
-            'is_toyyibpay_enabled', 'is_paymentwall_enabled', 'is_sspay_enabled', 'is_benefit_enabled',
-            'is_iyzipay_enabled', 'is_aamarpay_enabled', 'is_midtrans_enabled', 'is_yookassa_enabled',
-            'is_nepalste_enabled', 'is_paiement_enabled', 'is_cinetpay_enabled', 'is_payhere_enabled',
-            'is_fedapay_enabled', 'is_authorizenet_enabled', 'is_khalti_enabled', 'is_easebuzz_enabled',
-            'is_ozow_enabled', 'is_cashfree_enabled'
+            'manually_enabled', 'bank_enabled', 'stripe_enabled', 'paypal_enabled',
+            'razorpay_enabled', 'mercadopago_enabled', 'paystack_enabled', 'flutterwave_enabled',
+            'paytabs_enabled', 'skrill_enabled', 'coingate_enabled', 'payfast_enabled',
+            'tap_enabled', 'xendit_enabled', 'paytr_enabled', 'mollie_enabled',
+            'toyyibpay_enabled', 'paymentwall_enabled', 'sspay_enabled', 'benefit_enabled',
+            'iyzipay_enabled', 'aamarpay_enabled', 'midtrans_enabled', 'yookassa_enabled',
+            'nepalste_enabled', 'paiement_enabled', 'cinetpay_enabled', 'payhere_enabled',
+            'fedapay_enabled', 'authorizenet_enabled', 'khalti_enabled', 'easebuzz_enabled',
+            'ozow_enabled', 'cashfree_enabled'
         ];
         
         $modeKeys = [

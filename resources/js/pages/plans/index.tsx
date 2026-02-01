@@ -174,8 +174,8 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
 
   const formatPaymentMethods = (paymentSettings: any) => {
     const methods = [];
-
-    if (paymentSettings?.is_bank_enabled === true || paymentSettings?.is_bank_enabled === '1') {
+    
+    if (paymentSettings?.bank_enabled === true || paymentSettings?.bank_enabled === '1') {
       methods.push({
         id: 'bank',
         name: t('Bank Transfer'),
@@ -184,7 +184,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_stripe_enabled === true || paymentSettings?.is_stripe_enabled === '1') {
+    if (paymentSettings?.stripe_enabled === true || paymentSettings?.stripe_enabled === '1') {
       methods.push({
         id: 'stripe',
         name: t('Stripe'),
@@ -193,7 +193,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_paypal_enabled === true || paymentSettings?.is_paypal_enabled === '1') {
+    if (paymentSettings?.paypal_enabled === true || paymentSettings?.paypal_enabled === '1') {
       methods.push({
         id: 'paypal',
         name: t('PayPal'),
@@ -202,7 +202,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_razorpay_enabled === true || paymentSettings?.is_razorpay_enabled === '1') {
+    if (paymentSettings?.razorpay_enabled === true || paymentSettings?.razorpay_enabled === '1') {
       methods.push({
         id: 'razorpay',
         name: t('Razorpay'),
@@ -211,7 +211,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if ((paymentSettings?.is_mercadopago_enabled === true || paymentSettings?.is_mercadopago_enabled === '1') && paymentSettings?.mercadopago_access_token) {
+    if ((paymentSettings?.mercadopago_enabled === true || paymentSettings?.mercadopago_enabled === '1') && paymentSettings?.mercadopago_access_token) {
       methods.push({
         id: 'mercadopago',
         name: t('MercadoPago'),
@@ -220,7 +220,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_paystack_enabled === true || paymentSettings?.is_paystack_enabled === '1') {
+    if (paymentSettings?.paystack_enabled === true || paymentSettings?.paystack_enabled === '1') {
       methods.push({
         id: 'paystack',
         name: t('Paystack'),
@@ -229,7 +229,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_flutterwave_enabled === true || paymentSettings?.is_flutterwave_enabled === '1') {
+    if (paymentSettings?.flutterwave_enabled === true || paymentSettings?.flutterwave_enabled === '1') {
       methods.push({
         id: 'flutterwave',
         name: t('Flutterwave'),
@@ -238,7 +238,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_paytabs_enabled === true || paymentSettings?.is_paytabs_enabled === '1') {
+    if (paymentSettings?.paytabs_enabled === true || paymentSettings?.paytabs_enabled === '1') {
       methods.push({
         id: 'paytabs',
         name: t('PayTabs'),
@@ -247,7 +247,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_skrill_enabled === true || paymentSettings?.is_skrill_enabled === '1') {
+    if (paymentSettings?.skrill_enabled === true || paymentSettings?.skrill_enabled === '1') {
       methods.push({
         id: 'skrill',
         name: t('Skrill'),
@@ -256,7 +256,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_coingate_enabled === true || paymentSettings?.is_coingate_enabled === '1') {
+    if (paymentSettings?.coingate_enabled === true || paymentSettings?.coingate_enabled === '1') {
       methods.push({
         id: 'coingate',
         name: t('CoinGate'),
@@ -265,7 +265,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_payfast_enabled === true || paymentSettings?.is_payfast_enabled === '1') {
+    if (paymentSettings?.payfast_enabled === true || paymentSettings?.payfast_enabled === '1') {
       methods.push({
         id: 'payfast',
         name: t('Payfast'),
@@ -274,7 +274,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_tap_enabled === true || paymentSettings?.is_tap_enabled === '1') {
+    if (paymentSettings?.tap_enabled === true || paymentSettings?.tap_enabled === '1') {
       methods.push({
         id: 'tap',
         name: t('Tap'),
@@ -283,7 +283,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_xendit_enabled === true || paymentSettings?.is_xendit_enabled === '1') {
+    if (paymentSettings?.xendit_enabled === true || paymentSettings?.xendit_enabled === '1') {
       methods.push({
         id: 'xendit',
         name: t('Xendit'),
@@ -292,7 +292,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_paytr_enabled === true || paymentSettings?.is_paytr_enabled === '1') {
+    if (paymentSettings?.paytr_enabled === true || paymentSettings?.paytr_enabled === '1') {
       methods.push({
         id: 'paytr',
         name: t('PayTR'),
@@ -301,7 +301,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_mollie_enabled === true || paymentSettings?.is_mollie_enabled === '1') {
+    if (paymentSettings?.mollie_enabled === true || paymentSettings?.mollie_enabled === '1') {
       methods.push({
         id: 'mollie',
         name: t('Mollie'),
@@ -310,7 +310,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_toyyibpay_enabled === true || paymentSettings?.is_toyyibpay_enabled === '1') {
+    if (paymentSettings?.toyyibpay_enabled === true || paymentSettings?.toyyibpay_enabled === '1') {
       methods.push({
         id: 'toyyibpay',
         name: t('toyyibPay'),
@@ -319,7 +319,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_cashfree_enabled === true || paymentSettings?.is_cashfree_enabled === '1') {
+    if (paymentSettings?.cashfree_enabled === true || paymentSettings?.cashfree_enabled === '1') {
       methods.push({
         id: 'cashfree',
         name: t('Cashfree'),
@@ -328,7 +328,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_khalti_enabled === true || paymentSettings?.is_khalti_enabled === '1') {
+    if (paymentSettings?.khalti_enabled === true || paymentSettings?.khalti_enabled === '1') {
       methods.push({
         id: 'khalti',
         name: t('Khalti'),
@@ -337,7 +337,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_iyzipay_enabled === true || paymentSettings?.is_iyzipay_enabled === '1') {
+    if (paymentSettings?.iyzipay_enabled === true || paymentSettings?.iyzipay_enabled === '1') {
       methods.push({
         id: 'iyzipay',
         name: t('Iyzipay'),
@@ -346,7 +346,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_benefit_enabled === true || paymentSettings?.is_benefit_enabled === '1') {
+    if (paymentSettings?.benefit_enabled === true || paymentSettings?.benefit_enabled === '1') {
       methods.push({
         id: 'benefit',
         name: t('Benefit'),
@@ -355,7 +355,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_ozow_enabled === true || paymentSettings?.is_ozow_enabled === '1') {
+    if (paymentSettings?.ozow_enabled === true || paymentSettings?.ozow_enabled === '1') {
       methods.push({
         id: 'ozow',
         name: t('Ozow'),
@@ -364,7 +364,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_easebuzz_enabled === true || paymentSettings?.is_easebuzz_enabled === '1') {
+    if (paymentSettings?.easebuzz_enabled === true || paymentSettings?.easebuzz_enabled === '1') {
       methods.push({
         id: 'easebuzz',
         name: t('Easebuzz'),
@@ -373,7 +373,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_authorizenet_enabled === true || paymentSettings?.is_authorizenet_enabled === '1') {
+    if (paymentSettings?.authorizenet_enabled === true || paymentSettings?.authorizenet_enabled === '1') {
       methods.push({
         id: 'authorizenet',
         name: t('AuthorizeNet'),
@@ -382,7 +382,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_fedapay_enabled === true || paymentSettings?.is_fedapay_enabled === '1') {
+    if (paymentSettings?.fedapay_enabled === true || paymentSettings?.fedapay_enabled === '1') {
       methods.push({
         id: 'fedapay',
         name: t('FedaPay'),
@@ -391,7 +391,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_payhere_enabled === true || paymentSettings?.is_payhere_enabled === '1') {
+    if (paymentSettings?.payhere_enabled === true || paymentSettings?.payhere_enabled === '1') {
       methods.push({
         id: 'payhere',
         name: t('PayHere'),
@@ -400,7 +400,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_cinetpay_enabled === true || paymentSettings?.is_cinetpay_enabled === '1') {
+    if (paymentSettings?.cinetpay_enabled === true || paymentSettings?.cinetpay_enabled === '1') {
       methods.push({
         id: 'cinetpay',
         name: t('CinetPay'),
@@ -409,7 +409,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_paiement_enabled === true || paymentSettings?.is_paiement_enabled === '1') {
+    if (paymentSettings?.paiement_enabled === true || paymentSettings?.paiement_enabled === '1') {
       methods.push({
         id: 'paiement',
         name: t('Paiement Pro'),
@@ -418,7 +418,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_nepalste_enabled === true || paymentSettings?.is_nepalste_enabled === '1') {
+    if (paymentSettings?.nepalste_enabled === true || paymentSettings?.nepalste_enabled === '1') {
       methods.push({
         id: 'nepalste',
         name: t('Nepalste'),
@@ -427,7 +427,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_yookassa_enabled === true || paymentSettings?.is_yookassa_enabled === '1') {
+    if (paymentSettings?.yookassa_enabled === true || paymentSettings?.yookassa_enabled === '1') {
       methods.push({
         id: 'yookassa',
         name: t('YooKassa'),
@@ -436,7 +436,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_aamarpay_enabled === true || paymentSettings?.is_aamarpay_enabled === '1') {
+    if (paymentSettings?.aamarpay_enabled === true || paymentSettings?.aamarpay_enabled === '1') {
       methods.push({
         id: 'aamarpay',
         name: t('Aamarpay'),
@@ -445,7 +445,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_midtrans_enabled === true || paymentSettings?.is_midtrans_enabled === '1') {
+    if (paymentSettings?.midtrans_enabled === true || paymentSettings?.midtrans_enabled === '1') {
       methods.push({
         id: 'midtrans',
         name: t('Midtrans'),
@@ -454,7 +454,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_paymentwall_enabled === true || paymentSettings?.is_paymentwall_enabled === '1') {
+    if (paymentSettings?.paymentwall_enabled === true || paymentSettings?.paymentwall_enabled === '1') {
       methods.push({
         id: 'paymentwall',
         name: t('PaymentWall'),
@@ -463,7 +463,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       });
     }
 
-    if (paymentSettings?.is_sspay_enabled === true || paymentSettings?.is_sspay_enabled === '1') {
+    if (paymentSettings?.sspay_enabled === true || paymentSettings?.sspay_enabled === '1') {
       methods.push({
         id: 'sspay',
         name: t('SSPay'),
@@ -619,324 +619,258 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
   };
 
   return (
-    <PageTemplate
-      title={t("Plans")}
-      description={t("Manage subscription plans for your customers")}
-      url="/plans"
-    >
-      <div className="space-y-8">
-        {/* Header with controls */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight mb-2">
-              {isAdmin ? t("Subscription Plans") : t("Choose Your Plan")}
-            </h1>
-            <p className="text-muted-foreground max-w-2xl">
-              {isAdmin
-                ? t("Create and manage subscription plans to offer different service tiers to your customers.")
-                : t("Select the perfect plan for your business needs")
-              }
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <Tabs
-              value={billingCycle}
-              onValueChange={(v) => handleBillingCycleChange(v as 'monthly' | 'yearly')}
-              className="w-full sm:w-[400px]"
-            >
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="monthly">{t("Monthly")}</TabsTrigger>
-                <TabsTrigger value="yearly">
-                  {t("Yearly")}
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-            {isAdmin && (
-              <Button className="w-full sm:w-auto" onClick={() => router.get(route('plans.create'))}>
-                <Plus className="h-4 w-4 mr-2" />
-                {t("Add Plan")}
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Plans grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {plans.map((plan) => (
-            <div
-              key={plan.id}
-              className={`group relative h-full flex flex-col ${
-                plan.recommended
-                  ? 'z-10 scale-[1.02]'
-                  : ''
-              }`}
-            >
-              {/* Card with decorative elements */}
-              <div className={`
-                absolute inset-0 rounded-2xl
-                ${plan.recommended
-                  ? 'bg-gradient-to-br from-primary/20 via-primary/10 to-transparent border-primary/30'
-                  : 'bg-gradient-to-br from-gray-100/80 via-gray-50/50 to-transparent border-gray-200/80'
-                }
-                border shadow-lg transition-all duration-300
-                group-hover:shadow-xl group-hover:shadow-primary/5
-                overflow-hidden
-              `}>
-                {/* Decorative background elements */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/10 to-transparent rounded-full -mr-16 -mt-16 opacity-70"></div>
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-primary/10 to-transparent rounded-full -ml-12 -mb-12 opacity-50"></div>
-              </div>
-
-              {/* Recommended indicator */}
-              {plan.recommended && (
-                <div className="absolute -top-4 left-0 right-0 flex justify-center z-20">
-                  <div className="bg-primary text-primary-foreground px-4 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 text-sm font-medium">
-                    <Sparkles className="h-4 w-4" />
-                    {t("Recommended")}
+      <PageTemplate title={t('Plans')} description={t('Manage subscription plans for your customers')} url="/plans">
+          <div className="space-y-8">
+              {/* Header with controls */}
+              <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+                  <div>
+                      <h1 className="mb-2 text-3xl font-bold tracking-tight">{isAdmin ? t('Subscription Plans') : t('Choose Your Plan')}</h1>
+                      <p className="text-muted-foreground max-w-2xl">
+                          {isAdmin
+                              ? t('Create and manage subscription plans to offer different service tiers to your customers.')
+                              : t('Select the perfect plan for your business needs')}
+                      </p>
                   </div>
-                </div>
-              )}
-
-              {/* Status indicator - Admin only */}
-              {isAdmin && (
-                <div className="absolute top-4 right-4 z-10 flex gap-2">
-                  {plan.is_default && (
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-                      {t("Default")}
-                    </div>
-                  )}
-                  <div className={`
-                    flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
-                    ${plan.status
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : 'bg-red-100 text-red-700'
-                    }
-                  `}>
-                    <span className={`
-                      w-2 h-2 rounded-full
-                      ${plan.status ? 'bg-emerald-500' : 'bg-red-500'}
-                    `}></span>
-                    {plan.status ? t("Active") : t("Inactive")}
-                  </div>
-                </div>
-              )}
-
-              {/* Current plan indicator - Company only */}
-              {!isAdmin && plan.is_current && (
-                <div className="absolute top-4 right-4 z-10">
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                    <Crown className="h-3 w-3" />
-                    {t("Current")}
-                  </div>
-                </div>
-              )}
-
-              {/* Content container */}
-              <div className="relative z-10 flex flex-col h-full p-6 pt-8">
-                {/* Plan header */}
-                <div className="mb-6">
-                  <h3 className={`
-                    text-2xl font-bold mb-2
-                    ${plan.recommended ? 'text-primary' : ''}
-                  `}>
-                    {plan.name}
-                  </h3>
-                  <div className="flex items-baseline gap-1.5 mb-3">
-                    <span className={`
-                      text-3xl font-extrabold
-                      ${plan.recommended ? 'text-primary' : ''}
-                    `}>
-                      {formatCurrencyForPlansAndReferrals(plan.price)}
-                    </span>
-                    <span className="text-muted-foreground text-sm">
-                      /{t(plan.duration.toLowerCase())}
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 mb-3">
-                    {plan.description}
-                  </p>
-                  {plan.trial_days > 0 && (
-                    <div className="flex items-center gap-1.5 text-sm text-primary">
-                      <Sparkles className="h-3.5 w-3.5" />
-                      {t("{{days}} days free trial", { days: plan.trial_days })}
-                    </div>
-                  )}
-                </div>
-
-                {/* Divider with icon */}
-                <div className="relative flex items-center my-4">
-                  <div className="flex-grow border-t border-gray-200"></div>
-                  <div className="mx-3 bg-primary/10 text-primary p-1.5 rounded-full">
-                    <CheckCircle2 className="h-4 w-4" />
-                  </div>
-                  <div className="flex-grow border-t border-gray-200"></div>
-                </div>
-
-                {/* Features */}
-                <div className="mb-6 flex-1">
-                  <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                    {t("Features")}
-                  </h4>
-                  <ul className="space-y-2.5">
-                    {commonFeatures.map((feature, index) => {
-                      const included = isFeatureIncluded(plan, feature);
-                      return (
-                        <li key={index} className="flex items-center gap-3">
-                          {included ? (
-                            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                              <CheckCircle2 className="h-3.5 w-3.5" />
-                            </div>
-                          ) : (
-                            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center">
-                              <X className="h-3.5 w-3.5" />
-                            </div>
-                          )}
-                          <span className={`text-sm ${included ? 'font-medium' : 'text-muted-foreground'}`}>
-                            {t(feature)}
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-
-                {/* Usage limits */}
-                <div className="mb-6">
-                  <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                    {t("Usage Limits")}
-                  </h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-3 group-hover:border-primary/30 transition-colors">
-                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-transparent opacity-70"></div>
-                      <div className="relative flex items-center gap-2 mb-1">
-                        <div className="p-1.5 rounded-full bg-emerald-100 text-emerald-600">
-                          {statIcons.users}
-                        </div>
-                        <div className="text-xl font-bold text-emerald-700">
-                          {plan.stats.users}
-                        </div>
-                      </div>
-                      <div className="relative text-xs font-medium text-emerald-600 uppercase tracking-wide">
-                        {t("Team Members")}
-                      </div>
-                    </div>
-                    <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-3 group-hover:border-primary/30 transition-colors">
-                      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-70"></div>
-                      <div className="relative flex items-center gap-2 mb-1">
-                        <div className="p-1.5 rounded-full bg-blue-100 text-blue-600">
-                          {statIcons.cases}
-                        </div>
-                        <div className="text-xl font-bold text-blue-700">
-                          {plan.stats.cases}
-                        </div>
-                      </div>
-                      <div className="relative text-xs font-medium text-blue-600 uppercase tracking-wide">
-                        {t("Cases")}
-                      </div>
-                    </div>
-                    <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-3 group-hover:border-primary/30 transition-colors">
-                      <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-70"></div>
-                      <div className="relative flex items-center gap-2 mb-1">
-                        <div className="p-1.5 rounded-full bg-purple-100 text-purple-600">
-                          {statIcons.clients}
-                        </div>
-                        <div className="text-xl font-bold text-purple-700">
-                          {plan.stats.clients}
-                        </div>
-                      </div>
-                      <div className="relative text-xs font-medium text-purple-600 uppercase tracking-wide">
-                        {t("Clients")}
-                      </div>
-                    </div>
-                    <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-3 group-hover:border-primary/30 transition-colors">
-                      <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-transparent opacity-70"></div>
-                      <div className="relative flex items-center gap-2 mb-1">
-                        <div className="p-1.5 rounded-full bg-amber-100 text-amber-600">
-                          {statIcons.storage}
-                        </div>
-                        <div className="text-xl font-bold text-amber-700">
-                          {plan.stats.storage}
-                        </div>
-                      </div>
-                      <div className="relative text-xs font-medium text-amber-600 uppercase tracking-wide">
-                        {t("Storage")}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="mt-auto pt-4 border-t border-gray-200">
-                  {isAdmin ? (
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          checked={plan.status}
-                          onCheckedChange={() => togglePlanStatus(plan.id)}
-                          className={plan.status ? "data-[state=checked]:bg-primary" : ""}
-                        />
-                        <span className="text-sm text-muted-foreground">
-                          {plan.status ? t("Active") : t("Inactive")}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-9 w-9 p-0 border-gray-200 hover:border-primary hover:text-primary"
-                          title={t("Edit")}
-                          onClick={() => router.get(route('plans.edit', plan.id))}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-
-                        {!plan.is_default && !plan.has_users && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-9 w-9 p-0 border-gray-200 hover:border-red-400 hover:text-red-600"
-                            title={t("Delete")}
-                            onClick={() => handleDelete(plan)}
-                          >
-                            <Trash2 className="h-4 w-4" />
+                  <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+                      <Tabs
+                          value={billingCycle}
+                          onValueChange={(v) => handleBillingCycleChange(v as 'monthly' | 'yearly')}
+                          className="w-full sm:w-[400px]"
+                      >
+                          <TabsList className="grid w-full grid-cols-2">
+                              <TabsTrigger value="monthly">{t('Monthly')}</TabsTrigger>
+                              <TabsTrigger value="yearly">{t('Yearly')}</TabsTrigger>
+                          </TabsList>
+                      </Tabs>
+                      {isAdmin && (
+                          <Button className="w-full sm:w-auto" onClick={() => router.get(route('plans.create'))}>
+                              <Plus className="mr-2 h-4 w-4" />
+                              {t('Add Plan')}
                           </Button>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    getActionButton(plan)
-                  )}
-                </div>
+                      )}
+                  </div>
               </div>
-            </div>
-          ))}
-        </div>
+              {/* Plans grid */}
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+                  {plans.map((plan) => (
+                      <div key={plan.id} className={`group relative flex h-full flex-col ${plan.recommended ? 'z-10 scale-[1.02]' : ''}`}>
+                          {/* Card with decorative elements */}
+                          <div
+                              className={`absolute inset-0 rounded-2xl ${
+                                  plan.recommended
+                                      ? 'from-primary/20 via-primary/10 border-primary/30 bg-gradient-to-br to-transparent'
+                                      : 'border-gray-200/80 bg-gradient-to-br from-gray-100/80 via-gray-50/50 to-transparent'
+                              } group-hover:shadow-primary/5 overflow-hidden border shadow-lg transition-all duration-300 group-hover:shadow-xl`}
+                          >
+                              {/* Decorative background elements */}
+                              <div className="from-primary/10 absolute top-0 right-0 -mt-16 -mr-16 h-32 w-32 rounded-full bg-gradient-to-br to-transparent opacity-70"></div>
+                              <div className="from-primary/10 absolute bottom-0 left-0 -mb-12 -ml-12 h-24 w-24 rounded-full bg-gradient-to-tr to-transparent opacity-50"></div>
+                          </div>
 
-        {/* Delete Modal - Admin only */}
-        {isAdmin && (
-          <CrudDeleteModal
-            isOpen={isDeleteModalOpen}
-            onClose={() => setIsDeleteModalOpen(false)}
-            onConfirm={handleDeleteConfirm}
-            itemName={planToDelete?.name || ''}
-            entityName="plan"
-          />
-        )}
+                          {/* Recommended indicator */}
+                          {plan.recommended && (
+                              <div className="absolute -top-4 right-0 left-0 z-20 flex justify-center">
+                                  <div className="bg-primary text-primary-foreground flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium shadow-lg">
+                                      <Sparkles className="h-4 w-4" />
+                                      {t('Recommended')}
+                                  </div>
+                              </div>
+                          )}
 
-        {/* Subscription Modal - Company only */}
-        {!isAdmin && selectedPlan && (
-          <PlanSubscriptionModal
-            isOpen={isSubscriptionModalOpen}
-            onClose={() => {
-              setIsSubscriptionModalOpen(false);
-              setSelectedPlan(null);
-            }}
-            plan={selectedPlan}
-            billingCycle={billingCycle}
-            paymentMethods={formatPaymentMethods(selectedPlan.paymentMethods)}
-          />
-        )}
-      </div>
-    </PageTemplate>
+                          {/* Status indicator - Admin only */}
+                          {isAdmin && (
+                              <div className="absolute top-4 right-4 z-10 flex gap-2">
+                                  {plan.is_default && (
+                                      <div className="flex items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700">
+                                          {t('Default')}
+                                      </div>
+                                  )}
+                                  <div
+                                      className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+                                          plan.status ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                                      } `}
+                                  >
+                                      <span className={`h-2 w-2 rounded-full ${plan.status ? 'bg-emerald-500' : 'bg-red-500'} `}></span>
+                                      {plan.status ? t('Active') : t('Inactive')}
+                                  </div>
+                              </div>
+                          )}
+
+                          {/* Current plan indicator - Company only */}
+                          {!isAdmin && plan.is_current && (
+                              <div className="absolute top-4 right-4 z-10">
+                                  <div className="bg-primary/10 text-primary flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium">
+                                      <Crown className="h-3 w-3" />
+                                      {t('Current')}
+                                  </div>
+                              </div>
+                          )}
+
+                          {/* Content container */}
+                          <div className="relative z-10 flex h-full flex-col p-6 pt-8">
+                              {/* Plan header */}
+                              <div className="mb-6">
+                                  <h3 className={`mb-2 text-2xl font-bold ${plan.recommended ? 'text-primary' : ''} `}>{plan.name}</h3>
+                                  <div className="mb-3 flex items-baseline gap-1.5">
+                                      <span className={`text-3xl font-extrabold ${plan.recommended ? 'text-primary' : ''} `}>
+                                          {formatCurrencyForPlansAndReferrals(plan.price)}
+                                      </span>
+                                      <span className="text-muted-foreground text-sm">/{t(plan.duration.toLowerCase())}</span>
+                                  </div>
+                                  <p className="text-muted-foreground mb-3 line-clamp-2 text-sm leading-relaxed">{plan.description}</p>
+                                  {plan.trial_days > 0 && (
+                                      <div className="text-primary flex items-center gap-1.5 text-sm">
+                                          <Sparkles className="h-3.5 w-3.5" />
+                                          {t('{{days}} days free trial', { days: plan.trial_days })}
+                                      </div>
+                                  )}
+                              </div>
+
+                              {/* Divider with icon */}
+                              <div className="relative my-4 flex items-center">
+                                  <div className="flex-grow border-t border-gray-200"></div>
+                                  <div className="bg-primary/10 text-primary mx-3 rounded-full p-1.5">
+                                      <CheckCircle2 className="h-4 w-4" />
+                                  </div>
+                                  <div className="flex-grow border-t border-gray-200"></div>
+                              </div>
+
+                              {/* Features */}
+                              <div className="mb-6 flex-1">
+                                  <h4 className="text-muted-foreground mb-3 text-sm font-semibold tracking-wider uppercase">{t('Features')}</h4>
+                                  <ul className="space-y-2.5">
+                                      {commonFeatures.map((feature, index) => {
+                                          const included = isFeatureIncluded(plan, feature);
+                                          return (
+                                              <li key={index} className="flex items-center gap-3">
+                                                  {included ? (
+                                                      <div className="bg-primary/10 text-primary flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full">
+                                                          <CheckCircle2 className="h-3.5 w-3.5" />
+                                                      </div>
+                                                  ) : (
+                                                      <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+                                                          <X className="h-3.5 w-3.5" />
+                                                      </div>
+                                                  )}
+                                                  <span className={`text-sm ${included ? 'font-medium' : 'text-muted-foreground'}`}>
+                                                      {t(feature)}
+                                                  </span>
+                                              </li>
+                                          );
+                                      })}
+                                  </ul>
+                              </div>
+
+                              {/* Usage limits */}
+                              <div className="mb-6">
+                                  <h4 className="text-muted-foreground mb-3 text-sm font-semibold tracking-wider uppercase">{t('Usage Limits')}</h4>
+                                  <div className="grid grid-cols-2 gap-3">
+                                      <div className="group-hover:border-primary/30 relative overflow-hidden rounded-xl border border-gray-200 bg-white p-3 transition-colors">
+                                          <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-transparent opacity-70"></div>
+                                          <div className="relative mb-1 flex items-center gap-2">
+                                              <div className="rounded-full bg-emerald-100 p-1.5 text-emerald-600">{statIcons.users}</div>
+                                              <div className="text-xl font-bold text-emerald-700">{plan.stats.users}</div>
+                                          </div>
+                                          <div className="relative text-xs font-medium tracking-wide text-emerald-600 uppercase">
+                                              {t('Team Members')}
+                                          </div>
+                                      </div>
+                                      <div className="group-hover:border-primary/30 relative overflow-hidden rounded-xl border border-gray-200 bg-white p-3 transition-colors">
+                                          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-70"></div>
+                                          <div className="relative mb-1 flex items-center gap-2">
+                                              <div className="rounded-full bg-blue-100 p-1.5 text-blue-600">{statIcons.cases}</div>
+                                              <div className="text-xl font-bold text-blue-700">{plan.stats.cases}</div>
+                                          </div>
+                                          <div className="relative text-xs font-medium tracking-wide text-blue-600 uppercase">{t('Cases')}</div>
+                                      </div>
+                                      <div className="group-hover:border-primary/30 relative overflow-hidden rounded-xl border border-gray-200 bg-white p-3 transition-colors">
+                                          <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-70"></div>
+                                          <div className="relative mb-1 flex items-center gap-2">
+                                              <div className="rounded-full bg-purple-100 p-1.5 text-purple-600">{statIcons.clients}</div>
+                                              <div className="text-xl font-bold text-purple-700">{plan.stats.clients}</div>
+                                          </div>
+                                          <div className="relative text-xs font-medium tracking-wide text-purple-600 uppercase">{t('Clients')}</div>
+                                      </div>
+                                      <div className="group-hover:border-primary/30 relative overflow-hidden rounded-xl border border-gray-200 bg-white p-3 transition-colors">
+                                          <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-transparent opacity-70"></div>
+                                          <div className="relative mb-1 flex items-center gap-2">
+                                              <div className="rounded-full bg-amber-100 p-1.5 text-amber-600">{statIcons.storage}</div>
+                                              <div className="text-xl font-bold text-amber-700">{plan.stats.storage}</div>
+                                          </div>
+                                          <div className="relative text-xs font-medium tracking-wide text-amber-600 uppercase">{t('Storage')}</div>
+                                      </div>
+                                  </div>
+                              </div>
+
+                              {/* Actions */}
+                              <div className="mt-auto border-t border-gray-200 pt-4">
+                                  {isAdmin ? (
+                                      <div className="flex items-center justify-between">
+                                          <div className="flex items-center gap-2">
+                                              <Switch
+                                                  checked={plan.status}
+                                                  onCheckedChange={() => togglePlanStatus(plan.id)}
+                                                  className={plan.status ? 'data-[state=checked]:bg-primary' : ''}
+                                              />
+                                              <span className="text-muted-foreground text-sm">{plan.status ? t('Active') : t('Inactive')}</span>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                              <Button
+                                                  variant="outline"
+                                                  size="sm"
+                                                  className="hover:border-primary hover:text-primary h-9 w-9 border-gray-200 p-0"
+                                                  title={t('Edit')}
+                                                  onClick={() => router.get(route('plans.edit', plan.id))}
+                                              >
+                                                  <Pencil className="h-4 w-4" />
+                                              </Button>
+
+                                              {!plan.is_default && !plan.has_users && (
+                                                  <Button
+                                                      variant="outline"
+                                                      size="sm"
+                                                      className="h-9 w-9 border-gray-200 p-0 hover:border-red-400 hover:text-red-600"
+                                                      title={t('Delete')}
+                                                      onClick={() => handleDelete(plan)}
+                                                  >
+                                                      <Trash2 className="h-4 w-4" />
+                                                  </Button>
+                                              )}
+                                          </div>
+                                      </div>
+                                  ) : (
+                                      getActionButton(plan)
+                                  )}
+                              </div>
+                          </div>
+                      </div>
+                  ))}
+              </div>
+              {/* Delete Modal - Admin only */}
+              {isAdmin && (
+                  <CrudDeleteModal
+                      isOpen={isDeleteModalOpen}
+                      onClose={() => setIsDeleteModalOpen(false)}
+                      onConfirm={handleDeleteConfirm}
+                      itemName={planToDelete?.name || ''}
+                      entityName="plan"
+                  />
+              )}
+            
+              {/* Subscription Modal - Company only */}
+              {!isAdmin && selectedPlan && (
+                  <PlanSubscriptionModal
+                      isOpen={isSubscriptionModalOpen}
+                      onClose={() => {
+                          setIsSubscriptionModalOpen(false);
+                          setSelectedPlan(null);
+                      }}
+                      plan={selectedPlan}
+                      billingCycle={billingCycle}
+                      paymentMethods={formatPaymentMethods(selectedPlan.paymentMethods)}
+                  />
+              )}
+          </div>
+      </PageTemplate>
   );
 }
