@@ -126,25 +126,25 @@ class EmailTemplateService
     public function sendTemplateEmailWithLanguage(EmailTemplateName $templateName, array $variables, string $toEmail, string $toName = null, string $language = 'en')
     {
         // Prevent duplicate emails within same request
-        $emailKey = md5($templateName . $toEmail . serialize($variables));
+        $emailKey = md5($templateName->value . $toEmail . serialize($variables));
         if (isset(self::$sentEmails[$emailKey])) {
-            \Log::info('Duplicate email prevented', ['template' => $templateName, 'email' => $toEmail]);
+            \Log::info('Duplicate email prevented', ['template' => $templateName->value, 'email' => $toEmail]);
             return true;
         }
         self::$sentEmails[$emailKey] = true;
 
         try {
             \Log::info('=== EMAIL TEMPLATE LANGUAGE DEBUG ===', [
-                'template_name' => $templateName,
+                'template_name' => $templateName->value,
                 'requested_language' => $language,
                 'to_email' => $toEmail
             ]);
 
             // Get email template
-            $template = EmailTemplate::where('name', $templateName)->first();
+            $template = EmailTemplate::where('name', $templateName->value)->first();
 
             if (!$template) {
-                throw new Exception("Email template '{$templateName}' not found");
+                throw new Exception("Email template '{$templateName->value}' not found");
             }
 
             // Get template content for the specified language
@@ -175,7 +175,7 @@ class EmailTemplateService
             }
 
             if (!$templateLang) {
-                throw new Exception("No content found for template '{$templateName}'");
+                throw new Exception("No content found for template '{$templateName->value}'");
             }
 
             // Replace variables in subject and content
