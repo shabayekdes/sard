@@ -11,7 +11,7 @@ return [
         ],
     ],
     'bank' => [
-        'enabled' => env('PAYMENT_BANK_ENABLED', false),
+        'enabled' => env('PAYMENT_BANK_ENABLED', true),
         'name' => [
             'en' => 'Bank Transfer',
             'ar' => 'تحويل بنكي',

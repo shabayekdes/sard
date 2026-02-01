@@ -29,11 +29,14 @@ class SettingsController extends Controller
     public function index()
     {
         // Get system settings using helper function
-        $systemSettings = sanitizeEmailSettingsForUi(settings());
+        $systemSettings = sanitizeSettingsForUi(settings());
         $currencies = CurrencyResource::collection(
             Currency::where('status', true)->get()
         )->resolve();
-        $paymentSettings = PaymentSetting::getUserSettings(auth()->id());
+        $paymentSettings = sanitizeSettingsForUi(
+            PaymentSetting::getUserSettings(auth()->id()),
+            auth()->id()
+        );
         $webhooks = Webhook::where('user_id', auth()->id())->get();
         $companySettings = CompanySetting::where('created_by', createdBy())->get();
         $taxRates = TaxRate::where('is_active', true)

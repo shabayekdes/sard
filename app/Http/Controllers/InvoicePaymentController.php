@@ -219,8 +219,8 @@ class InvoicePaymentController extends Controller
         $paymentGateways = config('payment_methods');
 
         foreach ($paymentGateways as $key => $config) {
-            $enabledKey = "{$key}_enabled";
-            if (($settings[$enabledKey] ?? '0') === '1') {
+            $isEnabled = $settings[$key . '_enabled'] ?? false;
+            if ($isEnabled) {
                 $gateways[] = [
                     'id' => $key,
                     'name' => $config['name'][app()->getLocale()],
