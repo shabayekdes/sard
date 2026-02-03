@@ -62,7 +62,7 @@ class ClientController extends Controller
         $clientTypes = ClientType::withPermissionCheck()
             ->where('status', 'active')
             ->get(['id', 'name'])
-            ->map(function ($clientType) {
+            ->map(function (ClientType $clientType) {
                 return [
                     'id' => $clientType->id,
                     'name' => $clientType->name, // Translated value for current locale
@@ -100,19 +100,23 @@ class ClientController extends Controller
         $planLimits = null;
         if ($authUser->type === 'company' && $authUser->plan) {
             $currentClients = Client::where('created_by', $authUser->id)->count();
+            $maxClients = $authUser->plan->max_clients;
+            $isUnlimited = $authUser->plan->isUnlimitedLimit($maxClients);
             $planLimits = [
                 'current_clients' => $currentClients,
-                'max_clients' => $authUser->plan->max_clients,
-                'can_create' => $currentClients < $authUser->plan->max_clients,
+                'max_clients' => $maxClients,
+                'can_create' => $isUnlimited ? true : $currentClients < $maxClients,
             ];
         } elseif ($authUser->type !== 'superadmin' && $authUser->created_by) {
             $companyUser = User::find($authUser->created_by);
             if ($companyUser && $companyUser->type === 'company' && $companyUser->plan) {
                 $currentClients = Client::where('created_by', $companyUser->id)->count();
+                $maxClients = $companyUser->plan->max_clients;
+                $isUnlimited = $companyUser->plan->isUnlimitedLimit($maxClients);
                 $planLimits = [
                     'current_clients' => $currentClients,
-                    'max_clients' => $companyUser->plan->max_clients,
-                    'can_create' => $currentClients < $companyUser->plan->max_clients,
+                    'max_clients' => $maxClients,
+                    'can_create' => $isUnlimited ? true : $currentClients < $maxClients,
                 ];
             }
         }
@@ -136,8 +140,9 @@ class ClientController extends Controller
         if ($authUser->type === 'company' && $authUser->plan) {
             $currentClients = Client::where('created_by', $authUser->id)->count();
             $maxClients = $authUser->plan->max_clients;
+            $isUnlimited = $authUser->plan->isUnlimitedLimit($maxClients);
 
-            if ($currentClients >= $maxClients) {
+            if (!$isUnlimited && $currentClients >= $maxClients) {
                 return redirect()->back()->with('error', __('Client limit exceeded. Your plan allows maximum :max clients. Please upgrade your plan.', ['max' => $maxClients]));
             }
         } elseif ($authUser->type !== 'superadmin' && $authUser->created_by) {
@@ -145,8 +150,9 @@ class ClientController extends Controller
             if ($companyUser && $companyUser->type === 'company' && $companyUser->plan) {
                 $currentClients = Client::where('created_by', $companyUser->id)->count();
                 $maxClients = $companyUser->plan->max_clients;
+                $isUnlimited = $companyUser->plan->isUnlimitedLimit($maxClients);
 
-                if ($currentClients >= $maxClients) {
+                if (!$isUnlimited && $currentClients >= $maxClients) {
                     return redirect()->back()->with('error', __('Client limit exceeded. Your company plan allows maximum :max clients. Please contact your administrator.', ['max' => $maxClients]));
                 }
             }

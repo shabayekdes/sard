@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
@@ -15,6 +16,7 @@ interface Plan {
   name: string;
   price: number;
   yearly_price: number | null;
+  billing_cycle: 'monthly' | 'yearly' | 'both';
   duration: string;
   description: string | null;
   max_users: number;
@@ -44,6 +46,7 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
     name: plan?.name || '',
     price: plan?.price || 0,
     yearly_price: plan?.yearly_price || undefined,
+    billing_cycle: plan?.billing_cycle || 'both',
     duration: plan?.duration || 'monthly',
     description: plan?.description || '',
     max_users: plan?.max_users || 0,
@@ -69,6 +72,15 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
 
   const handleDefaultChange = (checked: boolean) => {
     setFormData(prev => ({ ...prev, is_default: checked }));
+  };
+
+  const handleBillingCycleChange = (value: 'monthly' | 'yearly' | 'both') => {
+    setFormData(prev => ({
+      ...prev,
+      billing_cycle: value,
+      duration: value === 'yearly' ? 'yearly' : 'monthly',
+      yearly_price: value === 'monthly' ? undefined : prev.yearly_price
+    }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -121,6 +133,23 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
               </div>
 
               <div>
+                <Label htmlFor="billing_cycle">{t("Billing Availability")}</Label>
+                <Select
+                  value={formData.billing_cycle}
+                  onValueChange={(value) => handleBillingCycleChange(value as 'monthly' | 'yearly' | 'both')}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monthly">{t("Monthly only")}</SelectItem>
+                    <SelectItem value="yearly">{t("Yearly only")}</SelectItem>
+                    <SelectItem value="both">{t("Monthly & Yearly")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
                 <Label htmlFor="price">{t("Monthly Price")}</Label>
                 <Input
                   id="price"
@@ -129,12 +158,18 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
                   step="0.01"
                   value={formData.price}
                   onChange={handleChange}
-                  required
+                  required={formData.billing_cycle !== 'yearly'}
+                  disabled={formData.billing_cycle === 'yearly'}
                 />
               </div>
 
               <div>
-                <Label htmlFor="yearly_price">{t("Yearly Price")} <span className="text-sm text-muted-foreground">({t("Optional")})</span></Label>
+                <Label htmlFor="yearly_price">
+                  {t("Yearly Price")}
+                  {formData.billing_cycle !== 'yearly' && (
+                    <span className="text-sm text-muted-foreground">({t("Optional")})</span>
+                  )}
+                </Label>
                 <Input
                   id="yearly_price"
                   name="yearly_price"
@@ -143,6 +178,8 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
                   value={formData.yearly_price || ''}
                   onChange={handleChange}
                   placeholder={t("Leave empty for 20% discount")}
+                  required={formData.billing_cycle === 'yearly'}
+                  disabled={formData.billing_cycle === 'monthly'}
                 />
               </div>
 
@@ -165,10 +202,12 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
                   id="max_users"
                   name="max_users"
                   type="number"
+                  min="-1"
                   value={formData.max_users}
                   onChange={handleChange}
                   required
                 />
+                <p className="text-xs text-muted-foreground mt-1">{t('Use -1 for Unlimited')}</p>
               </div>
 
               <div>
@@ -177,10 +216,12 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
                   id="max_cases"
                   name="max_cases"
                   type="number"
+                  min="-1"
                   value={formData.max_cases}
                   onChange={handleChange}
                   required
                 />
+                <p className="text-xs text-muted-foreground mt-1">{t('Use -1 for Unlimited')}</p>
               </div>
 
               <div>
@@ -189,10 +230,12 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
                   id="max_clients"
                   name="max_clients"
                   type="number"
+                  min="-1"
                   value={formData.max_clients}
                   onChange={handleChange}
                   required
                 />
+                <p className="text-xs text-muted-foreground mt-1">{t('Use -1 for Unlimited')}</p>
               </div>
 
               <div>
@@ -202,10 +245,12 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
                   name="storage_limit"
                   type="number"
                   step="0.01"
+                  min="-1"
                   value={formData.storage_limit}
                   onChange={handleChange}
                   required
                 />
+                <p className="text-xs text-muted-foreground mt-1">{t('Use -1 for Unlimited')}</p>
               </div>
 
               <div>

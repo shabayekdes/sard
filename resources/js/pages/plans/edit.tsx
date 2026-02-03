@@ -6,6 +6,7 @@ interface Plan {
   name: string;
   price: number;
   yearly_price: number | null;
+  billing_cycle: 'monthly' | 'yearly' | 'both';
   duration: string;
   description: string | null;
   business: number;

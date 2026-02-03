@@ -13,15 +13,17 @@ return new class extends Migration
     {
         Schema::create('plans', function (Blueprint $table) {
             $table->id();
-            $table->string('name',100)->unique();
+            $table->json('name');
             $table->float('price',30, 2)->default(0); // Monthly price
             $table->float('yearly_price',30, 2)->nullable(); // Yearly price
+            $table->string('billing_cycle')->default('both');
+
             $table->string('duration',100);
 
             $table->integer('max_users')->default(0);
             $table->integer('max_cases')->default(0);
             $table->integer('max_clients')->default(0);
-            $table->text('description')->nullable();
+            $table->json('description')->nullable();
             $table->string('enable_branding',255)->default('on');
             $table->string('pwa_business')->default('off');
             $table->string('enable_chatgpt',255)->default('on');

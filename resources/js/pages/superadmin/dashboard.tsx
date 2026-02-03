@@ -71,6 +71,17 @@ export default function SuperAdminDashboard({ dashboardData }: { dashboardData: 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
+  const isUnlimited = (value: number | string) => {
+    if (value === null || value === undefined) return false;
+    const numeric = typeof value === 'string' ? parseFloat(value) : value;
+    return numeric === -1;
+  };
+
+  const formatLimitValue = (value: number | string) => {
+    if (isUnlimited(value)) return t('Unlimited');
+    return value;
+  };
+
   const handleRefresh = () => {
     setIsRefreshing(true);
     router.reload({ only: ['dashboardData'] });
@@ -372,7 +383,7 @@ export default function SuperAdminDashboard({ dashboardData }: { dashboardData: 
                       </div>
                       <div className="flex items-center gap-2">
                         <FileText className="h-4 w-4 text-muted-foreground" />
-                        <span>{plan.features.max_cases} {t('cases limit')}</span>
+                        <span>{formatLimitValue(plan.features.max_cases)} {t('cases limit')}</span>
                       </div>
                     </div>
                   </div>

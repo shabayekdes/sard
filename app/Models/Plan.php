@@ -3,13 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Translatable\HasTranslations;
 
 class Plan extends Model
 {
+    use HasTranslations;
+
+    public array $translatable = ['name', 'description'];
     protected $fillable = [
         'name',
         'price',
         'yearly_price',
+        'billing_cycle',
         'duration',
         'description',
         'max_users',
@@ -63,6 +68,30 @@ class Plan extends Model
         }
         
         return $this->price;
+    }
+
+    /**
+     * Check if a limit value represents unlimited.
+     *
+     * @param mixed $value
+     * @return bool
+     */
+    public function isUnlimitedLimit($value)
+    {
+        return (int) $value === -1;
+    }
+
+    /**
+     * Determine if the plan supports a billing cycle.
+     *
+     * @param string $cycle
+     * @return bool
+     */
+    public function supportsBillingCycle($cycle)
+    {
+        $billingCycle = $this->billing_cycle ?: 'both';
+
+        return $billingCycle === 'both' || $billingCycle === $cycle;
     }
     
     /**

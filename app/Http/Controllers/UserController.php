@@ -72,10 +72,12 @@ class UserController extends BaseController
                 ->whereDoesntHave('roles', function($q) {
                     $q->where('name', 'client');
                 })->count();
+            $maxUsers = $authUser->plan->max_users;
+            $isUnlimited = $authUser->plan->isUnlimitedLimit($maxUsers);
             $planLimits = [
                 'current_users' => $currentUserCount,
-                'max_users' => $authUser->plan->max_users,
-                'can_create' => $currentUserCount < $authUser->plan->max_users
+                'max_users' => $maxUsers,
+                'can_create' => $isUnlimited ? true : $currentUserCount < $maxUsers
             ];
         }
         // Check for staff users (created by company users)
@@ -86,10 +88,12 @@ class UserController extends BaseController
                     ->whereDoesntHave('roles', function($q) {
                         $q->where('name', 'client');
                     })->count();
+                $maxUsers = $companyUser->plan->max_users;
+                $isUnlimited = $companyUser->plan->isUnlimitedLimit($maxUsers);
                 $planLimits = [
                     'current_users' => $currentUserCount,
-                    'max_users' => $companyUser->plan->max_users,
-                    'can_create' => $currentUserCount < $companyUser->plan->max_users
+                    'max_users' => $maxUsers,
+                    'can_create' => $isUnlimited ? true : $currentUserCount < $maxUsers
                 ];
             }
         }
@@ -124,8 +128,9 @@ class UserController extends BaseController
                     $q->where('name', 'client');
                 })->count();
             $maxUsers = $authUser->plan->max_users;
+            $isUnlimited = $authUser->plan->isUnlimitedLimit($maxUsers);
 
-            if ($currentUserCount >= $maxUsers) {
+            if (!$isUnlimited && $currentUserCount >= $maxUsers) {
                 return redirect()->back()->with('error', __('User limit exceeded. Your plan allows maximum :max users. Please upgrade your plan.', ['max' => $maxUsers]));
             }
         }
@@ -138,8 +143,9 @@ class UserController extends BaseController
                         $q->where('name', 'client');
                     })->count();
                 $maxUsers = $companyUser->plan->max_users;
+                $isUnlimited = $companyUser->plan->isUnlimitedLimit($maxUsers);
 
-                if ($currentUserCount >= $maxUsers) {
+                if (!$isUnlimited && $currentUserCount >= $maxUsers) {
                     return redirect()->back()->with('error', __('User limit exceeded. Your company plan allows maximum :max users. Please contact your administrator.', ['max' => $maxUsers]));
                 }
             }

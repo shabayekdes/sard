@@ -47,6 +47,7 @@ interface Plan {
   price: string | number;
   formatted_price?: string;
   duration: string;
+  billing_cycle?: 'monthly' | 'yearly' | 'both';
   description: string;
   trial_days: number;
   features: string[];
@@ -69,6 +70,8 @@ interface Props {
   plans: Plan[];
   billingCycle: 'monthly' | 'yearly';
   hasDefaultPlan?: boolean;
+  hasMonthlyPlans?: boolean;
+  hasYearlyPlans?: boolean;
   isAdmin?: boolean;
   currentPlan?: any;
   userTrialUsed?: boolean;
@@ -76,7 +79,18 @@ interface Props {
   pendingRequests?: any;
 }
 
-export default function Plans({ plans: initialPlans, billingCycle: initialBillingCycle = 'monthly', hasDefaultPlan, isAdmin = false, currentPlan, userTrialUsed, paymentMethods = [], pendingRequests = {} }: Props) {
+export default function Plans({
+  plans: initialPlans,
+  billingCycle: initialBillingCycle = 'monthly',
+  hasDefaultPlan,
+  hasMonthlyPlans = true,
+  hasYearlyPlans = true,
+  isAdmin = false,
+  currentPlan,
+  userTrialUsed,
+  paymentMethods = [],
+  pendingRequests = {}
+}: Props) {
   const { t } = useTranslation();
   const { flash } = usePage().props as any;
   const [plans, setPlans] = useState<Plan[]>(initialPlans);
@@ -92,6 +106,29 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
   useEffect(() => {
     setPlans(initialPlans);
   }, [initialPlans]);
+
+  const isUnlimited = (value: number | string) => {
+    if (value === null || value === undefined) return false;
+    const numeric = typeof value === 'string' ? parseFloat(value) : value;
+    return numeric === -1;
+  };
+
+  const formatLimitValue = (value: number | string, unit?: string) => {
+    if (value === null || value === undefined) return '-';
+    if (isUnlimited(value)) return t('Unlimited');
+    if (!unit) return value;
+    if (typeof value === 'string' && /[a-zA-Z]/.test(value)) return value;
+    return `${value} ${unit}`;
+  };
+
+  useEffect(() => {
+    if (billingCycle === 'monthly' && !hasMonthlyPlans && hasYearlyPlans) {
+      handleBillingCycleChange('yearly');
+    }
+    if (billingCycle === 'yearly' && !hasYearlyPlans && hasMonthlyPlans) {
+      handleBillingCycleChange('monthly');
+    }
+  }, [billingCycle, hasMonthlyPlans, hasYearlyPlans]);
 
   // Show flash messages
   useEffect(() => {
@@ -632,16 +669,18 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
                       </p>
                   </div>
                   <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-                      <Tabs
-                          value={billingCycle}
-                          onValueChange={(v) => handleBillingCycleChange(v as 'monthly' | 'yearly')}
-                          className="w-full sm:w-[400px]"
-                      >
-                          <TabsList className="grid w-full grid-cols-2">
-                              <TabsTrigger value="monthly">{t('Monthly')}</TabsTrigger>
-                              <TabsTrigger value="yearly">{t('Yearly')}</TabsTrigger>
-                          </TabsList>
-                      </Tabs>
+                      {hasMonthlyPlans && hasYearlyPlans && (
+                          <Tabs
+                              value={billingCycle}
+                              onValueChange={(v) => handleBillingCycleChange(v as 'monthly' | 'yearly')}
+                              className="w-full sm:w-[400px]"
+                          >
+                              <TabsList className="grid w-full grid-cols-2">
+                                  <TabsTrigger value="monthly">{t('Monthly')}</TabsTrigger>
+                                  <TabsTrigger value="yearly">{t('Yearly')}</TabsTrigger>
+                              </TabsList>
+                          </Tabs>
+                      )}
                       {isAdmin && (
                           <Button className="w-full sm:w-auto" onClick={() => router.get(route('plans.create'))}>
                               <Plus className="mr-2 h-4 w-4" />
@@ -769,7 +808,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
                                           <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-transparent opacity-70"></div>
                                           <div className="relative mb-1 flex items-center gap-2">
                                               <div className="rounded-full bg-emerald-100 p-1.5 text-emerald-600">{statIcons.users}</div>
-                                              <div className="text-xl font-bold text-emerald-700">{plan.stats.users}</div>
+                                          <div className="text-xl font-bold text-emerald-700">{formatLimitValue(plan.stats.users)}</div>
                                           </div>
                                           <div className="relative text-xs font-medium tracking-wide text-emerald-600 uppercase">
                                               {t('Team Members')}
@@ -779,7 +818,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
                                           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-70"></div>
                                           <div className="relative mb-1 flex items-center gap-2">
                                               <div className="rounded-full bg-blue-100 p-1.5 text-blue-600">{statIcons.cases}</div>
-                                              <div className="text-xl font-bold text-blue-700">{plan.stats.cases}</div>
+                                          <div className="text-xl font-bold text-blue-700">{formatLimitValue(plan.stats.cases)}</div>
                                           </div>
                                           <div className="relative text-xs font-medium tracking-wide text-blue-600 uppercase">{t('Cases')}</div>
                                       </div>
@@ -787,7 +826,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
                                           <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-70"></div>
                                           <div className="relative mb-1 flex items-center gap-2">
                                               <div className="rounded-full bg-purple-100 p-1.5 text-purple-600">{statIcons.clients}</div>
-                                              <div className="text-xl font-bold text-purple-700">{plan.stats.clients}</div>
+                                          <div className="text-xl font-bold text-purple-700">{formatLimitValue(plan.stats.clients)}</div>
                                           </div>
                                           <div className="relative text-xs font-medium tracking-wide text-purple-600 uppercase">{t('Clients')}</div>
                                       </div>
@@ -795,7 +834,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
                                           <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-transparent opacity-70"></div>
                                           <div className="relative mb-1 flex items-center gap-2">
                                               <div className="rounded-full bg-amber-100 p-1.5 text-amber-600">{statIcons.storage}</div>
-                                              <div className="text-xl font-bold text-amber-700">{plan.stats.storage}</div>
+                                          <div className="text-xl font-bold text-amber-700">{formatLimitValue(plan.stats.storage, 'GB')}</div>
                                           </div>
                                           <div className="relative text-xs font-medium tracking-wide text-amber-600 uppercase">{t('Storage')}</div>
                                       </div>

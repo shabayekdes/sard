@@ -29,8 +29,24 @@ class PlanController extends Controller
         
         $dbPlans = Plan::all();
         $hasDefaultPlan = $dbPlans->where('is_default', true)->count() > 0;
+        $hasMonthlyPlans = $dbPlans->contains(function (Plan $plan) {
+            return $plan->supportsBillingCycle('monthly');
+        });
+        $hasYearlyPlans = $dbPlans->contains(function (Plan $plan) {
+            return $plan->supportsBillingCycle('yearly');
+        });
+
+        if ($billingCycle === 'monthly' && !$hasMonthlyPlans && $hasYearlyPlans) {
+            $billingCycle = 'yearly';
+        }
+
+        if ($billingCycle === 'yearly' && !$hasYearlyPlans && $hasMonthlyPlans) {
+            $billingCycle = 'monthly';
+        }
         
-        $plans = $dbPlans->map(function ($plan) use ($billingCycle) {
+        $plans = $dbPlans->filter(function ($plan) use ($billingCycle) {
+            return $plan->supportsBillingCycle($billingCycle);
+        })->map(function ($plan) use ($billingCycle) {
             // Determine features based on plan attributes
             $features = [];
             if ($plan->enable_chatgpt === 'on') $features[] = 'AI Integration';
@@ -51,20 +67,21 @@ class PlanController extends Controller
                 'formatted_price' => $formattedPrice,
                 'duration' => $duration,
                 'description' => $plan->description,
+                'billing_cycle' => $plan->billing_cycle ?: 'both',
                 'trial_days' => $plan->trial_day,
                 'features' => $features,
                 'stats' => [
                     'users' => $plan->max_users,
                     'cases' => $plan->max_cases,
                     'clients' => $plan->max_clients,
-                    'storage' => $plan->storage_limit . ' GB',
+                    'storage' => $plan->storage_limit,
                 ],
                 'status' => $plan->is_plan_enable === 'on',
                 'is_default' => $plan->is_default,
                 'has_users' => $plan->users()->count() > 0,
                 'recommended' => false // Default to false
             ];
-        })->toArray();
+        })->values()->toArray();
         
         // Mark the plan with most subscribers as recommended
         $planSubscriberCounts = Plan::withCount('users')->get()->pluck('users_count', 'id');
@@ -86,6 +103,8 @@ class PlanController extends Controller
             'plans' => $plans,
             'billingCycle' => $billingCycle,
             'hasDefaultPlan' => $hasDefaultPlan,
+            'hasMonthlyPlans' => $hasMonthlyPlans,
+            'hasYearlyPlans' => $hasYearlyPlans,
             'isAdmin' => true
         ]);
     }
@@ -119,20 +138,25 @@ class PlanController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:100|unique:plans',
-            'price' => 'required|numeric|min:0',
-            'yearly_price' => 'nullable|numeric|min:0',
+            'name' => 'required',
+            'price' => 'required_if:billing_cycle,monthly,both|nullable|numeric|min:0',
+            'yearly_price' => 'required_if:billing_cycle,yearly|nullable|numeric|min:0',
+            'billing_cycle' => 'required|in:monthly,yearly,both',
             'duration' => 'required|string',
-            'description' => 'nullable|string',
-            'max_users' => 'required|integer|min:0',
-            'max_cases' => 'required|integer|min:0',
-            'max_clients' => 'required|integer|min:0',
-            'storage_limit' => 'required|numeric|min:0',
+            'description' => 'nullable',
+            'max_users' => 'required|integer|min:-1',
+            'max_cases' => 'required|integer|min:-1',
+            'max_clients' => 'required|integer|min:-1',
+            'storage_limit' => 'required|numeric|min:-1',
             'enable_chatgpt' => 'nullable|in:on,off',
             'is_trial' => 'nullable|in:on,off',
             'trial_day' => 'nullable|integer|min:0',
             'is_plan_enable' => 'nullable|in:on,off',
             'is_default' => 'nullable|boolean',
+            'name.en' => 'nullable|string|max:100',
+            'name.ar' => 'nullable|string|max:100',
+            'description.en' => 'nullable|string',
+            'description.ar' => 'nullable|string',
         ]);
         
         // Set default values for nullable fields
@@ -141,8 +165,8 @@ class PlanController extends Controller
         $validated['is_plan_enable'] = $validated['is_plan_enable'] ?? 'on';
         $validated['is_default'] = $validated['is_default'] ?? false;
         
-        // If yearly_price is not provided, calculate it as 80% of monthly price * 12
-        if (!isset($validated['yearly_price']) || $validated['yearly_price'] === null) {
+        // If yearly_price is not provided for "both", calculate it as 80% of monthly price * 12
+        if ($validated['billing_cycle'] === 'both' && (!isset($validated['yearly_price']) || $validated['yearly_price'] === null)) {
             $validated['yearly_price'] = $validated['price'] * 12 * 0.8;
         }
         
@@ -182,20 +206,25 @@ class PlanController extends Controller
     public function update(Request $request, Plan $plan)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:100|unique:plans,name,' . $plan->id,
-            'price' => 'required|numeric|min:0',
-            'yearly_price' => 'nullable|numeric|min:0',
+            'name' => 'required',
+            'price' => 'required_if:billing_cycle,monthly,both|nullable|numeric|min:0',
+            'yearly_price' => 'required_if:billing_cycle,yearly|nullable|numeric|min:0',
+            'billing_cycle' => 'required|in:monthly,yearly,both',
             'duration' => 'required|string',
-            'description' => 'nullable|string',
-            'max_users' => 'required|integer|min:0',
-            'max_cases' => 'required|integer|min:0',
-            'max_clients' => 'required|integer|min:0',
-            'storage_limit' => 'required|numeric|min:0',
+            'description' => 'nullable',
+            'max_users' => 'required|integer|min:-1',
+            'max_cases' => 'required|integer|min:-1',
+            'max_clients' => 'required|integer|min:-1',
+            'storage_limit' => 'required|numeric|min:-1',
             'enable_chatgpt' => 'nullable|in:on,off',
             'is_trial' => 'nullable|in:on,off',
             'trial_day' => 'nullable|integer|min:0',
             'is_plan_enable' => 'nullable|in:on,off',
             'is_default' => 'nullable|boolean',
+            'name.en' => 'nullable|string|max:100',
+            'name.ar' => 'nullable|string|max:100',
+            'description.en' => 'nullable|string',
+            'description.ar' => 'nullable|string',
         ]);
         
         // Set default values for nullable fields
@@ -204,8 +233,8 @@ class PlanController extends Controller
         $validated['is_plan_enable'] = $validated['is_plan_enable'] ?? 'on';
         $validated['is_default'] = $validated['is_default'] ?? false;
         
-        // If yearly_price is not provided, calculate it as 80% of monthly price * 12
-        if (!isset($validated['yearly_price']) || $validated['yearly_price'] === null) {
+        // If yearly_price is not provided for "both", calculate it as 80% of monthly price * 12
+        if ($validated['billing_cycle'] === 'both' && (!isset($validated['yearly_price']) || $validated['yearly_price'] === null)) {
             $validated['yearly_price'] = $validated['price'] * 12 * 0.8;
         }
         
@@ -248,6 +277,20 @@ class PlanController extends Controller
         }
         
         $dbPlans = Plan::where('is_plan_enable', 'on')->get();
+        $hasMonthlyPlans = $dbPlans->contains(function (Plan $plan) {
+            return $plan->supportsBillingCycle('monthly');
+        });
+        $hasYearlyPlans = $dbPlans->contains(function (Plan $plan) {
+            return $plan->supportsBillingCycle('yearly');
+        });
+
+        if ($billingCycle === 'monthly' && !$hasMonthlyPlans && $hasYearlyPlans) {
+            $billingCycle = 'yearly';
+        }
+
+        if ($billingCycle === 'yearly' && !$hasYearlyPlans && $hasMonthlyPlans) {
+            $billingCycle = 'monthly';
+        }
         
         // Get user's pending plan requests
         $pendingRequests = \App\Models\PlanRequest::where('user_id', $user->id)
@@ -261,7 +304,9 @@ class PlanController extends Controller
             ->pluck('plan_id')
             ->toArray();
         
-        $plans = $dbPlans->map(function ($plan) use ($billingCycle, $user, $pendingRequests, $pendingOrders) {
+        $plans = $dbPlans->filter(function ($plan) use ($billingCycle) {
+            return $plan->supportsBillingCycle($billingCycle);
+        })->map(function ($plan) use ($billingCycle, $user, $pendingRequests, $pendingOrders) {
             $price = $billingCycle === 'yearly' ? $plan->yearly_price : $plan->price;
             
             $features = [];
@@ -274,13 +319,14 @@ class PlanController extends Controller
                 'formatted_price' => formatCurrencyForPlansAndReferrals($price),
                 'duration' => $billingCycle === 'yearly' ? 'Yearly' : 'Monthly',
                 'description' => $plan->description,
+                'billing_cycle' => $plan->billing_cycle ?: 'both',
                 'trial_days' => $plan->trial_day,
                 'features' => $features,
                 'stats' => [
                     'users' => $plan->max_users,
                     'cases' => $plan->max_cases,
                     'clients' => $plan->max_clients,
-                    'storage' => $plan->storage_limit . ' GB',
+                    'storage' => $plan->storage_limit,
                 ],
                 'is_current' => $user->plan_id == $plan->id,
                 'is_trial_available' => $plan->is_trial === 'on' && !$user->is_trial,
@@ -289,7 +335,7 @@ class PlanController extends Controller
                 'has_pending_order' => in_array($plan->id, $pendingOrders),
                 'recommended' => false // Default to false
             ];
-        });
+        })->values();
         
         // Mark the plan with most subscribers as recommended
         $planSubscriberCounts = Plan::withCount('users')->get()->pluck('users_count', 'id');
@@ -317,6 +363,8 @@ class PlanController extends Controller
             'billingCycle' => $billingCycle,
             'currentPlan' => $user->plan,
             'userTrialUsed' => $user->is_trial,
+            'hasMonthlyPlans' => $hasMonthlyPlans,
+            'hasYearlyPlans' => $hasYearlyPlans,
             'pendingRequests' => $pendingRequestsDetails
         ]);
     }
@@ -330,6 +378,10 @@ class PlanController extends Controller
         
         $user = auth()->user();
         $plan = Plan::findOrFail($request->plan_id);
+
+        if (!$plan->supportsBillingCycle($request->billing_cycle)) {
+            return back()->withErrors(['error' => __('Selected billing cycle is not available for this plan')]);
+        }
         
         // Check if user already has a pending request for this plan
         $existingRequest = \App\Models\PlanRequest::where('user_id', $user->id)
@@ -363,6 +415,10 @@ class PlanController extends Controller
         
         $user = auth()->user();
         $plan = Plan::findOrFail($request->plan_id);
+
+        if (!$plan->supportsBillingCycle($request->billing_cycle)) {
+            return back()->withErrors(['error' => __('Selected billing cycle is not available for this plan')]);
+        }
         
         if ($user->is_trial || $plan->is_trial !== 'on') {
             return back()->withErrors(['error' => 'Trial not available']);

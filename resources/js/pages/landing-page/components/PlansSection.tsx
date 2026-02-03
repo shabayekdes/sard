@@ -27,10 +27,10 @@ interface Plan {
     is_plan_enable: string;
     trial_days?: number;
     stats?: {
-        users: number;
-        cases: number;
-        clients: number;
-        storage: string;
+        users: number | string;
+        cases: number | string;
+        clients: number | string;
+        storage: number | string;
     };
 }
 
@@ -49,6 +49,20 @@ interface PlansSectionProps {
 function PlansSection({ plans, settings, sectionData, brandColor = '#3b82f6' }: PlansSectionProps) {
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
     const { ref, isVisible } = useScrollAnimation();
+
+    const isUnlimited = (value: number | string) => {
+        if (value === null || value === undefined) return false;
+        const numeric = typeof value === 'string' ? parseFloat(value) : value;
+        return numeric === -1;
+    };
+
+    const formatLimitValue = (value: number | string | undefined, unit?: string) => {
+        if (value === null || value === undefined) return 'N/A';
+        if (isUnlimited(value)) return 'Unlimited';
+        if (!unit) return value;
+        if (typeof value === 'string' && /[a-zA-Z]/.test(value)) return value;
+        return `${value} ${unit}`;
+    };
 
 
     // Filter enabled plans
@@ -234,25 +248,25 @@ function PlansSection({ plans, settings, sectionData, brandColor = '#3b82f6' }: 
                                     <div className="grid grid-cols-2 gap-2">
                                         <div className="rounded-lg bg-white/50 p-2 text-center">
                                             <div className="text-lg font-bold" style={{ color: brandColor }}>
-                                                {plan.stats?.users || 'N/A'}
+                                                {formatLimitValue(plan.stats?.users)}
                                             </div>
                                             <div className="text-muted-foreground text-xs">Team Members</div>
                                         </div>
                                         <div className="rounded-lg bg-white/50 p-2 text-center">
                                             <div className="text-lg font-bold" style={{ color: brandColor }}>
-                                                {plan.stats?.cases || 'N/A'}
+                                                {formatLimitValue(plan.stats?.cases)}
                                             </div>
                                             <div className="text-muted-foreground text-xs">Cases</div>
                                         </div>
                                         <div className="rounded-lg bg-white/50 p-2 text-center">
                                             <div className="text-lg font-bold" style={{ color: brandColor }}>
-                                                {plan.stats?.clients || 'N/A'}
+                                                {formatLimitValue(plan.stats?.clients)}
                                             </div>
                                             <div className="text-muted-foreground text-xs">Clients</div>
                                         </div>
                                         <div className="rounded-lg bg-white/50 p-2 text-center">
                                             <div className="text-lg font-bold" style={{ color: brandColor }}>
-                                                {plan.stats?.storage || 'N/A'}
+                                                {formatLimitValue(plan.stats?.storage, 'GB')}
                                             </div>
                                             <div className="text-muted-foreground text-xs">Storage</div>
                                         </div>

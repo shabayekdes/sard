@@ -156,7 +156,7 @@ export default function Settings() {
         if (auth.user && auth.user.type === 'company') {
             // Only allow system settings, email settings, email notification settings, brand settings, webhook settings, google calendar settings, and settings
             // Slack settings don't require permission - available to all company users
-            return ['manage-email-notifications','manage-slack-notifications', 'manage-brand-settings', 'manage-webhook-settings', 'manage-google-calendar-settings', 'settings'].includes(item.permission) || !item.permission;
+            return ['manage-email-notifications', 'manage-slack-notifications', 'manage-brand-settings', 'manage-webhook-settings', 'manage-google-calendar-settings', 'settings'].includes(item.permission) || !item.permission;
         }
         return false;
     });

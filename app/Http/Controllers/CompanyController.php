@@ -214,7 +214,7 @@ class CompanyController extends Controller
 
         $plans = Plan::where('is_plan_enable', 'on')->get();
 
-        $formattedPlans = $plans->map(function ($plan) use ($company) {
+        $formattedPlans = $plans->map(function (Plan $plan) use ($company) {
             // Format features
             $features = [];
             if ($plan->enable_custdomain === 'on') $features[] = __('Custom Domain');
@@ -227,6 +227,11 @@ class CompanyController extends Controller
                 $yearlyPrice = $plan->price * 12 * 0.8;
             }
 
+            $storageLimit = $plan->storage_limit;
+            $storageLabel = $plan->isUnlimitedLimit($storageLimit)
+                ? __('Unlimited')
+                : $storageLimit . ' ' . __('GB');
+
             return [
                 'id' => $plan->id,
                 'name' => $plan->name,
@@ -237,7 +242,7 @@ class CompanyController extends Controller
                 'features' => $features,
                 'business' => $plan->business,
                 'max_users' => $plan->max_users,
-                'storage_limit' => $plan->storage_limit . ' ' . __('GB'),
+                'storage_limit' => $storageLabel,
                 'is_current' => $company->plan_id === $plan->id,
                 'is_default' => $plan->is_default
             ];

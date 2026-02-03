@@ -124,10 +124,12 @@ class CaseController extends BaseController
         $planLimits = null;
         if ($authUser->type === 'company' && $authUser->plan) {
             $currentCases = CaseModel::where('created_by', $authUser->id)->count();
+            $maxCases = $authUser->plan->max_cases;
+            $isUnlimited = $authUser->plan->isUnlimitedLimit($maxCases);
             $planLimits = [
                 'current_cases' => $currentCases,
-                'max_cases' => $authUser->plan->max_cases,
-                'can_create' => $currentCases < $authUser->plan->max_cases
+                'max_cases' => $maxCases,
+                'can_create' => $isUnlimited ? true : $currentCases < $maxCases
             ];
         }
         elseif ($authUser->type !== 'superadmin' && $authUser->created_by) {
@@ -135,10 +137,12 @@ class CaseController extends BaseController
             if ($companyUser && $companyUser->type === 'company' && $companyUser->plan) {
 
                 $currentCases = CaseModel::where('created_by', $companyUser->id)->count();
+                $maxCases = $companyUser->plan->max_cases;
+                $isUnlimited = $companyUser->plan->isUnlimitedLimit($maxCases);
                 $planLimits = [
                     'current_cases' => $currentCases,
-                    'max_cases' => $companyUser->plan->max_cases,
-                    'can_create' => $currentCases < $companyUser->plan->max_cases
+                    'max_cases' => $maxCases,
+                    'can_create' => $isUnlimited ? true : $currentCases < $maxCases
                 ];
             }
         }
@@ -491,8 +495,9 @@ class CaseController extends BaseController
         if ($authUser->type === 'company' && $authUser->plan) {
             $currentCases = CaseModel::where('created_by', $authUser->id)->count();
             $maxCases = $authUser->plan->max_cases;
+            $isUnlimited = $authUser->plan->isUnlimitedLimit($maxCases);
 
-            if ($currentCases >= $maxCases) {
+            if (!$isUnlimited && $currentCases >= $maxCases) {
                 return redirect()->back()->with('error', __('Case limit exceeded. Your plan allows maximum :max cases. Please upgrade your plan.', ['max' => $maxCases]));
             }
         }
@@ -501,8 +506,9 @@ class CaseController extends BaseController
             if ($companyUser && $companyUser->type === 'company' && $companyUser->plan) {
                 $currentCases = CaseModel::where('created_by', $companyUser->id)->count();
                 $maxCases = $companyUser->plan->max_cases;
+                $isUnlimited = $companyUser->plan->isUnlimitedLimit($maxCases);
 
-                if ($currentCases >= $maxCases) {
+                if (!$isUnlimited && $currentCases >= $maxCases) {
                     return redirect()->back()->with('error', __('Case limit exceeded. Your company plan allows maximum :max cases. Please contact your administrator.', ['max' => $maxCases]));
                 }
             }

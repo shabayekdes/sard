@@ -45,7 +45,7 @@ class LandingPageController extends Controller
                     'users' => $plan->max_users,
                     'cases' => $plan->max_cases,
                     'clients' => $plan->max_clients,
-                    'storage' => $plan->storage_limit . ' GB',
+                    'storage' => $plan->storage_limit,
                 ],
                 'trial_days' => $plan->trial_day,
                 'is_plan_enable' => $plan->is_plan_enable,
@@ -60,7 +60,7 @@ class LandingPageController extends Controller
                 return $planSubscriberCounts[$planId];
             })->first();
 
-            $plans = $plans->map(function($plan) use ($mostSubscribedPlanId) {
+            $plans = $plans->map(function (array $plan) use ($mostSubscribedPlanId) {
                 if ($plan['id'] == $mostSubscribedPlanId && $plan['price'] != '0') {
                     $plan['is_popular'] = true;
                 }
