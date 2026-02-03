@@ -3176,5 +3176,7 @@
 "email_verification_intro": "يرجى الضغط على الزر أدناه لتأكيد بريدك الإلكتروني.",
 "email_verification_action": "تأكيد البريد الإلكتروني",
 "email_verification_outro": "ستنتهي صلاحية رابط التأكيد خلال :count دقيقة.",
-"email_verification_no_action": "إذا لم تقم بإنشاء حساب، فلا يلزم اتخاذ أي إجراء إضافي."
+  "email_verification_no_action": "إذا لم تقم بإنشاء حساب، فلا يلزم اتخاذ أي إجراء إضافي.",
+  "email_verification_salutation": "مع التحية،",
+  "email_subcopy_trouble": "إذا كنت تواجه مشكلة في الضغط على زر \":action\"، انسخ الرابط أدناه والصقه في متصفحك:"
 }

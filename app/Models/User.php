@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Notifications\CustomVerifyEmail;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
@@ -257,7 +258,7 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     public function sendEmailVerificationNotification()
     {
         MailConfigService::setDynamicConfig();
-        parent::sendEmailVerificationNotification();
+        $this->notify(new CustomVerifyEmail());
     }
 
     /**
