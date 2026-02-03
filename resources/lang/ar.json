@@ -3178,5 +3178,11 @@
 "email_verification_outro": "ستنتهي صلاحية رابط التأكيد خلال :count دقيقة.",
   "email_verification_no_action": "إذا لم تقم بإنشاء حساب، فلا يلزم اتخاذ أي إجراء إضافي.",
   "email_verification_salutation": "مع التحية،",
-  "email_subcopy_trouble": "إذا كنت تواجه مشكلة في الضغط على زر \":action\"، انسخ الرابط أدناه والصقه في متصفحك:"
+  "email_subcopy_trouble": "إذا كنت تواجه مشكلة في الضغط على زر \":action\"، انسخ الرابط أدناه والصقه في متصفحك:",
+  "email_password_reset_subject": "إشعار إعادة تعيين كلمة المرور",
+  "email_password_reset_greeting": "مرحبًا!",
+  "email_password_reset_intro": "لقد استلمنا طلبًا لإعادة تعيين كلمة المرور لحسابك.",
+  "email_password_reset_action": "إعادة تعيين كلمة المرور",
+  "email_password_reset_outro": "ستنتهي صلاحية رابط إعادة التعيين خلال :count دقيقة.",
+  "email_password_reset_no_action": "إذا لم تطلب إعادة تعيين كلمة المرور، فلا يلزم اتخاذ أي إجراء إضافي."
 }

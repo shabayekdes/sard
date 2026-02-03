@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Notifications\CustomVerifyEmail;
+use App\Notifications\CustomResetPassword;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
@@ -259,6 +260,15 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     {
         MailConfigService::setDynamicConfig();
         $this->notify(new CustomVerifyEmail());
+    }
+
+    /**
+     * Send the password reset notification with dynamic config.
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        MailConfigService::setDynamicConfig();
+        $this->notify(new CustomResetPassword($token));
     }
 
     /**
