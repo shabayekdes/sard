@@ -35,6 +35,7 @@ export default function Settings() {
     const { position } = useLayout();
 
     const { systemSettings = {}, cacheSize = '0.00', timezones = {}, dateFormats = {}, timeFormats = {}, paymentSettings = {}, webhooks = [], companySettings = [], auth = {}, emailTemplates = [], slackSettings = {}, twilioSettings = {}, notificationTemplates = [], countries = [], taxRates = [] } = usePage().props as any;
+    const isSaas = auth.user?.type === 'superadmin' || auth.user?.type === 'super admin';
     const [activeSection, setActiveSection] = useState('system-settings');
 
     // Define all possible sidebar navigation items
@@ -144,6 +145,9 @@ export default function Settings() {
     // }
     // Filter sidebar items based on user permissions
     const sidebarNavItems = allSidebarNavItems.filter(item => {
+        if (item.permission && ['manage-email-settings', 'manage-twilio-notifications', 'manage-payment-settings'].includes(item.permission) && !isSaas) {
+            return false;
+        }
         // If no permission is required or user has the permission
         if (!item.permission || (auth.permissions && auth.permissions.includes(item.permission))) {
             return true;
@@ -152,7 +156,7 @@ export default function Settings() {
         if (auth.user && auth.user.type === 'company') {
             // Only allow system settings, email settings, email notification settings, brand settings, webhook settings, google calendar settings, and settings
             // Slack settings don't require permission - available to all company users
-            return ['manage-email-settings', 'manage-email-notifications','manage-slack-notifications','manage-twilio-notifications', 'manage-brand-settings', 'manage-webhook-settings', 'manage-google-calendar-settings', 'settings'].includes(item.permission) || !item.permission;
+            return ['manage-email-notifications','manage-slack-notifications', 'manage-brand-settings', 'manage-webhook-settings', 'manage-google-calendar-settings', 'settings'].includes(item.permission) || !item.permission;
         }
         return false;
     });
@@ -333,7 +337,7 @@ export default function Settings() {
                     )}
 
                     {/* Email Settings Section */}
-                    {(auth.permissions?.includes('manage-email-settings') || auth.user?.type === 'superadmin') && (
+                    {isSaas && (
                         <section id="email-settings" ref={emailSettingsRef} className="mb-8">
                             <EmailSettings />
                         </section>
@@ -354,7 +358,7 @@ export default function Settings() {
                     )}
 
                     {/* Twilio Settings Section - Available to all company users */}
-                    {(auth.permissions?.includes('manage-twilio-notifications') || auth.user?.type === 'company') && (
+                    {isSaas && (
                         <section id="twilio-settings" ref={twilioSettingsRef} className="mb-8">
                             <TwilioNotificationSettings />
                         </section>
@@ -363,7 +367,7 @@ export default function Settings() {
 
 
                     {/* Payment Settings Section */}
-                    {(auth.permissions?.includes('manage-payment-settings') || auth.user?.type === 'superadmin') && (
+                    {isSaas && (
                         <section id="payment-settings" ref={paymentSettingsRef} className="mb-8">
                             <PaymentSettings settings={paymentSettings} />
                         </section>
