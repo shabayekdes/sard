@@ -6,11 +6,13 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Notifications\CustomVerifyEmail;
 use App\Notifications\CustomResetPassword;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Lab404\Impersonate\Models\Impersonate;
 use App\Models\Plan;
+use App\Models\PlanOrder;
 use App\Models\Referral;
 use App\Models\PayoutRequest;
 use App\Services\MailConfigService;
@@ -124,6 +126,22 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     public function plan()
     {
         return $this->belongsTo(Plan::class);
+    }
+
+    /**
+     * Get all plan orders for the user.
+     */
+    public function planOrders(): HasMany
+    {
+        return $this->hasMany(PlanOrder::class, 'user_id');
+    }
+
+    /**
+     * Get the latest plan order for the user.
+     */
+    public function latestPlanOrder(): HasOne
+    {
+        return $this->hasOne(PlanOrder::class, 'user_id')->latestOfMany('ordered_at');
     }
 
     /**

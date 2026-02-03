@@ -417,6 +417,22 @@ export default function Companies() {
       render: (value: string) => <span className="capitalize">{value}</span>
     },
     {
+      key: 'plan_expire_date',
+      label: t('Plan Expire Date'),
+      render: (value: string) =>
+        value
+          ? (window.appSettings?.formatDateTime(value, false) || new Date(value).toLocaleDateString())
+          : '-'
+    },
+    {
+      key: 'latest_plan_ordered_at',
+      label: t('Latest Plan Order'),
+      render: (value: string) =>
+        value
+          ? (window.appSettings?.formatDateTime(value, false) || new Date(value).toLocaleDateString())
+          : '-'
+    },
+    {
       key: 'created_at',
       label: t('Created At'),
       sortable: true,
@@ -752,9 +768,9 @@ export default function Companies() {
                       <CreditCard className="h-4 w-4 text-gray-500 mr-2" />
                       <span className="text-sm font-semibold text-gray-800">{company.plan_name}</span>
                     </div>
-                    {company.plan_expiry_date && (
+                    {company.plan_expire_date && (
                       <div className="text-xs text-gray-500 text-center mt-1">
-                        {t("Expires")}: {window.appSettings?.formatDateTime(company.plan_expiry_date, false) || new Date(company.plan_expiry_date).toLocaleDateString()}
+                        {t("Expires")}: {window.appSettings?.formatDateTime(company.plan_expire_date, false) || new Date(company.plan_expire_date).toLocaleDateString()}
                       </div>
                     )}
                   </div>

@@ -15,7 +15,7 @@ class CompanyController extends Controller
     {
         $query = User::query()
             ->where('type', 'company')
-            ->with('plan')->orderBy('id', 'asc');
+            ->with(['plan', 'latestPlanOrder'])->orderBy('id', 'asc');
 
         // Apply search filter
         if ($request->has('search') && !empty($request->search)) {
@@ -59,7 +59,8 @@ class CompanyController extends Controller
                 'status' => $company->status,
                 'created_at' => $company->created_at,
                 'plan_name' => $company->plan ? $company->plan->name : __('No Plan'),
-                'plan_expiry_date' => $company->plan_expire_date,
+                'plan_expire_date' => $company->plan_expire_date,
+                'latest_plan_ordered_at' => optional($company->latestPlanOrder)->ordered_at,
                 'appointments_count' => 0, // You can implement this based on your model relationships
             ];
         });
