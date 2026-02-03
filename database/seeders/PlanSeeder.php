@@ -94,6 +94,26 @@ class PlanSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'name' => '{"en":"Unlimited","ar":"غير محدود"}',
+                'price' => 299.99,
+                'yearly_price' => 2879.90, // 20% discount for yearly
+                'billing_cycle' => 'yearly',
+                'duration' => 'monthly',
+                'description' => '{"en":"Unlimited users, cases, clients, and storage for large firms.","ar":"عدد غير محدود من المستخدمين والقضايا والعملاء والتخزين للمكاتب الكبيرة."}',
+                'max_users' => -1,
+                'max_cases' => -1,
+                'max_clients' => -1,
+                'enable_branding' => 'off',
+                'enable_chatgpt' => 'on',
+                'storage_limit' => -1,
+                'is_trial' => 'on',
+                'trial_day' => 30,
+                'is_plan_enable' => 'on',
+                'is_default' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ];
 
         Plan::insert($plans);
