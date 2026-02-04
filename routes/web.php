@@ -502,7 +502,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('advocate/company-profiles', [\App\Http\Controllers\CompanyProfileController::class, 'store'])->middleware('permission:create-company-profiles')->name('advocate.company-profiles.store');
             Route::put('advocate/company-profiles/{profile}', [\App\Http\Controllers\CompanyProfileController::class, 'update'])->middleware('permission:edit-company-profiles')->name('advocate.company-profiles.update');
             Route::delete('advocate/company-profiles/{profile}', [\App\Http\Controllers\CompanyProfileController::class, 'destroy'])->middleware('permission:delete-company-profiles')->name('advocate.company-profiles.destroy');
-            Route::put('advocate/company-profiles/{profile}/toggle-status', [\App\Http\Controllers\CompanyProfileController::class, 'toggleStatus'])->middleware('permission:edit-company-profiles')->name('advocate.company-profiles.toggle-status');
         });
 
         // Practice Area routes

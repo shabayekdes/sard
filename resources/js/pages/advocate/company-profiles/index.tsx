@@ -16,25 +16,10 @@ export default function CompanyProfiles() {
   const { companyProfile } = usePage().props as any;
   const [isEditing, setIsEditing] = useState(!companyProfile);
   const [formData, setFormData] = useState({
-    // Personal Details
-    advocate_name: '',
-    bar_registration_number: '',
-    years_of_experience: '',
-
     // Contact Details
     email: '',
     phone: '',
-    website: '',
     address: '',
-
-    // Professional Details
-    law_degree: '',
-    university: '',
-    specialization: '',
-
-    // Court & Jurisdiction
-    court_jurisdictions: '',
-    languages_spoken: '',
 
     // Business Details
     consultation_fees: '',
@@ -53,26 +38,15 @@ export default function CompanyProfiles() {
 
     // Services
     services_offered: '',
-    notable_cases: '',
-    description: '',
-    status: 'active'
+    description: ''
   });
 
   useEffect(() => {
     if (companyProfile) {
       setFormData({
-        advocate_name: companyProfile.advocate_name || '',
-        bar_registration_number: companyProfile.bar_registration_number || '',
-        years_of_experience: companyProfile.years_of_experience || '',
         email: companyProfile.email || '',
         phone: companyProfile.phone || '',
-        website: companyProfile.website || '',
         address: companyProfile.address || '',
-        law_degree: companyProfile.law_degree || '',
-        university: companyProfile.university || '',
-        specialization: companyProfile.specialization || '',
-        court_jurisdictions: companyProfile.court_jurisdictions || '',
-        languages_spoken: companyProfile.languages_spoken || '',
         consultation_fees: companyProfile.consultation_fees || '',
         office_hours: companyProfile.office_hours || '',
         success_rate: companyProfile.success_rate || '',
@@ -85,9 +59,7 @@ export default function CompanyProfiles() {
         business_type: companyProfile.business_type || 'law_firm',
         default_setup: companyProfile.default_setup || '',
         services_offered: companyProfile.services_offered || '',
-        notable_cases: companyProfile.notable_cases || '',
-        description: companyProfile.description || '',
-        status: companyProfile.status || 'active'
+        description: companyProfile.description || ''
       });
     }
   }, [companyProfile]);
@@ -170,38 +142,16 @@ export default function CompanyProfiles() {
       breadcrumbs={breadcrumbs}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Personal Information */}
+        {/* Contact Details */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg font-semibold">
               <User className="h-5 w-5" />
-              {t('Personal Information')}
+              {t('Contact Details')}
             </CardTitle>
-            <CardDescription className="text-sm text-muted-foreground">{t('Basic advocate details and contact information')}</CardDescription>
+            <CardDescription className="text-sm text-muted-foreground">{t('Primary company contact information')}</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="advocate_name" className="text-sm font-medium">{t('Advocate Name')} *</Label>
-              <Input
-                id="advocate_name"
-                value={formData.advocate_name}
-                onChange={(e) => handleChange('advocate_name', e.target.value)}
-                disabled={!isEditing}
-                required
-                className="text-sm"
-              />
-            </div>
-            <div>
-              <Label htmlFor="bar_registration_number" className="text-sm font-medium">{t('Bar Registration Number')} *</Label>
-              <Input
-                id="bar_registration_number"
-                value={formData.bar_registration_number}
-                onChange={(e) => handleChange('bar_registration_number', e.target.value)}
-                disabled={!isEditing}
-                required
-                className="text-sm"
-              />
-            </div>
             <div>
               <Label htmlFor="email" className="text-sm font-medium">{t('Email')}</Label>
               <Input
@@ -223,28 +173,6 @@ export default function CompanyProfiles() {
                 className="text-sm"
               />
             </div>
-            <div>
-              <Label htmlFor="years_of_experience" className="text-sm font-medium">{t('Years of Experience')}</Label>
-              <Input
-                id="years_of_experience"
-                type="number"
-                value={formData.years_of_experience}
-                onChange={(e) => handleChange('years_of_experience', e.target.value)}
-                disabled={!isEditing}
-                className="text-sm"
-              />
-            </div>
-            <div>
-              <Label htmlFor="website" className="text-sm font-medium">{t('Website')}</Label>
-              <Input
-                id="website"
-                type="url"
-                value={formData.website}
-                onChange={(e) => handleChange('website', e.target.value)}
-                disabled={!isEditing}
-                className="text-sm"
-              />
-            </div>
             <div className="md:col-span-2">
               <Label htmlFor="address" className="text-sm font-medium">{t('Address')}</Label>
               <Textarea
@@ -253,68 +181,6 @@ export default function CompanyProfiles() {
                 onChange={(e) => handleChange('address', e.target.value)}
                 disabled={!isEditing}
                 rows={2}
-                className="text-sm"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Professional Details */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">{t('Professional Details')}</CardTitle>
-            <CardDescription className="text-sm text-muted-foreground">{t('Educational background and specialization')}</CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="law_degree" className="text-sm font-medium">{t('Law Degree')}</Label>
-              <Input
-                id="law_degree"
-                value={formData.law_degree}
-                onChange={(e) => handleChange('law_degree', e.target.value)}
-                disabled={!isEditing}
-                className="text-sm"
-              />
-            </div>
-            <div>
-              <Label htmlFor="university" className="text-sm font-medium">{t('University')}</Label>
-              <Input
-                id="university"
-                value={formData.university}
-                onChange={(e) => handleChange('university', e.target.value)}
-                disabled={!isEditing}
-                className="text-sm"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <Label htmlFor="specialization" className="text-sm font-medium">{t('Specialization')}</Label>
-              <Textarea
-                id="specialization"
-                value={formData.specialization}
-                onChange={(e) => handleChange('specialization', e.target.value)}
-                disabled={!isEditing}
-                rows={2}
-                className="text-sm"
-              />
-            </div>
-            <div>
-              <Label htmlFor="court_jurisdictions" className="text-sm font-medium">{t('Court Jurisdictions')}</Label>
-              <Textarea
-                id="court_jurisdictions"
-                value={formData.court_jurisdictions}
-                onChange={(e) => handleChange('court_jurisdictions', e.target.value)}
-                disabled={!isEditing}
-                rows={2}
-                className="text-sm"
-              />
-            </div>
-            <div>
-              <Label htmlFor="languages_spoken" className="text-sm font-medium">{t('Languages Spoken')}</Label>
-              <Input
-                id="languages_spoken"
-                value={formData.languages_spoken}
-                onChange={(e) => handleChange('languages_spoken', e.target.value)}
-                disabled={!isEditing}
                 className="text-sm"
               />
             </div>
@@ -374,9 +240,9 @@ export default function CompanyProfiles() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="solo" className="text-sm">{t('Solo Practice')}</SelectItem>
-                  <SelectItem value="small" className="text-sm">{t('Small Firm')}</SelectItem>
-                  <SelectItem value="medium" className="text-sm">{t('Medium Firm')}</SelectItem>
-                  <SelectItem value="large" className="text-sm">{t('Large Firm')}</SelectItem>
+                  <SelectItem value="small" className="text-sm">{t('Small')}</SelectItem>
+                  <SelectItem value="medium" className="text-sm">{t('Med')}</SelectItem>
+                  <SelectItem value="large" className="text-sm">{t('Large')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -386,17 +252,6 @@ export default function CompanyProfiles() {
                 id="services_offered"
                 value={formData.services_offered}
                 onChange={(e) => handleChange('services_offered', e.target.value)}
-                disabled={!isEditing}
-                rows={3}
-                className="text-sm"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <Label htmlFor="notable_cases" className="text-sm font-medium">{t('Notable Cases')}</Label>
-              <Textarea
-                id="notable_cases"
-                value={formData.notable_cases}
-                onChange={(e) => handleChange('notable_cases', e.target.value)}
                 disabled={!isEditing}
                 rows={3}
                 className="text-sm"

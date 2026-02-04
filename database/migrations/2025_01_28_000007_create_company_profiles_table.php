@@ -16,21 +16,25 @@ return new class extends Migration
             $table->string('company_id')->unique();
             $table->string('name');
             $table->string('registration_number')->nullable();
-            $table->text('address')->nullable();
-            $table->string('phone')->nullable();
             $table->string('email')->nullable();
-            $table->string('website')->nullable();
-            $table->string('logo')->nullable();
+            $table->string('phone')->nullable();
+            $table->text('address')->nullable();
             $table->date('establishment_date')->nullable();
-            $table->enum('company_size', ['solo', 'small', 'medium', 'large'])->default('small');
             $table->enum('business_type', ['law_firm', 'corporate_legal', 'government', 'other'])->default('law_firm');
-            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->string('cr')->nullable();
+            $table->string('tax_number')->nullable();
+            $table->enum('company_size', ['solo', 'small', 'medium', 'large'])->default('solo');
+            $table->string('office_hours')->nullable();
+            $table->decimal('consultation_fees', 10, 2)->nullable();
+            $table->integer('success_rate')->nullable();
+            $table->text('services_offered')->nullable();
+            $table->string('default_setup')->nullable();
             $table->text('description')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();
             
             // Index for better performance
-            $table->index(['created_by', 'status']);
+            $table->index(['created_by']);
         });
     }
 

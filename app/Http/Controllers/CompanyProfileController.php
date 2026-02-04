@@ -22,25 +22,10 @@ class CompanyProfileController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            // Personal Details
-            'advocate_name' => 'required|string|max:255',
-            'bar_registration_number' => 'required|string|max:255',
-            'years_of_experience' => 'nullable|integer|min:0',
-            
             // Contact Details
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
-            'website' => 'nullable|url|max:255',
             'address' => 'nullable|string',
-            
-            // Professional Details
-            'law_degree' => 'nullable|string|max:255',
-            'university' => 'nullable|string|max:255',
-            'specialization' => 'nullable|string',
-            
-            // Court & Jurisdiction
-            'court_jurisdictions' => 'nullable|string',
-            'languages_spoken' => 'nullable|string|max:255',
             
             // Business Details
             'consultation_fees' => 'nullable|numeric|min:0',
@@ -48,21 +33,21 @@ class CompanyProfileController extends Controller
             'success_rate' => 'nullable|integer|min:0|max:100',
             
             // Company Details
-            'name' => 'nullable|string|max:255',
+            'name' => 'required|string|max:255',
             'registration_number' => 'nullable|string|max:255',
             'establishment_date' => 'nullable|date',
+            'cr' => 'nullable|string|max:255',
+            'tax_number' => 'nullable|string|max:255',
             'company_size' => 'required|in:solo,small,medium,large',
             'business_type' => 'required|in:law_firm,corporate_legal,government,other',
+            'default_setup' => 'nullable|string|max:255',
             
             // Services
             'services_offered' => 'nullable|string',
-            'notable_cases' => 'nullable|string',
             'description' => 'nullable|string',
-            'status' => 'nullable|in:active,inactive',
         ]);
 
         $validated['created_by'] = createdBy();
-        $validated['status'] = $validated['status'] ?? 'active';
 
         // Check if company profile already exists for this user
         $exists = CompanyProfile::where('created_by', createdBy())->exists();
@@ -82,25 +67,10 @@ class CompanyProfileController extends Controller
         $profile = CompanyProfile::where('created_by', createdBy())->first();
         
         $validated = $request->validate([
-            // Personal Details
-            'advocate_name' => 'required|string|max:255',
-            'bar_registration_number' => 'required|string|max:255',
-            'years_of_experience' => 'nullable|integer|min:0',
-            
             // Contact Details
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
-            'website' => 'nullable|url|max:255',
             'address' => 'nullable|string',
-            
-            // Professional Details
-            'law_degree' => 'nullable|string|max:255',
-            'university' => 'nullable|string|max:255',
-            'specialization' => 'nullable|string',
-            
-            // Court & Jurisdiction
-            'court_jurisdictions' => 'nullable|string',
-            'languages_spoken' => 'nullable|string|max:255',
             
             // Business Details
             'consultation_fees' => 'nullable|numeric|min:0',
@@ -108,21 +78,21 @@ class CompanyProfileController extends Controller
             'success_rate' => 'nullable|integer|min:0|max:100',
             
             // Company Details
-            'name' => 'nullable|string|max:255',
+            'name' => 'required|string|max:255',
             'registration_number' => 'nullable|string|max:255',
             'establishment_date' => 'nullable|date',
+            'cr' => 'nullable|string|max:255',
+            'tax_number' => 'nullable|string|max:255',
             'company_size' => 'required|in:solo,small,medium,large',
             'business_type' => 'required|in:law_firm,corporate_legal,government,other',
+            'default_setup' => 'nullable|string|max:255',
             
             // Services
             'services_offered' => 'nullable|string',
-            'notable_cases' => 'nullable|string',
             'description' => 'nullable|string',
-            'status' => 'nullable|in:active,inactive',
         ]);
 
         $validated['created_by'] = createdBy();
-        $validated['status'] = $validated['status'] ?? 'active';
 
         if ($profile) {
             $profile->update($validated);
@@ -151,23 +121,4 @@ class CompanyProfileController extends Controller
         }
     }
 
-    public function toggleStatus($profileId)
-    {
-        $profile = CompanyProfile::where('id', $profileId)
-            ->where('created_by', createdBy())
-            ->first();
-
-        if ($profile) {
-            try {
-                $profile->status = $profile->status === 'active' ? 'inactive' : 'active';
-                $profile->save();
-
-                return redirect()->back()->with('success', 'Company profile status updated successfully');
-            } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to update company profile status');
-            }
-        } else {
-            return redirect()->back()->with('error', 'Company profile not found.');
-        }
-    }
 }
