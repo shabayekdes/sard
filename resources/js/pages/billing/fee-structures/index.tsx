@@ -314,228 +314,218 @@ export default function FeeStructures() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Fee Structures")}
-      url="/billing/fee-structures"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      {/* Search and filters section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'client_id',
-              label: t('Client'),
-              type: 'select',
-              value: selectedClient,
-              onChange: setSelectedClient,
-              options: clientOptions
-            },
-            {
-              name: 'fee_type_id',
-              label: t('Fee Type'),
-              type: 'select',
-              value: selectedFeeType,
-              onChange: setSelectedFeeType,
-              options: feeTypeOptions
-            },
-            {
-              name: 'is_active',
-              label: t('Status'),
-              type: 'select',
-              value: selectedStatus,
-              onChange: setSelectedStatus,
-              options: statusOptions
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('billing.fee-structures.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              client_id: selectedClient !== 'all' ? selectedClient : undefined,
-              fee_type_id: selectedFeeType !== 'all' ? selectedFeeType : undefined,
-              is_active: selectedStatus !== 'all' ? selectedStatus : undefined,
-              sort_field: sortField || undefined,
-              sort_direction: sortDirection || undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Fee Structures')} url="/billing/fee-structures" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          {/* Search and filters section */}
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'client_id',
+                          label: t('Client'),
+                          type: 'select',
+                          value: selectedClient,
+                          onChange: setSelectedClient,
+                          options: clientOptions,
+                      },
+                      {
+                          name: 'fee_type_id',
+                          label: t('Fee Type'),
+                          type: 'select',
+                          value: selectedFeeType,
+                          onChange: setSelectedFeeType,
+                          options: feeTypeOptions,
+                      },
+                      {
+                          name: 'is_active',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: statusOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      {/* Content section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={feeStructures?.data || []}
-          from={feeStructures?.from || 1}
-          onAction={handleAction}
-          sortField={sortField}
-          sortDirection={sortDirection}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-fee-structures',
-            create: 'create-fee-structures',
-            edit: 'edit-fee-structures',
-            delete: 'delete-fee-structures'
-          }}
-        />
+          {/* Content section */}
+          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={feeStructures?.data || []}
+                  from={feeStructures?.from || 1}
+                  onAction={handleAction}
+                  sortField={sortField}
+                  sortDirection={sortDirection}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-fee-structures',
+                      create: 'create-fee-structures',
+                      edit: 'edit-fee-structures',
+                      delete: 'delete-fee-structures',
+                  }}
+              />
 
-        {/* Pagination section */}
-        <Pagination
-          from={feeStructures?.from || 0}
-          to={feeStructures?.to || 0}
-          total={feeStructures?.total || 0}
-          links={feeStructures?.links}
-          entityName={t("fee structures")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              {/* Pagination section */}
+              <Pagination
+                  from={feeStructures?.from || 0}
+                  to={feeStructures?.to || 0}
+                  total={feeStructures?.total || 0}
+                  links={feeStructures?.links}
+                  entityName={t('fee structures')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('billing.fee-structures.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              client_id: selectedClient !== 'all' ? selectedClient : undefined,
+                              fee_type_id: selectedFeeType !== 'all' ? selectedFeeType : undefined,
+                              is_active: selectedStatus !== 'all' ? selectedStatus : undefined,
+                              sort_field: sortField || undefined,
+                              sort_direction: sortDirection || undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
+                      );
+                  }}
+              />
+          </div>
 
-      {/* Form Modal */}
-      <CrudFormModal
-        isOpen={isFormModalOpen && formMode !== 'view'}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            {
-              name: 'client_id',
-              label: t('Client'),
-              type: 'select',
-              options: [
-                { value: null, label: t('All Clients') },
-                ...(clients || []).map((client: any) => ({
-                  value: client.id.toString(),
-                  label: client.name
-                }))
-              ]
-            },
-            {
-              name: 'fee_type_id',
-              label: t('Fee Type'),
-              type: 'select',
-              required: true,
-              options: (feeTypes || []).filter(feeType => feeType.id && feeType.name).map((feeType: any) => ({
-                value: feeType.id.toString(),
-                label: feeType.name
-              }))
-            },
-            { name: 'amount', label: t('Amount'), type: 'number', step: '0.01', min: '0' },
-            { name: 'percentage', label: t('Percentage'), type: 'number', step: '0.01', min: '0', max: '100' },
-            { name: 'hourly_rate', label: t('Hourly Rate'), type: 'number', step: '0.01', min: '0' },
-            { name: 'description', label: t('Description'), type: 'textarea' },
-            { name: 'effective_date', label: t('Effective Date'), type: 'date', required: true },
-            { name: 'end_date', label: t('End Date'), type: 'date' },
-            {
-              name: 'is_active',
-              label: t('Status'),
-              type: 'select',
-              options: [
-                { value: true, label: t('Active') },
-                { value: false, label: t('Inactive') }
-              ],
-              defaultValue: true
-            }
-          ],
-          modalSize: 'xl'
-        }}
-        initialData={currentItem}
-        title={
-          formMode === 'create'
-            ? t('Add New Fee Structure')
-            : t('Edit Fee Structure')
-        }
-        mode={formMode !== 'view' ? formMode : 'create'}
-      />
+          {/* Form Modal */}
+          <CrudFormModal
+              isOpen={isFormModalOpen && formMode !== 'view'}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'client_id',
+                          label: t('Client'),
+                          type: 'select',
+                          options: [
+                              { value: null, label: t('All Clients') },
+                              ...(clients || []).map((client: any) => ({
+                                  value: client.id.toString(),
+                                  label: client.name,
+                              })),
+                          ],
+                      },
+                      {
+                          name: 'fee_type_id',
+                          label: t('Fee Type'),
+                          type: 'select',
+                          required: true,
+                          options: (feeTypes || [])
+                              .filter((feeType) => feeType.id && feeType.name)
+                              .map((feeType: any) => ({
+                                  value: feeType.id.toString(),
+                                  label: feeType.name,
+                              })),
+                      },
+                      { name: 'amount', label: t('Amount'), type: 'number', step: '0.01', min: '0' },
+                      { name: 'percentage', label: t('Percentage'), type: 'number', step: '0.01', min: '0', max: '100' },
+                      { name: 'hourly_rate', label: t('Hourly Rate'), type: 'number', step: '0.01', min: '0' },
+                      { name: 'description', label: t('Description'), type: 'textarea' },
+                      { name: 'effective_date', label: t('Effective Date'), type: 'date', required: true },
+                      { name: 'end_date', label: t('End Date'), type: 'date' },
+                      {
+                          name: 'is_active',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: true, label: t('Active') },
+                              { value: false, label: t('Inactive') },
+                          ],
+                          defaultValue: true,
+                      },
+                  ],
+                  modalSize: 'xl',
+              }}
+              initialData={currentItem}
+              title={formMode === 'create' ? t('Add New Fee Structure') : t('Edit Fee Structure')}
+              mode={formMode !== 'view' ? formMode : 'create'}
+          />
 
-      {/* View Modal */}
-      <CrudFormModal
-        isOpen={isFormModalOpen && formMode === 'view'}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={() => {}}
-        formConfig={{
-          fields: [
-            {
-              name: 'client',
-              label: t('Client'),
-              type: 'text',
-              render: () => {
-                return <div className="rounded-md border bg-gray-50 p-2">
-                  {currentItem?.client?.name || t('All Clients')}
-                </div>;
-              }
-            },
-            {
-              name: 'fee_type',
-              label: t('Fee Type'),
-              type: 'text',
-              render: () => {
-                const feeType = (feeTypes || []).find((ft: any) => ft.id === currentItem?.fee_type_id);
-                return <div className="rounded-md border bg-gray-50 p-2">
-                  {feeType?.name || '-'}
-                </div>;
-              }
-            },
-            {
-              name: 'amount_display',
-              label: t('Amount/Rate'),
-              type: 'text',
-              render: () => {
-                const item = currentItem;
-                let displayAmount = '-';
-                if (item) {
-                  if (item.amount) displayAmount = `$${item.amount}`;
-                  else if (item.percentage) displayAmount = `${item.percentage}%`;
-                  else if (item.hourly_rate) displayAmount = `$${item.hourly_rate}/hr`;
-                }
-                return <div className="rounded-md border bg-gray-50 p-2">{displayAmount}</div>;
-              }
-            },
-            { name: 'description', label: t('Description'), type: 'textarea' },
-            { name: 'effective_date', label: t('Effective Date'), type: 'text' },
-            { name: 'end_date', label: t('End Date'), type: 'text' },
-            {
-              name: 'is_active',
-              label: t('Status'),
-              type: 'text',
-              render: () => {
-                const isActive = currentItem?.is_active;
-                return <div className="rounded-md border bg-gray-50 p-2">
-                  {isActive ? t('Active') : t('Inactive')}
-                </div>;
-              }
-            }
-          ],
-          modalSize: 'xl'
-        }}
-        initialData={currentItem}
-        title={t('View Fee Structure')}
-        mode="view"
-      />
+          {/* View Modal */}
+          <CrudFormModal
+              isOpen={isFormModalOpen && formMode === 'view'}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={() => {}}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'client',
+                          label: t('Client'),
+                          type: 'text',
+                          render: () => {
+                              return <div className="rounded-md border bg-gray-50 p-2">{currentItem?.client?.name || t('All Clients')}</div>;
+                          },
+                      },
+                      {
+                          name: 'fee_type',
+                          label: t('Fee Type'),
+                          type: 'text',
+                          render: () => {
+                              const feeType = (feeTypes || []).find((ft: any) => ft.id === currentItem?.fee_type_id);
+                              return <div className="rounded-md border bg-gray-50 p-2">{feeType?.name || '-'}</div>;
+                          },
+                      },
+                      {
+                          name: 'amount_display',
+                          label: t('Amount/Rate'),
+                          type: 'text',
+                          render: () => {
+                              const item = currentItem;
+                              let displayAmount = '-';
+                              if (item) {
+                                  if (item.amount) displayAmount = `$${item.amount}`;
+                                  else if (item.percentage) displayAmount = `${item.percentage}%`;
+                                  else if (item.hourly_rate) displayAmount = `$${item.hourly_rate}/hr`;
+                              }
+                              return <div className="rounded-md border bg-gray-50 p-2">{displayAmount}</div>;
+                          },
+                      },
+                      { name: 'description', label: t('Description'), type: 'textarea' },
+                      { name: 'effective_date', label: t('Effective Date'), type: 'text' },
+                      { name: 'end_date', label: t('End Date'), type: 'text' },
+                      {
+                          name: 'is_active',
+                          label: t('Status'),
+                          type: 'text',
+                          render: () => {
+                              const isActive = currentItem?.is_active;
+                              return <div className="rounded-md border bg-gray-50 p-2">{isActive ? t('Active') : t('Inactive')}</div>;
+                          },
+                      },
+                  ],
+                  modalSize: 'xl',
+              }}
+              initialData={currentItem}
+              title={t('View Fee Structure')}
+              mode="view"
+          />
 
-      {/* Delete Modal */}
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={`${currentItem?.client?.name || 'All Clients'} - ${currentItem?.feeType?.name}`}
-        entityName="fee structure"
-      />
-    </PageTemplate>
+          {/* Delete Modal */}
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={`${currentItem?.client?.name || 'All Clients'} - ${currentItem?.feeType?.name}`}
+              entityName="fee structure"
+          />
+      </PageTemplate>
   );
 }

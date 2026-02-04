@@ -270,111 +270,103 @@ export default function Workflows() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Workflows")}
-      url="/tasks/workflows"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'is_active',
-              label: t('Status'),
-              type: 'select',
-              value: selectedActive,
-              onChange: setSelectedActive,
-              options: activeOptions
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('tasks.workflows.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              is_active: selectedActive !== 'all' ? selectedActive : undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Workflows')} url="/tasks/workflows" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'is_active',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedActive,
+                          onChange: setSelectedActive,
+                          options: activeOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={workflows?.data || []}
-          from={workflows?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-workflows',
-            create: 'create-workflows',
-            edit: 'edit-workflows',
-            delete: 'delete-workflows'
-          }}
-        />
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={workflows?.data || []}
+                  from={workflows?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-workflows',
+                      create: 'create-workflows',
+                      edit: 'edit-workflows',
+                      delete: 'delete-workflows',
+                  }}
+              />
 
-        <Pagination
-          from={workflows?.from || 0}
-          to={workflows?.to || 0}
-          total={workflows?.total || 0}
-          links={workflows?.links}
-          entityName={t("workflows")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={workflows?.from || 0}
+                  to={workflows?.to || 0}
+                  total={workflows?.total || 0}
+                  links={workflows?.links}
+                  entityName={t('workflows')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('tasks.workflows.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              is_active: selectedActive !== 'all' ? selectedActive : undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
+                      );
+                  }}
+              />
+          </div>
 
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            { name: 'name', label: t('Name'), type: 'text', required: true },
-            { name: 'description', label: t('Description'), type: 'textarea' },
-            { name: 'trigger_event', label: t('Trigger Event'), type: 'text' },
-            {
-              name: 'is_active',
-              label: t('Active'),
-              type: 'checkbox',
-              defaultValue: true
-            }
-          ],
-          modalSize: 'lg'
-        }}
-        initialData={currentItem}
-        title={
-          formMode === 'create'
-            ? t('Add New Workflow')
-            : formMode === 'edit'
-              ? t('Edit Workflow')
-              : t('View Workflow')
-        }
-        mode={formMode}
-      />
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      { name: 'name', label: t('Name'), type: 'text', required: true },
+                      { name: 'description', label: t('Description'), type: 'textarea' },
+                      { name: 'trigger_event', label: t('Trigger Event'), type: 'text' },
+                      {
+                          name: 'is_active',
+                          label: t('Active'),
+                          type: 'checkbox',
+                          defaultValue: true,
+                      },
+                  ],
+                  modalSize: 'lg',
+              }}
+              initialData={currentItem}
+              title={formMode === 'create' ? t('Add New Workflow') : formMode === 'edit' ? t('Edit Workflow') : t('View Workflow')}
+              mode={formMode}
+          />
 
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.name || ''}
-        entityName="workflow"
-      />
-    </PageTemplate>
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.name || ''}
+              entityName="workflow"
+          />
+      </PageTemplate>
   );
 }

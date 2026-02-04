@@ -307,16 +307,37 @@ export default function CaseDocuments() {
     ];
 
     return (
-        <PageTemplate title={t("Case Documents")} url="/advocate/case-documents" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
+        <PageTemplate title={t('Case Documents')} url="/advocate/case-documents" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+            <div className="mb-4 rounded-lg bg-white">
                 <SearchAndFilterBar
                     searchTerm={searchTerm}
                     onSearchChange={setSearchTerm}
                     onSearch={handleSearch}
                     filters={[
-                        { name: 'document_type', label: t('Document Type'), type: 'select', value: selectedDocType, onChange: setSelectedDocType, options: docTypeOptions },
-                        { name: 'confidentiality', label: t('Confidentiality'), type: 'select', value: selectedConfidentiality, onChange: setSelectedConfidentiality, options: confidentialityOptions },
-                        { name: 'status', label: t('Status'), type: 'select', value: selectedStatus, onChange: setSelectedStatus, options: statusOptions }
+                        {
+                            name: 'document_type',
+                            label: t('Document Type'),
+                            type: 'select',
+                            value: selectedDocType,
+                            onChange: setSelectedDocType,
+                            options: docTypeOptions,
+                        },
+                        {
+                            name: 'confidentiality',
+                            label: t('Confidentiality'),
+                            type: 'select',
+                            value: selectedConfidentiality,
+                            onChange: setSelectedConfidentiality,
+                            options: confidentialityOptions,
+                        },
+                        {
+                            name: 'status',
+                            label: t('Status'),
+                            type: 'select',
+                            value: selectedStatus,
+                            onChange: setSelectedStatus,
+                            options: statusOptions,
+                        },
                     ]}
                     showFilters={showFilters}
                     setShowFilters={setShowFilters}
@@ -324,21 +345,10 @@ export default function CaseDocuments() {
                     activeFilterCount={activeFilterCount}
                     onResetFilters={handleResetFilters}
                     onApplyFilters={applyFilters}
-                    currentPerPage={pageFilters.per_page?.toString() || "10"}
-                    onPerPageChange={(value) => {
-                        router.get(route('advocate.case-documents.index'), {
-                            page: 1,
-                            per_page: parseInt(value),
-                            search: searchTerm || undefined,
-                            document_type: selectedDocType !== 'all' ? selectedDocType : undefined,
-                            confidentiality: selectedConfidentiality !== 'all' ? selectedConfidentiality : undefined,
-                            status: selectedStatus !== 'all' ? selectedStatus : undefined
-                        }, { preserveState: true, preserveScroll: true });
-                    }}
                 />
             </div>
 
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
+            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
                 <CrudTable
                     columns={columns}
                     actions={actions}
@@ -353,7 +363,7 @@ export default function CaseDocuments() {
                         view: 'view-case-documents',
                         create: 'create-case-documents',
                         edit: 'edit-case-documents',
-                        delete: 'delete-case-documents'
+                        delete: 'delete-case-documents',
                     }}
                 />
 
@@ -362,8 +372,23 @@ export default function CaseDocuments() {
                     to={caseDocuments?.to || 0}
                     total={caseDocuments?.total || 0}
                     links={caseDocuments?.links}
-                    entityName={t("case documents")}
+                    entityName={t('case documents')}
                     onPageChange={(url) => router.get(url)}
+                    currentPerPage={pageFilters.per_page?.toString() || '10'}
+                    onPerPageChange={(value) => {
+                        router.get(
+                            route('advocate.case-documents.index'),
+                            {
+                                page: 1,
+                                per_page: parseInt(value),
+                                search: searchTerm || undefined,
+                                document_type: selectedDocType !== 'all' ? selectedDocType : undefined,
+                                confidentiality: selectedConfidentiality !== 'all' ? selectedConfidentiality : undefined,
+                                status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                            },
+                            { preserveState: true, preserveScroll: true },
+                        );
+                    }}
                 />
             </div>
 
@@ -380,19 +405,22 @@ export default function CaseDocuments() {
                             label: t('Document Type'),
                             type: 'select',
                             required: true,
-                            options: documentTypes ? documentTypes.map((type: any) => {
-                                // Handle translatable name
-                                let displayName = type.name;
-                                if (typeof type.name === 'object' && type.name !== null) {
-                                    displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
-                                } else if (type.name_translations && typeof type.name_translations === 'object') {
-                                    displayName = type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
-                                }
-                                return {
-                                    value: type.id.toString(),
-                                    label: displayName
-                                };
-                            }) : []
+                            options: documentTypes
+                                ? documentTypes.map((type: any) => {
+                                      // Handle translatable name
+                                      let displayName = type.name;
+                                      if (typeof type.name === 'object' && type.name !== null) {
+                                          displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+                                      } else if (type.name_translations && typeof type.name_translations === 'object') {
+                                          displayName =
+                                              type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
+                                      }
+                                      return {
+                                          value: type.id.toString(),
+                                          label: displayName,
+                                      };
+                                  })
+                                : [],
                         },
                         {
                             name: 'confidentiality',
@@ -402,8 +430,8 @@ export default function CaseDocuments() {
                             options: [
                                 { value: 'public', label: t('Public') },
                                 { value: 'confidential', label: t('Confidential') },
-                                { value: 'privileged', label: t('Privileged') }
-                            ]
+                                { value: 'privileged', label: t('Privileged') },
+                            ],
                         },
                         { name: 'document_date', label: t('Document Date'), type: 'date' },
                         { name: 'description', label: t('Description'), type: 'textarea' },
@@ -413,24 +441,22 @@ export default function CaseDocuments() {
                             type: 'select',
                             options: [
                                 { value: 'active', label: t('Active') },
-                                { value: 'archived', label: t('Archived') }
+                                { value: 'archived', label: t('Archived') },
                             ],
-                            defaultValue: 'active'
-                        }
+                            defaultValue: 'active',
+                        },
                     ],
-                    modalSize: 'xl'
+                    modalSize: 'xl',
                 }}
-                initialData={currentItem ? {
-                    ...currentItem,
-                    file: currentItem.file_path
-                } : null}
-                title={
-                    formMode === 'create'
-                        ? t('Add New Case Document')
-                        : formMode === 'edit'
-                            ? t('Edit Case Document')
-                            : t('View Case Document')
+                initialData={
+                    currentItem
+                        ? {
+                              ...currentItem,
+                              file: currentItem.file_path,
+                          }
+                        : null
                 }
+                title={formMode === 'create' ? t('Add New Case Document') : formMode === 'edit' ? t('Edit Case Document') : t('View Case Document')}
                 mode={formMode}
             />
 

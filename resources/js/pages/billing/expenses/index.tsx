@@ -399,348 +399,339 @@ export default function Expenses() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Expenses")}
-      url="/billing/expenses"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      {/* Search and filters section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'expense_category_id',
-              label: t('Category'),
-              type: 'select',
-              value: selectedCategory,
-              onChange: setSelectedCategory,
-              options: categoryOptions
-            },
-            {
-              name: 'is_billable',
-              label: t('Billable'),
-              type: 'select',
-              value: selectedBillable,
-              onChange: setSelectedBillable,
-              options: billableOptions
-            },
-            {
-              name: 'is_approved',
-              label: t('Status'),
-              type: 'select',
-              value: selectedApproved,
-              onChange: setSelectedApproved,
-              options: approvedOptions
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('billing.expenses.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              expense_category_id: selectedCategory !== 'all' ? selectedCategory : undefined,
-              is_billable: selectedBillable !== 'all' ? selectedBillable : undefined,
-              is_approved: selectedApproved !== 'all' ? selectedApproved : undefined,
-              sort_field: sortField || undefined,
-              sort_direction: sortDirection || undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Expenses')} url="/billing/expenses" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          {/* Search and filters section */}
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'expense_category_id',
+                          label: t('Category'),
+                          type: 'select',
+                          value: selectedCategory,
+                          onChange: setSelectedCategory,
+                          options: categoryOptions,
+                      },
+                      {
+                          name: 'is_billable',
+                          label: t('Billable'),
+                          type: 'select',
+                          value: selectedBillable,
+                          onChange: setSelectedBillable,
+                          options: billableOptions,
+                      },
+                      {
+                          name: 'is_approved',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedApproved,
+                          onChange: setSelectedApproved,
+                          options: approvedOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      {/* Content section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={expenses?.data || []}
-          from={expenses?.from || 1}
-          onAction={handleAction}
-          sortField={sortField}
-          sortDirection={sortDirection}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-expenses',
-            create: 'create-expenses',
-            edit: 'edit-expenses',
-            delete: 'delete-expenses'
-          }}
-        />
+          {/* Content section */}
+          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={expenses?.data || []}
+                  from={expenses?.from || 1}
+                  onAction={handleAction}
+                  sortField={sortField}
+                  sortDirection={sortDirection}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-expenses',
+                      create: 'create-expenses',
+                      edit: 'edit-expenses',
+                      delete: 'delete-expenses',
+                  }}
+              />
 
-        {/* Pagination section */}
-        <Pagination
-          from={expenses?.from || 0}
-          to={expenses?.to || 0}
-          total={expenses?.total || 0}
-          links={expenses?.links}
-          entityName={t("expenses")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              {/* Pagination section */}
+              <Pagination
+                  from={expenses?.from || 0}
+                  to={expenses?.to || 0}
+                  total={expenses?.total || 0}
+                  links={expenses?.links}
+                  entityName={t('expenses')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('billing.expenses.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              expense_category_id: selectedCategory !== 'all' ? selectedCategory : undefined,
+                              is_billable: selectedBillable !== 'all' ? selectedBillable : undefined,
+                              is_approved: selectedApproved !== 'all' ? selectedApproved : undefined,
+                              sort_field: sortField || undefined,
+                              sort_direction: sortDirection || undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
+                      );
+                  }}
+              />
+          </div>
 
-      {/* Form Modal */}
-      <CrudFormModal
-        isOpen={isFormModalOpen && formMode !== 'view'}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            {
-              name: 'case_id',
-              label: t('Case'),
-              type: 'select',
-              options: [
-                // { value: '', label: t('No Case (General Expense)') },
-                ...(cases || []).map((caseItem: any) => ({
-                  value: caseItem.id.toString(),
-                  label: caseItem.case_id ? `${caseItem.case_id} - ${caseItem.title}` : caseItem.title
-                }))
-              ]
-            },
-            {
-              name: 'expense_category_id',
-              label: t('Category'),
-              type: 'select',
-              required: true,
-              options: (categories || []).filter(category => category.id && getCategoryLabel(category)).map((category: any) => ({
-                value: category.id.toString(),
-                label: getCategoryLabel(category)
-              }))
-            },
-            { name: 'description', label: t('Description'), type: 'text', required: true },
-            { name: 'amount', label: t('Amount'), type: 'number', step: '0.01', required: true, min: '0' },
-            { name: 'expense_date', label: t('Expense Date'), type: 'date', required: true },
-            {
-              name: 'is_billable',
-              label: t('Billable'),
-              type: 'select',
-              options: [
-                { value: '1', label: t('Yes') },
-                { value: '0', label: t('No') }
-              ],
-              defaultValue: '0'
-            },
-            { name: 'notes', label: t('Notes'), type: 'textarea' },
-            {
-              name: 'receipt_file',
-              label: t('Files'),
-              type: 'media-picker',
-              multiple: true,
-              placeholder: t('Select files...')
-            }
-          ],
-          modalSize: 'lg'
-        }}
-        initialData={currentItem}
-        title={
-          formMode === 'create'
-            ? t('Add New Expense')
-            : t('Edit Expense')
-        }
-        mode={formMode !== 'view' ? formMode : 'create'}
-      />
+          {/* Form Modal */}
+          <CrudFormModal
+              isOpen={isFormModalOpen && formMode !== 'view'}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'case_id',
+                          label: t('Case'),
+                          type: 'select',
+                          options: [
+                              // { value: '', label: t('No Case (General Expense)') },
+                              ...(cases || []).map((caseItem: any) => ({
+                                  value: caseItem.id.toString(),
+                                  label: caseItem.case_id ? `${caseItem.case_id} - ${caseItem.title}` : caseItem.title,
+                              })),
+                          ],
+                      },
+                      {
+                          name: 'expense_category_id',
+                          label: t('Category'),
+                          type: 'select',
+                          required: true,
+                          options: (categories || [])
+                              .filter((category) => category.id && getCategoryLabel(category))
+                              .map((category: any) => ({
+                                  value: category.id.toString(),
+                                  label: getCategoryLabel(category),
+                              })),
+                      },
+                      { name: 'description', label: t('Description'), type: 'text', required: true },
+                      { name: 'amount', label: t('Amount'), type: 'number', step: '0.01', required: true, min: '0' },
+                      { name: 'expense_date', label: t('Expense Date'), type: 'date', required: true },
+                      {
+                          name: 'is_billable',
+                          label: t('Billable'),
+                          type: 'select',
+                          options: [
+                              { value: '1', label: t('Yes') },
+                              { value: '0', label: t('No') },
+                          ],
+                          defaultValue: '0',
+                      },
+                      { name: 'notes', label: t('Notes'), type: 'textarea' },
+                      {
+                          name: 'receipt_file',
+                          label: t('Files'),
+                          type: 'media-picker',
+                          multiple: true,
+                          placeholder: t('Select files...'),
+                      },
+                  ],
+                  modalSize: 'lg',
+              }}
+              initialData={currentItem}
+              title={formMode === 'create' ? t('Add New Expense') : t('Edit Expense')}
+              mode={formMode !== 'view' ? formMode : 'create'}
+          />
 
-      {/* View Modal */}
-      <CrudFormModal
-        isOpen={isFormModalOpen && formMode === 'view'}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={() => { }}
-        formConfig={{
-          fields: [
-            {
-              name: 'category',
-              label: t('Category'),
-              type: 'text',
-              render: () => {
-                const category = (categories || []).find((cat: any) => cat.id === currentItem?.expense_category_id);
-                return <div className="rounded-md border bg-gray-50 p-2">
-                  {category ? getCategoryLabel(category) : '-'}
-                </div>;
-              }
-            },
-            { name: 'description', label: t('Description'), type: 'text' },
-            {
-              name: 'amount',
-              label: t('Amount'),
-              type: 'text',
-              render: () => {
-                const amount = parseFloat(currentItem?.amount);
-                return <div className="rounded-md border bg-gray-50 p-2">
-                  {isNaN(amount) ? formatCurrency(0.00) : formatCurrency(amount)}
-                </div>;
-              }
-            },
-            { name: 'expense_date', label: t('Expense Date'), type: 'text' },
-            {
-              name: 'is_billable',
-              label: t('Billable'),
-              type: 'text',
-              render: () => {
-                const isBillable = currentItem?.is_billable;
-                return <div className="rounded-md border bg-gray-50 p-2">
-                  {isBillable ? t('Yes') : t('No')}
-                </div>;
-              }
-            },
-            {
-              name: 'is_approved',
-              label: t('Status'),
-              type: 'text',
-              render: () => {
-                const isApproved = currentItem?.is_approved;
-                return <div className="rounded-md border bg-gray-50 p-2">
-                  {isApproved ? t('Approved') : t('Pending')}
-                </div>;
-              }
-            },
-            { name: 'notes', label: t('Notes'), type: 'textarea' },
-            {
-              name: 'receipt_file',
-              label: t('Files'),
-              type: 'custom',
-              render: (field, formData) => {
-                const files = formData[field.name];
-                if (!files) {
-                  return <div className="rounded-md border bg-gray-50 p-2">-</div>;
-                }
-
-                // Handle both comma-separated string and array
-                const fileList = typeof files === 'string'
-                  ? files.split(',').filter(Boolean).map(f => f.trim())
-                  : Array.isArray(files)
-                    ? files.filter(Boolean)
-                    : [];
-
-                if (fileList.length === 0) {
-                  return <div className="rounded-md border bg-gray-50 p-2">-</div>;
-                }
-
-                // Get display URL helper
-                const getDisplayUrl = (url: string) => {
-                  if (!url) return '';
-                  if (url.startsWith('http')) return url;
-                  if (url.startsWith('/')) {
-                    return `${window.appSettings?.imageUrl || window.location.origin}${url}`;
-                  }
-                  return `${window.appSettings?.imageUrl || window.location.origin}/${url}`;
-                };
-
-                // Get file extension
-                const getFileExtension = (path: string) => {
-                  const filename = path.split('/').pop() || path;
-                  return filename.split('.').pop()?.toLowerCase() || '';
-                };
-
-                // Check file type
-                const isImage = (path: string) => {
-                  const ext = getFileExtension(path);
-                  return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext);
-                };
-
-                const isPdf = (path: string) => {
-                  return getFileExtension(path) === 'pdf';
-                };
-
-                const isDoc = (path: string) => {
-                  const ext = getFileExtension(path);
-                  return ['doc', 'docx'].includes(ext);
-                };
-
-                return (
-                  <div className="space-y-2">
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                      {fileList.map((filePath, index) => {
-                        const displayUrl = getDisplayUrl(filePath);
-                        const filename = filePath.split('/').pop() || filePath;
-
-                        return (
-                          <div key={index} className="relative group">
-                            <a
-                              href={displayUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="block"
-                            >
-                              {isImage(filePath) ? (
-                                <div className="relative aspect-square bg-gray-50 rounded border overflow-hidden">
-                                  <img
-                                    src={displayUrl}
-                                    alt={filename}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                      const target = e.target as HTMLImageElement;
-                                      target.style.display = 'none';
-                                      const fallback = target.nextElementSibling as HTMLElement;
-                                      if (fallback) fallback.style.display = 'flex';
-                                    }}
-                                  />
-                                  <div className="hidden w-full h-full bg-gray-100 rounded flex-col items-center justify-center">
-                                    <span className="text-xs text-gray-600">Image</span>
+          {/* View Modal */}
+          <CrudFormModal
+              isOpen={isFormModalOpen && formMode === 'view'}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={() => {}}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'category',
+                          label: t('Category'),
+                          type: 'text',
+                          render: () => {
+                              const category = (categories || []).find((cat: any) => cat.id === currentItem?.expense_category_id);
+                              return <div className="rounded-md border bg-gray-50 p-2">{category ? getCategoryLabel(category) : '-'}</div>;
+                          },
+                      },
+                      { name: 'description', label: t('Description'), type: 'text' },
+                      {
+                          name: 'amount',
+                          label: t('Amount'),
+                          type: 'text',
+                          render: () => {
+                              const amount = parseFloat(currentItem?.amount);
+                              return (
+                                  <div className="rounded-md border bg-gray-50 p-2">
+                                      {isNaN(amount) ? formatCurrency(0.0) : formatCurrency(amount)}
                                   </div>
-                                </div>
-                              ) : isPdf(filePath) ? (
-                                <div className="relative aspect-square bg-red-50 border border-red-200 rounded flex flex-col items-center justify-center">
-                                  <div className="w-8 h-8 bg-red-100 rounded flex items-center justify-center mb-1">
-                                    <FileText className="h-5 w-5 text-red-600" />
-                                  </div>
-                                  <span className="text-xs text-red-600 font-medium">PDF</span>
-                                </div>
-                              ) : isDoc(filePath) ? (
-                                <div className="relative aspect-square bg-blue-50 border border-blue-200 rounded flex flex-col items-center justify-center">
-                                  <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center mb-1">
-                                    <FileText className="h-5 w-5 text-blue-600" />
-                                  </div>
-                                  <span className="text-xs text-blue-600 font-medium">DOC</span>
-                                </div>
-                              ) : (
-                                <div className="relative aspect-square bg-gray-50 border border-gray-200 rounded flex flex-col items-center justify-center">
-                                  <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center mb-1">
-                                    <File className="h-5 w-5 text-gray-600" />
-                                  </div>
-                                  <span className="text-xs text-gray-600 font-medium">FILE</span>
-                                </div>
-                              )}
-                            </a>
-                            <div className="mt-1 text-xs text-gray-600 truncate" title={filename}>
-                              {filename}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              }
-            }
-          ],
-          modalSize: 'lg'
-        }}
-        initialData={currentItem}
-        title={t('View Expense')}
-        mode="view"
-      />
+                              );
+                          },
+                      },
+                      { name: 'expense_date', label: t('Expense Date'), type: 'text' },
+                      {
+                          name: 'is_billable',
+                          label: t('Billable'),
+                          type: 'text',
+                          render: () => {
+                              const isBillable = currentItem?.is_billable;
+                              return <div className="rounded-md border bg-gray-50 p-2">{isBillable ? t('Yes') : t('No')}</div>;
+                          },
+                      },
+                      {
+                          name: 'is_approved',
+                          label: t('Status'),
+                          type: 'text',
+                          render: () => {
+                              const isApproved = currentItem?.is_approved;
+                              return <div className="rounded-md border bg-gray-50 p-2">{isApproved ? t('Approved') : t('Pending')}</div>;
+                          },
+                      },
+                      { name: 'notes', label: t('Notes'), type: 'textarea' },
+                      {
+                          name: 'receipt_file',
+                          label: t('Files'),
+                          type: 'custom',
+                          render: (field, formData) => {
+                              const files = formData[field.name];
+                              if (!files) {
+                                  return <div className="rounded-md border bg-gray-50 p-2">-</div>;
+                              }
 
-      {/* Delete Modal */}
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.description || ''}
-        entityName="expense"
-      />
-    </PageTemplate>
+                              // Handle both comma-separated string and array
+                              const fileList =
+                                  typeof files === 'string'
+                                      ? files
+                                            .split(',')
+                                            .filter(Boolean)
+                                            .map((f) => f.trim())
+                                      : Array.isArray(files)
+                                        ? files.filter(Boolean)
+                                        : [];
+
+                              if (fileList.length === 0) {
+                                  return <div className="rounded-md border bg-gray-50 p-2">-</div>;
+                              }
+
+                              // Get display URL helper
+                              const getDisplayUrl = (url: string) => {
+                                  if (!url) return '';
+                                  if (url.startsWith('http')) return url;
+                                  if (url.startsWith('/')) {
+                                      return `${window.appSettings?.imageUrl || window.location.origin}${url}`;
+                                  }
+                                  return `${window.appSettings?.imageUrl || window.location.origin}/${url}`;
+                              };
+
+                              // Get file extension
+                              const getFileExtension = (path: string) => {
+                                  const filename = path.split('/').pop() || path;
+                                  return filename.split('.').pop()?.toLowerCase() || '';
+                              };
+
+                              // Check file type
+                              const isImage = (path: string) => {
+                                  const ext = getFileExtension(path);
+                                  return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext);
+                              };
+
+                              const isPdf = (path: string) => {
+                                  return getFileExtension(path) === 'pdf';
+                              };
+
+                              const isDoc = (path: string) => {
+                                  const ext = getFileExtension(path);
+                                  return ['doc', 'docx'].includes(ext);
+                              };
+
+                              return (
+                                  <div className="space-y-2">
+                                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                                          {fileList.map((filePath, index) => {
+                                              const displayUrl = getDisplayUrl(filePath);
+                                              const filename = filePath.split('/').pop() || filePath;
+
+                                              return (
+                                                  <div key={index} className="group relative">
+                                                      <a href={displayUrl} target="_blank" rel="noopener noreferrer" className="block">
+                                                          {isImage(filePath) ? (
+                                                              <div className="relative aspect-square overflow-hidden rounded border bg-gray-50">
+                                                                  <img
+                                                                      src={displayUrl}
+                                                                      alt={filename}
+                                                                      className="h-full w-full object-cover"
+                                                                      onError={(e) => {
+                                                                          const target = e.target as HTMLImageElement;
+                                                                          target.style.display = 'none';
+                                                                          const fallback = target.nextElementSibling as HTMLElement;
+                                                                          if (fallback) fallback.style.display = 'flex';
+                                                                      }}
+                                                                  />
+                                                                  <div className="hidden h-full w-full flex-col items-center justify-center rounded bg-gray-100">
+                                                                      <span className="text-xs text-gray-600">Image</span>
+                                                                  </div>
+                                                              </div>
+                                                          ) : isPdf(filePath) ? (
+                                                              <div className="relative flex aspect-square flex-col items-center justify-center rounded border border-red-200 bg-red-50">
+                                                                  <div className="mb-1 flex h-8 w-8 items-center justify-center rounded bg-red-100">
+                                                                      <FileText className="h-5 w-5 text-red-600" />
+                                                                  </div>
+                                                                  <span className="text-xs font-medium text-red-600">PDF</span>
+                                                              </div>
+                                                          ) : isDoc(filePath) ? (
+                                                              <div className="relative flex aspect-square flex-col items-center justify-center rounded border border-blue-200 bg-blue-50">
+                                                                  <div className="mb-1 flex h-8 w-8 items-center justify-center rounded bg-blue-100">
+                                                                      <FileText className="h-5 w-5 text-blue-600" />
+                                                                  </div>
+                                                                  <span className="text-xs font-medium text-blue-600">DOC</span>
+                                                              </div>
+                                                          ) : (
+                                                              <div className="relative flex aspect-square flex-col items-center justify-center rounded border border-gray-200 bg-gray-50">
+                                                                  <div className="mb-1 flex h-8 w-8 items-center justify-center rounded bg-gray-100">
+                                                                      <File className="h-5 w-5 text-gray-600" />
+                                                                  </div>
+                                                                  <span className="text-xs font-medium text-gray-600">FILE</span>
+                                                              </div>
+                                                          )}
+                                                      </a>
+                                                      <div className="mt-1 truncate text-xs text-gray-600" title={filename}>
+                                                          {filename}
+                                                      </div>
+                                                  </div>
+                                              );
+                                          })}
+                                      </div>
+                                  </div>
+                              );
+                          },
+                      },
+                  ],
+                  modalSize: 'lg',
+              }}
+              initialData={currentItem}
+              title={t('View Expense')}
+              mode="view"
+          />
+
+          {/* Delete Modal */}
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.description || ''}
+              entityName="expense"
+          />
+      </PageTemplate>
   );
 }

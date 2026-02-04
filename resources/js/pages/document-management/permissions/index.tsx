@@ -206,14 +206,8 @@ export default function DocumentPermissionsIndex() {
     ];
 
     return (
-        <PageTemplate
-            title={t('Document Permissions')}
-            url="/document-management/permissions"
-            actions={actions}
-            breadcrumbs={breadcrumbs}
-            noPadding
-        >
-            <div className="bg-white rounded-lg shadow mb-4 p-4">
+        <PageTemplate title={t('Document Permissions')} url="/document-management/permissions" actions={actions} breadcrumbs={breadcrumbs} noPadding>
+            <div className="mb-4 rounded-lg bg-white">
                 <SearchAndFilterBar
                     searchTerm={searchTerm}
                     onSearchChange={setSearchTerm}
@@ -229,8 +223,8 @@ export default function DocumentPermissionsIndex() {
                                 { value: 'all', label: t('All Documents') },
                                 ...(documents || []).map((doc: any) => ({
                                     value: doc.id.toString(),
-                                    label: doc.name
-                                }))
+                                    label: doc.name,
+                                })),
                             ],
                         },
                         {
@@ -243,8 +237,8 @@ export default function DocumentPermissionsIndex() {
                                 { value: 'all', label: t('All Users') },
                                 ...(users || []).map((user: any) => ({
                                     value: user.id.toString(),
-                                    label: user.name
-                                }))
+                                    label: user.name,
+                                })),
                             ],
                         },
                         {
@@ -265,7 +259,9 @@ export default function DocumentPermissionsIndex() {
                     showFilters={showFilters}
                     setShowFilters={setShowFilters}
                     hasActiveFilters={() => searchTerm !== '' || documentFilter !== 'all' || userFilter !== 'all' || typeFilter !== 'all'}
-                    activeFilterCount={() => (searchTerm ? 1 : 0) + (documentFilter !== 'all' ? 1 : 0) + (userFilter !== 'all' ? 1 : 0) + (typeFilter !== 'all' ? 1 : 0)}
+                    activeFilterCount={() =>
+                        (searchTerm ? 1 : 0) + (documentFilter !== 'all' ? 1 : 0) + (userFilter !== 'all' ? 1 : 0) + (typeFilter !== 'all' ? 1 : 0)
+                    }
                     onResetFilters={() => {
                         setSearchTerm('');
                         setDocumentFilter('all');
@@ -284,7 +280,7 @@ export default function DocumentPermissionsIndex() {
                 />
             </div>
 
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="overflow-hidden rounded-lg bg-white shadow">
                 <CrudTable
                     columns={columns}
                     actions={tableActions}
@@ -324,8 +320,8 @@ export default function DocumentPermissionsIndex() {
                             required: true,
                             options: (documents || []).map((doc: any) => ({
                                 value: doc.id,
-                                label: doc.name
-                            }))
+                                label: doc.name,
+                            })),
                         },
                         {
                             name: 'user_id',
@@ -334,8 +330,8 @@ export default function DocumentPermissionsIndex() {
                             required: true,
                             options: (users || []).map((user: any) => ({
                                 value: user.id,
-                                label: user.name
-                            }))
+                                label: user.name,
+                            })),
                         },
                         {
                             name: 'permission_type',
@@ -346,16 +342,16 @@ export default function DocumentPermissionsIndex() {
                                 { value: 'view', label: t('View') },
                                 { value: 'edit', label: t('Edit') },
                                 { value: 'download', label: t('Download') },
-                                { value: 'comment', label: t('Comment') }
-                            ]
+                                { value: 'comment', label: t('Comment') },
+                            ],
                         },
                         {
                             name: 'expires_at',
                             label: t('Expires At'),
-                            type: 'date'
-                        }
+                            type: 'date',
+                        },
                     ],
-                    modalSize: 'lg'
+                    modalSize: 'lg',
                 }}
                 initialData={currentItem}
                 title={formMode === 'create' ? t('Grant Permission') : t('Edit Permission')}
@@ -378,7 +374,7 @@ export default function DocumentPermissionsIndex() {
                                     <Shield className="h-4 w-4 text-blue-500" />
                                     <span className="font-medium">{currentItem?.document?.name || '-'}</span>
                                 </div>
-                            )
+                            ),
                         },
                         {
                             name: 'user',
@@ -386,7 +382,7 @@ export default function DocumentPermissionsIndex() {
                             type: 'text',
                             render: () => (
                                 <div className="flex items-center gap-3 rounded-md border bg-gray-50 p-2">
-                                    <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-300">
                                         <span className="text-xs font-semibold text-gray-600">
                                             {currentItem?.user?.name?.charAt(0)?.toUpperCase()}
                                         </span>
@@ -396,7 +392,7 @@ export default function DocumentPermissionsIndex() {
                                         <p className="text-xs text-gray-500">{currentItem?.user?.email || ''}</p>
                                     </div>
                                 </div>
-                            )
+                            ),
                         },
                         {
                             name: 'permission_type',
@@ -404,11 +400,11 @@ export default function DocumentPermissionsIndex() {
                             type: 'text',
                             render: () => (
                                 <div className="rounded-md border bg-gray-50 p-2">
-                                    <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-gray-100 text-gray-800">
+                                    <span className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-800">
                                         {t(currentItem?.permission_type?.charAt(0).toUpperCase() + currentItem?.permission_type?.slice(1))}
                                     </span>
                                 </div>
-                            )
+                            ),
                         },
                         {
                             name: 'expires_at',
@@ -419,18 +415,21 @@ export default function DocumentPermissionsIndex() {
                                     {currentItem?.expires_at ? (
                                         <>
                                             <Clock className="h-4 w-4 text-gray-500" />
-                                            <span className="text-sm">{window.appSettings?.formatDate(currentItem.expires_at) || new Date(currentItem.expires_at).toLocaleDateString()}</span>
+                                            <span className="text-sm">
+                                                {window.appSettings?.formatDate(currentItem.expires_at) ||
+                                                    new Date(currentItem.expires_at).toLocaleDateString()}
+                                            </span>
                                         </>
                                     ) : (
                                         <span className="text-sm text-gray-500">{t('Permanent')}</span>
                                     )}
                                 </div>
-                            )
+                            ),
                         },
                         { name: 'created_at', label: t('Granted At'), type: 'text' },
-                        { name: 'updated_at', label: t('Updated At'), type: 'text' }
+                        { name: 'updated_at', label: t('Updated At'), type: 'text' },
                     ],
-                    modalSize: 'lg'
+                    modalSize: 'lg',
                 }}
                 initialData={currentItem}
                 title={t('View Permission')}

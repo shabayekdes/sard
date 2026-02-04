@@ -166,7 +166,6 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
 
     return (
         <SidebarGroup className="px-1.5 py-0">
-            <SidebarGroupLabel className={`flex w-full text-xs ${effectivePosition === 'right' ? 'justify-end' : 'justify-start'}`}>Platform</SidebarGroupLabel>
             <SidebarMenu>
                 {items.map((item) => (
                     <div key={item.title}>

@@ -282,116 +282,108 @@ export default function TaskTypes() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Task Types")}
-      url="/tasks/task-types"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              value: selectedStatus,
-              onChange: setSelectedStatus,
-              options: statusOptions
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('tasks.task-types.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Task Types')} url="/tasks/task-types" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: statusOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={taskTypes?.data || []}
-          from={taskTypes?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-task-types',
-            create: 'create-task-types',
-            edit: 'edit-task-types',
-            delete: 'delete-task-types'
-          }}
-        />
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={taskTypes?.data || []}
+                  from={taskTypes?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-task-types',
+                      create: 'create-task-types',
+                      edit: 'edit-task-types',
+                      delete: 'delete-task-types',
+                  }}
+              />
 
-        <Pagination
-          from={taskTypes?.from || 0}
-          to={taskTypes?.to || 0}
-          total={taskTypes?.total || 0}
-          links={taskTypes?.links}
-          entityName={t("task types")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={taskTypes?.from || 0}
+                  to={taskTypes?.to || 0}
+                  total={taskTypes?.total || 0}
+                  links={taskTypes?.links}
+                  entityName={t('task types')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('tasks.task-types.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
+                      );
+                  }}
+              />
+          </div>
 
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            { name: 'name', label: t('Name'), type: 'text', required: true },
-            { name: 'description', label: t('Description'), type: 'textarea' },
-            { name: 'color', label: t('Color'), type: 'color', required: true, defaultValue: '#3B82F6' },
-            { name: 'default_duration', label: t('Default Duration (minutes)'), type: 'number' },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              options: [
-                { value: 'active', label: t('Active') },
-                { value: 'inactive', label: t('Inactive') }
-              ],
-              defaultValue: 'active'
-            }
-          ],
-          modalSize: 'lg'
-        }}
-        initialData={currentItem}
-        title={
-          formMode === 'create'
-            ? t('Add New Task Type')
-            : formMode === 'edit'
-              ? t('Edit Task Type')
-              : t('View Task Type')
-        }
-        mode={formMode}
-      />
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      { name: 'name', label: t('Name'), type: 'text', required: true },
+                      { name: 'description', label: t('Description'), type: 'textarea' },
+                      { name: 'color', label: t('Color'), type: 'color', required: true, defaultValue: '#3B82F6' },
+                      { name: 'default_duration', label: t('Default Duration (minutes)'), type: 'number' },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: 'active', label: t('Active') },
+                              { value: 'inactive', label: t('Inactive') },
+                          ],
+                          defaultValue: 'active',
+                      },
+                  ],
+                  modalSize: 'lg',
+              }}
+              initialData={currentItem}
+              title={formMode === 'create' ? t('Add New Task Type') : formMode === 'edit' ? t('Edit Task Type') : t('View Task Type')}
+              mode={formMode}
+          />
 
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.name || ''}
-        entityName="task type"
-      />
-    </PageTemplate>
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.name || ''}
+              entityName="task type"
+          />
+      </PageTemplate>
   );
 }

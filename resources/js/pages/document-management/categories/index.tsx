@@ -205,107 +205,111 @@ export default function DocumentCategories() {
   ];
 
   return (
-    <PageTemplate title={t("Document Categories")} url="/document-management/categories" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              value: selectedStatus,
-              onChange: setSelectedStatus,
-              options: [
-                { value: 'all', label: t('All Statuses') },
-                { value: 'active', label: t('Active') },
-                { value: 'inactive', label: t('Inactive') }
-              ]
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={() => searchTerm !== '' || selectedStatus !== 'all'}
-          activeFilterCount={() => (searchTerm ? 1 : 0) + (selectedStatus !== 'all' ? 1 : 0)}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('document-management.categories.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Document Categories')} url="/document-management/categories" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: [
+                              { value: 'all', label: t('All Statuses') },
+                              { value: 'active', label: t('Active') },
+                              { value: 'inactive', label: t('Inactive') },
+                          ],
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={() => searchTerm !== '' || selectedStatus !== 'all'}
+                  activeFilterCount={() => (searchTerm ? 1 : 0) + (selectedStatus !== 'all' ? 1 : 0)}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={categories?.data || []}
-          from={categories?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-document-categories',
-            create: 'create-document-categories',
-            edit: 'edit-document-categories',
-            delete: 'delete-document-categories'
-          }}
-        />
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={categories?.data || []}
+                  from={categories?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-document-categories',
+                      create: 'create-document-categories',
+                      edit: 'edit-document-categories',
+                      delete: 'delete-document-categories',
+                  }}
+              />
 
-        <Pagination
-          from={categories?.from || 0}
-          to={categories?.to || 0}
-          total={categories?.total || 0}
-          links={categories?.links}
-          entityName={t("categories")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={categories?.from || 0}
+                  to={categories?.to || 0}
+                  total={categories?.total || 0}
+                  links={categories?.links}
+                  entityName={t('categories')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('document-management.categories.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
+                      );
+                  }}
+              />
+          </div>
 
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            { name: 'name', label: t('Name'), type: 'text', required: true },
-            { name: 'description', label: t('Description'), type: 'textarea' },
-            { name: 'color', label: t('Color'), type: 'color', required: true, defaultValue: '#3b82f6' },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              options: [
-                { value: 'active', label: 'Active' },
-                { value: 'inactive', label: 'Inactive' }
-              ],
-              defaultValue: 'active'
-            }
-          ],
-          modalSize: 'lg'
-        }}
-        initialData={currentItem}
-        title={formMode === 'create' ? t('Add New Category') : t('Edit Category')}
-        mode={formMode}
-      />
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      { name: 'name', label: t('Name'), type: 'text', required: true },
+                      { name: 'description', label: t('Description'), type: 'textarea' },
+                      { name: 'color', label: t('Color'), type: 'color', required: true, defaultValue: '#3b82f6' },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: 'active', label: 'Active' },
+                              { value: 'inactive', label: 'Inactive' },
+                          ],
+                          defaultValue: 'active',
+                      },
+                  ],
+                  modalSize: 'lg',
+              }}
+              initialData={currentItem}
+              title={formMode === 'create' ? t('Add New Category') : t('Edit Category')}
+              mode={formMode}
+          />
 
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.name || ''}
-        entityName="category"
-      />
-    </PageTemplate>
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.name || ''}
+              entityName="category"
+          />
+      </PageTemplate>
   );
 }

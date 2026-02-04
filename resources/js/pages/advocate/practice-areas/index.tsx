@@ -285,130 +285,153 @@ export default function PracticeAreas() {
   ];
 
   return (
-    <PageTemplate title={t("Practice Areas")} url="/advocate/practice-areas" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            { name: 'expertise_level', label: t('Expertise Level'), type: 'select', value: selectedExpertise, onChange: setSelectedExpertise, options: expertiseOptions },
-            { name: 'is_primary', label: t('Type'), type: 'select', value: selectedPrimary, onChange: setSelectedPrimary, options: primaryOptions },
-            { name: 'status', label: t('Status'), type: 'select', value: selectedStatus, onChange: setSelectedStatus, options: statusOptions }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('advocate.practice-areas.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              expertise_level: selectedExpertise !== 'all' ? selectedExpertise : undefined,
-              is_primary: selectedPrimary !== 'all' ? selectedPrimary : undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Practice Areas')} url="/advocate/practice-areas" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'expertise_level',
+                          label: t('Expertise Level'),
+                          type: 'select',
+                          value: selectedExpertise,
+                          onChange: setSelectedExpertise,
+                          options: expertiseOptions,
+                      },
+                      {
+                          name: 'is_primary',
+                          label: t('Type'),
+                          type: 'select',
+                          value: selectedPrimary,
+                          onChange: setSelectedPrimary,
+                          options: primaryOptions,
+                      },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: statusOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={practiceAreas?.data || []}
-          from={practiceAreas?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-practice-areas',
-            create: 'create-practice-areas',
-            edit: 'edit-practice-areas',
-            delete: 'delete-practice-areas'
-          }}
-        />
+          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={practiceAreas?.data || []}
+                  from={practiceAreas?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-practice-areas',
+                      create: 'create-practice-areas',
+                      edit: 'edit-practice-areas',
+                      delete: 'delete-practice-areas',
+                  }}
+              />
 
-        <Pagination
-          from={practiceAreas?.from || 0}
-          to={practiceAreas?.to || 0}
-          total={practiceAreas?.total || 0}
-          links={practiceAreas?.links}
-          entityName={t("practice areas")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={practiceAreas?.from || 0}
+                  to={practiceAreas?.to || 0}
+                  total={practiceAreas?.total || 0}
+                  links={practiceAreas?.links}
+                  entityName={t('practice areas')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('advocate.practice-areas.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              expertise_level: selectedExpertise !== 'all' ? selectedExpertise : undefined,
+                              is_primary: selectedPrimary !== 'all' ? selectedPrimary : undefined,
+                              status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
+                      );
+                  }}
+              />
+          </div>
 
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            { name: 'name', label: t('Practice Area Name'), type: 'text', required: true },
-            { name: 'description', label: t('Description'), type: 'textarea' },
-            {
-              name: 'expertise_level',
-              label: t('Expertise Level'),
-              type: 'select',
-              required: true,
-              options: [
-                { value: 'beginner', label: t('Beginner') },
-                { value: 'intermediate', label: t('Intermediate') },
-                { value: 'expert', label: t('Expert') }
-              ]
-            },
-            {
-              name: 'is_primary',
-              label: t('Primary Practice Area'),
-              type: 'select',
-              options: [
-                { value: 'true', label: t('Yes') },
-                { value: 'false', label: t('No') }
-              ],
-              defaultValue: 'false'
-            },
-            { name: 'certifications', label: t('Certifications'), type: 'textarea' },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              options: [
-                { value: 'active', label: t('Active') },
-                { value: 'inactive', label: t('Inactive') }
-              ],
-              defaultValue: 'active'
-            }
-          ],
-          modalSize: 'xl'
-        }}
-        initialData={currentItem ? {
-          ...currentItem,
-          is_primary: currentItem.is_primary ? 'true' : 'false'
-        } : null}
-        title={
-          formMode === 'create'
-            ? t('Add New Practice Area')
-            : formMode === 'edit'
-              ? t('Edit Practice Area')
-              : t('View Practice Area')
-        }
-        mode={formMode}
-      />
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      { name: 'name', label: t('Practice Area Name'), type: 'text', required: true },
+                      { name: 'description', label: t('Description'), type: 'textarea' },
+                      {
+                          name: 'expertise_level',
+                          label: t('Expertise Level'),
+                          type: 'select',
+                          required: true,
+                          options: [
+                              { value: 'beginner', label: t('Beginner') },
+                              { value: 'intermediate', label: t('Intermediate') },
+                              { value: 'expert', label: t('Expert') },
+                          ],
+                      },
+                      {
+                          name: 'is_primary',
+                          label: t('Primary Practice Area'),
+                          type: 'select',
+                          options: [
+                              { value: 'true', label: t('Yes') },
+                              { value: 'false', label: t('No') },
+                          ],
+                          defaultValue: 'false',
+                      },
+                      { name: 'certifications', label: t('Certifications'), type: 'textarea' },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: 'active', label: t('Active') },
+                              { value: 'inactive', label: t('Inactive') },
+                          ],
+                          defaultValue: 'active',
+                      },
+                  ],
+                  modalSize: 'xl',
+              }}
+              initialData={
+                  currentItem
+                      ? {
+                            ...currentItem,
+                            is_primary: currentItem.is_primary ? 'true' : 'false',
+                        }
+                      : null
+              }
+              title={formMode === 'create' ? t('Add New Practice Area') : formMode === 'edit' ? t('Edit Practice Area') : t('View Practice Area')}
+              mode={formMode}
+          />
 
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.name || ''}
-        entityName="practice area"
-      />
-    </PageTemplate>
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.name || ''}
+              entityName="practice area"
+          />
+      </PageTemplate>
   );
 }

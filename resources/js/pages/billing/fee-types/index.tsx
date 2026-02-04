@@ -272,121 +272,113 @@ export default function FeeTypes() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Fee Types")}
-      url="/billing/fee-types"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      {/* Search and filters section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              value: selectedStatus,
-              onChange: setSelectedStatus,
-              options: statusOptions
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('billing.fee-types.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined,
-              sort_field: sortField || undefined,
-              sort_direction: sortDirection || undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Fee Types')} url="/billing/fee-types" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          {/* Search and filters section */}
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: statusOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      {/* Content section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={feeTypes?.data || []}
-          from={feeTypes?.from || 1}
-          onAction={handleAction}
-          sortField={sortField}
-          sortDirection={sortDirection}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-fee-types',
-            create: 'create-fee-types',
-            edit: 'edit-fee-types',
-            delete: 'delete-fee-types'
-          }}
-        />
+          {/* Content section */}
+          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={feeTypes?.data || []}
+                  from={feeTypes?.from || 1}
+                  onAction={handleAction}
+                  sortField={sortField}
+                  sortDirection={sortDirection}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-fee-types',
+                      create: 'create-fee-types',
+                      edit: 'edit-fee-types',
+                      delete: 'delete-fee-types',
+                  }}
+              />
 
-        {/* Pagination section */}
-        <Pagination
-          from={feeTypes?.from || 0}
-          to={feeTypes?.to || 0}
-          total={feeTypes?.total || 0}
-          links={feeTypes?.links}
-          entityName={t("fee types")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              {/* Pagination section */}
+              <Pagination
+                  from={feeTypes?.from || 0}
+                  to={feeTypes?.to || 0}
+                  total={feeTypes?.total || 0}
+                  links={feeTypes?.links}
+                  entityName={t('fee types')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('billing.fee-types.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                              sort_field: sortField || undefined,
+                              sort_direction: sortDirection || undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
+                      );
+                  }}
+              />
+          </div>
 
-      {/* Form Modal */}
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            { name: 'name', label: t('Name'), type: 'text', required: true },
-            { name: 'description', label: t('Description'), type: 'textarea' },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              options: [
-                { value: 'active', label: t('Active') },
-                { value: 'inactive', label: t('Inactive') }
-              ],
-              defaultValue: 'active'
-            }
-          ],
-          modalSize: 'lg'
-        }}
-        initialData={currentItem}
-        title={
-          formMode === 'create'
-            ? t('Add New Fee Type')
-            : formMode === 'edit'
-              ? t('Edit Fee Type')
-              : t('View Fee Type')
-        }
-        mode={formMode}
-      />
+          {/* Form Modal */}
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      { name: 'name', label: t('Name'), type: 'text', required: true },
+                      { name: 'description', label: t('Description'), type: 'textarea' },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: 'active', label: t('Active') },
+                              { value: 'inactive', label: t('Inactive') },
+                          ],
+                          defaultValue: 'active',
+                      },
+                  ],
+                  modalSize: 'lg',
+              }}
+              initialData={currentItem}
+              title={formMode === 'create' ? t('Add New Fee Type') : formMode === 'edit' ? t('Edit Fee Type') : t('View Fee Type')}
+              mode={formMode}
+          />
 
-      {/* Delete Modal */}
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.name || ''}
-        entityName="fee type"
-      />
-    </PageTemplate>
+          {/* Delete Modal */}
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.name || ''}
+              entityName="fee type"
+          />
+      </PageTemplate>
   );
 }

@@ -278,7 +278,7 @@ export default function CaseTeamMembers() {
       breadcrumbs={breadcrumbs}
       noPadding
     >
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
+      <div className="mb-4 rounded-lg bg-white">
         <SearchAndFilterBar
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}

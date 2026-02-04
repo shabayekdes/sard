@@ -246,114 +246,148 @@ export default function Judges() {
   ];
 
   return (
-    <PageTemplate title={t("Judge Management")} url="/judges" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            { name: 'court_id', label: t('Court'), type: 'select', value: selectedCourt, onChange: setSelectedCourt, options: courtOptions },
-            { name: 'status', label: t('Status'), type: 'select', value: selectedStatus, onChange: setSelectedStatus, options: statusOptions }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('judges.index'), {
-              page: 1, per_page: parseInt(value),
-              search: searchTerm || undefined,
-              court_id: selectedCourt !== 'all' ? selectedCourt : undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Judge Management')} url="/judges" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'court_id',
+                          label: t('Court'),
+                          type: 'select',
+                          value: selectedCourt,
+                          onChange: setSelectedCourt,
+                          options: courtOptions,
+                      },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: statusOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={judges?.data || []}
-          from={judges?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{ view: 'view-judges', create: 'create-judges', edit: 'edit-judges', delete: 'delete-judges' }}
-        />
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={judges?.data || []}
+                  from={judges?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{ view: 'view-judges', create: 'create-judges', edit: 'edit-judges', delete: 'delete-judges' }}
+              />
 
-        <Pagination
-          from={judges?.from || 0}
-          to={judges?.to || 0}
-          total={judges?.total || 0}
-          links={judges?.links}
-          entityName={t("judges")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={judges?.from || 0}
+                  to={judges?.to || 0}
+                  total={judges?.total || 0}
+                  links={judges?.links}
+                  entityName={t('judges')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('judges.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              court_id: selectedCourt !== 'all' ? selectedCourt : undefined,
+                              status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
+                      );
+                  }}
+              />
+          </div>
 
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            { name: 'court_id', label: t('Court'), type: 'select', required: true, options: courts ? courts.map((court: any) => ({ value: court.id.toString(), label: court.name })) : [] },
-            { name: 'name', label: t('Judge Name'), type: 'text', required: true },
-            { name: 'title', label: t('Title'), type: 'text' },
-            { name: 'email', label: t('Email'), type: 'email' },
-            { name: 'phone', label: t('Phone'), type: 'text' },
-            { name: 'contact_info', label: t('Contact Information'), type: 'textarea' },
-            { name: 'notes', label: t('Notes'), type: 'textarea' },
-            { name: 'status', label: t('Status'), type: 'select', options: [{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }], defaultValue: 'active' }
-          ],
-          modalSize: 'xl'
-        }}
-        initialData={currentItem}
-        title={formMode === 'create' ? t('Add New Judge') : formMode === 'edit' ? t('Edit Judge') : t('View Judge')}
-        mode={formMode}
-      />
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'court_id',
+                          label: t('Court'),
+                          type: 'select',
+                          required: true,
+                          options: courts ? courts.map((court: any) => ({ value: court.id.toString(), label: court.name })) : [],
+                      },
+                      { name: 'name', label: t('Judge Name'), type: 'text', required: true },
+                      { name: 'title', label: t('Title'), type: 'text' },
+                      { name: 'email', label: t('Email'), type: 'email' },
+                      { name: 'phone', label: t('Phone'), type: 'text' },
+                      { name: 'contact_info', label: t('Contact Information'), type: 'textarea' },
+                      { name: 'notes', label: t('Notes'), type: 'textarea' },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: 'active', label: 'Active' },
+                              { value: 'inactive', label: 'Inactive' },
+                          ],
+                          defaultValue: 'active',
+                      },
+                  ],
+                  modalSize: 'xl',
+              }}
+              initialData={currentItem}
+              title={formMode === 'create' ? t('Add New Judge') : formMode === 'edit' ? t('Edit Judge') : t('View Judge')}
+              mode={formMode}
+          />
 
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.name || ''}
-        entityName="judge"
-      />
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.name || ''}
+              entityName="judge"
+          />
 
-      {/* View Modal */}
-      <CrudFormModal
-        isOpen={isViewModalOpen}
-        onClose={() => setIsViewModalOpen(false)}
-        onSubmit={() => {}}
-        formConfig={{
-          fields: [
-            { name: 'court_name', label: t('Court'), type: 'text', readOnly: true },
-            { name: 'judge_id', label: t('Judge ID'), type: 'text', readOnly: true },
-            { name: 'name', label: t('Judge Name'), type: 'text', readOnly: true },
-            { name: 'title', label: t('Title'), type: 'text', readOnly: true },
-            { name: 'email', label: t('Email'), type: 'email', readOnly: true },
-            { name: 'phone', label: t('Phone'), type: 'text', readOnly: true },
-            { name: 'contact_info', label: t('Contact Information'), type: 'textarea', readOnly: true },
-            { name: 'notes', label: t('Notes'), type: 'textarea', readOnly: true },
-            { name: 'status', label: t('Status'), type: 'text', readOnly: true }
-          ],
-          modalSize: 'xl'
-        }}
-        initialData={{
-          ...currentItem,
-          court_name: currentItem?.court?.name || '-'
-        }}
-        title={t('View Judge Details')}
-        mode='view'
-      />
-    </PageTemplate>
+          {/* View Modal */}
+          <CrudFormModal
+              isOpen={isViewModalOpen}
+              onClose={() => setIsViewModalOpen(false)}
+              onSubmit={() => {}}
+              formConfig={{
+                  fields: [
+                      { name: 'court_name', label: t('Court'), type: 'text', readOnly: true },
+                      { name: 'judge_id', label: t('Judge ID'), type: 'text', readOnly: true },
+                      { name: 'name', label: t('Judge Name'), type: 'text', readOnly: true },
+                      { name: 'title', label: t('Title'), type: 'text', readOnly: true },
+                      { name: 'email', label: t('Email'), type: 'email', readOnly: true },
+                      { name: 'phone', label: t('Phone'), type: 'text', readOnly: true },
+                      { name: 'contact_info', label: t('Contact Information'), type: 'textarea', readOnly: true },
+                      { name: 'notes', label: t('Notes'), type: 'textarea', readOnly: true },
+                      { name: 'status', label: t('Status'), type: 'text', readOnly: true },
+                  ],
+                  modalSize: 'xl',
+              }}
+              initialData={{
+                  ...currentItem,
+                  court_name: currentItem?.court?.name || '-',
+              }}
+              title={t('View Judge Details')}
+              mode="view"
+          />
+      </PageTemplate>
   );
 }

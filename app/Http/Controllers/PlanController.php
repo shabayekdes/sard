@@ -195,7 +195,10 @@ class PlanController extends Controller
             ->exists();
             
         return Inertia::render('plans/edit', [
-            'plan' => $plan,
+            'plan' => array_merge($plan->toArray(), [
+                'name_translations' => $plan->getTranslations('name'),
+                'description_translations' => $plan->getTranslations('description'),
+            ]),
             'otherDefaultPlanExists' => $otherDefaultPlanExists
         ]);
     }

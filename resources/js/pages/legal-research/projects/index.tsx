@@ -285,194 +285,192 @@ export default function ResearchProjects() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Research Projects")}
-      url="/legal-research/projects"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'research_type_id',
-              label: t('Research Type'),
-              type: 'select',
-              value: selectedType,
-              onChange: setSelectedType,
-              options: [
-                { value: 'all', label: t('All Types') },
-                ...(researchTypes || []).map((type: any) => ({ value: type.id.toString(), label: type.name }))
-              ]
-            },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              value: selectedStatus,
-              onChange: setSelectedStatus,
-              options: [
-                { value: 'all', label: t('All Statuses') },
-                { value: 'active', label: t('Active') },
-                { value: 'completed', label: t('Completed') },
-                { value: 'on_hold', label: t('On Hold') },
-                { value: 'cancelled', label: t('Cancelled') }
-              ]
-            },
-            {
-              name: 'priority',
-              label: t('Priority'),
-              type: 'select',
-              value: selectedPriority,
-              onChange: setSelectedPriority,
-              options: [
-                { value: 'all', label: t('All Priorities') },
-                { value: 'low', label: t('Low') },
-                { value: 'medium', label: t('Medium') },
-                { value: 'high', label: t('High') },
-                { value: 'urgent', label: t('Urgent') }
-              ]
-            },
-            {
-              name: 'case_id',
-              label: t('Case'),
-              type: 'select',
-              value: selectedCase,
-              onChange: setSelectedCase,
-              options: caseOptions
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={() => searchTerm !== '' || selectedType !== 'all' || selectedStatus !== 'all' || selectedPriority !== 'all' || selectedCase !== 'all'}
-          activeFilterCount={() => (searchTerm ? 1 : 0) + (selectedType !== 'all' ? 1 : 0) + (selectedStatus !== 'all' ? 1 : 0) + (selectedPriority !== 'all' ? 1 : 0) + (selectedCase !== 'all' ? 1 : 0)}
-          onResetFilters={() => {
-            setSearchTerm('');
-            setSelectedType('all');
-            setSelectedStatus('all');
-            setSelectedPriority('all');
-            setSelectedCase('all');
-            setShowFilters(false);
-            router.get(route('legal-research.projects.index'), { page: 1, per_page: pageFilters.per_page });
-          }}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('legal-research.projects.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              research_type_id: selectedType !== 'all' ? selectedType : undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined,
-              priority: selectedPriority !== 'all' ? selectedPriority : undefined,
-              case_id: selectedCase !== 'all' ? selectedCase : undefined
-            });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Research Projects')} url="/legal-research/projects" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'research_type_id',
+                          label: t('Research Type'),
+                          type: 'select',
+                          value: selectedType,
+                          onChange: setSelectedType,
+                          options: [
+                              { value: 'all', label: t('All Types') },
+                              ...(researchTypes || []).map((type: any) => ({ value: type.id.toString(), label: type.name })),
+                          ],
+                      },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: [
+                              { value: 'all', label: t('All Statuses') },
+                              { value: 'active', label: t('Active') },
+                              { value: 'completed', label: t('Completed') },
+                              { value: 'on_hold', label: t('On Hold') },
+                              { value: 'cancelled', label: t('Cancelled') },
+                          ],
+                      },
+                      {
+                          name: 'priority',
+                          label: t('Priority'),
+                          type: 'select',
+                          value: selectedPriority,
+                          onChange: setSelectedPriority,
+                          options: [
+                              { value: 'all', label: t('All Priorities') },
+                              { value: 'low', label: t('Low') },
+                              { value: 'medium', label: t('Medium') },
+                              { value: 'high', label: t('High') },
+                              { value: 'urgent', label: t('Urgent') },
+                          ],
+                      },
+                      {
+                          name: 'case_id',
+                          label: t('Case'),
+                          type: 'select',
+                          value: selectedCase,
+                          onChange: setSelectedCase,
+                          options: caseOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={() =>
+                      searchTerm !== '' || selectedType !== 'all' || selectedStatus !== 'all' || selectedPriority !== 'all' || selectedCase !== 'all'
+                  }
+                  activeFilterCount={() =>
+                      (searchTerm ? 1 : 0) +
+                      (selectedType !== 'all' ? 1 : 0) +
+                      (selectedStatus !== 'all' ? 1 : 0) +
+                      (selectedPriority !== 'all' ? 1 : 0) +
+                      (selectedCase !== 'all' ? 1 : 0)
+                  }
+                  onResetFilters={() => {
+                      setSearchTerm('');
+                      setSelectedType('all');
+                      setSelectedStatus('all');
+                      setSelectedPriority('all');
+                      setSelectedCase('all');
+                      setShowFilters(false);
+                      router.get(route('legal-research.projects.index'), { page: 1, per_page: pageFilters.per_page });
+                  }}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={projects?.data || []}
-          from={projects?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-research-projects',
-            create: 'create-research-projects',
-            edit: 'edit-research-projects',
-            delete: 'delete-research-projects'
-          }}
-        />
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={projects?.data || []}
+                  from={projects?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-research-projects',
+                      create: 'create-research-projects',
+                      edit: 'edit-research-projects',
+                      delete: 'delete-research-projects',
+                  }}
+              />
 
-        <Pagination
-          from={projects?.from || 0}
-          to={projects?.to || 0}
-          total={projects?.total || 0}
-          links={projects?.links}
-          entityName={t("research projects")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={projects?.from || 0}
+                  to={projects?.to || 0}
+                  total={projects?.total || 0}
+                  links={projects?.links}
+                  entityName={t('research projects')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(route('legal-research.projects.index'), {
+                          page: 1,
+                          per_page: parseInt(value),
+                          search: searchTerm || undefined,
+                          research_type_id: selectedType !== 'all' ? selectedType : undefined,
+                          status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                          priority: selectedPriority !== 'all' ? selectedPriority : undefined,
+                          case_id: selectedCase !== 'all' ? selectedCase : undefined,
+                      });
+                  }}
+              />
+          </div>
 
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            { name: 'title', label: t('Title'), type: 'text', required: true },
-            { name: 'description', label: t('Description'), type: 'textarea', rows: 3 },
-            {
-              name: 'research_type_id',
-              label: t('Research Type'),
-              type: 'select',
-              required: true,
-              options: (researchTypes || []).map((type: any) => ({ value: type.id, label: type.name })),
-              displayValue: formMode === 'view' ? currentItem?.research_type?.name : undefined
-            },
-            { 
-              name: 'case_id', 
-              label: t('Associated Case'), 
-              type: 'select',
-              options: [
-                ...(cases || []).map((case_item: any) => ({ value: case_item.id, label: case_item.title }))
-              ],
-              displayValue: formMode === 'view' ? (currentItem?.case?.title || t('No Case')) : undefined
-            },
-            {
-              name: 'priority',
-              label: t('Priority'),
-              type: 'select',
-              required: true,
-              options: [
-                { value: 'low', label: t('Low') },
-                { value: 'medium', label: t('Medium') },
-                { value: 'high', label: t('High') },
-                { value: 'urgent', label: t('Urgent') }
-              ],
-              defaultValue: 'medium'
-            },
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      { name: 'title', label: t('Title'), type: 'text', required: true },
+                      { name: 'description', label: t('Description'), type: 'textarea', rows: 3 },
+                      {
+                          name: 'research_type_id',
+                          label: t('Research Type'),
+                          type: 'select',
+                          required: true,
+                          options: (researchTypes || []).map((type: any) => ({ value: type.id, label: type.name })),
+                          displayValue: formMode === 'view' ? currentItem?.research_type?.name : undefined,
+                      },
+                      {
+                          name: 'case_id',
+                          label: t('Associated Case'),
+                          type: 'select',
+                          options: [...(cases || []).map((case_item: any) => ({ value: case_item.id, label: case_item.title }))],
+                          displayValue: formMode === 'view' ? currentItem?.case?.title || t('No Case') : undefined,
+                      },
+                      {
+                          name: 'priority',
+                          label: t('Priority'),
+                          type: 'select',
+                          required: true,
+                          options: [
+                              { value: 'low', label: t('Low') },
+                              { value: 'medium', label: t('Medium') },
+                              { value: 'high', label: t('High') },
+                              { value: 'urgent', label: t('Urgent') },
+                          ],
+                          defaultValue: 'medium',
+                      },
 
-            { name: 'due_date', label: t('Due Date'), type: 'date' },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              options: [
-                { value: 'active', label: t('Active') },
-                { value: 'completed', label: t('Completed') },
-                { value: 'on_hold', label: t('On Hold') },
-                { value: 'cancelled', label: t('Cancelled') }
-              ],
-              defaultValue: 'active'
-            }
-          ],
-          modalSize: 'xl'
-        }}
-        initialData={currentItem}
-        title={formMode === 'create' ? t('Add New Research Project') : t('Edit Research Project')}
-        mode={formMode}
-      />
+                      { name: 'due_date', label: t('Due Date'), type: 'date' },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: 'active', label: t('Active') },
+                              { value: 'completed', label: t('Completed') },
+                              { value: 'on_hold', label: t('On Hold') },
+                              { value: 'cancelled', label: t('Cancelled') },
+                          ],
+                          defaultValue: 'active',
+                      },
+                  ],
+                  modalSize: 'xl',
+              }}
+              initialData={currentItem}
+              title={formMode === 'create' ? t('Add New Research Project') : t('Edit Research Project')}
+              mode={formMode}
+          />
 
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.title || ''}
-        entityName="research project"
-      />
-
-
-    </PageTemplate>
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.title || ''}
+              entityName="research project"
+          />
+      </PageTemplate>
   );
 }

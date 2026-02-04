@@ -260,217 +260,255 @@ export default function HearingTypes() {
   ];
 
   return (
-    <PageTemplate title={t("Hearing Type Management")} url="/hearing-types" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            { name: 'status', label: t('Status'), type: 'select', value: selectedStatus, onChange: setSelectedStatus, options: statusOptions }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('hearing-types.index'), {
-              page: 1, per_page: parseInt(value),
-              search: searchTerm || undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Hearing Type Management')} url="/hearing-types" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: statusOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={hearingTypes?.data || []}
-          from={hearingTypes?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{ view: 'view-hearing-types', create: 'create-hearing-types', edit: 'edit-hearing-types', delete: 'delete-hearing-types' }}
-        />
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={hearingTypes?.data || []}
+                  from={hearingTypes?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-hearing-types',
+                      create: 'create-hearing-types',
+                      edit: 'edit-hearing-types',
+                      delete: 'delete-hearing-types',
+                  }}
+              />
 
-        <Pagination
-          from={hearingTypes?.from || 0}
-          to={hearingTypes?.to || 0}
-          total={hearingTypes?.total || 0}
-          links={hearingTypes?.links}
-          entityName={t("hearing types")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={hearingTypes?.from || 0}
+                  to={hearingTypes?.to || 0}
+                  total={hearingTypes?.total || 0}
+                  links={hearingTypes?.links}
+                  entityName={t('hearing types')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('hearing-types.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
+                      );
+                  }}
+              />
+          </div>
 
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            {
-              name: 'name.en',
-              label: t('Hearing Type Name (English)'),
-              type: 'text',
-              required: true
-            },
-            {
-              name: 'name.ar',
-              label: t('Hearing Type Name (Arabic)'),
-              type: 'text',
-              required: true
-            },
-            {
-              name: 'description.en',
-              label: t('Description (English)'),
-              type: 'textarea'
-            },
-            {
-              name: 'description.ar',
-              label: t('Description (Arabic)'),
-              type: 'textarea'
-            },
-            { name: 'duration_estimate', label: t('Duration Estimate (minutes)'), type: 'number' },
-            {
-              name: 'notes.en',
-              label: t('Notes (English)'),
-              type: 'textarea'
-            },
-            {
-              name: 'notes.ar',
-              label: t('Notes (Arabic)'),
-              type: 'textarea'
-            },
-            { name: 'status', label: t('Status'), type: 'select', options: [{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }], defaultValue: 'active' }
-          ],
-          modalSize: 'xl',
-          transformData: (data: any) => {
-            // Transform flat structure to nested structure for translatable fields
-            const transformed: any = { ...data };
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'name.en',
+                          label: t('Hearing Type Name (English)'),
+                          type: 'text',
+                          required: true,
+                      },
+                      {
+                          name: 'name.ar',
+                          label: t('Hearing Type Name (Arabic)'),
+                          type: 'text',
+                          required: true,
+                      },
+                      {
+                          name: 'description.en',
+                          label: t('Description (English)'),
+                          type: 'textarea',
+                      },
+                      {
+                          name: 'description.ar',
+                          label: t('Description (Arabic)'),
+                          type: 'textarea',
+                      },
+                      { name: 'duration_estimate', label: t('Duration Estimate (minutes)'), type: 'number' },
+                      {
+                          name: 'notes.en',
+                          label: t('Notes (English)'),
+                          type: 'textarea',
+                      },
+                      {
+                          name: 'notes.ar',
+                          label: t('Notes (Arabic)'),
+                          type: 'textarea',
+                      },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: 'active', label: 'Active' },
+                              { value: 'inactive', label: 'Inactive' },
+                          ],
+                          defaultValue: 'active',
+                      },
+                  ],
+                  modalSize: 'xl',
+                  transformData: (data: any) => {
+                      // Transform flat structure to nested structure for translatable fields
+                      const transformed: any = { ...data };
 
-            // Handle name field
-            if (transformed['name.en'] || transformed['name.ar']) {
-              transformed.name = {
-                en: transformed['name.en'] || '',
-                ar: transformed['name.ar'] || '',
-              };
-              delete transformed['name.en'];
-              delete transformed['name.ar'];
-            }
+                      // Handle name field
+                      if (transformed['name.en'] || transformed['name.ar']) {
+                          transformed.name = {
+                              en: transformed['name.en'] || '',
+                              ar: transformed['name.ar'] || '',
+                          };
+                          delete transformed['name.en'];
+                          delete transformed['name.ar'];
+                      }
 
-            // Handle description field
-            if (transformed['description.en'] || transformed['description.ar']) {
-              transformed.description = {
-                en: transformed['description.en'] || '',
-                ar: transformed['description.ar'] || '',
-              };
-              delete transformed['description.en'];
-              delete transformed['description.ar'];
-            }
+                      // Handle description field
+                      if (transformed['description.en'] || transformed['description.ar']) {
+                          transformed.description = {
+                              en: transformed['description.en'] || '',
+                              ar: transformed['description.ar'] || '',
+                          };
+                          delete transformed['description.en'];
+                          delete transformed['description.ar'];
+                      }
 
-            // Handle notes field
-            if (transformed['notes.en'] || transformed['notes.ar']) {
-              transformed.notes = {
-                en: transformed['notes.en'] || '',
-                ar: transformed['notes.ar'] || '',
-              };
-              delete transformed['notes.en'];
-              delete transformed['notes.ar'];
-            }
+                      // Handle notes field
+                      if (transformed['notes.en'] || transformed['notes.ar']) {
+                          transformed.notes = {
+                              en: transformed['notes.en'] || '',
+                              ar: transformed['notes.ar'] || '',
+                          };
+                          delete transformed['notes.en'];
+                          delete transformed['notes.ar'];
+                      }
 
-            return transformed;
-          }
-        }}
-        initialData={currentItem ? {
-          ...currentItem,
-          'name.en': typeof currentItem.name === 'object' && currentItem.name !== null ? currentItem.name.en : '',
-          'name.ar': typeof currentItem.name === 'object' && currentItem.name !== null ? currentItem.name.ar : '',
-          'description.en': typeof currentItem.description === 'object' && currentItem.description !== null ? currentItem.description.en : '',
-          'description.ar': typeof currentItem.description === 'object' && currentItem.description !== null ? currentItem.description.ar : '',
-          'notes.en': typeof currentItem.notes === 'object' && currentItem.notes !== null ? currentItem.notes.en : '',
-          'notes.ar': typeof currentItem.notes === 'object' && currentItem.notes !== null ? currentItem.notes.ar : '',
-        } : {}}
-        title={formMode === 'create' ? t('Add New Hearing Type') : formMode === 'edit' ? t('Edit Hearing Type') : t('View Hearing Type')}
-        mode={formMode}
-      />
+                      return transformed;
+                  },
+              }}
+              initialData={
+                  currentItem
+                      ? {
+                            ...currentItem,
+                            'name.en': typeof currentItem.name === 'object' && currentItem.name !== null ? currentItem.name.en : '',
+                            'name.ar': typeof currentItem.name === 'object' && currentItem.name !== null ? currentItem.name.ar : '',
+                            'description.en':
+                                typeof currentItem.description === 'object' && currentItem.description !== null ? currentItem.description.en : '',
+                            'description.ar':
+                                typeof currentItem.description === 'object' && currentItem.description !== null ? currentItem.description.ar : '',
+                            'notes.en': typeof currentItem.notes === 'object' && currentItem.notes !== null ? currentItem.notes.en : '',
+                            'notes.ar': typeof currentItem.notes === 'object' && currentItem.notes !== null ? currentItem.notes.ar : '',
+                        }
+                      : {}
+              }
+              title={formMode === 'create' ? t('Add New Hearing Type') : formMode === 'edit' ? t('Edit Hearing Type') : t('View Hearing Type')}
+              mode={formMode}
+          />
 
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={getTranslatedValue(currentItem?.name) || ''}
-        entityName="hearing type"
-      />
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={getTranslatedValue(currentItem?.name) || ''}
+              entityName="hearing type"
+          />
 
-      {/* View Modal */}
-      <CrudFormModal
-        isOpen={isViewModalOpen}
-        onClose={() => setIsViewModalOpen(false)}
-        onSubmit={() => {}}
-        formConfig={{
-          fields: [
-            { name: 'type_id', label: t('Type ID'), type: 'text', readOnly: true },
-            {
-              name: 'name.en',
-              label: t('Hearing Type Name (English)'),
-              type: 'text',
-              readOnly: true
-            },
-            {
-              name: 'name.ar',
-              label: t('Hearing Type Name (Arabic)'),
-              type: 'text',
-              readOnly: true
-            },
-            {
-              name: 'description.en',
-              label: t('Description (English)'),
-              type: 'textarea',
-              readOnly: true
-            },
-            {
-              name: 'description.ar',
-              label: t('Description (Arabic)'),
-              type: 'textarea',
-              readOnly: true
-            },
-            { name: 'duration_estimate', label: t('Duration Estimate (minutes)'), type: 'number', readOnly: true },
-            {
-              name: 'notes.en',
-              label: t('Notes (English)'),
-              type: 'textarea',
-              readOnly: true
-            },
-            {
-              name: 'notes.ar',
-              label: t('Notes (Arabic)'),
-              type: 'textarea',
-              readOnly: true
-            },
-            { name: 'status', label: t('Status'), type: 'text', readOnly: true }
-          ],
-          modalSize: 'xl'
-        }}
-        initialData={currentItem ? {
-          ...currentItem,
-          'name.en': typeof currentItem.name === 'object' && currentItem.name !== null ? currentItem.name.en : '',
-          'name.ar': typeof currentItem.name === 'object' && currentItem.name !== null ? currentItem.name.ar : '',
-          'description.en': typeof currentItem.description === 'object' && currentItem.description !== null ? currentItem.description.en : '',
-          'description.ar': typeof currentItem.description === 'object' && currentItem.description !== null ? currentItem.description.ar : '',
-          'notes.en': typeof currentItem.notes === 'object' && currentItem.notes !== null ? currentItem.notes.en : '',
-          'notes.ar': typeof currentItem.notes === 'object' && currentItem.notes !== null ? currentItem.notes.ar : '',
-        } : {}}
-        title={t('View Hearing Type Details')}
-        mode='view'
-      />
-    </PageTemplate>
+          {/* View Modal */}
+          <CrudFormModal
+              isOpen={isViewModalOpen}
+              onClose={() => setIsViewModalOpen(false)}
+              onSubmit={() => {}}
+              formConfig={{
+                  fields: [
+                      { name: 'type_id', label: t('Type ID'), type: 'text', readOnly: true },
+                      {
+                          name: 'name.en',
+                          label: t('Hearing Type Name (English)'),
+                          type: 'text',
+                          readOnly: true,
+                      },
+                      {
+                          name: 'name.ar',
+                          label: t('Hearing Type Name (Arabic)'),
+                          type: 'text',
+                          readOnly: true,
+                      },
+                      {
+                          name: 'description.en',
+                          label: t('Description (English)'),
+                          type: 'textarea',
+                          readOnly: true,
+                      },
+                      {
+                          name: 'description.ar',
+                          label: t('Description (Arabic)'),
+                          type: 'textarea',
+                          readOnly: true,
+                      },
+                      { name: 'duration_estimate', label: t('Duration Estimate (minutes)'), type: 'number', readOnly: true },
+                      {
+                          name: 'notes.en',
+                          label: t('Notes (English)'),
+                          type: 'textarea',
+                          readOnly: true,
+                      },
+                      {
+                          name: 'notes.ar',
+                          label: t('Notes (Arabic)'),
+                          type: 'textarea',
+                          readOnly: true,
+                      },
+                      { name: 'status', label: t('Status'), type: 'text', readOnly: true },
+                  ],
+                  modalSize: 'xl',
+              }}
+              initialData={
+                  currentItem
+                      ? {
+                            ...currentItem,
+                            'name.en': typeof currentItem.name === 'object' && currentItem.name !== null ? currentItem.name.en : '',
+                            'name.ar': typeof currentItem.name === 'object' && currentItem.name !== null ? currentItem.name.ar : '',
+                            'description.en':
+                                typeof currentItem.description === 'object' && currentItem.description !== null ? currentItem.description.en : '',
+                            'description.ar':
+                                typeof currentItem.description === 'object' && currentItem.description !== null ? currentItem.description.ar : '',
+                            'notes.en': typeof currentItem.notes === 'object' && currentItem.notes !== null ? currentItem.notes.en : '',
+                            'notes.ar': typeof currentItem.notes === 'object' && currentItem.notes !== null ? currentItem.notes.ar : '',
+                        }
+                      : {}
+              }
+              title={t('View Hearing Type Details')}
+              mode="view"
+          />
+      </PageTemplate>
   );
 }

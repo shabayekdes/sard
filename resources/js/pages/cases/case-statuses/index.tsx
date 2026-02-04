@@ -227,7 +227,7 @@ export default function CaseStatuses() {
             render: (value: string) => (
                 <div className="flex items-center gap-2">
                     <div className="h-4 w-4 rounded border" style={{ backgroundColor: value }}></div>
-                    <span className=" text-sm">{value}</span>
+                    <span className="text-sm">{value}</span>
                 </div>
             ),
         },
@@ -312,7 +312,7 @@ export default function CaseStatuses() {
 
     return (
         <PageTemplate title={t('Case Statuses')} url="/cases/case-statuses" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
-            <div className="mb-4 rounded-lg bg-white p-4 shadow dark:bg-gray-900">
+            <div className="mb-4 rounded-lg bg-white">
                 <SearchAndFilterBar
                     searchTerm={searchTerm}
                     onSearchChange={setSearchTerm}
@@ -337,23 +337,10 @@ export default function CaseStatuses() {
                     activeFilterCount={activeFilterCount}
                     onResetFilters={handleResetFilters}
                     onApplyFilters={applyFilters}
-                    currentPerPage={pageFilters.per_page?.toString() || '10'}
-                    onPerPageChange={(value) => {
-                        router.get(
-                            route('cases.case-statuses.index'),
-                            {
-                                page: 1,
-                                per_page: parseInt(value),
-                                search: searchTerm || undefined,
-                                status: selectedStatus !== 'all' ? selectedStatus : undefined,
-                            },
-                            { preserveState: true, preserveScroll: true },
-                        );
-                    }}
                 />
             </div>
 
-            <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
                 <CrudTable
                     columns={columns}
                     actions={actions}
@@ -379,6 +366,19 @@ export default function CaseStatuses() {
                     links={caseStatuses?.links}
                     entityName={t('case statuses')}
                     onPageChange={(url) => router.get(url)}
+                    currentPerPage={pageFilters.per_page?.toString() || '10'}
+                    onPerPageChange={(value) => {
+                        router.get(
+                            route('cases.case-statuses.index'),
+                            {
+                                page: 1,
+                                per_page: parseInt(value),
+                                search: searchTerm || undefined,
+                                status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                            },
+                            { preserveState: true, preserveScroll: true },
+                        );
+                    }}
                 />
             </div>
 

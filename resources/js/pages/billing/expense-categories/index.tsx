@@ -261,186 +261,186 @@ export default function ExpenseCategories() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Expense Categories")}
-      url="/billing/expense-categories"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      {/* Search and filters section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              value: selectedStatus,
-              onChange: setSelectedStatus,
-              options: statusOptions
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('billing.expense-categories.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined,
-              sort_field: sortField || undefined,
-              sort_direction: sortDirection || undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Expense Categories')} url="/billing/expense-categories" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          {/* Search and filters section */}
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: statusOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      {/* Content section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={expenseCategories?.data || []}
-          from={expenseCategories?.from || 1}
-          onAction={handleAction}
-          sortField={sortField}
-          sortDirection={sortDirection}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-expense-categories',
-            create: 'create-expense-categories',
-            edit: 'edit-expense-categories',
-            delete: 'delete-expense-categories'
-          }}
-        />
+          {/* Content section */}
+          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={expenseCategories?.data || []}
+                  from={expenseCategories?.from || 1}
+                  onAction={handleAction}
+                  sortField={sortField}
+                  sortDirection={sortDirection}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-expense-categories',
+                      create: 'create-expense-categories',
+                      edit: 'edit-expense-categories',
+                      delete: 'delete-expense-categories',
+                  }}
+              />
 
-        {/* Pagination section */}
-        <Pagination
-          from={expenseCategories?.from || 0}
-          to={expenseCategories?.to || 0}
-          total={expenseCategories?.total || 0}
-          links={expenseCategories?.links}
-          entityName={t("expense categories")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              {/* Pagination section */}
+              <Pagination
+                  from={expenseCategories?.from || 0}
+                  to={expenseCategories?.to || 0}
+                  total={expenseCategories?.total || 0}
+                  links={expenseCategories?.links}
+                  entityName={t('expense categories')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('billing.expense-categories.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                              sort_field: sortField || undefined,
+                              sort_direction: sortDirection || undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
+                      );
+                  }}
+              />
+          </div>
 
-      {/* Form Modal */}
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            {
-              name: 'name.en',
-              label: t('Name (English)'),
-              type: 'text',
-              required: true
-            },
-            {
-              name: 'name.ar',
-              label: t('Name (Arabic)'),
-              type: 'text',
-              required: true
-            },
-            {
-              name: 'description.en',
-              label: t('Description (English)'),
-              type: 'textarea'
-            },
-            {
-              name: 'description.ar',
-              label: t('Description (Arabic)'),
-              type: 'textarea'
-            },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              options: [
-                { value: 'active', label: t('Active') },
-                { value: 'inactive', label: t('Inactive') }
-              ],
-              defaultValue: 'active'
-            }
-          ],
-          modalSize: 'lg',
-          transformData: (data: any) => {
-            const transformed: any = { ...data };
+          {/* Form Modal */}
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'name.en',
+                          label: t('Name (English)'),
+                          type: 'text',
+                          required: true,
+                      },
+                      {
+                          name: 'name.ar',
+                          label: t('Name (Arabic)'),
+                          type: 'text',
+                          required: true,
+                      },
+                      {
+                          name: 'description.en',
+                          label: t('Description (English)'),
+                          type: 'textarea',
+                      },
+                      {
+                          name: 'description.ar',
+                          label: t('Description (Arabic)'),
+                          type: 'textarea',
+                      },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: 'active', label: t('Active') },
+                              { value: 'inactive', label: t('Inactive') },
+                          ],
+                          defaultValue: 'active',
+                      },
+                  ],
+                  modalSize: 'lg',
+                  transformData: (data: any) => {
+                      const transformed: any = { ...data };
 
-            if (transformed['name.en'] || transformed['name.ar']) {
-              transformed.name = {
-                en: transformed['name.en'] || '',
-                ar: transformed['name.ar'] || ''
-              };
-              delete transformed['name.en'];
-              delete transformed['name.ar'];
-            }
+                      if (transformed['name.en'] || transformed['name.ar']) {
+                          transformed.name = {
+                              en: transformed['name.en'] || '',
+                              ar: transformed['name.ar'] || '',
+                          };
+                          delete transformed['name.en'];
+                          delete transformed['name.ar'];
+                      }
 
-            if (transformed['description.en'] || transformed['description.ar']) {
-              transformed.description = {
-                en: transformed['description.en'] || '',
-                ar: transformed['description.ar'] || ''
-              };
-              delete transformed['description.en'];
-              delete transformed['description.ar'];
-            }
+                      if (transformed['description.en'] || transformed['description.ar']) {
+                          transformed.description = {
+                              en: transformed['description.en'] || '',
+                              ar: transformed['description.ar'] || '',
+                          };
+                          delete transformed['description.en'];
+                          delete transformed['description.ar'];
+                      }
 
-            return transformed;
-          }
-        }}
-        initialData={
-          currentItem
-            ? {
-              ...currentItem,
-              'name.en': currentItem.name_translations?.en ||
-                (typeof currentItem.name === 'object' ? currentItem.name?.en : '') || '',
-              'name.ar': currentItem.name_translations?.ar ||
-                (typeof currentItem.name === 'object' ? currentItem.name?.ar : '') || '',
-              'description.en': currentItem.description_translations?.en ||
-                (typeof currentItem.description === 'object' ? currentItem.description?.en : '') || '',
-              'description.ar': currentItem.description_translations?.ar ||
-                (typeof currentItem.description === 'object' ? currentItem.description?.ar : '') || '',
-            }
-            : {}
-        }
-        title={
-          formMode === 'create'
-            ? t('Add New Expense Category')
-            : formMode === 'edit'
-              ? t('Edit Expense Category')
-              : t('View Expense Category')
-        }
-        mode={formMode}
-      />
+                      return transformed;
+                  },
+              }}
+              initialData={
+                  currentItem
+                      ? {
+                            ...currentItem,
+                            'name.en': currentItem.name_translations?.en || (typeof currentItem.name === 'object' ? currentItem.name?.en : '') || '',
+                            'name.ar': currentItem.name_translations?.ar || (typeof currentItem.name === 'object' ? currentItem.name?.ar : '') || '',
+                            'description.en':
+                                currentItem.description_translations?.en ||
+                                (typeof currentItem.description === 'object' ? currentItem.description?.en : '') ||
+                                '',
+                            'description.ar':
+                                currentItem.description_translations?.ar ||
+                                (typeof currentItem.description === 'object' ? currentItem.description?.ar : '') ||
+                                '',
+                        }
+                      : {}
+              }
+              title={
+                  formMode === 'create'
+                      ? t('Add New Expense Category')
+                      : formMode === 'edit'
+                        ? t('Edit Expense Category')
+                        : t('View Expense Category')
+              }
+              mode={formMode}
+          />
 
-      {/* Delete Modal */}
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={
-          currentItem?.name_translations
-            ? (currentItem.name_translations[currentLocale] || currentItem.name_translations.en || currentItem.name_translations.ar || '')
-            : (currentItem?.name
-              ? (typeof currentItem.name === 'object'
-                ? (currentItem.name[currentLocale] || currentItem.name.en || currentItem.name.ar || '')
-                : currentItem.name)
-              : '')
-        }
-        entityName="expense category"
-      />
-    </PageTemplate>
+          {/* Delete Modal */}
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={
+                  currentItem?.name_translations
+                      ? currentItem.name_translations[currentLocale] || currentItem.name_translations.en || currentItem.name_translations.ar || ''
+                      : currentItem?.name
+                        ? typeof currentItem.name === 'object'
+                            ? currentItem.name[currentLocale] || currentItem.name.en || currentItem.name.ar || ''
+                            : currentItem.name
+                        : ''
+              }
+              entityName="expense category"
+          />
+      </PageTemplate>
   );
 }

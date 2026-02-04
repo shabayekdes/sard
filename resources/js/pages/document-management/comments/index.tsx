@@ -234,14 +234,8 @@ export default function DocumentCommentsIndex() {
     ];
 
     return (
-        <PageTemplate
-            title={t('Document Comments')}
-            url="/document-management/comments"
-            actions={actions}
-            breadcrumbs={breadcrumbs}
-            noPadding
-        >
-            <div className="bg-white rounded-lg shadow mb-4 p-4">
+        <PageTemplate title={t('Document Comments')} url="/document-management/comments" actions={actions} breadcrumbs={breadcrumbs} noPadding>
+            <div className="mb-4 rounded-lg bg-white">
                 <SearchAndFilterBar
                     searchTerm={searchTerm}
                     onSearchChange={setSearchTerm}
@@ -257,8 +251,8 @@ export default function DocumentCommentsIndex() {
                                 { value: 'all', label: t('All Documents') },
                                 ...(documents || []).map((doc: any) => ({
                                     value: doc.id.toString(),
-                                    label: doc.name
-                                }))
+                                    label: doc.name,
+                                })),
                             ],
                         },
                         {
@@ -295,7 +289,7 @@ export default function DocumentCommentsIndex() {
                 />
             </div>
 
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="overflow-hidden rounded-lg bg-white shadow">
                 <CrudTable
                     columns={columns}
                     actions={tableActions}
@@ -336,18 +330,18 @@ export default function DocumentCommentsIndex() {
                             required: true,
                             options: (documents || []).map((doc: any) => ({
                                 value: doc.id,
-                                label: doc.name
-                            }))
+                                label: doc.name,
+                            })),
                         },
                         {
                             name: 'comment_text',
                             label: t('Comment'),
                             type: 'textarea',
                             required: true,
-                            rows: 4
-                        }
+                            rows: 4,
+                        },
                     ],
-                    modalSize: 'lg'
+                    modalSize: 'lg',
                 }}
                 initialData={currentItem}
                 title={formMode === 'create' ? t('Add New Comment') : t('Edit Comment')}
@@ -370,7 +364,7 @@ export default function DocumentCommentsIndex() {
                                     <MessageSquare className="h-4 w-4 text-blue-500" />
                                     <span className="font-medium">{currentItem?.document?.name || '-'}</span>
                                 </div>
-                            )
+                            ),
                         },
                         {
                             name: 'comment_text',
@@ -380,7 +374,7 @@ export default function DocumentCommentsIndex() {
                                 <div className="rounded-md border bg-gray-50 p-3">
                                     <p className="text-sm whitespace-pre-wrap">{currentItem?.comment_text || '-'}</p>
                                 </div>
-                            )
+                            ),
                         },
                         {
                             name: 'status',
@@ -406,7 +400,7 @@ export default function DocumentCommentsIndex() {
                                         )}
                                     </div>
                                 </div>
-                            )
+                            ),
                         },
                         {
                             name: 'creator',
@@ -414,7 +408,7 @@ export default function DocumentCommentsIndex() {
                             type: 'text',
                             render: () => (
                                 <div className="flex items-center gap-2 rounded-md border bg-gray-50 p-2">
-                                    <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-300">
                                         <span className="text-xs font-semibold text-gray-600">
                                             {currentItem?.creator?.name?.charAt(0)?.toUpperCase()}
                                         </span>
@@ -424,12 +418,12 @@ export default function DocumentCommentsIndex() {
                                         <p className="text-xs text-gray-500">{currentItem?.creator?.email || ''}</p>
                                     </div>
                                 </div>
-                            )
+                            ),
                         },
                         { name: 'created_at', label: t('Created At'), type: 'text' },
-                        { name: 'updated_at', label: t('Updated At'), type: 'text' }
+                        { name: 'updated_at', label: t('Updated At'), type: 'text' },
                     ],
-                    modalSize: 'lg'
+                    modalSize: 'lg',
                 }}
                 initialData={currentItem}
                 title={t('View Comment')}

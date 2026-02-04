@@ -194,116 +194,104 @@ export default function RiskCategories() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Risk Categories")}
-      url="/compliance/risk-categories"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              value: selectedStatus,
-              onChange: setSelectedStatus,
-              options: statusOptions
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={() => searchTerm !== '' || selectedStatus !== 'all'}
-          activeFilterCount={() => (searchTerm ? 1 : 0) + (selectedStatus !== 'all' ? 1 : 0)}
-          onResetFilters={() => {
-            setSearchTerm('');
-            setSelectedStatus('all');
-            setShowFilters(false);
-            router.get(route('compliance.risk-categories.index'), { page: 1, per_page: pageFilters.per_page });
-          }}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('compliance.risk-categories.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined
-            });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Risk Categories')} url="/compliance/risk-categories" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: statusOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={() => searchTerm !== '' || selectedStatus !== 'all'}
+                  activeFilterCount={() => (searchTerm ? 1 : 0) + (selectedStatus !== 'all' ? 1 : 0)}
+                  onResetFilters={() => {
+                      setSearchTerm('');
+                      setSelectedStatus('all');
+                      setShowFilters(false);
+                      router.get(route('compliance.risk-categories.index'), { page: 1, per_page: pageFilters.per_page });
+                  }}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={categories?.data || categories || []}
-          from={categories?.from || 1}
-          onAction={handleAction}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-risk-categories',
-            create: 'create-risk-categories',
-            edit: 'edit-risk-categories',
-            delete: 'delete-risk-categories'
-          }}
-        />
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={categories?.data || categories || []}
+                  from={categories?.from || 1}
+                  onAction={handleAction}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-risk-categories',
+                      create: 'create-risk-categories',
+                      edit: 'edit-risk-categories',
+                      delete: 'delete-risk-categories',
+                  }}
+              />
 
-        <Pagination
-          from={categories?.from || 0}
-          to={categories?.to || 0}
-          total={categories?.total || 0}
-          links={categories?.links}
-          entityName={t("risk categories")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={categories?.from || 0}
+                  to={categories?.to || 0}
+                  total={categories?.total || 0}
+                  links={categories?.links}
+                  entityName={t('risk categories')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(route('compliance.risk-categories.index'), {
+                          page: 1,
+                          per_page: parseInt(value),
+                          search: searchTerm || undefined,
+                          status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                      });
+                  }}
+              />
+          </div>
 
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            { name: 'name', label: t('Name'), type: 'text', required: true },
-            { name: 'description', label: t('Description'), type: 'textarea' },
-            { name: 'color', label: t('Color'), type: 'color', required: true, defaultValue: '#3B82F6' },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              options: [
-                { value: 'active', label: t('Active') },
-                { value: 'inactive', label: t('Inactive') }
-              ],
-              defaultValue: 'active'
-            }
-          ]
-        }}
-        initialData={currentItem}
-        title={
-          formMode === 'create'
-            ? t('Add Risk Category')
-            : formMode === 'edit'
-              ? t('Edit Risk Category')
-              : t('View Risk Category')
-        }
-        mode={formMode}
-      />
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      { name: 'name', label: t('Name'), type: 'text', required: true },
+                      { name: 'description', label: t('Description'), type: 'textarea' },
+                      { name: 'color', label: t('Color'), type: 'color', required: true, defaultValue: '#3B82F6' },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: 'active', label: t('Active') },
+                              { value: 'inactive', label: t('Inactive') },
+                          ],
+                          defaultValue: 'active',
+                      },
+                  ],
+              }}
+              initialData={currentItem}
+              title={formMode === 'create' ? t('Add Risk Category') : formMode === 'edit' ? t('Edit Risk Category') : t('View Risk Category')}
+              mode={formMode}
+          />
 
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.name || ''}
-        entityName="risk category"
-      />
-    </PageTemplate>
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.name || ''}
+              entityName="risk category"
+          />
+      </PageTemplate>
   );
 }

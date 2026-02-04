@@ -291,181 +291,185 @@ export default function CaseTimelines() {
   ];
 console.log({cases})
   return (
-    <PageTemplate
-      title={t("Case Timelines")}
-      url="/cases/case-timelines"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'case_id',
-              label: t('Case'),
-              type: 'select',
-              value: selectedCase,
-              onChange: setSelectedCase,
-              options: [
-                { value: 'all', label: t('All Cases') },
-                ...(cases || []).map((caseItem: any) => ({
-                  value: caseItem.id.toString(),
-                  label: `${caseItem.case_id} - ${caseItem.title}`
-                }))
-              ]
-            },
-            {
-              name: 'event_type',
-              label: t('Event Type'),
-              type: 'select',
-              value: selectedEventType,
-              onChange: setSelectedEventType,
-              options: [
-                { value: 'all', label: t('All Types') },
-                { value: 'milestone', label: t('Milestone') },
-                { value: 'hearing', label: t('Hearing') },
-                { value: 'deadline', label: t('Deadline') },
-                { value: 'meeting', label: t('Meeting') }
-              ]
-            },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              value: selectedStatus,
-              onChange: setSelectedStatus,
-              options: [
-                { value: 'all', label: t('All Statuses') },
-                { value: 'active', label: t('Active') },
-                { value: 'inactive', label: t('Inactive') }
-              ]
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('cases.case-timelines.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              case_id: selectedCase !== 'all' ? selectedCase : undefined,
-              event_type: selectedEventType !== 'all' ? selectedEventType : undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Case Timelines')} url="/cases/case-timelines" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'case_id',
+                          label: t('Case'),
+                          type: 'select',
+                          value: selectedCase,
+                          onChange: setSelectedCase,
+                          options: [
+                              { value: 'all', label: t('All Cases') },
+                              ...(cases || []).map((caseItem: any) => ({
+                                  value: caseItem.id.toString(),
+                                  label: `${caseItem.case_id} - ${caseItem.title}`,
+                              })),
+                          ],
+                      },
+                      {
+                          name: 'event_type',
+                          label: t('Event Type'),
+                          type: 'select',
+                          value: selectedEventType,
+                          onChange: setSelectedEventType,
+                          options: [
+                              { value: 'all', label: t('All Types') },
+                              { value: 'milestone', label: t('Milestone') },
+                              { value: 'hearing', label: t('Hearing') },
+                              { value: 'deadline', label: t('Deadline') },
+                              { value: 'meeting', label: t('Meeting') },
+                          ],
+                      },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: [
+                              { value: 'all', label: t('All Statuses') },
+                              { value: 'active', label: t('Active') },
+                              { value: 'inactive', label: t('Inactive') },
+                          ],
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('cases.case-timelines.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              case_id: selectedCase !== 'all' ? selectedCase : undefined,
+                              event_type: selectedEventType !== 'all' ? selectedEventType : undefined,
+                              status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
+                      );
+                  }}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={timelines?.data || []}
-          from={timelines?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-case-timelines',
-            create: 'create-case-timelines',
-            edit: 'edit-case-timelines',
-            delete: 'delete-case-timelines'
-          }}
-        />
+          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={timelines?.data || []}
+                  from={timelines?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-case-timelines',
+                      create: 'create-case-timelines',
+                      edit: 'edit-case-timelines',
+                      delete: 'delete-case-timelines',
+                  }}
+              />
 
-        <Pagination
-          from={timelines?.from || 0}
-          to={timelines?.to || 0}
-          total={timelines?.total || 0}
-          links={timelines?.links}
-          entityName={t("timeline events")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={timelines?.from || 0}
+                  to={timelines?.to || 0}
+                  total={timelines?.total || 0}
+                  links={timelines?.links}
+                  entityName={t('timeline events')}
+                  onPageChange={(url) => router.get(url)}
+              />
+          </div>
 
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            {
-              name: 'case_id',
-              label: t('Case'),
-              type: 'select',
-              required: true,
-              options: cases ? cases.map((caseItem: any) => ({
-                value: caseItem.id.toString(),
-                label: `${caseItem.case_id} - ${caseItem.title}`
-              })) : []
-            },
-            {
-              name: 'event_type',
-              label: t('Event Type'),
-              type: 'select',
-              required: true,
-              options: [
-                { value: 'milestone', label: t('Milestone') },
-                { value: 'hearing', label: t('Hearing') },
-                { value: 'deadline', label: t('Deadline') },
-                { value: 'meeting', label: t('Meeting') }
-              ],
-              defaultValue: 'milestone'
-            },
-            { name: 'title', label: t('Title'), type: 'text', required: true },
-            { name: 'description', label: t('Description'), type: 'textarea' },
-            { name: 'event_date', label: t('Event Date'), type: 'date', required: true },
-            { name: 'is_completed', label: t('Completed'), type: 'checkbox' },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              options: [
-                { value: 'active', label: 'Active' },
-                { value: 'inactive', label: 'Inactive' }
-              ],
-              defaultValue: 'active'
-            }
-          ].concat(googleCalendarEnabled && formMode === 'create' ? [{
-            name: 'sync_with_google_calendar',
-            label: t('Synchronize in Google Calendar'),
-            type: 'switch',
-            defaultValue: false
-          }] : []),
-          modalSize: 'lg'
-        }}
-        initialData={currentItem ? {
-          ...currentItem,
-          case_id: currentItem.case_id?.toString()
-        } : null}
-        title={
-          formMode === 'create'
-            ? t('Add New Timeline Event')
-            : formMode === 'edit'
-              ? t('Edit Timeline Event')
-              : t('View Timeline Event')
-        }
-        mode={formMode}
-      />
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'case_id',
+                          label: t('Case'),
+                          type: 'select',
+                          required: true,
+                          options: cases
+                              ? cases.map((caseItem: any) => ({
+                                    value: caseItem.id.toString(),
+                                    label: `${caseItem.case_id} - ${caseItem.title}`,
+                                }))
+                              : [],
+                      },
+                      {
+                          name: 'event_type',
+                          label: t('Event Type'),
+                          type: 'select',
+                          required: true,
+                          options: [
+                              { value: 'milestone', label: t('Milestone') },
+                              { value: 'hearing', label: t('Hearing') },
+                              { value: 'deadline', label: t('Deadline') },
+                              { value: 'meeting', label: t('Meeting') },
+                          ],
+                          defaultValue: 'milestone',
+                      },
+                      { name: 'title', label: t('Title'), type: 'text', required: true },
+                      { name: 'description', label: t('Description'), type: 'textarea' },
+                      { name: 'event_date', label: t('Event Date'), type: 'date', required: true },
+                      { name: 'is_completed', label: t('Completed'), type: 'checkbox' },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: 'active', label: 'Active' },
+                              { value: 'inactive', label: 'Inactive' },
+                          ],
+                          defaultValue: 'active',
+                      },
+                  ].concat(
+                      googleCalendarEnabled && formMode === 'create'
+                          ? [
+                                {
+                                    name: 'sync_with_google_calendar',
+                                    label: t('Synchronize in Google Calendar'),
+                                    type: 'switch',
+                                    defaultValue: false,
+                                },
+                            ]
+                          : [],
+                  ),
+                  modalSize: 'lg',
+              }}
+              initialData={
+                  currentItem
+                      ? {
+                            ...currentItem,
+                            case_id: currentItem.case_id?.toString(),
+                        }
+                      : null
+              }
+              title={formMode === 'create' ? t('Add New Timeline Event') : formMode === 'edit' ? t('Edit Timeline Event') : t('View Timeline Event')}
+              mode={formMode}
+          />
 
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.title || ''}
-        entityName="timeline event"
-      />
-    </PageTemplate>
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.title || ''}
+              entityName="timeline event"
+          />
+      </PageTemplate>
   );
 }

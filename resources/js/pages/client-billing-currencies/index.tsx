@@ -184,91 +184,85 @@ export default function ClientBillingCurrencies() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Currencies")}
-      url="/client-billing-currencies"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[]}
-          showFilters={false}
-          setShowFilters={() => { }}
-          hasActiveFilters={() => searchTerm !== ''}
-          activeFilterCount={() => searchTerm ? 1 : 0}
-          onResetFilters={() => {
-            setSearchTerm('');
-            router.get(route('client-billing-currencies.index'), { page: 1, per_page: pageFilters.per_page });
-          }}
-          onApplyFilters={() => { }}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('client-billing-currencies.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined
-            });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Currencies')} url="/client-billing-currencies" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[]}
+                  showFilters={false}
+                  setShowFilters={() => {}}
+                  hasActiveFilters={() => searchTerm !== ''}
+                  activeFilterCount={() => (searchTerm ? 1 : 0)}
+                  onResetFilters={() => {
+                      setSearchTerm('');
+                      router.get(route('client-billing-currencies.index'), { page: 1, per_page: pageFilters.per_page });
+                  }}
+                  onApplyFilters={() => {}}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(route('client-billing-currencies.index'), {
+                          page: 1,
+                          per_page: parseInt(value),
+                          search: searchTerm || undefined,
+                      });
+                  }}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={currencies?.data || []}
-          from={currencies?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-currencies',
-            edit: 'edit-currencies',
-            delete: 'delete-currencies'
-          }}
-        />
+          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={currencies?.data || []}
+                  from={currencies?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-currencies',
+                      edit: 'edit-currencies',
+                      delete: 'delete-currencies',
+                  }}
+              />
 
-        <Pagination
-          from={currencies?.from || 0}
-          to={currencies?.to || 0}
-          total={currencies?.total || 0}
-          links={currencies?.links}
-          entityName={t("currencies")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={currencies?.from || 0}
+                  to={currencies?.to || 0}
+                  total={currencies?.total || 0}
+                  links={currencies?.links}
+                  entityName={t('currencies')}
+                  onPageChange={(url) => router.get(url)}
+              />
+          </div>
 
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            { name: 'name', label: t('Currency Name'), type: 'text', required: true },
-            { name: 'code', label: t('Currency Code'), type: 'text', required: true, placeholder: 'e.g. USD, EUR, GBP' },
-            { name: 'symbol', label: t('Currency Symbol'), type: 'text', required: true, placeholder: 'e.g. $, €, £' },
-            { name: 'description', label: t('Description'), type: 'textarea' }
-          ]
-        }}
-        initialData={currentItem}
-        title={formMode === 'create' ? t('Add New Currency') : t('Edit Currency')}
-        mode={formMode}
-      />
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      { name: 'name', label: t('Currency Name'), type: 'text', required: true },
+                      { name: 'code', label: t('Currency Code'), type: 'text', required: true, placeholder: 'e.g. USD, EUR, GBP' },
+                      { name: 'symbol', label: t('Currency Symbol'), type: 'text', required: true, placeholder: 'e.g. $, €, £' },
+                      { name: 'description', label: t('Description'), type: 'textarea' },
+                  ],
+              }}
+              initialData={currentItem}
+              title={formMode === 'create' ? t('Add New Currency') : t('Edit Currency')}
+              mode={formMode}
+          />
 
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.name || ''}
-        entityName="currency"
-      />
-    </PageTemplate>
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.name || ''}
+              entityName="currency"
+          />
+      </PageTemplate>
   );
 }

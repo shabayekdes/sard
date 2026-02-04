@@ -322,162 +322,207 @@ export default function Courts() {
   ];
 
   return (
-    <PageTemplate title={t("Court Management")} url="/courts" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            { name: 'court_type_id', label: t('Court Type'), type: 'select', value: selectedCourtType, onChange: setSelectedCourtType, options: courtTypeOptions },
-            { name: 'circle_type_id', label: t('Circle Type'), type: 'select', value: selectedCircleType, onChange: setSelectedCircleType, options: circleTypeOptions },
-            { name: 'status', label: t('Status'), type: 'select', value: selectedStatus, onChange: setSelectedStatus, options: statusOptions }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('courts.index'), {
-              page: 1, per_page: parseInt(value),
-              search: searchTerm || undefined,
-              court_type_id: selectedCourtType !== 'all' ? selectedCourtType : undefined,
-              circle_type_id: selectedCircleType !== 'all' ? selectedCircleType : undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Court Management')} url="/courts" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'court_type_id',
+                          label: t('Court Type'),
+                          type: 'select',
+                          value: selectedCourtType,
+                          onChange: setSelectedCourtType,
+                          options: courtTypeOptions,
+                      },
+                      {
+                          name: 'circle_type_id',
+                          label: t('Circle Type'),
+                          type: 'select',
+                          value: selectedCircleType,
+                          onChange: setSelectedCircleType,
+                          options: circleTypeOptions,
+                      },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: statusOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={courts?.data || []}
-          from={courts?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{ view: 'view-courts', create: 'create-courts', edit: 'edit-courts', delete: 'delete-courts' }}
-        />
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={courts?.data || []}
+                  from={courts?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{ view: 'view-courts', create: 'create-courts', edit: 'edit-courts', delete: 'delete-courts' }}
+              />
 
-        <Pagination
-          from={courts?.from || 0}
-          to={courts?.to || 0}
-          total={courts?.total || 0}
-          links={courts?.links}
-          entityName={t("courts")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={courts?.from || 0}
+                  to={courts?.to || 0}
+                  total={courts?.total || 0}
+                  links={courts?.links}
+                  entityName={t('courts')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('courts.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              court_type_id: selectedCourtType !== 'all' ? selectedCourtType : undefined,
+                              circle_type_id: selectedCircleType !== 'all' ? selectedCircleType : undefined,
+                              status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
+                      );
+                  }}
+              />
+          </div>
 
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            { name: 'name', label: t('Court Name'), type: 'text', required: true },
-            {
-              name: 'court_type_id',
-              label: t('Court Type'),
-              type: 'select',
-              required: true,
-              options: courtTypes ? courtTypes.map((type: any) => {
-                // Handle translatable name
-                let displayName = type.name;
-                if (typeof type.name === 'object' && type.name !== null) {
-                  displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
-                } else if (type.name_translations && typeof type.name_translations === 'object') {
-                  displayName = type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
-                }
-                return { value: type.id.toString(), label: displayName };
-              }) : []
-            },
-            {
-              name: 'circle_type_id',
-              label: t('Circle Type'),
-              type: 'select',
-              required: true,
-              options: circleTypes ? circleTypes.map((type: any) => {
-                // Handle translatable name
-                let displayName = type.name;
-                if (typeof type.name === 'object' && type.name !== null) {
-                  displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
-                } else if (type.name_translations && typeof type.name_translations === 'object') {
-                  displayName = type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
-                }
-                return { value: type.id.toString(), label: displayName };
-              }) : []
-            },
-            { name: 'address', label: t('Address'), type: 'textarea' },
-            { name: 'notes', label: t('Notes'), type: 'textarea' },
-            { name: 'status', label: t('Status'), type: 'select', options: [{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }], defaultValue: 'active' }
-          ],
-          modalSize: 'xl',
-        }}
-        initialData={currentItem}
-        title={formMode === 'create' ? t('Add New Court') : formMode === 'edit' ? t('Edit Court') : t('View Court')}
-        mode={formMode}
-        columns={3}
-      />
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      { name: 'name', label: t('Court Name'), type: 'text', required: true },
+                      {
+                          name: 'court_type_id',
+                          label: t('Court Type'),
+                          type: 'select',
+                          required: true,
+                          options: courtTypes
+                              ? courtTypes.map((type: any) => {
+                                    // Handle translatable name
+                                    let displayName = type.name;
+                                    if (typeof type.name === 'object' && type.name !== null) {
+                                        displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+                                    } else if (type.name_translations && typeof type.name_translations === 'object') {
+                                        displayName =
+                                            type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
+                                    }
+                                    return { value: type.id.toString(), label: displayName };
+                                })
+                              : [],
+                      },
+                      {
+                          name: 'circle_type_id',
+                          label: t('Circle Type'),
+                          type: 'select',
+                          required: true,
+                          options: circleTypes
+                              ? circleTypes.map((type: any) => {
+                                    // Handle translatable name
+                                    let displayName = type.name;
+                                    if (typeof type.name === 'object' && type.name !== null) {
+                                        displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+                                    } else if (type.name_translations && typeof type.name_translations === 'object') {
+                                        displayName =
+                                            type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
+                                    }
+                                    return { value: type.id.toString(), label: displayName };
+                                })
+                              : [],
+                      },
+                      { name: 'address', label: t('Address'), type: 'textarea' },
+                      { name: 'notes', label: t('Notes'), type: 'textarea' },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: 'active', label: 'Active' },
+                              { value: 'inactive', label: 'Inactive' },
+                          ],
+                          defaultValue: 'active',
+                      },
+                  ],
+                  modalSize: 'xl',
+              }}
+              initialData={currentItem}
+              title={formMode === 'create' ? t('Add New Court') : formMode === 'edit' ? t('Edit Court') : t('View Court')}
+              mode={formMode}
+              columns={3}
+          />
 
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.name || ''}
-        entityName="court"
-      />
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.name || ''}
+              entityName="court"
+          />
 
-      {/* View Modal */}
-      <CrudFormModal
-        isOpen={isViewModalOpen}
-        onClose={() => setIsViewModalOpen(false)}
-        onSubmit={() => { }}
-        formConfig={{
-          fields: [
-            { name: 'court_id', label: t('Court ID'), type: 'text', readOnly: true },
-            { name: 'name', label: t('Court Name'), type: 'text', readOnly: true },
-            { name: 'court_type', label: t('Court Type'), type: 'text', readOnly: true },
-            { name: 'circle_type', label: t('Circle Type'), type: 'text', readOnly: true },
-            { name: 'address', label: t('Address'), type: 'textarea', readOnly: true },
-            { name: 'notes', label: t('Notes'), type: 'textarea', readOnly: true },
-            { name: 'status', label: t('Status'), type: 'text', readOnly: true }
-          ],
-          modalSize: 'xl'
-        }}
-        initialData={{
-          ...currentItem,
-          court_type: (() => {
-            const courtType = currentItem?.court_type;
-            if (!courtType) return '-';
-            if (typeof courtType.name === 'object' && courtType.name !== null) {
-              return courtType.name[currentLocale] || courtType.name.en || courtType.name.ar || '-';
-            } else if (courtType.name_translations && typeof courtType.name_translations === 'object') {
-              return courtType.name_translations[currentLocale] || courtType.name_translations.en || courtType.name_translations.ar || '-';
-            }
-            return courtType.name || '-';
-          })(),
-          circle_type: (() => {
-            const circleType = currentItem?.circle_type;
-            if (!circleType) return '-';
-            if (typeof circleType.name === 'object' && circleType.name !== null) {
-              return circleType.name[currentLocale] || circleType.name.en || circleType.name.ar || '-';
-            } else if (circleType.name_translations && typeof circleType.name_translations === 'object') {
-              return circleType.name_translations[currentLocale] || circleType.name_translations.en || circleType.name_translations.ar || '-';
-            }
-            return circleType.name || '-';
-          })()
-        }}
-        title={t('View Court Details')}
-        mode='view'
-      />
-    </PageTemplate>
+          {/* View Modal */}
+          <CrudFormModal
+              isOpen={isViewModalOpen}
+              onClose={() => setIsViewModalOpen(false)}
+              onSubmit={() => {}}
+              formConfig={{
+                  fields: [
+                      { name: 'court_id', label: t('Court ID'), type: 'text', readOnly: true },
+                      { name: 'name', label: t('Court Name'), type: 'text', readOnly: true },
+                      { name: 'court_type', label: t('Court Type'), type: 'text', readOnly: true },
+                      { name: 'circle_type', label: t('Circle Type'), type: 'text', readOnly: true },
+                      { name: 'address', label: t('Address'), type: 'textarea', readOnly: true },
+                      { name: 'notes', label: t('Notes'), type: 'textarea', readOnly: true },
+                      { name: 'status', label: t('Status'), type: 'text', readOnly: true },
+                  ],
+                  modalSize: 'xl',
+              }}
+              initialData={{
+                  ...currentItem,
+                  court_type: (() => {
+                      const courtType = currentItem?.court_type;
+                      if (!courtType) return '-';
+                      if (typeof courtType.name === 'object' && courtType.name !== null) {
+                          return courtType.name[currentLocale] || courtType.name.en || courtType.name.ar || '-';
+                      } else if (courtType.name_translations && typeof courtType.name_translations === 'object') {
+                          return (
+                              courtType.name_translations[currentLocale] || courtType.name_translations.en || courtType.name_translations.ar || '-'
+                          );
+                      }
+                      return courtType.name || '-';
+                  })(),
+                  circle_type: (() => {
+                      const circleType = currentItem?.circle_type;
+                      if (!circleType) return '-';
+                      if (typeof circleType.name === 'object' && circleType.name !== null) {
+                          return circleType.name[currentLocale] || circleType.name.en || circleType.name.ar || '-';
+                      } else if (circleType.name_translations && typeof circleType.name_translations === 'object') {
+                          return (
+                              circleType.name_translations[currentLocale] || circleType.name_translations.en || circleType.name_translations.ar || '-'
+                          );
+                      }
+                      return circleType.name || '-';
+                  })(),
+              }}
+              title={t('View Court Details')}
+              mode="view"
+          />
+      </PageTemplate>
   );
 }

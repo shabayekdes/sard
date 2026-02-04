@@ -307,187 +307,181 @@ export default function ClientTypes() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Client Type Management")}
-      url="/clients/client-types"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      {/* Search and filters section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              value: selectedStatus,
-              onChange: setSelectedStatus,
-              options: statusOptions
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('clients.client-types.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Client Type Management')} url="/clients/client-types" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          {/* Search and filters section */}
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: statusOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('clients.client-types.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
+                      );
+                  }}
+              />
+          </div>
 
-      {/* Content section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={clientTypes?.data || []}
-          from={clientTypes?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-client-types',
-            create: 'create-client-types',
-            edit: 'edit-client-types',
-            delete: 'delete-client-types'
-          }}
-        />
+          {/* Content section */}
+          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={clientTypes?.data || []}
+                  from={clientTypes?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-client-types',
+                      create: 'create-client-types',
+                      edit: 'edit-client-types',
+                      delete: 'delete-client-types',
+                  }}
+              />
 
-        {/* Pagination section */}
-        <Pagination
-          from={clientTypes?.from || 0}
-          to={clientTypes?.to || 0}
-          total={clientTypes?.total || 0}
-          links={clientTypes?.links}
-          entityName={t("client types")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              {/* Pagination section */}
+              <Pagination
+                  from={clientTypes?.from || 0}
+                  to={clientTypes?.to || 0}
+                  total={clientTypes?.total || 0}
+                  links={clientTypes?.links}
+                  entityName={t('client types')}
+                  onPageChange={(url) => router.get(url)}
+              />
+          </div>
 
-      {/* Form Modal */}
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            {
-              name: 'name.en',
-              label: t('Client Type Name (English)'),
-              type: 'text',
-              required: true
-            },
-            {
-              name: 'name.ar',
-              label: t('Client Type Name (Arabic)'),
-              type: 'text',
-              required: true
-            },
-            {
-              name: 'description.en',
-              label: t('Description (English)'),
-              type: 'textarea'
-            },
-            {
-              name: 'description.ar',
-              label: t('Description (Arabic)'),
-              type: 'textarea'
-            },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              options: [
-                { value: 'active', label: t('Active') },
-                { value: 'inactive', label: t('Inactive') }
-              ],
-              defaultValue: 'active'
-            }
-          ],
-          modalSize: 'lg',
-          transformData: (data: any) => {
-            // Transform flat structure to nested structure for translatable fields
-            const transformed: any = { ...data };
+          {/* Form Modal */}
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'name.en',
+                          label: t('Client Type Name (English)'),
+                          type: 'text',
+                          required: true,
+                      },
+                      {
+                          name: 'name.ar',
+                          label: t('Client Type Name (Arabic)'),
+                          type: 'text',
+                          required: true,
+                      },
+                      {
+                          name: 'description.en',
+                          label: t('Description (English)'),
+                          type: 'textarea',
+                      },
+                      {
+                          name: 'description.ar',
+                          label: t('Description (Arabic)'),
+                          type: 'textarea',
+                      },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: 'active', label: t('Active') },
+                              { value: 'inactive', label: t('Inactive') },
+                          ],
+                          defaultValue: 'active',
+                      },
+                  ],
+                  modalSize: 'lg',
+                  transformData: (data: any) => {
+                      // Transform flat structure to nested structure for translatable fields
+                      const transformed: any = { ...data };
 
-            // Handle name field
-            if (transformed['name.en'] || transformed['name.ar']) {
-              transformed.name = {
-                en: transformed['name.en'] || '',
-                ar: transformed['name.ar'] || '',
-              };
-              delete transformed['name.en'];
-              delete transformed['name.ar'];
-            }
+                      // Handle name field
+                      if (transformed['name.en'] || transformed['name.ar']) {
+                          transformed.name = {
+                              en: transformed['name.en'] || '',
+                              ar: transformed['name.ar'] || '',
+                          };
+                          delete transformed['name.en'];
+                          delete transformed['name.ar'];
+                      }
 
-            // Handle description field
-            if (transformed['description.en'] || transformed['description.ar']) {
-              transformed.description = {
-                en: transformed['description.en'] || '',
-                ar: transformed['description.ar'] || '',
-              };
-              delete transformed['description.en'];
-              delete transformed['description.ar'];
-            }
+                      // Handle description field
+                      if (transformed['description.en'] || transformed['description.ar']) {
+                          transformed.description = {
+                              en: transformed['description.en'] || '',
+                              ar: transformed['description.ar'] || '',
+                          };
+                          delete transformed['description.en'];
+                          delete transformed['description.ar'];
+                      }
 
-            return transformed;
-          }
-        }}
-        initialData={
-          currentItem
-            ? {
-              ...currentItem,
-              'name.en': currentItem.name_translations?.en ||
-                (typeof currentItem.name === 'object' ? currentItem.name?.en : '') || '',
-              'name.ar': currentItem.name_translations?.ar ||
-                (typeof currentItem.name === 'object' ? currentItem.name?.ar : '') || '',
-              'description.en': currentItem.description_translations?.en ||
-                (typeof currentItem.description === 'object' ? currentItem.description?.en : '') || '',
-              'description.ar': currentItem.description_translations?.ar ||
-                (typeof currentItem.description === 'object' ? currentItem.description?.ar : '') || '',
-            }
-            : {}
-        }
-        title={
-          formMode === 'create'
-            ? t('Add New Client Type')
-            : formMode === 'edit'
-              ? t('Edit Client Type')
-              : t('View Client Type')
-        }
-        mode={formMode}
-      />
+                      return transformed;
+                  },
+              }}
+              initialData={
+                  currentItem
+                      ? {
+                            ...currentItem,
+                            'name.en': currentItem.name_translations?.en || (typeof currentItem.name === 'object' ? currentItem.name?.en : '') || '',
+                            'name.ar': currentItem.name_translations?.ar || (typeof currentItem.name === 'object' ? currentItem.name?.ar : '') || '',
+                            'description.en':
+                                currentItem.description_translations?.en ||
+                                (typeof currentItem.description === 'object' ? currentItem.description?.en : '') ||
+                                '',
+                            'description.ar':
+                                currentItem.description_translations?.ar ||
+                                (typeof currentItem.description === 'object' ? currentItem.description?.ar : '') ||
+                                '',
+                        }
+                      : {}
+              }
+              title={formMode === 'create' ? t('Add New Client Type') : formMode === 'edit' ? t('Edit Client Type') : t('View Client Type')}
+              mode={formMode}
+          />
 
-      {/* Delete Modal */}
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={
-          currentItem?.name_translations
-            ? (currentItem.name_translations[currentLocale] || currentItem.name_translations.en || currentItem.name_translations.ar || '')
-            : (currentItem?.name
-              ? (typeof currentItem.name === 'object'
-                ? (currentItem.name[currentLocale] || currentItem.name.en || currentItem.name.ar || '')
-                : currentItem.name)
-              : '')
-        }
-        entityName="client type"
-      />
-    </PageTemplate>
+          {/* Delete Modal */}
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={
+                  currentItem?.name_translations
+                      ? currentItem.name_translations[currentLocale] || currentItem.name_translations.en || currentItem.name_translations.ar || ''
+                      : currentItem?.name
+                        ? typeof currentItem.name === 'object'
+                            ? currentItem.name[currentLocale] || currentItem.name.en || currentItem.name.ar || ''
+                            : currentItem.name
+                        : ''
+              }
+              entityName="client type"
+          />
+      </PageTemplate>
   );
 }

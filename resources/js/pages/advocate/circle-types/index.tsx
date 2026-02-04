@@ -257,14 +257,21 @@ export default function CircleTypes() {
     ];
 
     return (
-        <PageTemplate title={t("Circle Types")} url="/advocate/circle-types" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
+        <PageTemplate title={t('Circle Types')} url="/advocate/circle-types" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+            <div className="mb-4 rounded-lg bg-white">
                 <SearchAndFilterBar
                     searchTerm={searchTerm}
                     onSearchChange={setSearchTerm}
                     onSearch={handleSearch}
                     filters={[
-                        { name: 'status', label: t('Status'), type: 'select', value: selectedStatus, onChange: setSelectedStatus, options: statusOptions }
+                        {
+                            name: 'status',
+                            label: t('Status'),
+                            type: 'select',
+                            value: selectedStatus,
+                            onChange: setSelectedStatus,
+                            options: statusOptions,
+                        },
                     ]}
                     showFilters={showFilters}
                     setShowFilters={setShowFilters}
@@ -272,19 +279,10 @@ export default function CircleTypes() {
                     activeFilterCount={() => (searchTerm ? 1 : 0) + (selectedStatus !== 'all' ? 1 : 0)}
                     onResetFilters={handleResetFilters}
                     onApplyFilters={applyFilters}
-                    currentPerPage={pageFilters.per_page?.toString() || "10"}
-                    onPerPageChange={(value) => {
-                        router.get(route('advocate.circle-types.index'), {
-                            page: 1,
-                            per_page: parseInt(value),
-                            search: searchTerm || undefined,
-                            status: selectedStatus !== 'all' ? selectedStatus : undefined
-                        }, { preserveState: true, preserveScroll: true });
-                    }}
                 />
             </div>
 
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
+            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
                 <CrudTable
                     columns={columns}
                     actions={actions}
@@ -299,7 +297,7 @@ export default function CircleTypes() {
                         view: 'view-circle-types',
                         create: 'create-circle-types',
                         edit: 'edit-circle-types',
-                        delete: 'delete-circle-types'
+                        delete: 'delete-circle-types',
                     }}
                 />
 
@@ -308,8 +306,21 @@ export default function CircleTypes() {
                     to={circleTypes?.to || 0}
                     total={circleTypes?.total || 0}
                     links={circleTypes?.links}
-                    entityName={t("circle types")}
+                    entityName={t('circle types')}
                     onPageChange={(url) => router.get(url)}
+                    currentPerPage={pageFilters.per_page?.toString() || '10'}
+                    onPerPageChange={(value) => {
+                        router.get(
+                            route('advocate.circle-types.index'),
+                            {
+                                page: 1,
+                                per_page: parseInt(value),
+                                search: searchTerm || undefined,
+                                status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                            },
+                            { preserveState: true, preserveScroll: true },
+                        );
+                    }}
                 />
             </div>
 
@@ -323,23 +334,23 @@ export default function CircleTypes() {
                             name: 'name.en',
                             label: t('Name (English)'),
                             type: 'text',
-                            required: true
+                            required: true,
                         },
                         {
                             name: 'name.ar',
                             label: t('Name (Arabic)'),
                             type: 'text',
-                            required: true
+                            required: true,
                         },
                         {
                             name: 'description.en',
                             label: t('Description (English)'),
-                            type: 'textarea'
+                            type: 'textarea',
                         },
                         {
                             name: 'description.ar',
                             label: t('Description (Arabic)'),
-                            type: 'textarea'
+                            type: 'textarea',
                         },
                         { name: 'color', label: t('Color'), type: 'color', required: true, defaultValue: '#3B82F6' },
                         {
@@ -348,10 +359,10 @@ export default function CircleTypes() {
                             type: 'select',
                             options: [
                                 { value: 'active', label: t('Active') },
-                                { value: 'inactive', label: t('Inactive') }
+                                { value: 'inactive', label: t('Inactive') },
                             ],
-                            defaultValue: 'active'
-                        }
+                            defaultValue: 'active',
+                        },
                     ],
                     modalSize: 'lg',
                     transformData: (data: any) => {
@@ -379,69 +390,79 @@ export default function CircleTypes() {
                         }
 
                         return transformed;
-                    }
+                    },
                 }}
-                initialData={currentItem ? {
-                    ...currentItem,
-                    'name.en': currentItem.name_translations?.en || (typeof currentItem.name === 'object' ? currentItem.name.en : ''),
-                    'name.ar': currentItem.name_translations?.ar || (typeof currentItem.name === 'object' ? currentItem.name.ar : ''),
-                    'description.en': currentItem.description_translations?.en || (typeof currentItem.description === 'object' ? currentItem.description?.en : ''),
-                    'description.ar': currentItem.description_translations?.ar || (typeof currentItem.description === 'object' ? currentItem.description?.ar : ''),
-                } : {}}
-                title={
-                    formMode === 'create'
-                        ? t('Add New Circle Type')
-                        : formMode === 'edit'
-                            ? t('Edit Circle Type')
-                            : t('View Circle Type')
+                initialData={
+                    currentItem
+                        ? {
+                              ...currentItem,
+                              'name.en': currentItem.name_translations?.en || (typeof currentItem.name === 'object' ? currentItem.name.en : ''),
+                              'name.ar': currentItem.name_translations?.ar || (typeof currentItem.name === 'object' ? currentItem.name.ar : ''),
+                              'description.en':
+                                  currentItem.description_translations?.en ||
+                                  (typeof currentItem.description === 'object' ? currentItem.description?.en : ''),
+                              'description.ar':
+                                  currentItem.description_translations?.ar ||
+                                  (typeof currentItem.description === 'object' ? currentItem.description?.ar : ''),
+                          }
+                        : {}
                 }
+                title={formMode === 'create' ? t('Add New Circle Type') : formMode === 'edit' ? t('Edit Circle Type') : t('View Circle Type')}
                 mode={formMode}
             />
 
             <CrudFormModal
                 isOpen={isViewModalOpen}
                 onClose={() => setIsViewModalOpen(false)}
-                onSubmit={() => { }}
+                onSubmit={() => {}}
                 formConfig={{
                     fields: [
                         {
                             name: 'name.en',
                             label: t('Name (English)'),
                             type: 'text',
-                            readOnly: true
+                            readOnly: true,
                         },
                         {
                             name: 'name.ar',
                             label: t('Name (Arabic)'),
                             type: 'text',
-                            readOnly: true
+                            readOnly: true,
                         },
                         {
                             name: 'description.en',
                             label: t('Description (English)'),
                             type: 'textarea',
-                            readOnly: true
+                            readOnly: true,
                         },
                         {
                             name: 'description.ar',
                             label: t('Description (Arabic)'),
                             type: 'textarea',
-                            readOnly: true
+                            readOnly: true,
                         },
                         { name: 'color', label: t('Color'), type: 'color', readOnly: true },
-                        { name: 'status', label: t('Status'), type: 'text', readOnly: true }
+                        { name: 'status', label: t('Status'), type: 'text', readOnly: true },
                     ],
-                    modalSize: 'lg'
+                    modalSize: 'lg',
                 }}
-                initialData={currentItem ? {
-                    ...currentItem,
-                    'name.en': currentItem.name_translations?.en || (typeof currentItem.name === 'object' ? currentItem.name.en : ''),
-                    'name.ar': currentItem.name_translations?.ar || (typeof currentItem.name === 'object' ? currentItem.name.ar : ''),
-                    'description.en': currentItem.description_translations?.en || (typeof currentItem.description === 'object' ? currentItem.description?.en : ''),
-                    'description.ar': currentItem.description_translations?.ar || (typeof currentItem.description === 'object' ? currentItem.description?.ar : ''),
-                } : {}}
+                initialData={
+                    currentItem
+                        ? {
+                              ...currentItem,
+                              'name.en': currentItem.name_translations?.en || (typeof currentItem.name === 'object' ? currentItem.name.en : ''),
+                              'name.ar': currentItem.name_translations?.ar || (typeof currentItem.name === 'object' ? currentItem.name.ar : ''),
+                              'description.en':
+                                  currentItem.description_translations?.en ||
+                                  (typeof currentItem.description === 'object' ? currentItem.description?.en : ''),
+                              'description.ar':
+                                  currentItem.description_translations?.ar ||
+                                  (typeof currentItem.description === 'object' ? currentItem.description?.ar : ''),
+                          }
+                        : {}
+                }
                 title={t('View Circle Type Details')}
-                mode='view'
+                mode="view"
             />
 
             <CrudDeleteModal
@@ -450,10 +471,12 @@ export default function CircleTypes() {
                 onConfirm={handleDeleteConfirm}
                 itemName={
                     currentItem?.name_translations?.[currentLocale] ||
-                    (typeof currentItem?.name === 'object' ? (currentItem?.name[currentLocale] || currentItem?.name.en || currentItem?.name.ar) : currentItem?.name) ||
+                    (typeof currentItem?.name === 'object'
+                        ? currentItem?.name[currentLocale] || currentItem?.name.en || currentItem?.name.ar
+                        : currentItem?.name) ||
                     ''
                 }
-                entityName={t("circle type")}
+                entityName={t('circle type')}
             />
         </PageTemplate>
     );

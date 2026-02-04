@@ -211,106 +211,105 @@ export default function DocumentVersions() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Document Versions")}
-      url="/document-management/versions"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'document_id',
-              label: t('Document'),
-              type: 'select',
-              value: selectedDocument,
-              onChange: setSelectedDocument,
-              options: documentOptions
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={() => searchTerm !== '' || selectedDocument !== 'all'}
-          activeFilterCount={() => (searchTerm ? 1 : 0) + (selectedDocument !== 'all' ? 1 : 0)}
-          onResetFilters={() => {
-            setSearchTerm('');
-            setSelectedDocument('all');
-            setShowFilters(false);
-            router.get(route('document-management.versions.index'), { page: 1, per_page: pageFilters.per_page });
-          }}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('document-management.versions.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              document_id: selectedDocument !== 'all' ? selectedDocument : undefined
-            });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Document Versions')} url="/document-management/versions" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'document_id',
+                          label: t('Document'),
+                          type: 'select',
+                          value: selectedDocument,
+                          onChange: setSelectedDocument,
+                          options: documentOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={() => searchTerm !== '' || selectedDocument !== 'all'}
+                  activeFilterCount={() => (searchTerm ? 1 : 0) + (selectedDocument !== 'all' ? 1 : 0)}
+                  onResetFilters={() => {
+                      setSearchTerm('');
+                      setSelectedDocument('all');
+                      setShowFilters(false);
+                      router.get(route('document-management.versions.index'), { page: 1, per_page: pageFilters.per_page });
+                  }}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={versions?.data || []}
-          from={versions?.from || 1}
-          onAction={handleAction}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-document-versions',
-            create: 'create-document-versions',
-            delete: 'delete-document-versions'
-          }}
-        />
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={versions?.data || []}
+                  from={versions?.from || 1}
+                  onAction={handleAction}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-document-versions',
+                      create: 'create-document-versions',
+                      delete: 'delete-document-versions',
+                  }}
+              />
 
-        <Pagination
-          from={versions?.from || 0}
-          to={versions?.to || 0}
-          total={versions?.total || 0}
-          links={versions?.links}
-          entityName={t("versions")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={versions?.from || 0}
+                  to={versions?.to || 0}
+                  total={versions?.total || 0}
+                  links={versions?.links}
+                  entityName={t('versions')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(route('document-management.versions.index'), {
+                          page: 1,
+                          per_page: parseInt(value),
+                          search: searchTerm || undefined,
+                          document_id: selectedDocument !== 'all' ? selectedDocument : undefined,
+                      });
+                  }}
+              />
+          </div>
 
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            {
-              name: 'document_id',
-              label: t('Document'),
-              type: 'select',
-              required: true,
-              options: (documents || []).map((doc: any) => ({ value: doc.id, label: doc.name }))
-            },
-            { name: 'file', label: t('New File'), type: 'media-picker', required: true },
-            { name: 'changes_description', label: t('Changes Description'), type: 'textarea', placeholder: 'Describe what changed in this version...' }
-          ],
-          modalSize: 'lg'
-        }}
-        initialData={null}
-        title={t('Upload New Version')}
-        mode="create"
-      />
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'document_id',
+                          label: t('Document'),
+                          type: 'select',
+                          required: true,
+                          options: (documents || []).map((doc: any) => ({ value: doc.id, label: doc.name })),
+                      },
+                      { name: 'file', label: t('New File'), type: 'media-picker', required: true },
+                      {
+                          name: 'changes_description',
+                          label: t('Changes Description'),
+                          type: 'textarea',
+                          placeholder: 'Describe what changed in this version...',
+                      },
+                  ],
+                  modalSize: 'lg',
+              }}
+              initialData={null}
+              title={t('Upload New Version')}
+              mode="create"
+          />
 
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={`Version ${currentItem?.version_number}` || ''}
-        entityName="version"
-      />
-    </PageTemplate>
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={`Version ${currentItem?.version_number}` || ''}
+              entityName="version"
+          />
+      </PageTemplate>
   );
 }

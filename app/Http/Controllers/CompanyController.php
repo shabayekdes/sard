@@ -49,7 +49,8 @@ class CompanyController extends Controller
         $companies = $query->paginate($perPage)->withQueryString();
 
         // Transform data for frontend
-        $companies->getCollection()->transform(function ($company) {
+        $locale = app()->getLocale();
+        $companies->getCollection()->transform(function ($company) use ($locale) {
             return [
                 'id' => $company->id,
                 'name' => $company->name,
@@ -58,7 +59,9 @@ class CompanyController extends Controller
                 'email' => $company->email,
                 'status' => $company->status,
                 'created_at' => $company->created_at,
-                'plan_name' => $company->plan ? $company->plan->name : __('No Plan'),
+                'plan_name' => $company->plan
+                    ? ($company->plan->getTranslation('name', $locale) ?: $company->plan->name)
+                    : __('No Plan'),
                 'plan_expire_date' => $company->plan_expire_date,
                 'latest_plan_ordered_at' => optional($company->latestPlanOrder)->ordered_at,
                 'appointments_count' => 0, // You can implement this based on your model relationships
@@ -66,7 +69,12 @@ class CompanyController extends Controller
         });
 
         // Get plans for dropdown
-        $plans = Plan::all(['id', 'name']);
+        $plans = Plan::all(['id', 'name'])->map(function (Plan $plan) use ($locale) {
+            return [
+                'id' => $plan->id,
+                'name' => $plan->getTranslation('name', $locale) ?: $plan->name,
+            ];
+        });
 
         return Inertia::render('companies/index', [
             'companies' => $companies,

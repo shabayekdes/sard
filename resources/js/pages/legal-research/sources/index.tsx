@@ -263,157 +263,147 @@ export default function ResearchSources() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Research Sources")}
-      url="/legal-research/sources"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'source_type',
-              label: t('Source Type'),
-              type: 'select',
-              value: selectedType,
-              onChange: setSelectedType,
-              options: [
-                { value: 'all', label: t('All Types') },
-                { value: 'database', label: t('Database') },
-                { value: 'case_law', label: t('Case Law') },
-                { value: 'statutory', label: t('Statutory') },
-                { value: 'regulatory', label: t('Regulatory') },
-                { value: 'secondary', label: t('Secondary') },
-                { value: 'custom', label: t('Custom') }
-              ]
-            },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              value: selectedStatus,
-              onChange: setSelectedStatus,
-              options: [
-                { value: 'all', label: t('All Statuses') },
-                { value: 'active', label: t('Active') },
-                { value: 'inactive', label: t('Inactive') }
-              ]
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={() => searchTerm !== '' || selectedType !== 'all' || selectedStatus !== 'all'}
-          activeFilterCount={() => (searchTerm ? 1 : 0) + (selectedType !== 'all' ? 1 : 0) + (selectedStatus !== 'all' ? 1 : 0)}
-          onResetFilters={() => {
-            setSearchTerm('');
-            setSelectedType('all');
-            setSelectedStatus('all');
-            setShowFilters(false);
-            router.get(route('legal-research.sources.index'), { page: 1, per_page: pageFilters.per_page });
-          }}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('legal-research.sources.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              source_type: selectedType !== 'all' ? selectedType : undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined
-            });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Research Sources')} url="/legal-research/sources" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'source_type',
+                          label: t('Source Type'),
+                          type: 'select',
+                          value: selectedType,
+                          onChange: setSelectedType,
+                          options: [
+                              { value: 'all', label: t('All Types') },
+                              { value: 'database', label: t('Database') },
+                              { value: 'case_law', label: t('Case Law') },
+                              { value: 'statutory', label: t('Statutory') },
+                              { value: 'regulatory', label: t('Regulatory') },
+                              { value: 'secondary', label: t('Secondary') },
+                              { value: 'custom', label: t('Custom') },
+                          ],
+                      },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: [
+                              { value: 'all', label: t('All Statuses') },
+                              { value: 'active', label: t('Active') },
+                              { value: 'inactive', label: t('Inactive') },
+                          ],
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={() => searchTerm !== '' || selectedType !== 'all' || selectedStatus !== 'all'}
+                  activeFilterCount={() => (searchTerm ? 1 : 0) + (selectedType !== 'all' ? 1 : 0) + (selectedStatus !== 'all' ? 1 : 0)}
+                  onResetFilters={() => {
+                      setSearchTerm('');
+                      setSelectedType('all');
+                      setSelectedStatus('all');
+                      setShowFilters(false);
+                      router.get(route('legal-research.sources.index'), { page: 1, per_page: pageFilters.per_page });
+                  }}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={sources?.data || []}
-          from={sources?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-research-sources',
-            create: 'create-research-sources',
-            edit: 'edit-research-sources',
-            delete: 'delete-research-sources'
-          }}
-        />
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={sources?.data || []}
+                  from={sources?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-research-sources',
+                      create: 'create-research-sources',
+                      edit: 'edit-research-sources',
+                      delete: 'delete-research-sources',
+                  }}
+              />
 
-        <Pagination
-          from={sources?.from || 0}
-          to={sources?.to || 0}
-          total={sources?.total || 0}
-          links={sources?.links}
-          entityName={t("research sources")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={sources?.from || 0}
+                  to={sources?.to || 0}
+                  total={sources?.total || 0}
+                  links={sources?.links}
+                  entityName={t('research sources')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(route('legal-research.sources.index'), {
+                          page: 1,
+                          per_page: parseInt(value),
+                          search: searchTerm || undefined,
+                          source_type: selectedType !== 'all' ? selectedType : undefined,
+                          status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                      });
+                  }}
+              />
+          </div>
 
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            { name: 'source_name', label: t('Source Name'), type: 'text', required: true },
-            {
-              name: 'source_type',
-              label: t('Source Type'),
-              type: 'select',
-              required: true,
-              options: [
-                { value: 'database', label: t('Database') },
-                { value: 'case_law', label: t('Case Law') },
-                { value: 'statutory', label: t('Statutory') },
-                { value: 'regulatory', label: t('Regulatory') },
-                { value: 'secondary', label: t('Secondary') },
-                { value: 'custom', label: t('Custom') }
-              ]
-            },
-            { name: 'description', label: t('Description'), type: 'textarea', rows: 3 },
-            { name: 'url', label: t('URL'), type: 'text' },
-            { name: 'access_info', label: t('Access Information'), type: 'textarea', rows: 2 },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              options: [
-                { value: 'active', label: t('Active') },
-                { value: 'inactive', label: t('Inactive') }
-              ],
-              defaultValue: 'active'
-            }
-          ],
-          modalSize: 'lg'
-        }}
-        initialData={currentItem}
-        title={
-          formMode === 'create'
-            ? t('Add New Research Source')
-            : formMode === 'edit'
-              ? t('Edit Research Source')
-              : t('View Research Source')
-        }
-        mode={formMode}
-      />
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      { name: 'source_name', label: t('Source Name'), type: 'text', required: true },
+                      {
+                          name: 'source_type',
+                          label: t('Source Type'),
+                          type: 'select',
+                          required: true,
+                          options: [
+                              { value: 'database', label: t('Database') },
+                              { value: 'case_law', label: t('Case Law') },
+                              { value: 'statutory', label: t('Statutory') },
+                              { value: 'regulatory', label: t('Regulatory') },
+                              { value: 'secondary', label: t('Secondary') },
+                              { value: 'custom', label: t('Custom') },
+                          ],
+                      },
+                      { name: 'description', label: t('Description'), type: 'textarea', rows: 3 },
+                      { name: 'url', label: t('URL'), type: 'text' },
+                      { name: 'access_info', label: t('Access Information'), type: 'textarea', rows: 2 },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: 'active', label: t('Active') },
+                              { value: 'inactive', label: t('Inactive') },
+                          ],
+                          defaultValue: 'active',
+                      },
+                  ],
+                  modalSize: 'lg',
+              }}
+              initialData={currentItem}
+              title={
+                  formMode === 'create' ? t('Add New Research Source') : formMode === 'edit' ? t('Edit Research Source') : t('View Research Source')
+              }
+              mode={formMode}
+          />
 
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.source_name || ''}
-        entityName="research source"
-      />
-    </PageTemplate>
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.source_name || ''}
+              entityName="research source"
+          />
+      </PageTemplate>
   );
 }

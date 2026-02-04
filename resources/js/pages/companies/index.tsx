@@ -441,524 +441,532 @@ export default function Companies() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Companies Management")}
-      url="/companies"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      {/* Search and filters section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              value: selectedStatus,
-              onChange: handleStatusFilter,
-              options: [
-                { value: 'all', label: t('All Status') },
-                { value: 'active', label: t('Active') },
-                { value: 'inactive', label: t('Inactive') }
-              ]
-            },
-            {
-              name: 'start_date',
-              label: t('Start Date'),
-              type: 'date',
-              value: startDate,
-              onChange: (date) => setStartDate(date)
-            },
-            {
-              name: 'end_date',
-              label: t('End Date'),
-              type: 'date',
-              value: endDate,
-              onChange: (date) => setEndDate(date)
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            const params: any = { page: 1, per_page: parseInt(value) };
+      <PageTemplate title={t('Companies Management')} url="/companies" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          {/* Search and filters section */}
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: handleStatusFilter,
+                          options: [
+                              { value: 'all', label: t('All Status') },
+                              { value: 'active', label: t('Active') },
+                              { value: 'inactive', label: t('Inactive') },
+                          ],
+                      },
+                      {
+                          name: 'start_date',
+                          label: t('Start Date'),
+                          type: 'date',
+                          value: startDate,
+                          onChange: (date) => setStartDate(date),
+                      },
+                      {
+                          name: 'end_date',
+                          label: t('End Date'),
+                          type: 'date',
+                          value: endDate,
+                          onChange: (date) => setEndDate(date),
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      const params: any = { page: 1, per_page: parseInt(value) };
 
-            if (searchTerm) {
-              params.search = searchTerm;
-            }
+                      if (searchTerm) {
+                          params.search = searchTerm;
+                      }
 
-            if (selectedStatus !== 'all') {
-              params.status = selectedStatus;
-            }
+                      if (selectedStatus !== 'all') {
+                          params.status = selectedStatus;
+                      }
 
-            if (startDate) {
-              params.start_date = startDate.toISOString().split('T')[0];
-            }
+                      if (startDate) {
+                          params.start_date = startDate.toISOString().split('T')[0];
+                      }
 
-            if (endDate) {
-              params.end_date = endDate.toISOString().split('T')[0];
-            }
+                      if (endDate) {
+                          params.end_date = endDate.toISOString().split('T')[0];
+                      }
 
-            router.get(route('companies.index'), params, { preserveState: true, preserveScroll: true });
-          }}
-          showViewToggle={true}
-          activeView={activeView}
-          onViewChange={setActiveView}
-        />
-      </div>
-
-      {/* Content section */}
-      {activeView === 'list' ? (
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
-                  {columns.map((column) => (
-                    <th
-                      key={column.key}
-                      className="px-4 py-3 text-left font-medium text-gray-500"
-                      onClick={() => column.sortable && handleSort(column.key)}
-                    >
-                      <div className="flex items-center">
-                        {column.label}
-                        {column.sortable && (
-                          <span className="ml-1">
-                            {pageFilters.sort_field === column.key ? (
-                              pageFilters.sort_direction === 'asc' ? '↑' : '↓'
-                            ) : ''}
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                  ))}
-                  <th className="px-4 py-3 text-right font-medium text-gray-500">
-                    {t("Actions")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {companies?.data?.map((company: any) => (
-                  <tr key={company.id} className="border-b hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800">
-                    {columns.map((column) => (
-                      <td key={`${company.id}-${column.key}`} className="px-4 py-3">
-                        {column.render ? column.render(company[column.key], company) : company[column.key]}
-                      </td>
-                    ))}
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex justify-end gap-1">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleAction('login-as', company)}
-                              className="text-blue-500 hover:text-blue-700"
-                            >
-                              <ArrowUpRight className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>{t("Login as Company")}</TooltipContent>
-                        </Tooltip>
-
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleAction('company-info', company)}
-                              className="text-blue-500 hover:text-blue-700"
-                            >
-                              <Info className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>{t("Company Info")}</TooltipContent>
-                        </Tooltip>
-
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleAction('upgrade-plan', company)}
-                              className="text-amber-500 hover:text-amber-700"
-                            >
-                              <CreditCard className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>{t("Upgrade Plan")}</TooltipContent>
-                        </Tooltip>
-
-
-
-
-
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleAction('reset-password', company)}
-                              className="text-blue-500 hover:text-blue-700"
-                            >
-                              <KeyRound className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>{t("Reset Password")}</TooltipContent>
-                        </Tooltip>
-
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleAction('toggle-status', company)}
-                              className="text-amber-500 hover:text-amber-700"
-                            >
-                              {company.status === 'active' ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>{company.status === 'active' ? t("Disable Login") : t("Enable Login")}</TooltipContent>
-                        </Tooltip>
-
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleAction('edit', company)}
-                              className="text-amber-500 hover:text-amber-700"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>{t("Edit")}</TooltipContent>
-                        </Tooltip>
-
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-red-500 hover:text-red-700"
-                              onClick={() => handleAction('delete', company)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>{t("Delete")}</TooltipContent>
-                        </Tooltip>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-
-                {(!companies?.data || companies.data.length === 0) && (
-                  <tr>
-                    <td colSpan={columns.length + 1} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                      {t("No companies found")}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                      router.get(route('companies.index'), params, { preserveState: true, preserveScroll: true });
+                  }}
+                  showViewToggle={true}
+                  activeView={activeView}
+                  onViewChange={setActiveView}
+              />
           </div>
 
-          {/* Pagination section */}
-          <Pagination
-            from={companies?.from || 0}
-            to={companies?.to || 0}
-            total={companies?.total || 0}
-            links={companies?.links}
-            entityName={t("companies")}
-            onPageChange={(url) => router.get(url)}
-          />
-        </div>
-      ) : (
-        <div>
-          {/* Grid View */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {companies?.data?.map((company: any) => (
-              <Card key={company.id} className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg shadow">
-                {/* Header */}
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-start space-x-4">
-                      <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center text-lg font-bold text-gray-700">
-                        {getInitials(company.name)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">{company.name}</h3>
-                        <p className="text-sm text-gray-600 mb-3">{company.email}</p>
-                        <div className="flex items-center">
-                          <div className={`h-2 w-2 rounded-full mr-2 ${
-                            company.status === 'active' ? 'bg-gray-800' : 'bg-gray-400'
-                          }`}></div>
-                          <span className="text-sm font-medium text-gray-700">
-                            {company.status === 'active' ? t('Active') : t('Inactive')}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+          {/* Content section */}
+          {activeView === 'list' ? (
+              <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
+                  <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                          <thead>
+                              <tr className="border-b bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+                                  {columns.map((column) => (
+                                      <th
+                                          key={column.key}
+                                          className="px-4 py-3 text-left font-medium text-gray-500"
+                                          onClick={() => column.sortable && handleSort(column.key)}
+                                      >
+                                          <div className="flex items-center">
+                                              {column.label}
+                                              {column.sortable && (
+                                                  <span className="ml-1">
+                                                      {pageFilters.sort_field === column.key
+                                                          ? pageFilters.sort_direction === 'asc'
+                                                              ? '↑'
+                                                              : '↓'
+                                                          : ''}
+                                                  </span>
+                                              )}
+                                          </div>
+                                      </th>
+                                  ))}
+                                  <th className="px-4 py-3 text-right font-medium text-gray-500">{t('Actions')}</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              {companies?.data?.map((company: any) => (
+                                  <tr
+                                      key={company.id}
+                                      className="border-b hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800"
+                                  >
+                                      {columns.map((column) => (
+                                          <td key={`${company.id}-${column.key}`} className="px-4 py-3">
+                                              {column.render ? column.render(company[column.key], company) : company[column.key]}
+                                          </td>
+                                      ))}
+                                      <td className="px-4 py-3 text-right">
+                                          <div className="flex justify-end gap-1">
+                                              <Tooltip>
+                                                  <TooltipTrigger asChild>
+                                                      <Button
+                                                          variant="ghost"
+                                                          size="icon"
+                                                          onClick={() => handleAction('login-as', company)}
+                                                          className="text-blue-500 hover:text-blue-700"
+                                                      >
+                                                          <ArrowUpRight className="h-4 w-4" />
+                                                      </Button>
+                                                  </TooltipTrigger>
+                                                  <TooltipContent>{t('Login as Company')}</TooltipContent>
+                                              </Tooltip>
 
-                    {/* Actions dropdown */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-400 hover:text-gray-600">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="12" r="1"></circle>
-                            <circle cx="12" cy="5" r="1"></circle>
-                            <circle cx="12" cy="19" r="1"></circle>
-                          </svg>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48 z-50" sideOffset={5}>
-                        <DropdownMenuItem onClick={() => handleAction('login-as', company)}>
-                          <ArrowUpRight className="h-4 w-4 mr-2" />
-                          <span>{t("Login as Company")}</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleAction('company-info', company)}>
-                          <Info className="h-4 w-4 mr-2" />
-                          <span>{t("Company Info")}</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleAction('upgrade-plan', company)}>
-                          <CreditCard className="h-4 w-4 mr-2" />
-                          <span>{t("Upgrade Plan")}</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleAction('user-logs', company)}>
-                          <History className="h-4 w-4 mr-2" />
-                          <span>{t("User Logs History")}</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleAction('reset-password', company)}>
-                          <KeyRound className="h-4 w-4 mr-2" />
-                          <span>{t("Reset Password")}</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleAction('toggle-status', company)}>
-                          {company.status === 'active' ?
-                            <Lock className="h-4 w-4 mr-2" /> :
-                            <Unlock className="h-4 w-4 mr-2" />
-                          }
-                          <span>{company.status === 'active' ? t("Disable Login") : t("Enable Login")}</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleAction('edit', company)} className="text-amber-600">
-                          <Edit className="h-4 w-4 mr-2" />
-                          <span>{t("Edit")}</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleAction('delete', company)} className="text-rose-600">
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          <span>{t("Delete")}</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                                              <Tooltip>
+                                                  <TooltipTrigger asChild>
+                                                      <Button
+                                                          variant="ghost"
+                                                          size="icon"
+                                                          onClick={() => handleAction('company-info', company)}
+                                                          className="text-blue-500 hover:text-blue-700"
+                                                      >
+                                                          <Info className="h-4 w-4" />
+                                                      </Button>
+                                                  </TooltipTrigger>
+                                                  <TooltipContent>{t('Company Info')}</TooltipContent>
+                                              </Tooltip>
+
+                                              <Tooltip>
+                                                  <TooltipTrigger asChild>
+                                                      <Button
+                                                          variant="ghost"
+                                                          size="icon"
+                                                          onClick={() => handleAction('upgrade-plan', company)}
+                                                          className="text-amber-500 hover:text-amber-700"
+                                                      >
+                                                          <CreditCard className="h-4 w-4" />
+                                                      </Button>
+                                                  </TooltipTrigger>
+                                                  <TooltipContent>{t('Upgrade Plan')}</TooltipContent>
+                                              </Tooltip>
+
+                                              <Tooltip>
+                                                  <TooltipTrigger asChild>
+                                                      <Button
+                                                          variant="ghost"
+                                                          size="icon"
+                                                          onClick={() => handleAction('reset-password', company)}
+                                                          className="text-blue-500 hover:text-blue-700"
+                                                      >
+                                                          <KeyRound className="h-4 w-4" />
+                                                      </Button>
+                                                  </TooltipTrigger>
+                                                  <TooltipContent>{t('Reset Password')}</TooltipContent>
+                                              </Tooltip>
+
+                                              <Tooltip>
+                                                  <TooltipTrigger asChild>
+                                                      <Button
+                                                          variant="ghost"
+                                                          size="icon"
+                                                          onClick={() => handleAction('toggle-status', company)}
+                                                          className="text-amber-500 hover:text-amber-700"
+                                                      >
+                                                          {company.status === 'active' ? (
+                                                              <Lock className="h-4 w-4" />
+                                                          ) : (
+                                                              <Unlock className="h-4 w-4" />
+                                                          )}
+                                                      </Button>
+                                                  </TooltipTrigger>
+                                                  <TooltipContent>
+                                                      {company.status === 'active' ? t('Disable Login') : t('Enable Login')}
+                                                  </TooltipContent>
+                                              </Tooltip>
+
+                                              <Tooltip>
+                                                  <TooltipTrigger asChild>
+                                                      <Button
+                                                          variant="ghost"
+                                                          size="icon"
+                                                          onClick={() => handleAction('edit', company)}
+                                                          className="text-amber-500 hover:text-amber-700"
+                                                      >
+                                                          <Edit className="h-4 w-4" />
+                                                      </Button>
+                                                  </TooltipTrigger>
+                                                  <TooltipContent>{t('Edit')}</TooltipContent>
+                                              </Tooltip>
+
+                                              <Tooltip>
+                                                  <TooltipTrigger asChild>
+                                                      <Button
+                                                          variant="ghost"
+                                                          size="icon"
+                                                          className="text-red-500 hover:text-red-700"
+                                                          onClick={() => handleAction('delete', company)}
+                                                      >
+                                                          <Trash2 className="h-4 w-4" />
+                                                      </Button>
+                                                  </TooltipTrigger>
+                                                  <TooltipContent>{t('Delete')}</TooltipContent>
+                                              </Tooltip>
+                                          </div>
+                                      </td>
+                                  </tr>
+                              ))}
+
+                              {(!companies?.data || companies.data.length === 0) && (
+                                  <tr>
+                                      <td colSpan={columns.length + 1} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                                          {t('No companies found')}
+                                      </td>
+                                  </tr>
+                              )}
+                          </tbody>
+                      </table>
                   </div>
 
-                  {/* Plan info */}
-                  <div className="border border-gray-200 rounded-md p-3 mb-4">
-                    <div className="flex items-center justify-center">
-                      <CreditCard className="h-4 w-4 text-gray-500 mr-2" />
-                      <span className="text-sm font-semibold text-gray-800">{company.plan_name}</span>
-                    </div>
-                    {company.plan_expire_date && (
-                      <div className="text-xs text-gray-500 text-center mt-1">
-                        {t("Expires")}: {window.appSettings?.formatDateTime(company.plan_expire_date, false) || new Date(company.plan_expire_date).toLocaleDateString()}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Stats */}
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="text-center p-4 border border-gray-200 rounded-md">
-                      <div className="text-xl font-bold text-gray-900 mb-1">{company.business_count || 0}</div>
-                      <div className="text-xs text-gray-600">{t("Businesses")}</div>
-                    </div>
-
-                    <div className="text-center p-4 border border-gray-200 rounded-md">
-                      <div className="text-xl font-bold text-gray-900 mb-1">{company.appointments_count || 0}</div>
-                      <div className="text-xs text-gray-600">{t("Appointments")}</div>
-                    </div>
-                  </div>
-
-                  {/* Action buttons */}
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleAction('edit', company)}
-                      className="flex-1 h-9 text-sm border-gray-300"
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      {t("Edit")}
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleAction('company-info', company)}
-                      className="flex-1 h-9 text-sm border-gray-300"
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      {t("View")}
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleAction('delete', company)}
-                      className="flex-1 h-9 text-sm text-gray-700 border-gray-300"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      {t("Delete")}
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
-
-            {(!companies?.data || companies.data.length === 0) && (
-              <div className="col-span-full p-8 text-center text-gray-500 dark:text-gray-400">
-                {t("No companies found")}
+                  {/* Pagination section */}
+                  <Pagination
+                      from={companies?.from || 0}
+                      to={companies?.to || 0}
+                      total={companies?.total || 0}
+                      links={companies?.links}
+                      entityName={t('companies')}
+                      onPageChange={(url) => router.get(url)}
+                  />
               </div>
-            )}
-          </div>
+          ) : (
+              <div>
+                  {/* Grid View */}
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                      {companies?.data?.map((company: any) => (
+                          <Card key={company.id} className="rounded-lg border border-gray-300 bg-white shadow dark:border-gray-700 dark:bg-gray-900">
+                              {/* Header */}
+                              <div className="p-6">
+                                  <div className="mb-4 flex items-start justify-between">
+                                      <div className="flex items-start space-x-4">
+                                          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-200 text-lg font-bold text-gray-700">
+                                              {getInitials(company.name)}
+                                          </div>
+                                          <div className="min-w-0 flex-1">
+                                              <h3 className="mb-2 text-lg font-bold text-gray-900">{company.name}</h3>
+                                              <p className="mb-3 text-sm text-gray-600">{company.email}</p>
+                                              <div className="flex items-center">
+                                                  <div
+                                                      className={`mr-2 h-2 w-2 rounded-full ${
+                                                          company.status === 'active' ? 'bg-gray-800' : 'bg-gray-400'
+                                                      }`}
+                                                  ></div>
+                                                  <span className="text-sm font-medium text-gray-700">
+                                                      {company.status === 'active' ? t('Active') : t('Inactive')}
+                                                  </span>
+                                              </div>
+                                          </div>
+                                      </div>
 
-          {/* Pagination for grid view */}
-          <div className="mt-6 bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-            <Pagination
-              from={companies?.from || 0}
-              to={companies?.to || 0}
-              total={companies?.total || 0}
-              links={companies?.links}
-              entityName={t("companies")}
-              onPageChange={(url) => router.get(url)}
-            />
-          </div>
-        </div>
-      )}
+                                      {/* Actions dropdown */}
+                                      <DropdownMenu>
+                                          <DropdownMenuTrigger asChild>
+                                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-400 hover:text-gray-600">
+                                                  <svg
+                                                      xmlns="http://www.w3.org/2000/svg"
+                                                      width="16"
+                                                      height="16"
+                                                      viewBox="0 0 24 24"
+                                                      fill="none"
+                                                      stroke="currentColor"
+                                                      strokeWidth="2"
+                                                      strokeLinecap="round"
+                                                      strokeLinejoin="round"
+                                                  >
+                                                      <circle cx="12" cy="12" r="1"></circle>
+                                                      <circle cx="12" cy="5" r="1"></circle>
+                                                      <circle cx="12" cy="19" r="1"></circle>
+                                                  </svg>
+                                              </Button>
+                                          </DropdownMenuTrigger>
+                                          <DropdownMenuContent align="end" className="z-50 w-48" sideOffset={5}>
+                                              <DropdownMenuItem onClick={() => handleAction('login-as', company)}>
+                                                  <ArrowUpRight className="mr-2 h-4 w-4" />
+                                                  <span>{t('Login as Company')}</span>
+                                              </DropdownMenuItem>
+                                              <DropdownMenuItem onClick={() => handleAction('company-info', company)}>
+                                                  <Info className="mr-2 h-4 w-4" />
+                                                  <span>{t('Company Info')}</span>
+                                              </DropdownMenuItem>
+                                              <DropdownMenuItem onClick={() => handleAction('upgrade-plan', company)}>
+                                                  <CreditCard className="mr-2 h-4 w-4" />
+                                                  <span>{t('Upgrade Plan')}</span>
+                                              </DropdownMenuItem>
+                                              <DropdownMenuItem onClick={() => handleAction('user-logs', company)}>
+                                                  <History className="mr-2 h-4 w-4" />
+                                                  <span>{t('User Logs History')}</span>
+                                              </DropdownMenuItem>
+                                              <DropdownMenuItem onClick={() => handleAction('reset-password', company)}>
+                                                  <KeyRound className="mr-2 h-4 w-4" />
+                                                  <span>{t('Reset Password')}</span>
+                                              </DropdownMenuItem>
+                                              <DropdownMenuItem onClick={() => handleAction('toggle-status', company)}>
+                                                  {company.status === 'active' ? (
+                                                      <Lock className="mr-2 h-4 w-4" />
+                                                  ) : (
+                                                      <Unlock className="mr-2 h-4 w-4" />
+                                                  )}
+                                                  <span>{company.status === 'active' ? t('Disable Login') : t('Enable Login')}</span>
+                                              </DropdownMenuItem>
+                                              <DropdownMenuSeparator />
+                                              <DropdownMenuItem onClick={() => handleAction('edit', company)} className="text-amber-600">
+                                                  <Edit className="mr-2 h-4 w-4" />
+                                                  <span>{t('Edit')}</span>
+                                              </DropdownMenuItem>
+                                              <DropdownMenuItem onClick={() => handleAction('delete', company)} className="text-rose-600">
+                                                  <Trash2 className="mr-2 h-4 w-4" />
+                                                  <span>{t('Delete')}</span>
+                                              </DropdownMenuItem>
+                                          </DropdownMenuContent>
+                                      </DropdownMenu>
+                                  </div>
 
-      {/* Form Modal */}
-      <CrudFormModal
-        isOpen={isFormModalOpen && formMode !== 'view'}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={(data) => {
-          // If login_enabled is false, remove password field
-          if (data.login_enabled === false) {
-            delete data.password;
-          }
-          // Set status based on login_enabled
-          data.status = data.login_enabled ? 'active' : 'inactive';
+                                  {/* Plan info */}
+                                  <div className="mb-4 rounded-md border border-gray-200 p-3">
+                                      <div className="flex items-center justify-center">
+                                          <CreditCard className="mr-2 h-4 w-4 text-gray-500" />
+                                          <span className="text-sm font-semibold text-gray-800">{company.plan_name}</span>
+                                      </div>
+                                      {company.plan_expire_date && (
+                                          <div className="mt-1 text-center text-xs text-gray-500">
+                                              {t('Expires')}:{' '}
+                                              {window.appSettings?.formatDateTime(company.plan_expire_date, false) ||
+                                                  new Date(company.plan_expire_date).toLocaleDateString()}
+                                          </div>
+                                      )}
+                                  </div>
 
-          // Remove login_enabled field as it's not needed in the backend
-          delete data.login_enabled;
-          handleFormSubmit(data);
-        }}
-        formConfig={{
-          fields: [
-            { name: 'name', label: t('Company Name'), type: 'text', required: true },
-            { name: 'email', label: t('Email'), type: 'email', required: true },
-            {
-              name: 'login_enabled',
-              label: t('Enable Login'),
-              placeholder: '', // Empty placeholder to prevent duplicate label
-              type: 'switch',
-              defaultValue: true
-            },
-            {
-              name: 'password',
-              label: t('Password'),
-              type: 'password',
-              required: (mode) => mode === 'create',
-              conditional: (mode, data) => {
-                return data?.login_enabled === true;
-              }
-            }
-          ],
-          modalSize: 'lg'
-        }}
-        initialData={{
-          ...currentCompany,
-          login_enabled: currentCompany?.status === 'active'
-        }}
-        title={
-          formMode === 'create'
-            ? t('Add New Company')
-            : t('Edit Company')
-        }
-        mode={formMode}
-      />
+                                  {/* Stats */}
+                                  <div className="mb-4 grid grid-cols-2 gap-4">
+                                      <div className="rounded-md border border-gray-200 p-4 text-center">
+                                          <div className="mb-1 text-xl font-bold text-gray-900">{company.business_count || 0}</div>
+                                          <div className="text-xs text-gray-600">{t('Businesses')}</div>
+                                      </div>
 
-      {/* View Company Modal */}
-      <CrudFormModal
-        isOpen={isFormModalOpen && formMode === 'view'}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={() => {}}
-        formConfig={{
-          fields: [
-            { name: 'name', label: t('Company Name'), type: 'text', readOnly: true },
-            { name: 'phone', label: t('Phone'), type: 'text', readOnly: true },
-            { name: 'email', label: t('Email'), type: 'email', readOnly: true },
-            { name: 'city', label: t('City'), type: 'text', readOnly: true },
-            { name: 'status', label: t('Status'), type: 'text', readOnly: true },
-            { name: 'plan_name', label: t('Plan'), type: 'text', readOnly: true },
-            { name: 'created_at', label: t('Created At'), type: 'text', readOnly: true },
-            { name: 'updated_at', label: t('Updated At'), type: 'text', readOnly: true }
-          ],
-          modalSize: 'lg'
-        }}
-        initialData={{
-          ...currentCompany,
-          created_at: currentCompany?.created_at ? (window.appSettings?.formatDateTime(currentCompany.created_at) || new Date(currentCompany.created_at).toLocaleString()) : '',
-          updated_at: currentCompany?.updated_at ? (window.appSettings?.formatDateTime(currentCompany.updated_at) || new Date(currentCompany.updated_at).toLocaleString()) : ''
-        }}
-        title={t('View Company Details')}
-        mode='view'
-      />
+                                      <div className="rounded-md border border-gray-200 p-4 text-center">
+                                          <div className="mb-1 text-xl font-bold text-gray-900">{company.appointments_count || 0}</div>
+                                          <div className="text-xs text-gray-600">{t('Appointments')}</div>
+                                      </div>
+                                  </div>
 
-      {/* Delete Modal */}
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentCompany?.name || ''}
-        entityName="company"
-      />
+                                  {/* Action buttons */}
+                                  <div className="flex gap-2">
+                                      <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => handleAction('edit', company)}
+                                          className="h-9 flex-1 border-gray-300 text-sm"
+                                      >
+                                          <Edit className="mr-2 h-4 w-4" />
+                                          {t('Edit')}
+                                      </Button>
 
-      {/* Reset Password Modal */}
-      <CrudFormModal
-        isOpen={isResetPasswordModalOpen}
-        onClose={() => setIsResetPasswordModalOpen(false)}
-        onSubmit={handleResetPasswordConfirm}
-        formConfig={{
-          fields: [
-            { name: 'password', label: t('New Password'), type: 'password', required: true }
-          ],
-          modalSize: 'sm'
-        }}
-        initialData={{}}
-        title={`Reset Password for ${currentCompany?.name || 'Company'}`}
-        mode="edit"
-      />
+                                      <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => handleAction('company-info', company)}
+                                          className="h-9 flex-1 border-gray-300 text-sm"
+                                      >
+                                          <Eye className="mr-2 h-4 w-4" />
+                                          {t('View')}
+                                      </Button>
 
-      {/* Upgrade Plan Modal */}
-      <UpgradePlanModal
-        isOpen={isUpgradePlanModalOpen}
-        onClose={() => setIsUpgradePlanModalOpen(false)}
-        onConfirm={handleUpgradePlanConfirm}
-        plans={availablePlans}
-        currentPlanId={currentCompany?.plan_id}
-        companyName={currentCompany?.name || ''}
-      />
+                                      <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => handleAction('delete', company)}
+                                          className="h-9 flex-1 border-gray-300 text-sm text-gray-700"
+                                      >
+                                          <Trash2 className="mr-2 h-4 w-4" />
+                                          {t('Delete')}
+                                      </Button>
+                                  </div>
+                              </div>
+                          </Card>
+                      ))}
 
+                      {(!companies?.data || companies.data.length === 0) && (
+                          <div className="col-span-full p-8 text-center text-gray-500 dark:text-gray-400">{t('No companies found')}</div>
+                      )}
+                  </div>
 
-    </PageTemplate>
+                  {/* Pagination for grid view */}
+                  <div className="mt-6 overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+                      <Pagination
+                          from={companies?.from || 0}
+                          to={companies?.to || 0}
+                          total={companies?.total || 0}
+                          links={companies?.links}
+                          entityName={t('companies')}
+                          onPageChange={(url) => router.get(url)}
+                      />
+                  </div>
+              </div>
+          )}
+
+          {/* Form Modal */}
+          <CrudFormModal
+              isOpen={isFormModalOpen && formMode !== 'view'}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={(data) => {
+                  // If login_enabled is false, remove password field
+                  if (data.login_enabled === false) {
+                      delete data.password;
+                  }
+                  // Set status based on login_enabled
+                  data.status = data.login_enabled ? 'active' : 'inactive';
+
+                  // Remove login_enabled field as it's not needed in the backend
+                  delete data.login_enabled;
+                  handleFormSubmit(data);
+              }}
+              formConfig={{
+                  fields: [
+                      { name: 'name', label: t('Company Name'), type: 'text', required: true },
+                      { name: 'email', label: t('Email'), type: 'email', required: true },
+                      {
+                          name: 'login_enabled',
+                          label: t('Enable Login'),
+                          placeholder: '', // Empty placeholder to prevent duplicate label
+                          type: 'switch',
+                          defaultValue: true,
+                      },
+                      {
+                          name: 'password',
+                          label: t('Password'),
+                          type: 'password',
+                          required: (mode) => mode === 'create',
+                          conditional: (mode, data) => {
+                              return data?.login_enabled === true;
+                          },
+                      },
+                  ],
+                  modalSize: 'lg',
+              }}
+              initialData={{
+                  ...currentCompany,
+                  login_enabled: currentCompany?.status === 'active',
+              }}
+              title={formMode === 'create' ? t('Add New Company') : t('Edit Company')}
+              mode={formMode}
+          />
+
+          {/* View Company Modal */}
+          <CrudFormModal
+              isOpen={isFormModalOpen && formMode === 'view'}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={() => {}}
+              formConfig={{
+                  fields: [
+                      { name: 'name', label: t('Company Name'), type: 'text', readOnly: true },
+                      { name: 'phone', label: t('Phone'), type: 'text', readOnly: true },
+                      { name: 'email', label: t('Email'), type: 'email', readOnly: true },
+                      { name: 'city', label: t('City'), type: 'text', readOnly: true },
+                      { name: 'status', label: t('Status'), type: 'text', readOnly: true },
+                      { name: 'plan_name', label: t('Plan'), type: 'text', readOnly: true },
+                      { name: 'created_at', label: t('Created At'), type: 'text', readOnly: true },
+                      { name: 'updated_at', label: t('Updated At'), type: 'text', readOnly: true },
+                  ],
+                  modalSize: 'lg',
+              }}
+              initialData={{
+                  ...currentCompany,
+                  created_at: currentCompany?.created_at
+                      ? window.appSettings?.formatDateTime(currentCompany.created_at) || new Date(currentCompany.created_at).toLocaleString()
+                      : '',
+                  updated_at: currentCompany?.updated_at
+                      ? window.appSettings?.formatDateTime(currentCompany.updated_at) || new Date(currentCompany.updated_at).toLocaleString()
+                      : '',
+              }}
+              title={t('View Company Details')}
+              mode="view"
+          />
+
+          {/* Delete Modal */}
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentCompany?.name || ''}
+              entityName="company"
+          />
+
+          {/* Reset Password Modal */}
+          <CrudFormModal
+              isOpen={isResetPasswordModalOpen}
+              onClose={() => setIsResetPasswordModalOpen(false)}
+              onSubmit={handleResetPasswordConfirm}
+              formConfig={{
+                  fields: [{ name: 'password', label: t('New Password'), type: 'password', required: true }],
+                  modalSize: 'sm',
+              }}
+              initialData={{}}
+              title={`Reset Password for ${currentCompany?.name || 'Company'}`}
+              mode="edit"
+          />
+
+          {/* Upgrade Plan Modal */}
+          <UpgradePlanModal
+              isOpen={isUpgradePlanModalOpen}
+              onClose={() => setIsUpgradePlanModalOpen(false)}
+              onConfirm={handleUpgradePlanConfirm}
+              plans={availablePlans}
+              currentPlanId={currentCompany?.plan_id}
+              companyName={currentCompany?.name || ''}
+          />
+      </PageTemplate>
   );
 }

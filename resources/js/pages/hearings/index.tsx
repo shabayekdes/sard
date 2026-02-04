@@ -327,220 +327,284 @@ export default function Hearings() {
   ];
 
   return (
-    <PageTemplate title={t("Session Management")} url="/hearings" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            { name: 'status', label: t('Status'), type: 'select', value: selectedStatus, onChange: setSelectedStatus, options: statusOptions },
-            { name: 'court_id', label: t('Court'), type: 'select', value: selectedCourt, onChange: setSelectedCourt, options: courtOptions },
-            { name: 'court_type_id', label: t('Court Type'), type: 'select', value: selectedCourtType, onChange: setSelectedCourtType, options: courtTypeOptions },
-            { name: 'circle_type_id', label: t('Circle Type'), type: 'select', value: selectedCircleType, onChange: setSelectedCircleType, options: circleTypeOptions }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={() => searchTerm !== '' || selectedStatus !== 'all' || selectedCourt !== 'all' || selectedCourtType !== 'all' || selectedCircleType !== 'all'}
-          activeFilterCount={() => (searchTerm ? 1 : 0) + (selectedStatus !== 'all' ? 1 : 0) + (selectedCourt !== 'all' ? 1 : 0) + (selectedCourtType !== 'all' ? 1 : 0) + (selectedCircleType !== 'all' ? 1 : 0)}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('hearings.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined,
-              court_id: selectedCourt !== 'all' ? selectedCourt : undefined,
-              court_type_id: selectedCourtType !== 'all' ? selectedCourtType : undefined,
-              circle_type_id: selectedCircleType !== 'all' ? selectedCircleType : undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Session Management')} url="/hearings" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: statusOptions,
+                      },
+                      {
+                          name: 'court_id',
+                          label: t('Court'),
+                          type: 'select',
+                          value: selectedCourt,
+                          onChange: setSelectedCourt,
+                          options: courtOptions,
+                      },
+                      {
+                          name: 'court_type_id',
+                          label: t('Court Type'),
+                          type: 'select',
+                          value: selectedCourtType,
+                          onChange: setSelectedCourtType,
+                          options: courtTypeOptions,
+                      },
+                      {
+                          name: 'circle_type_id',
+                          label: t('Circle Type'),
+                          type: 'select',
+                          value: selectedCircleType,
+                          onChange: setSelectedCircleType,
+                          options: circleTypeOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={() =>
+                      searchTerm !== '' ||
+                      selectedStatus !== 'all' ||
+                      selectedCourt !== 'all' ||
+                      selectedCourtType !== 'all' ||
+                      selectedCircleType !== 'all'
+                  }
+                  activeFilterCount={() =>
+                      (searchTerm ? 1 : 0) +
+                      (selectedStatus !== 'all' ? 1 : 0) +
+                      (selectedCourt !== 'all' ? 1 : 0) +
+                      (selectedCourtType !== 'all' ? 1 : 0) +
+                      (selectedCircleType !== 'all' ? 1 : 0)
+                  }
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={hearings?.data || []}
-          from={hearings?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-hearings',
-            create: 'create-hearings',
-            edit: 'edit-hearings',
-            delete: 'delete-hearings'
-          }}
-        />
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={hearings?.data || []}
+                  from={hearings?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-hearings',
+                      create: 'create-hearings',
+                      edit: 'edit-hearings',
+                      delete: 'delete-hearings',
+                  }}
+              />
 
-        <Pagination
-          from={hearings?.from || 0}
-          to={hearings?.to || 0}
-          total={hearings?.total || 0}
-          links={hearings?.links}
-          entityName={t("hearings")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={hearings?.from || 0}
+                  to={hearings?.to || 0}
+                  total={hearings?.total || 0}
+                  links={hearings?.links}
+                  entityName={t('hearings')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('hearings.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                              court_id: selectedCourt !== 'all' ? selectedCourt : undefined,
+                              court_type_id: selectedCourtType !== 'all' ? selectedCourtType : undefined,
+                              circle_type_id: selectedCircleType !== 'all' ? selectedCircleType : undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
+                      );
+                  }}
+              />
+          </div>
 
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => {
-          setIsFormModalOpen(false);
-          setFormErrors({});
-        }}
-        onSubmit={handleFormSubmit}
-        externalErrors={formErrors}
-        formConfig={{
-          fields: [
-            {
-              name: 'case_id',
-              label: t('Case'),
-              type: 'select',
-              required: true,
-              options: cases ? cases.map((c: any) => ({ value: c.id.toString(), label: `${c.case_id} - ${c.title}` })) : []
-            },
-            {
-              name: 'court_id',
-              label: t('Court'),
-              type: 'select',
-              required: true,
-              options: courts ? courts.map((c: any) => {
-                const courtName = c.name || '';
-                const courtType = c.court_type ? getTranslatedValue(c.court_type.name) : '';
-                const circleType = c.circle_type ? getTranslatedValue(c.circle_type.name) : '';
-                const parts = [courtName];
-                if (courtType) parts.push(courtType);
-                if (circleType) parts.push(circleType);
-                return {
-                  value: c.id.toString(),
-                  label: parts.join(' + ')
-                };
-              }) : []
-            },
-            {
-              name: 'circle_number',
-              label: t('Circle Number'),
-              type: 'text'
-            },
-            {
-              name: 'judge_id',
-              label: t('Judge'),
-              type: 'select',
-              options: [{ value: 'none', label: t('Select Judge') }, ...(judges ? judges.map((j: any) => ({
-                value: j.id.toString(),
-                label: j.name
-              })) : [])]
-            },
-            {
-              name: 'hearing_type_id',
-              label: t('Session Type'),
-              type: 'select',
-              required: true,
-              options: [{ value: 'none', label: t('Select Type') }, ...(hearingTypes ? hearingTypes.map((ht: any) => ({
-                value: ht.id.toString(),
-                label: getTranslatedValue(ht.name)
-              })) : [])]
-            },
-            { name: 'title', label: t('Title'), type: 'text', required: true },
-            { name: 'description', label: t('Description'), type: 'textarea' },
-            { name: 'hearing_date', label: t('Date'), type: 'date', required: true },
-            { name: 'hearing_time', label: t('Time'), type: 'time', required: true },
-            { name: 'duration_minutes', label: t('Duration (minutes)'), type: 'number', defaultValue: 60 },
-            { name: 'url', label: t('URL'), type: 'text' },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              options: statusOptions.filter(opt => opt.value !== 'all'),
-              defaultValue: 'scheduled'
-            },
-            { name: 'notes', label: t('Notes'), type: 'textarea' },
-            ...(formMode === 'edit' ? [{ name: 'outcome', label: t('Outcome'), type: 'textarea' }] : [])
-          ].concat(googleCalendarEnabled && formMode === 'create' ? [{
-            name: 'sync_with_google_calendar',
-            label: t('Synchronize in Google Calendar'),
-            type: 'switch',
-            defaultValue: false
-          }] : []),
-          modalSize: 'xl'
-        }}
-        initialData={currentItem}
-        title={
-          formMode === 'create'
-            ? t('Schedule New Session')
-            : t('Edit Session')
-        }
-        mode={formMode}
-      />
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => {
+                  setIsFormModalOpen(false);
+                  setFormErrors({});
+              }}
+              onSubmit={handleFormSubmit}
+              externalErrors={formErrors}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'case_id',
+                          label: t('Case'),
+                          type: 'select',
+                          required: true,
+                          options: cases ? cases.map((c: any) => ({ value: c.id.toString(), label: `${c.case_id} - ${c.title}` })) : [],
+                      },
+                      {
+                          name: 'court_id',
+                          label: t('Court'),
+                          type: 'select',
+                          required: true,
+                          options: courts
+                              ? courts.map((c: any) => {
+                                    const courtName = c.name || '';
+                                    const courtType = c.court_type ? getTranslatedValue(c.court_type.name) : '';
+                                    const circleType = c.circle_type ? getTranslatedValue(c.circle_type.name) : '';
+                                    const parts = [courtName];
+                                    if (courtType) parts.push(courtType);
+                                    if (circleType) parts.push(circleType);
+                                    return {
+                                        value: c.id.toString(),
+                                        label: parts.join(' + '),
+                                    };
+                                })
+                              : [],
+                      },
+                      {
+                          name: 'circle_number',
+                          label: t('Circle Number'),
+                          type: 'text',
+                      },
+                      {
+                          name: 'judge_id',
+                          label: t('Judge'),
+                          type: 'select',
+                          options: [
+                              { value: 'none', label: t('Select Judge') },
+                              ...(judges
+                                  ? judges.map((j: any) => ({
+                                        value: j.id.toString(),
+                                        label: j.name,
+                                    }))
+                                  : []),
+                          ],
+                      },
+                      {
+                          name: 'hearing_type_id',
+                          label: t('Session Type'),
+                          type: 'select',
+                          required: true,
+                          options: [
+                              { value: 'none', label: t('Select Type') },
+                              ...(hearingTypes
+                                  ? hearingTypes.map((ht: any) => ({
+                                        value: ht.id.toString(),
+                                        label: getTranslatedValue(ht.name),
+                                    }))
+                                  : []),
+                          ],
+                      },
+                      { name: 'title', label: t('Title'), type: 'text', required: true },
+                      { name: 'description', label: t('Description'), type: 'textarea' },
+                      { name: 'hearing_date', label: t('Date'), type: 'date', required: true },
+                      { name: 'hearing_time', label: t('Time'), type: 'time', required: true },
+                      { name: 'duration_minutes', label: t('Duration (minutes)'), type: 'number', defaultValue: 60 },
+                      { name: 'url', label: t('URL'), type: 'text' },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: statusOptions.filter((opt) => opt.value !== 'all'),
+                          defaultValue: 'scheduled',
+                      },
+                      { name: 'notes', label: t('Notes'), type: 'textarea' },
+                      ...(formMode === 'edit' ? [{ name: 'outcome', label: t('Outcome'), type: 'textarea' }] : []),
+                  ].concat(
+                      googleCalendarEnabled && formMode === 'create'
+                          ? [
+                                {
+                                    name: 'sync_with_google_calendar',
+                                    label: t('Synchronize in Google Calendar'),
+                                    type: 'switch',
+                                    defaultValue: false,
+                                },
+                            ]
+                          : [],
+                  ),
+                  modalSize: 'xl',
+              }}
+              initialData={currentItem}
+              title={formMode === 'create' ? t('Schedule New Session') : t('Edit Session')}
+              mode={formMode}
+          />
 
-      <CrudFormModal
-        isOpen={isViewModalOpen}
-        onClose={() => setIsViewModalOpen(false)}
-        onSubmit={() => { }}
-        formConfig={{
-          fields: [
-            { name: 'hearing_id', label: t('Session ID'), type: 'text', readOnly: true },
-            { name: 'title', label: t('Title'), type: 'text', readOnly: true },
-            { name: 'case', label: t('Case'), type: 'text', readOnly: true },
-            { name: 'court', label: t('Court'), type: 'text', readOnly: true },
-            { name: 'judge', label: t('Judge'), type: 'text', readOnly: true },
-            { name: 'hearing_type', label: t('Type'), type: 'text', readOnly: true },
-            { name: 'description', label: t('Description'), type: 'textarea', readOnly: true },
-            { name: 'hearing_date', label: t('Date'), type: 'text', readOnly: true },
-            { name: 'hearing_time', label: t('Time'), type: 'text', readOnly: true },
-            { name: 'duration_minutes', label: t('Duration (minutes)'), type: 'text', readOnly: true },
-            { name: 'status', label: t('Status'), type: 'text', readOnly: true },
-            { name: 'notes', label: t('Notes'), type: 'textarea', readOnly: true }
-          ],
-          modalSize: 'xl'
-        }}
-        initialData={{
-          ...currentItem,
-          case: currentItem?.case ? (() => {
-            const caseId = currentItem.case.case_id || '-';
-            const caseName = currentItem.case.title || '-';
-            const caseNumber = currentItem.case.file_number || '';
-            if (caseNumber) {
-              return `${caseId} + ${caseName} + ${caseNumber}`;
-            }
-            return `${caseId} + ${caseName}`;
-          })() : '-',
-          court: currentItem?.court ? (() => {
-            const courtName = currentItem.court.name || '-';
-            const courtType = currentItem.court.court_type ? getTranslatedValue(currentItem.court.court_type.name) : '';
-            const circleType = currentItem.court.circle_type ? getTranslatedValue(currentItem.court.circle_type.name) : '';
-            const parts = [courtName];
-            if (courtType) parts.push(courtType);
-            if (circleType) parts.push(circleType);
-            return parts.join(' + ');
-          })() : '-',
-          circle_number: currentItem?.circle_number || '-',
-          judge: currentItem?.judge?.name || '-',
-          hearing_type: getTranslatedValue(currentItem?.hearing_type?.name) || '-',
-          hearing_date: currentItem?.hearing_date ? (window.appSettings?.formatDate(currentItem.hearing_date) || new Date(currentItem.hearing_date).toLocaleDateString()) : '-',
-          hearing_time: currentItem?.hearing_time || '-',
-          duration_minutes: currentItem?.duration_minutes ? `${currentItem.duration_minutes} minutes` : '-',
-          url: currentItem?.url || '-',
-          status: currentItem?.status ? t(currentItem.status.charAt(0).toUpperCase() + currentItem.status.slice(1).replace('_', ' ')) : '-'
-        }}
-        title={t('View Session Details')}
-        mode='view'
-      />
+          <CrudFormModal
+              isOpen={isViewModalOpen}
+              onClose={() => setIsViewModalOpen(false)}
+              onSubmit={() => {}}
+              formConfig={{
+                  fields: [
+                      { name: 'hearing_id', label: t('Session ID'), type: 'text', readOnly: true },
+                      { name: 'title', label: t('Title'), type: 'text', readOnly: true },
+                      { name: 'case', label: t('Case'), type: 'text', readOnly: true },
+                      { name: 'court', label: t('Court'), type: 'text', readOnly: true },
+                      { name: 'judge', label: t('Judge'), type: 'text', readOnly: true },
+                      { name: 'hearing_type', label: t('Type'), type: 'text', readOnly: true },
+                      { name: 'description', label: t('Description'), type: 'textarea', readOnly: true },
+                      { name: 'hearing_date', label: t('Date'), type: 'text', readOnly: true },
+                      { name: 'hearing_time', label: t('Time'), type: 'text', readOnly: true },
+                      { name: 'duration_minutes', label: t('Duration (minutes)'), type: 'text', readOnly: true },
+                      { name: 'status', label: t('Status'), type: 'text', readOnly: true },
+                      { name: 'notes', label: t('Notes'), type: 'textarea', readOnly: true },
+                  ],
+                  modalSize: 'xl',
+              }}
+              initialData={{
+                  ...currentItem,
+                  case: currentItem?.case
+                      ? (() => {
+                            const caseId = currentItem.case.case_id || '-';
+                            const caseName = currentItem.case.title || '-';
+                            const caseNumber = currentItem.case.file_number || '';
+                            if (caseNumber) {
+                                return `${caseId} + ${caseName} + ${caseNumber}`;
+                            }
+                            return `${caseId} + ${caseName}`;
+                        })()
+                      : '-',
+                  court: currentItem?.court
+                      ? (() => {
+                            const courtName = currentItem.court.name || '-';
+                            const courtType = currentItem.court.court_type ? getTranslatedValue(currentItem.court.court_type.name) : '';
+                            const circleType = currentItem.court.circle_type ? getTranslatedValue(currentItem.court.circle_type.name) : '';
+                            const parts = [courtName];
+                            if (courtType) parts.push(courtType);
+                            if (circleType) parts.push(circleType);
+                            return parts.join(' + ');
+                        })()
+                      : '-',
+                  circle_number: currentItem?.circle_number || '-',
+                  judge: currentItem?.judge?.name || '-',
+                  hearing_type: getTranslatedValue(currentItem?.hearing_type?.name) || '-',
+                  hearing_date: currentItem?.hearing_date
+                      ? window.appSettings?.formatDate(currentItem.hearing_date) || new Date(currentItem.hearing_date).toLocaleDateString()
+                      : '-',
+                  hearing_time: currentItem?.hearing_time || '-',
+                  duration_minutes: currentItem?.duration_minutes ? `${currentItem.duration_minutes} minutes` : '-',
+                  url: currentItem?.url || '-',
+                  status: currentItem?.status ? t(currentItem.status.charAt(0).toUpperCase() + currentItem.status.slice(1).replace('_', ' ')) : '-',
+              }}
+              title={t('View Session Details')}
+              mode="view"
+          />
 
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.title || ''}
-        entityName="hearing"
-      />
-    </PageTemplate>
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.title || ''}
+              entityName="hearing"
+          />
+      </PageTemplate>
   );
 }

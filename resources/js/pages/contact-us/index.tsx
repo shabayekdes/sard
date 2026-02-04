@@ -111,100 +111,97 @@ export default function ContactUsPage() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Contact Us Messages")}
-      url="/contact-us"
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[]}
-          showFilters={false}
-          setShowFilters={() => {}}
-          hasActiveFilters={() => searchTerm !== ''}
-          activeFilterCount={() => searchTerm ? 1 : 0}
-          onResetFilters={() => {
-            setSearchTerm('');
-            router.get(route('contact-us.index'));
-          }}
-          onApplyFilters={() => {}}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('contact-us.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined
-            });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Contact Us Messages')} url="/contact-us" breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[]}
+                  showFilters={false}
+                  setShowFilters={() => {}}
+                  hasActiveFilters={() => searchTerm !== ''}
+                  activeFilterCount={() => (searchTerm ? 1 : 0)}
+                  onResetFilters={() => {
+                      setSearchTerm('');
+                      router.get(route('contact-us.index'));
+                  }}
+                  onApplyFilters={() => {}}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={contacts?.data || []}
-          from={contacts?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'manage-contact-us',
-            create: false,
-            edit: false,
-            delete: 'manage-contact-us'
-          }}
-          showActions={true}
-        />
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={contacts?.data || []}
+                  from={contacts?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'manage-contact-us',
+                      create: false,
+                      edit: false,
+                      delete: 'manage-contact-us',
+                  }}
+                  showActions={true}
+              />
 
-        <Pagination
-          from={contacts?.from || 0}
-          to={contacts?.to || 0}
-          total={contacts?.total || 0}
-          links={contacts?.links}
-          entityName={t("contact messages")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={contacts?.from || 0}
+                  to={contacts?.to || 0}
+                  total={contacts?.total || 0}
+                  links={contacts?.links}
+                  entityName={t('contact messages')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(route('contact-us.index'), {
+                          page: 1,
+                          per_page: parseInt(value),
+                          search: searchTerm || undefined,
+                      });
+                  }}
+              />
+          </div>
 
-      <ConfirmDialog
-        open={deleteDialog.open}
-        onOpenChange={(open) => setDeleteDialog({ open, item: null })}
-        title={t('Delete contact message')}
-        description={t('Are you sure you want to delete the message from {{name}}? This action cannot be undone.', { name: deleteDialog.item?.name })}
-        onConfirm={handleDeleteConfirm}
-        confirmText={t('Delete')}
-        cancelText={t('Cancel')}
-        variant="destructive"
-      />
+          <ConfirmDialog
+              open={deleteDialog.open}
+              onOpenChange={(open) => setDeleteDialog({ open, item: null })}
+              title={t('Delete contact message')}
+              description={t('Are you sure you want to delete the message from {{name}}? This action cannot be undone.', {
+                  name: deleteDialog.item?.name,
+              })}
+              onConfirm={handleDeleteConfirm}
+              confirmText={t('Delete')}
+              cancelText={t('Cancel')}
+              variant="destructive"
+          />
 
-      <CrudFormModal
-        isOpen={isViewModalOpen}
-        onClose={() => setIsViewModalOpen(false)}
-        onSubmit={() => {}}
-        formConfig={{
-          fields: [
-            { name: 'name', label: t('Name'), type: 'text', readOnly: true },
-            { name: 'email', label: t('Email'), type: 'email', readOnly: true },
-            { name: 'subject', label: t('Subject'), type: 'text', readOnly: true },
-            { name: 'message', label: t('Message'), type: 'textarea', readOnly: true },
-            { name: 'created_at', label: t('Date'), type: 'text', readOnly: true }
-          ],
-          modalSize: 'lg'
-        }}
-        initialData={{
-          ...currentContact,
-          created_at: currentContact?.created_at ? new Date(currentContact.created_at).toLocaleString() : ''
-        }}
-        title={t('View Contact Details')}
-        mode='view'
-      />
-    </PageTemplate>
+          <CrudFormModal
+              isOpen={isViewModalOpen}
+              onClose={() => setIsViewModalOpen(false)}
+              onSubmit={() => {}}
+              formConfig={{
+                  fields: [
+                      { name: 'name', label: t('Name'), type: 'text', readOnly: true },
+                      { name: 'email', label: t('Email'), type: 'email', readOnly: true },
+                      { name: 'subject', label: t('Subject'), type: 'text', readOnly: true },
+                      { name: 'message', label: t('Message'), type: 'textarea', readOnly: true },
+                      { name: 'created_at', label: t('Date'), type: 'text', readOnly: true },
+                  ],
+                  modalSize: 'lg',
+              }}
+              initialData={{
+                  ...currentContact,
+                  created_at: currentContact?.created_at ? new Date(currentContact.created_at).toLocaleString() : '',
+              }}
+              title={t('View Contact Details')}
+              mode="view"
+          />
+      </PageTemplate>
   );
 }

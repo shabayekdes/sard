@@ -47,14 +47,15 @@ export function CrudTable({
     showActions = true,
 }: CrudTableProps) {
     const { t } = useTranslation();
+    const isRtl = document.documentElement.dir === 'rtl';
     const renderSortIcon = (column: TableColumn) => {
         if (!column.sortable) return null;
 
         if (sortField === column.key) {
-            return sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />;
+            return sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />;
         }
 
-        return <ChevronsUpDown className="ml-1 h-4 w-4 opacity-50" />;
+        return <ChevronsUpDown className="h-4 w-4 opacity-50" />;
     };
 
     const handleSort = (column: TableColumn) => {
@@ -70,17 +71,22 @@ export function CrudTable({
                 (action.action === 'view'
                     ? entityPermissions.view
                     : action.action === 'edit'
-                      ? entityPermissions.edit
-                      : action.action === 'delete'
-                        ? entityPermissions.delete
-                        : action.permission));
+                        ? entityPermissions.edit
+                        : action.action === 'delete'
+                            ? entityPermissions.delete
+                            : action.permission));
 
         return !permissionKey || hasPermission(permissions, permissionKey);
     });
 
     const renderActionButtons = (row: any) => {
         return (
-            <div className="flex items-center justify-end space-x-2">
+            <div
+                className={cn(
+                    'flex items-center',
+                    isRtl ? 'justify-start space-x-reverse space-x-2' : 'justify-end space-x-2'
+                )}
+            >
                 {actions.map((action, index) => {
                     // Skip if user doesn't have permission
                     const permissionKey =
@@ -89,10 +95,10 @@ export function CrudTable({
                             (action.action === 'view'
                                 ? entityPermissions.view
                                 : action.action === 'edit'
-                                  ? entityPermissions.edit
-                                  : action.action === 'delete'
-                                    ? entityPermissions.delete
-                                    : action.permission));
+                                    ? entityPermissions.edit
+                                    : action.action === 'delete'
+                                        ? entityPermissions.delete
+                                        : action.permission));
 
                     if (permissionKey && !hasPermission(permissions, permissionKey)) {
                         return null;
@@ -108,14 +114,14 @@ export function CrudTable({
                         action.action === 'toggle-status'
                             ? getStatusIcon(row.status)
                             : typeof action.icon === 'function'
-                              ? action.icon(row)
-                              : action.icon;
+                                ? action.icon(row)
+                                : action.icon;
                     const actionLabel =
                         action.action === 'toggle-status'
                             ? getStatusLabel(row.status, t)
                             : typeof action.label === 'function'
-                              ? action.label(row)
-                              : action.label;
+                                ? action.label(row)
+                                : action.label;
                     const IconComponent = (LucidIcons as any)[iconName] as React.ElementType;
 
                     // Handle link actions
@@ -149,13 +155,17 @@ export function CrudTable({
                                         variant="ghost"
                                         size="icon"
                                         className={cn('h-8 w-8', action.className)}
-                                        onClick={() => onAction(action.action, row)}
+                                        onClick={() => {
+                                            if (action.action) {
+                                                onAction(action.action, row);
+                                            }
+                                        }}
                                     >
                                         <IconComponent size={16} />
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p>{action.label}</p>
+                                    <p>{actionLabel}</p>
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
@@ -236,37 +246,70 @@ export function CrudTable({
     };
 
     return (
-        <div className="border-collapse dark:bg-gray-900">
-            <Table>
+        <div className="overflow-hidden rounded-xl bg-white  dark:bg-gray-900">
+            <Table className="text-sm">
                 <TableHeader>
-                    <TableRow className="border-b bg-gray-50 dark:bg-gray-800">
-                        <TableHead className="w-12 py-2.5 font-semibold">#</TableHead>
+                    <TableRow className="border-b border-slate-200 bg-[#f9f9f9] dark:border-gray-800 dark:bg-gray-900">
+                        <TableHead className="w-12 px-4 py-3 text-sm font-semibold text-slate-400 dark:text-gray-400">
+                            <div className={cn('flex items-center', isRtl ? 'justify-end text-right' : 'justify-start text-left')}>#</div>
+                        </TableHead>
                         {columns.map((column) => (
                             <TableHead
                                 key={column.key}
-                                className={cn('py-2.5 font-semibold', column.sortable && 'cursor-pointer select-none', column.className)}
+                                className={cn(
+                                    'px-4 py-3 text-sm font-semibold text-slate-400 dark:text-gray-400',
+                                    column.sortable && 'cursor-pointer select-none',
+                                    column.className
+                                )}
                                 onClick={() => handleSort(column)}
                             >
-                                <div className="flex items-center">
+                                <div className={cn('flex items-center gap-1', isRtl ? 'justify-end text-right flex-row-reverse' : 'justify-start text-left')}>
                                     {column.label}
                                     {renderSortIcon(column)}
                                 </div>
                             </TableHead>
                         ))}
-                        {showActions && hasAnyActionPermission && <TableHead className="w-24 py-2.5 text-right font-semibold">{t('Actions')}</TableHead>}
+                        {showActions && hasAnyActionPermission && (
+                            <TableHead className="w-24 px-4 py-3 text-sm font-semibold text-slate-400 dark:text-gray-400">
+                                <div className={cn('flex items-center', isRtl ? 'justify-start text-left' : 'justify-end text-right')}>
+                                    {t('Actions')}
+                                </div>
+                            </TableHead>
+                        )}
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {data.length > 0 ? (
                         data.map((row, index) => (
-                            <TableRow key={row.id || index} className="border-b hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700">
-                                <TableCell className="py-2.5 font-medium">{from + index}</TableCell>
+                            <TableRow
+                                key={row.id || index}
+                                className="border-b border-slate-100 odd:bg-white even:bg-white hover:bg-[#EFF2F1] data-[state=selected]:bg-[#EFF2F1] dark:border-gray-800 dark:odd:bg-gray-900 dark:even:bg-gray-900 dark:hover:bg-gray-800/60"
+                            >
+                                <TableCell
+                                    className={cn(
+                                        'px-4 py-3 text-sm font-medium text-slate-700 dark:text-gray-200',
+                                        isRtl ? 'text-right' : 'text-left'
+                                    )}
+                                >
+                                    {from + index}
+                                </TableCell>
                                 {columns.map((col) => (
-                                    <TableCell key={col.key} className={cn('py-2.5', col.className)}>
+                                    <TableCell
+                                        key={col.key}
+                                        className={cn(
+                                            'px-4 py-3 text-sm text-slate-700 dark:text-gray-200',
+                                            isRtl ? 'text-right' : 'text-left',
+                                            col.className
+                                        )}
+                                    >
                                         {renderCellContent(row, col)}
                                     </TableCell>
                                 ))}
-                                {showActions && hasAnyActionPermission && <TableCell className="py-2.5 text-right">{renderActionButtons(row)}</TableCell>}
+                                {showActions && hasAnyActionPermission && (
+                                    <TableCell className={cn('px-4 py-3', isRtl ? 'text-left' : 'text-right')}>
+                                        {renderActionButtons(row)}
+                                    </TableCell>
+                                )}
                             </TableRow>
                         ))
                     ) : (

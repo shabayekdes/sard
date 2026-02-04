@@ -245,141 +245,138 @@ export default function ResearchNotes() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Research Notes")}
-      url="/legal-research/notes"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'research_project_id',
-              label: t('Research Project'),
-              type: 'select',
-              value: selectedProject,
-              onChange: setSelectedProject,
-              options: projectOptions
-            },
-            {
-              name: 'is_private',
-              label: t('Privacy'),
-              type: 'select',
-              value: selectedPrivacy,
-              onChange: setSelectedPrivacy,
-              options: [
-                { value: 'all', label: t('All Notes') },
-                { value: '0', label: t('Shared') },
-                { value: '1', label: t('Private') }
-              ]
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={() => searchTerm !== '' || selectedProject !== 'all' || selectedPrivacy !== 'all'}
-          activeFilterCount={() => (searchTerm ? 1 : 0) + (selectedProject !== 'all' ? 1 : 0) + (selectedPrivacy !== 'all' ? 1 : 0)}
-          onResetFilters={() => {
-            setSearchTerm('');
-            setSelectedProject('all');
-            setSelectedPrivacy('all');
-            setShowFilters(false);
-            router.get(route('legal-research.notes.index'), { page: 1, per_page: pageFilters.per_page });
-          }}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('legal-research.notes.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              research_project_id: selectedProject !== 'all' ? selectedProject : undefined,
-              is_private: selectedPrivacy !== 'all' ? selectedPrivacy : undefined
-            });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Research Notes')} url="/legal-research/notes" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'research_project_id',
+                          label: t('Research Project'),
+                          type: 'select',
+                          value: selectedProject,
+                          onChange: setSelectedProject,
+                          options: projectOptions,
+                      },
+                      {
+                          name: 'is_private',
+                          label: t('Privacy'),
+                          type: 'select',
+                          value: selectedPrivacy,
+                          onChange: setSelectedPrivacy,
+                          options: [
+                              { value: 'all', label: t('All Notes') },
+                              { value: '0', label: t('Shared') },
+                              { value: '1', label: t('Private') },
+                          ],
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={() => searchTerm !== '' || selectedProject !== 'all' || selectedPrivacy !== 'all'}
+                  activeFilterCount={() => (searchTerm ? 1 : 0) + (selectedProject !== 'all' ? 1 : 0) + (selectedPrivacy !== 'all' ? 1 : 0)}
+                  onResetFilters={() => {
+                      setSearchTerm('');
+                      setSelectedProject('all');
+                      setSelectedPrivacy('all');
+                      setShowFilters(false);
+                      router.get(route('legal-research.notes.index'), { page: 1, per_page: pageFilters.per_page });
+                  }}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={notes?.data || []}
-          from={notes?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-research-notes',
-            create: 'create-research-notes',
-            edit: 'edit-research-notes',
-            delete: 'delete-research-notes'
-          }}
-        />
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={notes?.data || []}
+                  from={notes?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-research-notes',
+                      create: 'create-research-notes',
+                      edit: 'edit-research-notes',
+                      delete: 'delete-research-notes',
+                  }}
+              />
 
-        <Pagination
-          from={notes?.from || 0}
-          to={notes?.to || 0}
-          total={notes?.total || 0}
-          links={notes?.links}
-          entityName={t("research notes")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={notes?.from || 0}
+                  to={notes?.to || 0}
+                  total={notes?.total || 0}
+                  links={notes?.links}
+                  entityName={t('research notes')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(route('legal-research.notes.index'), {
+                          page: 1,
+                          per_page: parseInt(value),
+                          search: searchTerm || undefined,
+                          research_project_id: selectedProject !== 'all' ? selectedProject : undefined,
+                          is_private: selectedPrivacy !== 'all' ? selectedPrivacy : undefined,
+                      });
+                  }}
+              />
+          </div>
 
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            { 
-              name: 'research_project_id', 
-              label: t('Research Project'), 
-              type: 'select', 
-              required: true,
-              options: (projects || []).map((project: any) => ({ value: project.id, label: project.title }))
-            },
-            { name: 'title', label: t('Title'), type: 'text', required: true },
-            { name: 'note_content', label: t('Note Content'), type: 'textarea', required: true, rows: 8 },
-            { name: 'source_reference', label: t('Source Reference'), type: 'text' },
-            { name: 'tags', label: t('Tags'), type: 'text', placeholder: 'Enter tags separated by commas (e.g., contract, precedent, analysis)' },
-            {
-              name: 'is_private',
-              label: t('Make Private'),
-              type: 'checkbox',
-              defaultValue: false
-            }
-          ],
-          modalSize: 'xl'
-        }}
-        initialData={currentItem ? {
-          ...currentItem,
-          tags: currentItem.tags ? currentItem.tags.join(', ') : ''
-        } : null}
-        title={
-          formMode === 'create'
-            ? t('Add New Research Note')
-            : formMode === 'edit'
-              ? t('Edit Research Note')
-              : t('View Research Note')
-        }
-        mode={formMode}
-      />
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'research_project_id',
+                          label: t('Research Project'),
+                          type: 'select',
+                          required: true,
+                          options: (projects || []).map((project: any) => ({ value: project.id, label: project.title })),
+                      },
+                      { name: 'title', label: t('Title'), type: 'text', required: true },
+                      { name: 'note_content', label: t('Note Content'), type: 'textarea', required: true, rows: 8 },
+                      { name: 'source_reference', label: t('Source Reference'), type: 'text' },
+                      {
+                          name: 'tags',
+                          label: t('Tags'),
+                          type: 'text',
+                          placeholder: 'Enter tags separated by commas (e.g., contract, precedent, analysis)',
+                      },
+                      {
+                          name: 'is_private',
+                          label: t('Make Private'),
+                          type: 'checkbox',
+                          defaultValue: false,
+                      },
+                  ],
+                  modalSize: 'xl',
+              }}
+              initialData={
+                  currentItem
+                      ? {
+                            ...currentItem,
+                            tags: currentItem.tags ? currentItem.tags.join(', ') : '',
+                        }
+                      : null
+              }
+              title={formMode === 'create' ? t('Add New Research Note') : formMode === 'edit' ? t('Edit Research Note') : t('View Research Note')}
+              mode={formMode}
+          />
 
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.title || ''}
-        entityName="research note"
-      />
-    </PageTemplate>
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.title || ''}
+              entityName="research note"
+          />
+      </PageTemplate>
   );
 }

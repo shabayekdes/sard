@@ -189,87 +189,108 @@ export default function CompanySettings() {
   ];
 
   return (
-    <PageTemplate title={t("Company Settings")} url="/advocate/company-settings" breadcrumbs={breadcrumbs} noPadding>
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            { name: 'category', label: t('Category'), type: 'select', value: selectedCategory, onChange: setSelectedCategory, options: categoryOptions },
-            { name: 'setting_type', label: t('Type'), type: 'select', value: selectedType, onChange: setSelectedType, options: typeOptions }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('advocate.company-settings.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              category: selectedCategory !== 'all' ? selectedCategory : undefined,
-              setting_type: selectedType !== 'all' ? selectedType : undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Company Settings')} url="/advocate/company-settings" breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'category',
+                          label: t('Category'),
+                          type: 'select',
+                          value: selectedCategory,
+                          onChange: setSelectedCategory,
+                          options: categoryOptions,
+                      },
+                      {
+                          name: 'setting_type',
+                          label: t('Type'),
+                          type: 'select',
+                          value: selectedType,
+                          onChange: setSelectedType,
+                          options: typeOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={companySettings?.data || []}
-          from={companySettings?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-company-settings',
-            edit: 'edit-company-settings'
-          }}
-        />
+          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={companySettings?.data || []}
+                  from={companySettings?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-company-settings',
+                      edit: 'edit-company-settings',
+                  }}
+              />
 
-        <Pagination
-          from={companySettings?.from || 0}
-          to={companySettings?.to || 0}
-          total={companySettings?.total || 0}
-          links={companySettings?.links}
-          entityName={t("company settings")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={companySettings?.from || 0}
+                  to={companySettings?.to || 0}
+                  total={companySettings?.total || 0}
+                  links={companySettings?.links}
+                  entityName={t('company settings')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('advocate.company-settings.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              category: selectedCategory !== 'all' ? selectedCategory : undefined,
+                              setting_type: selectedType !== 'all' ? selectedType : undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
+                      );
+                  }}
+              />
+          </div>
 
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            { name: 'setting_key', label: t('Setting Key'), type: 'text', disabled: true },
-            {
-              name: 'setting_value',
-              label: t('Setting Value'),
-              type: currentItem?.setting_type === 'boolean' ? 'select' : currentItem?.setting_type === 'number' ? 'number' : 'text',
-              required: true,
-              options: currentItem?.setting_type === 'boolean' ? [
-                { value: '1', label: t('Enabled') },
-                { value: '0', label: t('Disabled') }
-              ] : undefined
-            },
-            { name: 'description', label: t('Description'), type: 'textarea' }
-          ],
-          modalSize: 'lg'
-        }}
-        initialData={currentItem}
-        title={formMode === 'edit' ? t('Edit Company Setting') : t('View Company Setting')}
-        mode={formMode}
-      />
-    </PageTemplate>
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      { name: 'setting_key', label: t('Setting Key'), type: 'text', disabled: true },
+                      {
+                          name: 'setting_value',
+                          label: t('Setting Value'),
+                          type: currentItem?.setting_type === 'boolean' ? 'select' : currentItem?.setting_type === 'number' ? 'number' : 'text',
+                          required: true,
+                          options:
+                              currentItem?.setting_type === 'boolean'
+                                  ? [
+                                        { value: '1', label: t('Enabled') },
+                                        { value: '0', label: t('Disabled') },
+                                    ]
+                                  : undefined,
+                      },
+                      { name: 'description', label: t('Description'), type: 'textarea' },
+                  ],
+                  modalSize: 'lg',
+              }}
+              initialData={currentItem}
+              title={formMode === 'edit' ? t('Edit Company Setting') : t('View Company Setting')}
+              mode={formMode}
+          />
+      </PageTemplate>
   );
 }

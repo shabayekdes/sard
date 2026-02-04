@@ -2,6 +2,8 @@
  * Pagination component with dark mode support
  */
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 
@@ -14,6 +16,9 @@ interface PaginationProps {
   lastPage?: number;
   entityName?: string;
   onPageChange?: (url: string) => void;
+  perPage?: string | number;
+  perPageOptions?: number[];
+  onPerPageChange?: (value: string) => void;
   className?: string;
 }
 
@@ -26,9 +31,13 @@ export function Pagination({
   lastPage,
   entityName = 'items',
   onPageChange,
+  perPage,
+  perPageOptions = [10, 25, 50, 100],
+  onPerPageChange,
   className = '',
 }: PaginationProps) {
   const { t } = useTranslation();
+  const isRtl = document.documentElement.dir === 'rtl' || document.body?.dir === 'rtl';
 
   const handlePageChange = (url: string) => {
     if (onPageChange) {
@@ -43,18 +52,18 @@ export function Pagination({
       "p-4 border-t dark:border-gray-700 flex items-center justify-between dark:bg-gray-900",
       className
     )}>
-      <div className="text-sm text-muted-foreground dark:text-gray-300">
-        {t("Showing")} <span className="font-medium dark:text-white">{from}</span> {t("to")}{" "}
-        <span className="font-medium dark:text-white">{to}</span> {t("of")}{" "}
-        <span className="font-medium dark:text-white">{total}</span> {entityName}
-      </div>
-
       <div className="flex gap-1">
         {links && links.length > 0 ? (
           links.map((link: any, i: number) => {
             // Check if the link is "Next" or "Previous" to use text instead of icon
             const isTextLink = link.label === "&laquo; Previous" || link.label === "Next &raquo;";
-            const label = link.label.replace("&laquo; ", "").replace(" &raquo;", "");
+            const rawLabel = link.label.replace("&laquo; ", "").replace(" &raquo;", "");
+            const label =
+              rawLabel === "Previous"
+                ? t("Previous", { defaultValue: "السابق" })
+                : rawLabel === "Next"
+                  ? t("Next", { defaultValue: "التالي" })
+                  : rawLabel;
 
             return (
               <Button
@@ -79,10 +88,10 @@ export function Pagination({
                 disabled={currentPage <= 1}
                 onClick={() => handlePageChange(`?page=${currentPage - 1}`)}
               >
-                {t("Previous")}
+                {t("Previous", { defaultValue: "السابق" })}
               </Button>
               <span className="px-3 py-1 dark:text-white">
-                {currentPage} of {lastPage}
+                {currentPage} {t("of")} {lastPage}
               </span>
               <Button
                 variant="outline"
@@ -90,12 +99,39 @@ export function Pagination({
                 disabled={currentPage >= lastPage}
                 onClick={() => handlePageChange(`?page=${currentPage + 1}`)}
               >
-                {t("Next")}
+                {t("Next", { defaultValue: "التالي" })}
               </Button>
             </>
           )
         )}
       </div>
+      <div className="flex items-center gap-3 text-sm text-muted-foreground dark:text-gray-300 flex-row">
+        <span>
+          {t("Showing")} <span className="font-medium dark:text-white">{from}</span> {t("to")}{" "}
+          <span className="font-medium dark:text-white">{to}</span> {t("of")}{" "}
+          <span className="font-medium dark:text-white">{total}</span> {entityName}
+        </span>
+        {onPerPageChange && (
+          <div className="flex items-center gap-2 flex-row">
+            <Label className="text-xs text-muted-foreground dark:text-gray-300">
+              {t("Per Page", { defaultValue: "لكل صفحة" })}
+            </Label>
+            <Select value={String(perPage ?? perPageOptions[0])} onValueChange={onPerPageChange}>
+              <SelectTrigger className="h-8 w-16">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {perPageOptions.map((option) => (
+                  <SelectItem key={option} value={option.toString()}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }

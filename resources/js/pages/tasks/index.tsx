@@ -370,239 +370,237 @@ export default function Tasks() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Task Management")}
-      url="/tasks"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'task_type_id',
-              label: t('Task Type'),
-              type: 'select',
-              value: selectedTaskType,
-              onChange: setSelectedTaskType,
-              options: taskTypeOptions
-            },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              value: selectedStatus,
-              onChange: setSelectedStatus,
-              options: statusOptions
-            },
-            {
-              name: 'priority',
-              label: t('Priority'),
-              type: 'select',
-              value: selectedPriority,
-              onChange: setSelectedPriority,
-              options: priorityOptions
-            },
-            {
-              name: 'assigned_to',
-              label: t('Assigned To'),
-              type: 'select',
-              value: selectedAssignedTo,
-              onChange: setSelectedAssignedTo,
-              options: userOptions
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('tasks.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              task_type_id: selectedTaskType !== 'all' ? selectedTaskType : undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined,
-              priority: selectedPriority !== 'all' ? selectedPriority : undefined,
-              assigned_to: selectedAssignedTo !== 'all' ? selectedAssignedTo : undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Task Management')} url="/tasks" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'task_type_id',
+                          label: t('Task Type'),
+                          type: 'select',
+                          value: selectedTaskType,
+                          onChange: setSelectedTaskType,
+                          options: taskTypeOptions,
+                      },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: statusOptions,
+                      },
+                      {
+                          name: 'priority',
+                          label: t('Priority'),
+                          type: 'select',
+                          value: selectedPriority,
+                          onChange: setSelectedPriority,
+                          options: priorityOptions,
+                      },
+                      {
+                          name: 'assigned_to',
+                          label: t('Assigned To'),
+                          type: 'select',
+                          value: selectedAssignedTo,
+                          onChange: setSelectedAssignedTo,
+                          options: userOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={tasks?.data || []}
-          from={tasks?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-tasks',
-            create: 'create-tasks',
-            edit: 'edit-tasks',
-            delete: 'delete-tasks'
-          }}
-        />
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={tasks?.data || []}
+                  from={tasks?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-tasks',
+                      create: 'create-tasks',
+                      edit: 'edit-tasks',
+                      delete: 'delete-tasks',
+                  }}
+              />
 
-        <Pagination
-          from={tasks?.from || 0}
-          to={tasks?.to || 0}
-          total={tasks?.total || 0}
-          links={tasks?.links}
-          entityName={t("tasks")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={tasks?.from || 0}
+                  to={tasks?.to || 0}
+                  total={tasks?.total || 0}
+                  links={tasks?.links}
+                  entityName={t('tasks')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('tasks.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              task_type_id: selectedTaskType !== 'all' ? selectedTaskType : undefined,
+                              status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                              priority: selectedPriority !== 'all' ? selectedPriority : undefined,
+                              assigned_to: selectedAssignedTo !== 'all' ? selectedAssignedTo : undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
+                      );
+                  }}
+              />
+          </div>
 
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            { name: 'title', label: t('Title'), type: 'text', required: true },
-            { name: 'description', label: t('Description'), type: 'textarea' },
-            {
-              name: 'priority',
-              label: t('Priority'),
-              type: 'select',
-              required: true,
-              options: [
-                { value: 'critical', label: t('Critical') },
-                { value: 'high', label: t('High') },
-                { value: 'medium', label: t('Medium') },
-                { value: 'low', label: t('Low') }
-              ],
-              defaultValue: 'medium'
-            },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              required: true,
-              options: [
-                { value: 'not_started', label: t('Not Started') },
-                { value: 'in_progress', label: t('In Progress') },
-                { value: 'completed', label: t('Completed') },
-                { value: 'on_hold', label: t('On Hold') }
-              ],
-              defaultValue: 'not_started'
-            },
-            { name: 'due_date', label: t('Due Date'), type: 'date' },
-            { name: 'estimated_duration', label: t('Estimated Duration (minutes)'), type: 'number' },
-            {
-              name: 'case_assignment',
-              label: t('Case & Assignment'),
-              type: 'dependent-dropdown',
-              dependentConfig: (() => {
-                const caseOptions = (cases || []).map((c: any) => ({
-                  value: c.id.toString(),
-                  label: c.title || c.case_id || `Case ${c.id}`
-                }));
-                return [
-                  {
-                    name: 'case_id',
-                    label: t('Case'),
-                    options: caseOptions
-                  },
-                  {
-                    name: 'assigned_to',
-                    label: t('Assigned To'),
-                    apiEndpoint: '/api/tasks/case-users/{case_id}',
-                    showCurrentValue: true
-                  }
-                ];
-              })()
-            },
-            {
-              name: 'task_type_id',
-              label: t('Task Type'),
-              type: 'select',
-              placeholder: t('Select Task Type'),
-              options: [
-                ...(taskTypes || []).map((type: any) => ({
-                  value: type.id.toString(),
-                  label: type.name
-                }))
-              ]
-            },
-            {
-              name: 'task_status_id',
-              label: t('Task Status'),
-              type: 'select',
-              placeholder: t('Select Task Status'),
-              options: [
-                ...(taskStatuses || []).map((status: any) => ({
-                  value: status.id.toString(),
-                  label: status.name
-                }))
-              ]
-            },
-            { name: 'notes', label: t('Notes'), type: 'textarea' }
-          ].concat(googleCalendarEnabled && formMode === 'create' ? [{
-            name: 'sync_with_google_calendar',
-            label: t('Synchronize in Google Calendar'),
-            type: 'switch',
-            defaultValue: false
-          }] : []),
-          modalSize: 'xl'
-        }}
-        initialData={currentItem}
-        title={
-          formMode === 'create'
-            ? t('Add New Task')
-            : formMode === 'edit'
-              ? t('Edit Task')
-              : t('View Task')
-        }
-        mode={formMode}
-      />
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      { name: 'title', label: t('Title'), type: 'text', required: true },
+                      { name: 'description', label: t('Description'), type: 'textarea' },
+                      {
+                          name: 'priority',
+                          label: t('Priority'),
+                          type: 'select',
+                          required: true,
+                          options: [
+                              { value: 'critical', label: t('Critical') },
+                              { value: 'high', label: t('High') },
+                              { value: 'medium', label: t('Medium') },
+                              { value: 'low', label: t('Low') },
+                          ],
+                          defaultValue: 'medium',
+                      },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          required: true,
+                          options: [
+                              { value: 'not_started', label: t('Not Started') },
+                              { value: 'in_progress', label: t('In Progress') },
+                              { value: 'completed', label: t('Completed') },
+                              { value: 'on_hold', label: t('On Hold') },
+                          ],
+                          defaultValue: 'not_started',
+                      },
+                      { name: 'due_date', label: t('Due Date'), type: 'date' },
+                      { name: 'estimated_duration', label: t('Estimated Duration (minutes)'), type: 'number' },
+                      {
+                          name: 'case_assignment',
+                          label: t('Case & Assignment'),
+                          type: 'dependent-dropdown',
+                          dependentConfig: (() => {
+                              const caseOptions = (cases || []).map((c: any) => ({
+                                  value: c.id.toString(),
+                                  label: c.title || c.case_id || `Case ${c.id}`,
+                              }));
+                              return [
+                                  {
+                                      name: 'case_id',
+                                      label: t('Case'),
+                                      options: caseOptions,
+                                  },
+                                  {
+                                      name: 'assigned_to',
+                                      label: t('Assigned To'),
+                                      apiEndpoint: '/api/tasks/case-users/{case_id}',
+                                      showCurrentValue: true,
+                                  },
+                              ];
+                          })(),
+                      },
+                      {
+                          name: 'task_type_id',
+                          label: t('Task Type'),
+                          type: 'select',
+                          placeholder: t('Select Task Type'),
+                          options: [
+                              ...(taskTypes || []).map((type: any) => ({
+                                  value: type.id.toString(),
+                                  label: type.name,
+                              })),
+                          ],
+                      },
+                      {
+                          name: 'task_status_id',
+                          label: t('Task Status'),
+                          type: 'select',
+                          placeholder: t('Select Task Status'),
+                          options: [
+                              ...(taskStatuses || []).map((status: any) => ({
+                                  value: status.id.toString(),
+                                  label: status.name,
+                              })),
+                          ],
+                      },
+                      { name: 'notes', label: t('Notes'), type: 'textarea' },
+                  ].concat(
+                      googleCalendarEnabled && formMode === 'create'
+                          ? [
+                                {
+                                    name: 'sync_with_google_calendar',
+                                    label: t('Synchronize in Google Calendar'),
+                                    type: 'switch',
+                                    defaultValue: false,
+                                },
+                            ]
+                          : [],
+                  ),
+                  modalSize: 'xl',
+              }}
+              initialData={currentItem}
+              title={formMode === 'create' ? t('Add New Task') : formMode === 'edit' ? t('Edit Task') : t('View Task')}
+              mode={formMode}
+          />
 
-      <CrudFormModal
-        isOpen={isStatusModalOpen}
-        onClose={() => setIsStatusModalOpen(false)}
-        onSubmit={handleStatusChange}
-        formConfig={{
-          fields: [
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              required: true,
-              options: [
-                { value: 'not_started', label: t('Not Started') },
-                { value: 'in_progress', label: t('In Progress') },
-                { value: 'completed', label: t('Completed') },
-                { value: 'on_hold', label: t('On Hold') }
-              ]
-            }
-          ],
-          modalSize: 'sm'
-        }}
-        initialData={currentItem ? { status: currentItem.status } : null}
-        title={t('Change Task Status')}
-        mode='edit'
-      />
+          <CrudFormModal
+              isOpen={isStatusModalOpen}
+              onClose={() => setIsStatusModalOpen(false)}
+              onSubmit={handleStatusChange}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          required: true,
+                          options: [
+                              { value: 'not_started', label: t('Not Started') },
+                              { value: 'in_progress', label: t('In Progress') },
+                              { value: 'completed', label: t('Completed') },
+                              { value: 'on_hold', label: t('On Hold') },
+                          ],
+                      },
+                  ],
+                  modalSize: 'sm',
+              }}
+              initialData={currentItem ? { status: currentItem.status } : null}
+              title={t('Change Task Status')}
+              mode="edit"
+          />
 
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.title || ''}
-        entityName="task"
-      />
-    </PageTemplate>
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.title || ''}
+              entityName="task"
+          />
+      </PageTemplate>
   );
 }

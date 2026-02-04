@@ -290,171 +290,167 @@ export default function Documents() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Documents")}
-      url="/document-management/documents"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'category_id',
-              label: t('Category'),
-              type: 'select',
-              value: selectedCategory,
-              onChange: setSelectedCategory,
-              options: categoryOptions
-            },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              value: selectedStatus,
-              onChange: setSelectedStatus,
-              options: [
-                { value: 'all', label: t('All Statuses') },
-                { value: 'draft', label: t('Draft') },
-                { value: 'review', label: t('Review') },
-                { value: 'final', label: t('Final') },
-                { value: 'archived', label: t('Archived') }
-              ]
-            },
-            {
-              name: 'confidentiality',
-              label: t('Confidentiality'),
-              type: 'select',
-              value: selectedConfidentiality,
-              onChange: setSelectedConfidentiality,
-              options: [
-                { value: 'all', label: t('All Levels') },
-                { value: 'public', label: t('Public') },
-                { value: 'internal', label: t('Internal') },
-                { value: 'confidential', label: t('Confidential') },
-                { value: 'restricted', label: t('Restricted') }
-              ]
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('document-management.documents.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              category_id: selectedCategory !== 'all' ? selectedCategory : undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined,
-              confidentiality: selectedConfidentiality !== 'all' ? selectedConfidentiality : undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Documents')} url="/document-management/documents" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'category_id',
+                          label: t('Category'),
+                          type: 'select',
+                          value: selectedCategory,
+                          onChange: setSelectedCategory,
+                          options: categoryOptions,
+                      },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: [
+                              { value: 'all', label: t('All Statuses') },
+                              { value: 'draft', label: t('Draft') },
+                              { value: 'review', label: t('Review') },
+                              { value: 'final', label: t('Final') },
+                              { value: 'archived', label: t('Archived') },
+                          ],
+                      },
+                      {
+                          name: 'confidentiality',
+                          label: t('Confidentiality'),
+                          type: 'select',
+                          value: selectedConfidentiality,
+                          onChange: setSelectedConfidentiality,
+                          options: [
+                              { value: 'all', label: t('All Levels') },
+                              { value: 'public', label: t('Public') },
+                              { value: 'internal', label: t('Internal') },
+                              { value: 'confidential', label: t('Confidential') },
+                              { value: 'restricted', label: t('Restricted') },
+                          ],
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={documents?.data || []}
-          from={documents?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-documents',
-            create: 'create-documents',
-            edit: 'edit-documents',
-            delete: 'delete-documents'
-          }}
-        />
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={documents?.data || []}
+                  from={documents?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-documents',
+                      create: 'create-documents',
+                      edit: 'edit-documents',
+                      delete: 'delete-documents',
+                  }}
+              />
 
-        <Pagination
-          from={documents?.from || 0}
-          to={documents?.to || 0}
-          total={documents?.total || 0}
-          links={documents?.links}
-          entityName={t("documents")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={documents?.from || 0}
+                  to={documents?.to || 0}
+                  total={documents?.total || 0}
+                  links={documents?.links}
+                  entityName={t('documents')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('document-management.documents.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              category_id: selectedCategory !== 'all' ? selectedCategory : undefined,
+                              status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                              confidentiality: selectedConfidentiality !== 'all' ? selectedConfidentiality : undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
+                      );
+                  }}
+              />
+          </div>
 
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            { name: 'name', label: t('Name'), type: 'text', required: true },
-            { name: 'description', label: t('Description'), type: 'textarea' },
-            {
-              name: 'category_id',
-              label: t('Category'),
-              type: 'select',
-              required: true,
-              options: (categories || []).map((cat: any) => ({ value: cat.id, label: cat.name }))
-            },
-            ...(formMode !== 'view' ? [{ name: 'file', label: t('File'), type: 'media-picker', required: true }] : []),
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              options: [
-                { value: 'draft', label: t('Draft') },
-                { value: 'review', label: t('Review') },
-                { value: 'final', label: t('Final') },
-                { value: 'archived', label: t('Archived') }
-              ],
-              defaultValue: 'draft'
-            },
-            {
-              name: 'confidentiality',
-              label: t('Confidentiality'),
-              type: 'select',
-              options: [
-                { value: 'public', label: t('Public') },
-                { value: 'internal', label: t('Internal') },
-                { value: 'confidential', label: t('Confidential') },
-                { value: 'restricted', label: t('Restricted') }
-              ],
-              defaultValue: 'internal'
-            },
-            { name: 'tags', label: t('Tags'), type: 'text', placeholder: 'Enter tags separated by commas' }
-          ],
-          modalSize: 'lg'
-        }}
-        initialData={currentItem ? {
-          ...currentItem,
-          tags: currentItem.tags ? currentItem.tags.join(', ') : '',
-          file: currentItem?.file_path ? `${currentItem.file_path}` : null
-        } : null}
-        title={
-          formMode === 'create'
-            ? t('Upload New Document')
-            : formMode === 'edit'
-              ? t('Edit Document')
-              : t('View Document')
-        }
-        mode={formMode}
-      />
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      { name: 'name', label: t('Name'), type: 'text', required: true },
+                      { name: 'description', label: t('Description'), type: 'textarea' },
+                      {
+                          name: 'category_id',
+                          label: t('Category'),
+                          type: 'select',
+                          required: true,
+                          options: (categories || []).map((cat: any) => ({ value: cat.id, label: cat.name })),
+                      },
+                      ...(formMode !== 'view' ? [{ name: 'file', label: t('File'), type: 'media-picker', required: true }] : []),
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: 'draft', label: t('Draft') },
+                              { value: 'review', label: t('Review') },
+                              { value: 'final', label: t('Final') },
+                              { value: 'archived', label: t('Archived') },
+                          ],
+                          defaultValue: 'draft',
+                      },
+                      {
+                          name: 'confidentiality',
+                          label: t('Confidentiality'),
+                          type: 'select',
+                          options: [
+                              { value: 'public', label: t('Public') },
+                              { value: 'internal', label: t('Internal') },
+                              { value: 'confidential', label: t('Confidential') },
+                              { value: 'restricted', label: t('Restricted') },
+                          ],
+                          defaultValue: 'internal',
+                      },
+                      { name: 'tags', label: t('Tags'), type: 'text', placeholder: 'Enter tags separated by commas' },
+                  ],
+                  modalSize: 'lg',
+              }}
+              initialData={
+                  currentItem
+                      ? {
+                            ...currentItem,
+                            tags: currentItem.tags ? currentItem.tags.join(', ') : '',
+                            file: currentItem?.file_path ? `${currentItem.file_path}` : null,
+                        }
+                      : null
+              }
+              title={formMode === 'create' ? t('Upload New Document') : formMode === 'edit' ? t('Edit Document') : t('View Document')}
+              mode={formMode}
+          />
 
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.name || ''}
-        entityName="document"
-      />
-    </PageTemplate>
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.name || ''}
+              entityName="document"
+          />
+      </PageTemplate>
   );
 }

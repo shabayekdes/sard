@@ -243,168 +243,167 @@ export default function ResearchCitations() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Research Citations")}
-      url="/legal-research/citations"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'research_project_id',
-              label: t('Research Project'),
-              type: 'select',
-              value: selectedProject,
-              onChange: setSelectedProject,
-              options: projectOptions
-            },
-            {
-              name: 'citation_type',
-              label: t('Citation Type'),
-              type: 'select',
-              value: selectedType,
-              onChange: setSelectedType,
-              options: [
-                { value: 'all', label: t('All Types') },
-                { value: 'case', label: t('Case') },
-                { value: 'statute', label: t('Statute') },
-                { value: 'article', label: t('Article') },
-                { value: 'book', label: t('Book') },
-                { value: 'website', label: t('Website') },
-                { value: 'other', label: t('Other') }
-              ]
-            },
-            {
-              name: 'source_id',
-              label: t('Source'),
-              type: 'select',
-              value: selectedSource,
-              onChange: setSelectedSource,
-              options: sourceOptions
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={() => searchTerm !== '' || selectedProject !== 'all' || selectedType !== 'all' || selectedSource !== 'all'}
-          activeFilterCount={() => (searchTerm ? 1 : 0) + (selectedProject !== 'all' ? 1 : 0) + (selectedType !== 'all' ? 1 : 0) + (selectedSource !== 'all' ? 1 : 0)}
-          onResetFilters={() => {
-            setSearchTerm('');
-            setSelectedProject('all');
-            setSelectedType('all');
-            setSelectedSource('all');
-            setShowFilters(false);
-            router.get(route('legal-research.citations.index'), { page: 1, per_page: pageFilters.per_page });
-          }}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('legal-research.citations.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              research_project_id: selectedProject !== 'all' ? selectedProject : undefined,
-              citation_type: selectedType !== 'all' ? selectedType : undefined,
-              source_id: selectedSource !== 'all' ? selectedSource : undefined
-            });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Research Citations')} url="/legal-research/citations" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'research_project_id',
+                          label: t('Research Project'),
+                          type: 'select',
+                          value: selectedProject,
+                          onChange: setSelectedProject,
+                          options: projectOptions,
+                      },
+                      {
+                          name: 'citation_type',
+                          label: t('Citation Type'),
+                          type: 'select',
+                          value: selectedType,
+                          onChange: setSelectedType,
+                          options: [
+                              { value: 'all', label: t('All Types') },
+                              { value: 'case', label: t('Case') },
+                              { value: 'statute', label: t('Statute') },
+                              { value: 'article', label: t('Article') },
+                              { value: 'book', label: t('Book') },
+                              { value: 'website', label: t('Website') },
+                              { value: 'other', label: t('Other') },
+                          ],
+                      },
+                      {
+                          name: 'source_id',
+                          label: t('Source'),
+                          type: 'select',
+                          value: selectedSource,
+                          onChange: setSelectedSource,
+                          options: sourceOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={() => searchTerm !== '' || selectedProject !== 'all' || selectedType !== 'all' || selectedSource !== 'all'}
+                  activeFilterCount={() =>
+                      (searchTerm ? 1 : 0) +
+                      (selectedProject !== 'all' ? 1 : 0) +
+                      (selectedType !== 'all' ? 1 : 0) +
+                      (selectedSource !== 'all' ? 1 : 0)
+                  }
+                  onResetFilters={() => {
+                      setSearchTerm('');
+                      setSelectedProject('all');
+                      setSelectedType('all');
+                      setSelectedSource('all');
+                      setShowFilters(false);
+                      router.get(route('legal-research.citations.index'), { page: 1, per_page: pageFilters.per_page });
+                  }}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={citations?.data || []}
-          from={citations?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-research-citations',
-            create: 'create-research-citations',
-            edit: 'edit-research-citations',
-            delete: 'delete-research-citations'
-          }}
-        />
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={citations?.data || []}
+                  from={citations?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-research-citations',
+                      create: 'create-research-citations',
+                      edit: 'edit-research-citations',
+                      delete: 'delete-research-citations',
+                  }}
+              />
 
-        <Pagination
-          from={citations?.from || 0}
-          to={citations?.to || 0}
-          total={citations?.total || 0}
-          links={citations?.links}
-          entityName={t("research citations")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={citations?.from || 0}
+                  to={citations?.to || 0}
+                  total={citations?.total || 0}
+                  links={citations?.links}
+                  entityName={t('research citations')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(route('legal-research.citations.index'), {
+                          page: 1,
+                          per_page: parseInt(value),
+                          search: searchTerm || undefined,
+                          research_project_id: selectedProject !== 'all' ? selectedProject : undefined,
+                          citation_type: selectedType !== 'all' ? selectedType : undefined,
+                          source_id: selectedSource !== 'all' ? selectedSource : undefined,
+                      });
+                  }}
+              />
+          </div>
 
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            { 
-              name: 'research_project_id', 
-              label: t('Research Project'), 
-              type: 'select', 
-              required: true,
-              options: (projects || []).map((project: any) => ({ value: project.id, label: project.title }))
-            },
-            { name: 'citation_text', label: t('Citation Text'), type: 'textarea', required: true, rows: 3 },
-            {
-              name: 'citation_type',
-              label: t('Citation Type'),
-              type: 'select',
-              required: true,
-              options: [
-                { value: 'case', label: t('Case') },
-                { value: 'statute', label: t('Statute') },
-                { value: 'article', label: t('Article') },
-                { value: 'book', label: t('Book') },
-                { value: 'website', label: t('Website') },
-                { value: 'other', label: t('Other') }
-              ]
-            },
-            { 
-              name: 'source_id', 
-              label: t('Source'), 
-              type: 'select',
-              options: [
-                { value: null, label: t('No Source') },
-                ...(sources || []).map((source: any) => ({ value: source.id, label: source.source_name }))
-              ]
-            },
-            { name: 'page_number', label: t('Page Number'), type: 'text' },
-            { name: 'notes', label: t('Notes'), type: 'textarea', rows: 3 }
-          ],
-          modalSize: 'lg'
-        }}
-        initialData={currentItem}
-        title={
-          formMode === 'create'
-            ? t('Add New Research Citation')
-            : formMode === 'edit'
-              ? t('Edit Research Citation')
-              : t('View Research Citation')
-        }
-        mode={formMode}
-      />
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'research_project_id',
+                          label: t('Research Project'),
+                          type: 'select',
+                          required: true,
+                          options: (projects || []).map((project: any) => ({ value: project.id, label: project.title })),
+                      },
+                      { name: 'citation_text', label: t('Citation Text'), type: 'textarea', required: true, rows: 3 },
+                      {
+                          name: 'citation_type',
+                          label: t('Citation Type'),
+                          type: 'select',
+                          required: true,
+                          options: [
+                              { value: 'case', label: t('Case') },
+                              { value: 'statute', label: t('Statute') },
+                              { value: 'article', label: t('Article') },
+                              { value: 'book', label: t('Book') },
+                              { value: 'website', label: t('Website') },
+                              { value: 'other', label: t('Other') },
+                          ],
+                      },
+                      {
+                          name: 'source_id',
+                          label: t('Source'),
+                          type: 'select',
+                          options: [
+                              { value: null, label: t('No Source') },
+                              ...(sources || []).map((source: any) => ({ value: source.id, label: source.source_name })),
+                          ],
+                      },
+                      { name: 'page_number', label: t('Page Number'), type: 'text' },
+                      { name: 'notes', label: t('Notes'), type: 'textarea', rows: 3 },
+                  ],
+                  modalSize: 'lg',
+              }}
+              initialData={currentItem}
+              title={
+                  formMode === 'create'
+                      ? t('Add New Research Citation')
+                      : formMode === 'edit'
+                        ? t('Edit Research Citation')
+                        : t('View Research Citation')
+              }
+              mode={formMode}
+          />
 
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.citation_text || ''}
-        entityName="research citation"
-      />
-    </PageTemplate>
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.citation_text || ''}
+              entityName="research citation"
+          />
+      </PageTemplate>
   );
 }

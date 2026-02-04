@@ -373,322 +373,339 @@ export default function Users() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Users Management")}
-      url="/users"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      {/* Search and filters section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'role',
-              label: t('Role'),
-              type: 'select',
-              value: selectedRole,
-              onChange: handleRoleFilter,
-              options: [
-                { value: 'all', label: t('All Roles') },
-                ...(roles || []).map((role: any) => ({
-                  value: role.id.toString(),
-                  label: role.label || role.name
-                }))
-              ]
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            const params: any = { page: 1, per_page: parseInt(value) };
-
-            if (searchTerm) {
-              params.search = searchTerm;
-            }
-
-            if (selectedRole !== 'all') {
-              params.role = selectedRole;
-            }
-
-            router.get(route('users.index'), params, { preserveState: true, preserveScroll: true });
-          }}
-          showViewToggle={true}
-          activeView={activeView}
-          onViewChange={setActiveView}
-        />
-      </div>
-
-      {/* Content section */}
-      {activeView === 'list' ? (
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-          <CrudTable
-            columns={columns}
-            actions={actions}
-            data={users?.data || []}
-            from={users?.from || 1}
-            onAction={handleAction}
-            sortField={pageFilters.sort_field}
-            sortDirection={pageFilters.sort_direction}
-            onSort={handleSort}
-            permissions={permissions}
-            entityPermissions={{
-              view: 'view-users',
-              create: 'create-users',
-              edit: 'edit-users',
-              delete: 'delete-users'
-            }}
-          />
-
-          {/* Pagination section */}
-          <Pagination
-            from={users?.from || 0}
-            to={users?.to || 0}
-            total={users?.total || 0}
-            links={users?.links}
-            entityName={t("users")}
-            onPageChange={(url) => router.get(url)}
-          />
-        </div>
-      ) : (
-        <div>
-          {/* Grid View */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {users?.data?.map((user: any) => (
-              <Card key={user.id} className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg shadow">
-                {/* Header */}
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-start space-x-4">
-                      <div className="h-16 w-16 rounded-full bg-primary text-white flex items-center justify-center text-lg font-bold">
-                        {getInitials(user.name)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{user.name}</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{user.email}</p>
-                        <div className="flex items-center">
-                          <div className={`h-2 w-2 rounded-full mr-2 ${
-                            user.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
-                          }`}></div>
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {user.status === 'active' ? t('Active') : t('Inactive')}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Actions dropdown */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="12" r="1"></circle>
-                            <circle cx="12" cy="5" r="1"></circle>
-                            <circle cx="12" cy="19" r="1"></circle>
-                          </svg>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48 z-50" sideOffset={5}>
-                        {hasPermission(permissions, 'view-users') && (
-                          <DropdownMenuItem onClick={() => handleAction('view', user)}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            <span>{t("View User")}</span>
-                          </DropdownMenuItem>
-                        )}
-
-                        {hasPermission(permissions, 'edit-users') && (
-                          <DropdownMenuItem onClick={() => handleAction('reset-password', user)}>
-                            <KeyRound className="h-4 w-4 mr-2" />
-                            <span>{t("Reset Password")}</span>
-                          </DropdownMenuItem>
-                        )}
-                        {hasPermission(permissions, 'edit-users') && (
-                          <DropdownMenuItem onClick={() => handleAction('toggle-status', user)}>
-                            {user.status === 'active' ?
-                              <Lock className="h-4 w-4 mr-2" /> :
-                              <Unlock className="h-4 w-4 mr-2" />
-                            }
-                            <span>{user.status === 'active' ? t("Disable User") : t("Enable User")}</span>
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuSeparator />
-                        {hasPermission(permissions, 'edit-users') && (
-                          <DropdownMenuItem onClick={() => handleAction('edit', user)} className="text-amber-600">
-                            <Edit className="h-4 w-4 mr-2" />
-                            <span>{t("Edit")}</span>
-                          </DropdownMenuItem>
-                        )}
-                        {hasPermission(permissions, 'delete-users') && (
-                          <DropdownMenuItem onClick={() => handleAction('delete', user)} className="text-rose-600">
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            <span>{t("Delete")}</span>
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-
-                  {/* Role info */}
-                  <div className="border border-gray-200 dark:border-gray-700 rounded-md p-3 mb-4">
-                    <div className="flex flex-wrap gap-1">
-                      {user.roles && user.roles.length > 0 ? (
-                        user.roles.map((role: any) => (
-                          <span key={role.id} className="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 ring-1 ring-inset ring-blue-700/10 dark:ring-blue-700/30">
-                            {role.label || role.name}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-muted-foreground text-xs dark:text-gray-400">{t("No role")}</span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Joined date */}
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                    {t("Joined:")} {window.appSettings?.formatDateTime(user.created_at, false) || new Date(user.created_at).toLocaleDateString()}
-                  </div>
-
-                  {/* Action buttons */}
-                  <div className="flex gap-2">
-                    {hasPermission(permissions, 'edit-users') && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleAction('edit', user)}
-                        className="flex-1 h-9 text-sm border-gray-300 dark:border-gray-600 dark:text-gray-200"
-                      >
-                        <Edit className="h-4 w-4 mr-2" />
-                        {t("Edit")}
-                      </Button>
-                    )}
-
-                    {hasPermission(permissions, 'view-users') && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleAction('view', user)}
-                        className="flex-1 h-9 text-sm border-gray-300 dark:border-gray-600 dark:text-gray-200"
-                      >
-                        <Eye className="h-4 w-4 mr-2" />
-                        {t("View")}
-                      </Button>
-                    )}
-
-                    {hasPermission(permissions, 'delete-users') && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleAction('delete', user)}
-                        className="flex-1 h-9 text-sm text-gray-700 border-gray-300 dark:border-gray-600 dark:text-gray-200"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        {t("Delete")}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            ))}
+      <PageTemplate title={t('Users Management')} url="/users" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          {/* Search and filters section */}
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'role',
+                          label: t('Role'),
+                          type: 'select',
+                          value: selectedRole,
+                          onChange: handleRoleFilter,
+                          options: [
+                              { value: 'all', label: t('All Roles') },
+                              ...(roles || []).map((role: any) => ({
+                                  value: role.id.toString(),
+                                  label: role.label || role.name,
+                              })),
+                          ],
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+                  showViewToggle={true}
+                  activeView={activeView}
+                  onViewChange={setActiveView}
+              />
           </div>
 
-          {/* Pagination for grid view */}
-          <div className="mt-6 bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-            <Pagination
-              from={users?.from || 0}
-              to={users?.to || 0}
-              total={users?.total || 0}
-              links={users?.links}
-              entityName={t("users")}
-              onPageChange={(url) => router.get(url)}
-            />
-          </div>
-        </div>
-      )}
+          {/* Content section */}
+          {activeView === 'list' ? (
+              <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+                  <CrudTable
+                      columns={columns}
+                      actions={actions}
+                      data={users?.data || []}
+                      from={users?.from || 1}
+                      onAction={handleAction}
+                      sortField={pageFilters.sort_field}
+                      sortDirection={pageFilters.sort_direction}
+                      onSort={handleSort}
+                      permissions={permissions}
+                      entityPermissions={{
+                          view: 'view-users',
+                          create: 'create-users',
+                          edit: 'edit-users',
+                          delete: 'delete-users',
+                      }}
+                  />
 
-      {/* Form Modal */}
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            { name: 'name', label: t('Name'), type: 'text', required: true },
-            { name: 'email', label: t('Email'), type: 'email', required: true },
-            {
-              name: 'password',
-              label: t('Password'),
-              type: 'password',
-              required: true,
-              conditional: (mode) => mode === 'create'
-            },
-            {
-              name: 'password_confirmation',
-              label: t('Confirm Password'),
-              type: 'password',
-              required: true,
-              conditional: (mode) => mode === 'create'
-            },
-            {
-              name: 'roles',
-              label: t('Role'),
-              type: 'select',
-              options: roles ? roles.filter((role: any) => role.name !== 'client').map((role: any) => ({
-                value: role.id.toString(),
-                label: role.label || role.name
-              })) : [],
-              required: true
-            }
-          ],
-          modalSize: 'lg'
-        }}
-        initialData={currentItem ? {
-          ...currentItem,
-          roles: currentItem.roles && currentItem.roles.length > 0 ? currentItem.roles[0].id.toString() : ''
-        } : null}
-        title={
-          formMode === 'create'
-            ? t('Add New User')
-            : formMode === 'edit'
-              ? t('Edit User')
-              : t('View User')
-        }
-        mode={formMode}
-      />
+                  {/* Pagination section */}
+                  <Pagination
+                      from={users?.from || 0}
+                      to={users?.to || 0}
+                      total={users?.total || 0}
+                      links={users?.links}
+                      entityName={t('users')}
+                      onPageChange={(url) => router.get(url)}
+                      currentPerPage={pageFilters.per_page?.toString() || '10'}
+                      onPerPageChange={(value) => {
+                          const params: any = { page: 1, per_page: parseInt(value) };
 
-      {/* Delete Modal */}
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.name || ''}
-        entityName="user"
-      />
+                          if (searchTerm) {
+                              params.search = searchTerm;
+                          }
 
-      {/* Reset Password Modal */}
-      <CrudFormModal
-        isOpen={isResetPasswordModalOpen}
-        onClose={() => setIsResetPasswordModalOpen(false)}
-        onSubmit={handleResetPasswordConfirm}
-        formConfig={{
-          fields: [
-            { name: 'password', label: t('New Password'), type: 'password', required: true },
-            { name: 'password_confirmation', label: t('Confirm Password'), type: 'password', required: true }
-          ],
-          modalSize: 'sm'
-        }}
-        initialData={{}}
-        title={`Reset Password for ${currentItem?.name || 'User'}`}
-        mode="edit"
-      />
-    </PageTemplate>
+                          if (selectedRole !== 'all') {
+                              params.role = selectedRole;
+                          }
+
+                          router.get(route('users.index'), params, { preserveState: true, preserveScroll: true });
+                      }}
+                  />
+              </div>
+          ) : (
+              <div>
+                  {/* Grid View */}
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                      {users?.data?.map((user: any) => (
+                          <Card key={user.id} className="rounded-lg border border-gray-300 bg-white shadow dark:border-gray-700 dark:bg-gray-900">
+                              {/* Header */}
+                              <div className="p-6">
+                                  <div className="mb-4 flex items-start justify-between">
+                                      <div className="flex items-start space-x-4">
+                                          <div className="bg-primary flex h-16 w-16 items-center justify-center rounded-full text-lg font-bold text-white">
+                                              {getInitials(user.name)}
+                                          </div>
+                                          <div className="min-w-0 flex-1">
+                                              <h3 className="mb-2 text-lg font-bold text-gray-900 dark:text-white">{user.name}</h3>
+                                              <p className="mb-3 text-sm text-gray-600 dark:text-gray-300">{user.email}</p>
+                                              <div className="flex items-center">
+                                                  <div
+                                                      className={`mr-2 h-2 w-2 rounded-full ${
+                                                          user.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
+                                                      }`}
+                                                  ></div>
+                                                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                      {user.status === 'active' ? t('Active') : t('Inactive')}
+                                                  </span>
+                                              </div>
+                                          </div>
+                                      </div>
+
+                                      {/* Actions dropdown */}
+                                      <DropdownMenu>
+                                          <DropdownMenuTrigger asChild>
+                                              <Button
+                                                  variant="ghost"
+                                                  size="sm"
+                                                  className="h-8 w-8 p-0 text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300"
+                                              >
+                                                  <svg
+                                                      xmlns="http://www.w3.org/2000/svg"
+                                                      width="16"
+                                                      height="16"
+                                                      viewBox="0 0 24 24"
+                                                      fill="none"
+                                                      stroke="currentColor"
+                                                      strokeWidth="2"
+                                                      strokeLinecap="round"
+                                                      strokeLinejoin="round"
+                                                  >
+                                                      <circle cx="12" cy="12" r="1"></circle>
+                                                      <circle cx="12" cy="5" r="1"></circle>
+                                                      <circle cx="12" cy="19" r="1"></circle>
+                                                  </svg>
+                                              </Button>
+                                          </DropdownMenuTrigger>
+                                          <DropdownMenuContent align="end" className="z-50 w-48" sideOffset={5}>
+                                              {hasPermission(permissions, 'view-users') && (
+                                                  <DropdownMenuItem onClick={() => handleAction('view', user)}>
+                                                      <Eye className="mr-2 h-4 w-4" />
+                                                      <span>{t('View User')}</span>
+                                                  </DropdownMenuItem>
+                                              )}
+
+                                              {hasPermission(permissions, 'edit-users') && (
+                                                  <DropdownMenuItem onClick={() => handleAction('reset-password', user)}>
+                                                      <KeyRound className="mr-2 h-4 w-4" />
+                                                      <span>{t('Reset Password')}</span>
+                                                  </DropdownMenuItem>
+                                              )}
+                                              {hasPermission(permissions, 'edit-users') && (
+                                                  <DropdownMenuItem onClick={() => handleAction('toggle-status', user)}>
+                                                      {user.status === 'active' ? (
+                                                          <Lock className="mr-2 h-4 w-4" />
+                                                      ) : (
+                                                          <Unlock className="mr-2 h-4 w-4" />
+                                                      )}
+                                                      <span>{user.status === 'active' ? t('Disable User') : t('Enable User')}</span>
+                                                  </DropdownMenuItem>
+                                              )}
+                                              <DropdownMenuSeparator />
+                                              {hasPermission(permissions, 'edit-users') && (
+                                                  <DropdownMenuItem onClick={() => handleAction('edit', user)} className="text-amber-600">
+                                                      <Edit className="mr-2 h-4 w-4" />
+                                                      <span>{t('Edit')}</span>
+                                                  </DropdownMenuItem>
+                                              )}
+                                              {hasPermission(permissions, 'delete-users') && (
+                                                  <DropdownMenuItem onClick={() => handleAction('delete', user)} className="text-rose-600">
+                                                      <Trash2 className="mr-2 h-4 w-4" />
+                                                      <span>{t('Delete')}</span>
+                                                  </DropdownMenuItem>
+                                              )}
+                                          </DropdownMenuContent>
+                                      </DropdownMenu>
+                                  </div>
+
+                                  {/* Role info */}
+                                  <div className="mb-4 rounded-md border border-gray-200 p-3 dark:border-gray-700">
+                                      <div className="flex flex-wrap gap-1">
+                                          {user.roles && user.roles.length > 0 ? (
+                                              user.roles.map((role: any) => (
+                                                  <span
+                                                      key={role.id}
+                                                      className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-700/10 ring-inset dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-700/30"
+                                                  >
+                                                      {role.label || role.name}
+                                                  </span>
+                                              ))
+                                          ) : (
+                                              <span className="text-muted-foreground text-xs dark:text-gray-400">{t('No role')}</span>
+                                          )}
+                                      </div>
+                                  </div>
+
+                                  {/* Joined date */}
+                                  <div className="mb-4 text-xs text-gray-500 dark:text-gray-400">
+                                      {t('Joined:')}{' '}
+                                      {window.appSettings?.formatDateTime(user.created_at, false) || new Date(user.created_at).toLocaleDateString()}
+                                  </div>
+
+                                  {/* Action buttons */}
+                                  <div className="flex gap-2">
+                                      {hasPermission(permissions, 'edit-users') && (
+                                          <Button
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={() => handleAction('edit', user)}
+                                              className="h-9 flex-1 border-gray-300 text-sm dark:border-gray-600 dark:text-gray-200"
+                                          >
+                                              <Edit className="mr-2 h-4 w-4" />
+                                              {t('Edit')}
+                                          </Button>
+                                      )}
+
+                                      {hasPermission(permissions, 'view-users') && (
+                                          <Button
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={() => handleAction('view', user)}
+                                              className="h-9 flex-1 border-gray-300 text-sm dark:border-gray-600 dark:text-gray-200"
+                                          >
+                                              <Eye className="mr-2 h-4 w-4" />
+                                              {t('View')}
+                                          </Button>
+                                      )}
+
+                                      {hasPermission(permissions, 'delete-users') && (
+                                          <Button
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={() => handleAction('delete', user)}
+                                              className="h-9 flex-1 border-gray-300 text-sm text-gray-700 dark:border-gray-600 dark:text-gray-200"
+                                          >
+                                              <Trash2 className="mr-2 h-4 w-4" />
+                                              {t('Delete')}
+                                          </Button>
+                                      )}
+                                  </div>
+                              </div>
+                          </Card>
+                      ))}
+                  </div>
+
+                  {/* Pagination for grid view */}
+                  <div className="mt-6 overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+                      <Pagination
+                          from={users?.from || 0}
+                          to={users?.to || 0}
+                          total={users?.total || 0}
+                          links={users?.links}
+                          entityName={t('users')}
+                          onPageChange={(url) => router.get(url)}
+                      />
+                  </div>
+              </div>
+          )}
+
+          {/* Form Modal */}
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      { name: 'name', label: t('Name'), type: 'text', required: true },
+                      { name: 'email', label: t('Email'), type: 'email', required: true },
+                      {
+                          name: 'password',
+                          label: t('Password'),
+                          type: 'password',
+                          required: true,
+                          conditional: (mode) => mode === 'create',
+                      },
+                      {
+                          name: 'password_confirmation',
+                          label: t('Confirm Password'),
+                          type: 'password',
+                          required: true,
+                          conditional: (mode) => mode === 'create',
+                      },
+                      {
+                          name: 'roles',
+                          label: t('Role'),
+                          type: 'select',
+                          options: roles
+                              ? roles
+                                    .filter((role: any) => role.name !== 'client')
+                                    .map((role: any) => ({
+                                        value: role.id.toString(),
+                                        label: role.label || role.name,
+                                    }))
+                              : [],
+                          required: true,
+                      },
+                  ],
+                  modalSize: 'lg',
+              }}
+              initialData={
+                  currentItem
+                      ? {
+                            ...currentItem,
+                            roles: currentItem.roles && currentItem.roles.length > 0 ? currentItem.roles[0].id.toString() : '',
+                        }
+                      : null
+              }
+              title={formMode === 'create' ? t('Add New User') : formMode === 'edit' ? t('Edit User') : t('View User')}
+              mode={formMode}
+          />
+
+          {/* Delete Modal */}
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.name || ''}
+              entityName="user"
+          />
+
+          {/* Reset Password Modal */}
+          <CrudFormModal
+              isOpen={isResetPasswordModalOpen}
+              onClose={() => setIsResetPasswordModalOpen(false)}
+              onSubmit={handleResetPasswordConfirm}
+              formConfig={{
+                  fields: [
+                      { name: 'password', label: t('New Password'), type: 'password', required: true },
+                      { name: 'password_confirmation', label: t('Confirm Password'), type: 'password', required: true },
+                  ],
+                  modalSize: 'sm',
+              }}
+              initialData={{}}
+              title={`Reset Password for ${currentItem?.name || 'User'}`}
+              mode="edit"
+          />
+      </PageTemplate>
   );
 }

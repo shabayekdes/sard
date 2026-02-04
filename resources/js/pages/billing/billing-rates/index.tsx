@@ -340,266 +340,258 @@ export default function BillingRates() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Billing Rates")}
-      url="/billing/billing-rates"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      {/* Search and filters section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'user_id',
-              label: t('User'),
-              type: 'select',
-              value: selectedUser,
-              onChange: setSelectedUser,
-              options: userOptions
-            },
-            {
-              name: 'client_id',
-              label: t('Client'),
-              type: 'select',
-              value: selectedClient,
-              onChange: setSelectedClient,
-              options: clientOptions
-            },
-            {
-              name: 'rate_type',
-              label: t('Rate Type'),
-              type: 'select',
-              value: selectedRateType,
-              onChange: setSelectedRateType,
-              options: rateTypeOptions
-            },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              value: selectedStatus,
-              onChange: setSelectedStatus,
-              options: statusOptions
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('billing.billing-rates.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              user_id: selectedUser !== 'all' ? selectedUser : undefined,
-              client_id: selectedClient !== 'all' ? selectedClient : undefined,
-              rate_type: selectedRateType !== 'all' ? selectedRateType : undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined,
-              sort_field: sortField || undefined,
-              sort_direction: sortDirection || undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Billing Rates')} url="/billing/billing-rates" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          {/* Search and filters section */}
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'user_id',
+                          label: t('User'),
+                          type: 'select',
+                          value: selectedUser,
+                          onChange: setSelectedUser,
+                          options: userOptions,
+                      },
+                      {
+                          name: 'client_id',
+                          label: t('Client'),
+                          type: 'select',
+                          value: selectedClient,
+                          onChange: setSelectedClient,
+                          options: clientOptions,
+                      },
+                      {
+                          name: 'rate_type',
+                          label: t('Rate Type'),
+                          type: 'select',
+                          value: selectedRateType,
+                          onChange: setSelectedRateType,
+                          options: rateTypeOptions,
+                      },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: statusOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      {/* Content section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={billingRates?.data || []}
-          from={billingRates?.from || 1}
-          onAction={handleAction}
-          sortField={sortField}
-          sortDirection={sortDirection}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-billing-rates',
-            create: 'create-billing-rates',
-            edit: 'edit-billing-rates',
-            delete: 'delete-billing-rates'
-          }}
-        />
+          {/* Content section */}
+          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={billingRates?.data || []}
+                  from={billingRates?.from || 1}
+                  onAction={handleAction}
+                  sortField={sortField}
+                  sortDirection={sortDirection}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-billing-rates',
+                      create: 'create-billing-rates',
+                      edit: 'edit-billing-rates',
+                      delete: 'delete-billing-rates',
+                  }}
+              />
 
-        {/* Pagination section */}
-        <Pagination
-          from={billingRates?.from || 0}
-          to={billingRates?.to || 0}
-          total={billingRates?.total || 0}
-          links={billingRates?.links}
-          entityName={t("billing rates")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              {/* Pagination section */}
+              <Pagination
+                  from={billingRates?.from || 0}
+                  to={billingRates?.to || 0}
+                  total={billingRates?.total || 0}
+                  links={billingRates?.links}
+                  entityName={t('billing rates')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('billing.billing-rates.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              user_id: selectedUser !== 'all' ? selectedUser : undefined,
+                              client_id: selectedClient !== 'all' ? selectedClient : undefined,
+                              rate_type: selectedRateType !== 'all' ? selectedRateType : undefined,
+                              status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                              sort_field: sortField || undefined,
+                              sort_direction: sortDirection || undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
+                      );
+                  }}
+              />
+          </div>
 
-      {/* Form Modal (Create/Edit) */}
-      <CrudFormModal
-        isOpen={isFormModalOpen && formMode !== 'view'}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            {
-              name: 'user_id',
-              label: t('Team Member'),
-              type: 'select',
-              required: true,
-              options: (users || []).map((user: any) => ({
-                value: user.id.toString(),
-                label: user.name
-              }))
-            },
-            {
-              name: 'client_id',
-              label: t('Client'),
-              type: 'select',
-              options: [
-                { value: null, label: t('Default Rate (All Clients)') },
-                ...(clients || []).map((client: any) => ({
-                  value: client.id,
-                  label: client.name
-                }))
-              ]
-            },
-            {
-              name: 'rate_type',
-              label: t('Rate Type'),
-              type: 'select',
-              required: true,
-              options: [
-                { value: 'hourly', label: t('Hourly') },
-                { value: 'fixed', label: t('Fixed') },
-                { value: 'contingency', label: t('Contingency') }
-              ]
-            },
-            { name: 'hourly_rate', label: t('Hourly Rate'), type: 'number', step: '0.01', min: '0' },
-            { name: 'fixed_amount', label: t('Fixed Amount'), type: 'number', step: '0.01', min: '0' },
-            { name: 'contingency_percentage', label: t('Contingency %'), type: 'number', step: '0.01', min: '0', max: '100' },
-            { name: 'effective_date', label: t('Effective Date'), type: 'date', required: true },
-            { name: 'end_date', label: t('End Date'), type: 'date' },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              options: [
-                { value: 'active', label: t('Active') },
-                { value: 'inactive', label: t('Inactive') }
-              ],
-              defaultValue: 'active'
-            },
-            { name: 'notes', label: t('Notes'), type: 'textarea' }
-          ],
-          modalSize: 'xl'
-        }}
-        initialData={currentItem}
-        title={
-          formMode === 'create'
-            ? t('Add New Billing Rate')
-            : t('Edit Billing Rate')
-        }
-        mode={formMode}
-      />
+          {/* Form Modal (Create/Edit) */}
+          <CrudFormModal
+              isOpen={isFormModalOpen && formMode !== 'view'}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'user_id',
+                          label: t('Team Member'),
+                          type: 'select',
+                          required: true,
+                          options: (users || []).map((user: any) => ({
+                              value: user.id.toString(),
+                              label: user.name,
+                          })),
+                      },
+                      {
+                          name: 'client_id',
+                          label: t('Client'),
+                          type: 'select',
+                          options: [
+                              { value: null, label: t('Default Rate (All Clients)') },
+                              ...(clients || []).map((client: any) => ({
+                                  value: client.id,
+                                  label: client.name,
+                              })),
+                          ],
+                      },
+                      {
+                          name: 'rate_type',
+                          label: t('Rate Type'),
+                          type: 'select',
+                          required: true,
+                          options: [
+                              { value: 'hourly', label: t('Hourly') },
+                              { value: 'fixed', label: t('Fixed') },
+                              { value: 'contingency', label: t('Contingency') },
+                          ],
+                      },
+                      { name: 'hourly_rate', label: t('Hourly Rate'), type: 'number', step: '0.01', min: '0' },
+                      { name: 'fixed_amount', label: t('Fixed Amount'), type: 'number', step: '0.01', min: '0' },
+                      { name: 'contingency_percentage', label: t('Contingency %'), type: 'number', step: '0.01', min: '0', max: '100' },
+                      { name: 'effective_date', label: t('Effective Date'), type: 'date', required: true },
+                      { name: 'end_date', label: t('End Date'), type: 'date' },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: 'active', label: t('Active') },
+                              { value: 'inactive', label: t('Inactive') },
+                          ],
+                          defaultValue: 'active',
+                      },
+                      { name: 'notes', label: t('Notes'), type: 'textarea' },
+                  ],
+                  modalSize: 'xl',
+              }}
+              initialData={currentItem}
+              title={formMode === 'create' ? t('Add New Billing Rate') : t('Edit Billing Rate')}
+              mode={formMode}
+          />
 
-      {/* View Modal */}
-      <CrudFormModal
-        isOpen={isFormModalOpen && formMode === 'view'}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={() => {}}
-        formConfig={{
-          fields: [
-            {
-              name: 'user',
-              label: t('User'),
-              type: 'text',
-              render: () => {
-                return <div className="rounded-md border bg-gray-50 p-2">
-                  {currentItem?.user?.name || '-'}
-                </div>;
-              }
-            },
-            {
-              name: 'client',
-              label: t('Client'),
-              type: 'text',
-              render: () => {
-                return <div className="rounded-md border bg-gray-50 p-2">
-                  {currentItem?.client?.name || t('Default Rate (All Clients)')}
-                </div>;
-              }
-            },
-            {
-              name: 'rate_type',
-              label: t('Rate Type'),
-              type: 'text',
-              render: () => {
-                const rateType = currentItem?.rate_type;
-                return <div className="rounded-md border bg-gray-50 p-2">
-                  {t(rateType?.charAt(0).toUpperCase() + rateType?.slice(1))}
-                </div>;
-              }
-            },
-            {
-              name: 'rate_display',
-              label: t('Rate'),
-              type: 'text',
-              render: () => {
-                const item = currentItem;
-                let displayRate = '-';
-                if (item) {
-                  switch (item.rate_type) {
-                    case 'hourly':
-                      displayRate = `${formatCurrency(item.hourly_rate)}/hr`;
-                      break;
-                    case 'fixed':
-                      displayRate = formatCurrency(item.fixed_amount);
-                      break;
-                    case 'contingency':
-                      displayRate = `${item.contingency_percentage}%`;
-                      break;
-                  }
-                }
-                return <div className="rounded-md border bg-gray-50 p-2">{displayRate}</div>;
-              }
-            },
-            { name: 'effective_date', label: t('Effective Date'), type: 'text' },
-            { name: 'end_date', label: t('End Date'), type: 'text' },
-            {
-              name: 'is_active',
-              label: t('Status'),
-              type: 'text',
-              render: () => {
-                const status = currentItem?.status;
-                return <div className="rounded-md border bg-gray-50 p-2">
-                  {status === 'active' ? t('Active') : t('Inactive')}
-                </div>;
-              }
-            },
-            { name: 'notes', label: t('Notes'), type: 'textarea' }
-          ],
-          modalSize: 'xl'
-        }}
-        initialData={currentItem}
-        title={t('View Billing Rate')}
-        mode="view"
-      />
+          {/* View Modal */}
+          <CrudFormModal
+              isOpen={isFormModalOpen && formMode === 'view'}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={() => {}}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'user',
+                          label: t('User'),
+                          type: 'text',
+                          render: () => {
+                              return <div className="rounded-md border bg-gray-50 p-2">{currentItem?.user?.name || '-'}</div>;
+                          },
+                      },
+                      {
+                          name: 'client',
+                          label: t('Client'),
+                          type: 'text',
+                          render: () => {
+                              return (
+                                  <div className="rounded-md border bg-gray-50 p-2">
+                                      {currentItem?.client?.name || t('Default Rate (All Clients)')}
+                                  </div>
+                              );
+                          },
+                      },
+                      {
+                          name: 'rate_type',
+                          label: t('Rate Type'),
+                          type: 'text',
+                          render: () => {
+                              const rateType = currentItem?.rate_type;
+                              return (
+                                  <div className="rounded-md border bg-gray-50 p-2">{t(rateType?.charAt(0).toUpperCase() + rateType?.slice(1))}</div>
+                              );
+                          },
+                      },
+                      {
+                          name: 'rate_display',
+                          label: t('Rate'),
+                          type: 'text',
+                          render: () => {
+                              const item = currentItem;
+                              let displayRate = '-';
+                              if (item) {
+                                  switch (item.rate_type) {
+                                      case 'hourly':
+                                          displayRate = `${formatCurrency(item.hourly_rate)}/hr`;
+                                          break;
+                                      case 'fixed':
+                                          displayRate = formatCurrency(item.fixed_amount);
+                                          break;
+                                      case 'contingency':
+                                          displayRate = `${item.contingency_percentage}%`;
+                                          break;
+                                  }
+                              }
+                              return <div className="rounded-md border bg-gray-50 p-2">{displayRate}</div>;
+                          },
+                      },
+                      { name: 'effective_date', label: t('Effective Date'), type: 'text' },
+                      { name: 'end_date', label: t('End Date'), type: 'text' },
+                      {
+                          name: 'is_active',
+                          label: t('Status'),
+                          type: 'text',
+                          render: () => {
+                              const status = currentItem?.status;
+                              return <div className="rounded-md border bg-gray-50 p-2">{status === 'active' ? t('Active') : t('Inactive')}</div>;
+                          },
+                      },
+                      { name: 'notes', label: t('Notes'), type: 'textarea' },
+                  ],
+                  modalSize: 'xl',
+              }}
+              initialData={currentItem}
+              title={t('View Billing Rate')}
+              mode="view"
+          />
 
-      {/* Delete Modal */}
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={`${currentItem?.user?.name} - ${currentItem?.client?.name || 'Default'}`}
-        entityName="billing rate"
-      />
-    </PageTemplate>
+          {/* Delete Modal */}
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={`${currentItem?.user?.name} - ${currentItem?.client?.name || 'Default'}`}
+              entityName="billing rate"
+          />
+      </PageTemplate>
   );
 }

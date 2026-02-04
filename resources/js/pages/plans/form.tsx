@@ -14,11 +14,19 @@ import { ArrowLeft } from 'lucide-react';
 interface Plan {
   id: number;
   name: string;
+  name_translations?: {
+    en?: string;
+    ar?: string;
+  };
   price: number;
   yearly_price: number | null;
   billing_cycle: 'monthly' | 'yearly' | 'both';
   duration: string;
   description: string | null;
+  description_translations?: {
+    en?: string;
+    ar?: string;
+  };
   max_users: number;
   max_cases: number;
   max_clients: number;
@@ -43,12 +51,14 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
   const isEdit = !!plan;
   
   const [formData, setFormData] = useState({
-    name: plan?.name || '',
+    name_en: plan?.name_translations?.en || plan?.name || '',
+    name_ar: plan?.name_translations?.ar || '',
     price: plan?.price || 0,
     yearly_price: plan?.yearly_price || undefined,
     billing_cycle: plan?.billing_cycle || 'both',
     duration: plan?.duration || 'monthly',
-    description: plan?.description || '',
+    description_en: plan?.description_translations?.en || plan?.description || '',
+    description_ar: plan?.description_translations?.ar || '',
     max_users: plan?.max_users || 0,
     max_cases: plan?.max_cases || 0,
     max_clients: plan?.max_clients || 0,
@@ -86,13 +96,24 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setProcessing(true);
+    const payload = {
+      ...formData,
+      name: {
+        en: formData.name_en,
+        ar: formData.name_ar,
+      },
+      description: {
+        en: formData.description_en,
+        ar: formData.description_ar,
+      },
+    };
 
     if (isEdit) {
-      router.put(route('plans.update', plan.id), formData, {
+      router.put(route('plans.update', plan.id), payload, {
         onFinish: () => setProcessing(false)
       });
     } else {
-      router.post(route('plans.store'), formData, {
+      router.post(route('plans.store'), payload, {
         onFinish: () => setProcessing(false)
       });
     }
@@ -122,11 +143,22 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <Label htmlFor="name">{t("Plan Name")}</Label>
+                <Label htmlFor="name_en">{t("Plan Name (EN)")}</Label>
                 <Input
-                  id="name"
-                  name="name"
-                  value={formData.name}
+                  id="name_en"
+                  name="name_en"
+                  value={formData.name_en}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="name_ar">{t("Plan Name (AR)")}</Label>
+                <Input
+                  id="name_ar"
+                  name="name_ar"
+                  value={formData.name_ar}
                   onChange={handleChange}
                   required
                 />
@@ -184,11 +216,22 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
               </div>
 
               <div>
-                <Label htmlFor="description">{t("Description")}</Label>
+                <Label htmlFor="description_en">{t("Description (EN)")}</Label>
                 <Textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
+                  id="description_en"
+                  name="description_en"
+                  value={formData.description_en}
+                  onChange={handleChange}
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="description_ar">{t("Description (AR)")}</Label>
+                <Textarea
+                  id="description_ar"
+                  name="description_ar"
+                  value={formData.description_ar}
                   onChange={handleChange}
                   rows={3}
                 />

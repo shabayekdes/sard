@@ -140,118 +140,116 @@ export default function PlanOrdersPage() {
   }));
 
   return (
-    <PageTemplate 
-      title={t('Plan Orders')} 
-      url="/plan-orders"
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={planOrdersConfig.filters?.map(filter => ({
-            name: filter.key,
-            label: t(filter.label),
-            type: 'select',
-            value: filterValues[filter.key] || '',
-            onChange: (value) => handleFilterChange(filter.key, value),
-            options: filter.options?.map(option => ({
-              value: option.value,
-              label: t(option.label)
-            })) || []
-          })) || []}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={() => {
-            return Object.values(filterValues).filter(v => v && v !== '').length + (searchTerm ? 1 : 0);
-          }}
-          onResetFilters={() => {
-            setSearchTerm('');
-            setFilterValues({});
-            router.get(route('plan-orders.index'), { page: 1 }, { preserveState: true, preserveScroll: true });
-          }}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            const params: any = { page: 1, per_page: parseInt(value) };
-            
-            if (searchTerm) {
-              params.search = searchTerm;
-            }
-            
-            Object.entries(filterValues).forEach(([key, val]) => {
-              if (val && val !== '') {
-                params[key] = val;
-              }
-            });
-            
-            router.get(route('plan-orders.index'), params, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Plan Orders')} url="/plan-orders" breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={
+                      planOrdersConfig.filters?.map((filter) => ({
+                          name: filter.key,
+                          label: t(filter.label),
+                          type: 'select',
+                          value: filterValues[filter.key] || '',
+                          onChange: (value) => handleFilterChange(filter.key, value),
+                          options:
+                              filter.options?.map((option) => ({
+                                  value: option.value,
+                                  label: t(option.label),
+                              })) || [],
+                      })) || []
+                  }
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={() => {
+                      return Object.values(filterValues).filter((v) => v && v !== '').length + (searchTerm ? 1 : 0);
+                  }}
+                  onResetFilters={() => {
+                      setSearchTerm('');
+                      setFilterValues({});
+                      router.get(route('plan-orders.index'), { page: 1 }, { preserveState: true, preserveScroll: true });
+                  }}
+                  onApplyFilters={applyFilters}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      const params: any = { page: 1, per_page: parseInt(value) };
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={planOrdersConfig.table.columns.map(col => ({
-            ...col,
-            label: t(col.label)
-          }))}
-          actions={filteredActions}
-          data={planOrders?.data || []}
-          from={planOrders?.from || 1}
-          onAction={handleAction}
-          permissions={permissions}
-          entityPermissions={planOrdersConfig.entity.permissions}
-        />
+                      if (searchTerm) {
+                          params.search = searchTerm;
+                      }
 
-        <Pagination
-          from={planOrders?.from || 0}
-          to={planOrders?.to || 0}
-          total={planOrders?.total || 0}
-          links={planOrders?.links}
-          entityName={t("plan orders")}
-          onPageChange={(url) => {
-            if (url) {
-              const urlObj = new URL(url, window.location.origin);
-              if (pageFilters.per_page) {
-                urlObj.searchParams.set('per_page', pageFilters.per_page.toString());
-              }
-              router.get(urlObj.toString());
-            }
-          }}
-        />
-      </div>
+                      Object.entries(filterValues).forEach(([key, val]) => {
+                          if (val && val !== '') {
+                              params[key] = val;
+                          }
+                      });
 
-      <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('Reject Plan Order')}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="rejection-reason">{t('Rejection Reason (Optional)')}</Label>
-              <Textarea
-                id="rejection-reason"
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-                placeholder={t('Enter reason for rejection...')}
-                rows={4}
+                      router.get(route('plan-orders.index'), params, { preserveState: true, preserveScroll: true });
+                  }}
               />
-            </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsRejectDialogOpen(false)}>
-              {t('Cancel')}
-            </Button>
-            <Button variant="destructive" onClick={handleRejectConfirm}>
-              {t('Reject Order')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </PageTemplate>
+
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={planOrdersConfig.table.columns.map((col) => ({
+                      ...col,
+                      label: t(col.label),
+                  }))}
+                  actions={filteredActions}
+                  data={planOrders?.data || []}
+                  from={planOrders?.from || 1}
+                  onAction={handleAction}
+                  permissions={permissions}
+                  entityPermissions={planOrdersConfig.entity.permissions}
+              />
+
+              <Pagination
+                  from={planOrders?.from || 0}
+                  to={planOrders?.to || 0}
+                  total={planOrders?.total || 0}
+                  links={planOrders?.links}
+                  entityName={t('plan orders')}
+                  onPageChange={(url) => {
+                      if (url) {
+                          const urlObj = new URL(url, window.location.origin);
+                          if (pageFilters.per_page) {
+                              urlObj.searchParams.set('per_page', pageFilters.per_page.toString());
+                          }
+                          router.get(urlObj.toString());
+                      }
+                  }}
+              />
+          </div>
+
+          <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
+              <DialogContent>
+                  <DialogHeader>
+                      <DialogTitle>{t('Reject Plan Order')}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                      <div>
+                          <Label htmlFor="rejection-reason">{t('Rejection Reason (Optional)')}</Label>
+                          <Textarea
+                              id="rejection-reason"
+                              value={rejectionReason}
+                              onChange={(e) => setRejectionReason(e.target.value)}
+                              placeholder={t('Enter reason for rejection...')}
+                              rows={4}
+                          />
+                      </div>
+                  </div>
+                  <DialogFooter>
+                      <Button variant="outline" onClick={() => setIsRejectDialogOpen(false)}>
+                          {t('Cancel')}
+                      </Button>
+                      <Button variant="destructive" onClick={handleRejectConfirm}>
+                          {t('Reject Order')}
+                      </Button>
+                  </DialogFooter>
+              </DialogContent>
+          </Dialog>
+      </PageTemplate>
   );
 }

@@ -334,241 +334,247 @@ export default function ClientDocuments() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Client Documents")}
-      url="/clients/documents"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      {/* Search and filters section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'client_id',
-              label: t('Client'),
-              type: 'select',
-              value: selectedClient,
-              onChange: setSelectedClient,
-              options: clientOptions
-            },
-            {
-              name: 'document_type_id',
-              label: t('Type'),
-              type: 'select',
-              value: selectedType,
-              onChange: setSelectedType,
-              options: typeOptions
-            },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              value: selectedStatus,
-              onChange: setSelectedStatus,
-              options: statusOptions
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('clients.documents.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              client_id: selectedClient !== 'all' ? selectedClient : undefined,
-              document_type_id: selectedType !== 'all' ? selectedType : undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Client Documents')} url="/clients/documents" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          {/* Search and filters section */}
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'client_id',
+                          label: t('Client'),
+                          type: 'select',
+                          value: selectedClient,
+                          onChange: setSelectedClient,
+                          options: clientOptions,
+                      },
+                      {
+                          name: 'document_type_id',
+                          label: t('Type'),
+                          type: 'select',
+                          value: selectedType,
+                          onChange: setSelectedType,
+                          options: typeOptions,
+                      },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: statusOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('clients.documents.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              client_id: selectedClient !== 'all' ? selectedClient : undefined,
+                              document_type_id: selectedType !== 'all' ? selectedType : undefined,
+                              status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
+                      );
+                  }}
+              />
+          </div>
 
-      {/* Content section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={documents?.data || []}
-          from={documents?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-client-documents',
-            create: 'create-client-documents',
-            edit: 'edit-client-documents',
-            delete: 'delete-client-documents'
-          }}
-        />
+          {/* Content section */}
+          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={documents?.data || []}
+                  from={documents?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-client-documents',
+                      create: 'create-client-documents',
+                      edit: 'edit-client-documents',
+                      delete: 'delete-client-documents',
+                  }}
+              />
 
-        {/* Pagination section */}
-        <Pagination
-          from={documents?.from || 0}
-          to={documents?.to || 0}
-          total={documents?.total || 0}
-          links={documents?.links}
-          entityName={t("documents")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              {/* Pagination section */}
+              <Pagination
+                  from={documents?.from || 0}
+                  to={documents?.to || 0}
+                  total={documents?.total || 0}
+                  links={documents?.links}
+                  entityName={t('documents')}
+                  onPageChange={(url) => router.get(url)}
+              />
+          </div>
 
-      {/* Form Modal */}
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            {
-              name: 'client_id',
-              label: t('Client'),
-              type: 'select',
-              required: true,
-              options: clients ? clients.map((client: any) => ({
-                value: client.id.toString(),
-                label: client.name
-              })) : []
-            },
-            { name: 'document_name', label: t('Document Name'), type: 'text', required: true },
-            {
-              name: 'document_type_id',
-              label: t('Document Type'),
-              type: 'select',
-              required: true,
-              options: documentTypes ? documentTypes.map((type: any) => {
-                // Handle translatable name
-                let displayName = type.name;
-                if (typeof type.name === 'object' && type.name !== null) {
-                  displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
-                } else if (type.name_translations && typeof type.name_translations === 'object') {
-                  displayName = type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
-                }
-                return {
-                  value: type.id.toString(),
-                  label: displayName
-                };
-              }) : []
-            },
-            {
-              name: 'file',
-              label: t('File'),
-              type: 'media-picker',
-              required: formMode === 'create'
-            },
-            { name: 'description', label: t('Description'), type: 'textarea' },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              options: [
-                { value: 'active', label: t('Active') },
-                { value: 'archived', label: t('Archived') }
-              ],
-              defaultValue: 'active'
-            }
-          ],
-          modalSize: 'xl'
-        }}
-        initialData={{
-          ...currentItem,
-          file: currentItem?.file_path
-        }}
-        title={
-          formMode === 'create'
-            ? t('Upload New Document')
-            : t('Edit Document')
-        }
-        mode={formMode}
-      />
+          {/* Form Modal */}
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'client_id',
+                          label: t('Client'),
+                          type: 'select',
+                          required: true,
+                          options: clients
+                              ? clients.map((client: any) => ({
+                                    value: client.id.toString(),
+                                    label: client.name,
+                                }))
+                              : [],
+                      },
+                      { name: 'document_name', label: t('Document Name'), type: 'text', required: true },
+                      {
+                          name: 'document_type_id',
+                          label: t('Document Type'),
+                          type: 'select',
+                          required: true,
+                          options: documentTypes
+                              ? documentTypes.map((type: any) => {
+                                    // Handle translatable name
+                                    let displayName = type.name;
+                                    if (typeof type.name === 'object' && type.name !== null) {
+                                        displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+                                    } else if (type.name_translations && typeof type.name_translations === 'object') {
+                                        displayName =
+                                            type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
+                                    }
+                                    return {
+                                        value: type.id.toString(),
+                                        label: displayName,
+                                    };
+                                })
+                              : [],
+                      },
+                      {
+                          name: 'file',
+                          label: t('File'),
+                          type: 'media-picker',
+                          required: formMode === 'create',
+                      },
+                      { name: 'description', label: t('Description'), type: 'textarea' },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: 'active', label: t('Active') },
+                              { value: 'archived', label: t('Archived') },
+                          ],
+                          defaultValue: 'active',
+                      },
+                  ],
+                  modalSize: 'xl',
+              }}
+              initialData={{
+                  ...currentItem,
+                  file: currentItem?.file_path,
+              }}
+              title={formMode === 'create' ? t('Upload New Document') : t('Edit Document')}
+              mode={formMode}
+          />
 
-      {/* View Modal */}
-      <CrudFormModal
-        isOpen={isViewModalOpen}
-        onClose={() => setIsViewModalOpen(false)}
-        onSubmit={() => { }}
-        formConfig={{
-          fields: [
-            {
-              name: 'client_id',
-              label: t('Client'),
-              type: 'select',
-              options: clients ? clients.map((client: any) => ({
-                value: client.id.toString(),
-                label: client.name
-              })) : []
-            },
-            { name: 'document_name', label: t('Document Name'), type: 'text' },
-            {
-              name: 'document_type_id',
-              label: t('Document Type'),
-              type: 'select',
-              options: documentTypes ? documentTypes.map((type: any) => {
-                // Handle translatable name
-                let displayName = type.name;
-                if (typeof type.name === 'object' && type.name !== null) {
-                  displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
-                } else if (type.name_translations && typeof type.name_translations === 'object') {
-                  displayName = type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
-                }
-                return {
-                  value: type.id.toString(),
-                  label: displayName
-                };
-              }) : []
-            },
-            { name: 'description', label: t('Description'), type: 'textarea' },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              options: [
-                { value: 'active', label: t('Active') },
-                { value: 'archived', label: t('Archived') }
-              ]
-            },
-            { name: 'created_at', label: t('Created Date'), type: 'text' }
-          ],
-          modalSize: 'xl'
-        }}
-        initialData={{
-          ...currentItem,
-          client_id: currentItem?.client?.name || '',
-          document_type_id: (() => {
-            const docType = currentItem?.document_type;
-            if (!docType) return '';
-            if (typeof docType.name === 'object' && docType.name !== null) {
-              return docType.name[currentLocale] || docType.name.en || docType.name.ar || '';
-            } else if (docType.name_translations && typeof docType.name_translations === 'object') {
-              return docType.name_translations[currentLocale] || docType.name_translations.en || docType.name_translations.ar || '';
-            }
-            return docType.name || '';
-          })(),
-          created_at: currentItem?.created_at ? (window.appSettings?.formatDate(currentItem.created_at) || new Date(currentItem.created_at).toLocaleDateString()) : ''
-        }}
-        title={t('View Document')}
-        mode="view"
-      />
+          {/* View Modal */}
+          <CrudFormModal
+              isOpen={isViewModalOpen}
+              onClose={() => setIsViewModalOpen(false)}
+              onSubmit={() => {}}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'client_id',
+                          label: t('Client'),
+                          type: 'select',
+                          options: clients
+                              ? clients.map((client: any) => ({
+                                    value: client.id.toString(),
+                                    label: client.name,
+                                }))
+                              : [],
+                      },
+                      { name: 'document_name', label: t('Document Name'), type: 'text' },
+                      {
+                          name: 'document_type_id',
+                          label: t('Document Type'),
+                          type: 'select',
+                          options: documentTypes
+                              ? documentTypes.map((type: any) => {
+                                    // Handle translatable name
+                                    let displayName = type.name;
+                                    if (typeof type.name === 'object' && type.name !== null) {
+                                        displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+                                    } else if (type.name_translations && typeof type.name_translations === 'object') {
+                                        displayName =
+                                            type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
+                                    }
+                                    return {
+                                        value: type.id.toString(),
+                                        label: displayName,
+                                    };
+                                })
+                              : [],
+                      },
+                      { name: 'description', label: t('Description'), type: 'textarea' },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: 'active', label: t('Active') },
+                              { value: 'archived', label: t('Archived') },
+                          ],
+                      },
+                      { name: 'created_at', label: t('Created Date'), type: 'text' },
+                  ],
+                  modalSize: 'xl',
+              }}
+              initialData={{
+                  ...currentItem,
+                  client_id: currentItem?.client?.name || '',
+                  document_type_id: (() => {
+                      const docType = currentItem?.document_type;
+                      if (!docType) return '';
+                      if (typeof docType.name === 'object' && docType.name !== null) {
+                          return docType.name[currentLocale] || docType.name.en || docType.name.ar || '';
+                      } else if (docType.name_translations && typeof docType.name_translations === 'object') {
+                          return docType.name_translations[currentLocale] || docType.name_translations.en || docType.name_translations.ar || '';
+                      }
+                      return docType.name || '';
+                  })(),
+                  created_at: currentItem?.created_at
+                      ? window.appSettings?.formatDate(currentItem.created_at) || new Date(currentItem.created_at).toLocaleDateString()
+                      : '',
+              }}
+              title={t('View Document')}
+              mode="view"
+          />
 
-      {/* Delete Modal */}
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.document_name || ''}
-        entityName="document"
-      />
-    </PageTemplate>
+          {/* Delete Modal */}
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.document_name || ''}
+              entityName="document"
+          />
+      </PageTemplate>
   );
 }

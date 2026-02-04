@@ -269,236 +269,239 @@ export default function KnowledgeArticles() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Knowledge Base")}
-      url="/legal-research/knowledge"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'category_id',
-              label: t('Category'),
-              type: 'select',
-              value: selectedCategory,
-              onChange: setSelectedCategory,
-              options: categoryOptions
-            },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              value: selectedStatus,
-              onChange: setSelectedStatus,
-              options: [
-                { value: 'all', label: t('All Statuses') },
-                { value: 'draft', label: t('Draft') },
-                { value: 'published', label: t('Published') },
-                { value: 'archived', label: t('Archived') }
-              ]
-            },
-            {
-              name: 'is_public',
-              label: t('Visibility'),
-              type: 'select',
-              value: selectedPublic,
-              onChange: setSelectedPublic,
-              options: [
-                { value: 'all', label: t('All') },
-                { value: '1', label: t('Public') },
-                { value: '0', label: t('Private') }
-              ]
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={() => searchTerm !== '' || selectedCategory !== 'all' || selectedStatus !== 'all' || selectedPublic !== 'all'}
-          activeFilterCount={() => (searchTerm ? 1 : 0) + (selectedCategory !== 'all' ? 1 : 0) + (selectedStatus !== 'all' ? 1 : 0) + (selectedPublic !== 'all' ? 1 : 0)}
-          onResetFilters={() => {
-            setSearchTerm('');
-            setSelectedCategory('all');
-            setSelectedStatus('all');
-            setSelectedPublic('all');
-            setShowFilters(false);
-            router.get(route('legal-research.knowledge.index'), { page: 1, per_page: pageFilters.per_page });
-          }}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('legal-research.knowledge.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              category_id: selectedCategory !== 'all' ? selectedCategory : undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined,
-              is_public: selectedPublic !== 'all' ? selectedPublic : undefined
-            });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Knowledge Base')} url="/legal-research/knowledge" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'category_id',
+                          label: t('Category'),
+                          type: 'select',
+                          value: selectedCategory,
+                          onChange: setSelectedCategory,
+                          options: categoryOptions,
+                      },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: [
+                              { value: 'all', label: t('All Statuses') },
+                              { value: 'draft', label: t('Draft') },
+                              { value: 'published', label: t('Published') },
+                              { value: 'archived', label: t('Archived') },
+                          ],
+                      },
+                      {
+                          name: 'is_public',
+                          label: t('Visibility'),
+                          type: 'select',
+                          value: selectedPublic,
+                          onChange: setSelectedPublic,
+                          options: [
+                              { value: 'all', label: t('All') },
+                              { value: '1', label: t('Public') },
+                              { value: '0', label: t('Private') },
+                          ],
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={() => searchTerm !== '' || selectedCategory !== 'all' || selectedStatus !== 'all' || selectedPublic !== 'all'}
+                  activeFilterCount={() =>
+                      (searchTerm ? 1 : 0) +
+                      (selectedCategory !== 'all' ? 1 : 0) +
+                      (selectedStatus !== 'all' ? 1 : 0) +
+                      (selectedPublic !== 'all' ? 1 : 0)
+                  }
+                  onResetFilters={() => {
+                      setSearchTerm('');
+                      setSelectedCategory('all');
+                      setSelectedStatus('all');
+                      setSelectedPublic('all');
+                      setShowFilters(false);
+                      router.get(route('legal-research.knowledge.index'), { page: 1, per_page: pageFilters.per_page });
+                  }}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={articles?.data || []}
-          from={articles?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-knowledge-articles',
-            create: 'create-knowledge-articles',
-            edit: 'edit-knowledge-articles',
-            delete: 'delete-knowledge-articles'
-          }}
-        />
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={articles?.data || []}
+                  from={articles?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-knowledge-articles',
+                      create: 'create-knowledge-articles',
+                      edit: 'edit-knowledge-articles',
+                      delete: 'delete-knowledge-articles',
+                  }}
+              />
 
-        <Pagination
-          from={articles?.from || 0}
-          to={articles?.to || 0}
-          total={articles?.total || 0}
-          links={articles?.links}
-          entityName={t("knowledge articles")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={articles?.from || 0}
+                  to={articles?.to || 0}
+                  total={articles?.total || 0}
+                  links={articles?.links}
+                  entityName={t('knowledge articles')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(route('legal-research.knowledge.index'), {
+                          page: 1,
+                          per_page: parseInt(value),
+                          search: searchTerm || undefined,
+                          category_id: selectedCategory !== 'all' ? selectedCategory : undefined,
+                          status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                          is_public: selectedPublic !== 'all' ? selectedPublic : undefined,
+                      });
+                  }}
+              />
+          </div>
 
-      {/* Form Modal (Create/Edit) */}
-      <CrudFormModal
-        isOpen={isFormModalOpen && formMode !== 'view'}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            { name: 'title', label: t('Title'), type: 'text', required: true },
-            { 
-              name: 'category_id', 
-              label: t('Category'), 
-              type: 'select',
-              options: [
-                ...(categories || []).map((cat: any) => ({ value: cat.id, label: cat.name }))
-              ]
-            },
-            { name: 'content', label: t('Content'), type: 'textarea', required: true, rows: 10 },
-            { name: 'tags', label: t('Tags'), type: 'text', placeholder: 'Enter tags separated by commas (e.g., contract, law, precedent)' },
-            {
-              name: 'is_public',
-              label: t('Make Public'),
-              type: 'checkbox',
-              defaultValue: false
-            },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              options: [
-                { value: 'draft', label: t('Draft') },
-                { value: 'published', label: t('Published') },
-                { value: 'archived', label: t('Archived') }
-              ],
-              defaultValue: 'draft'
-            }
-          ],
-          modalSize: 'xl'
-        }}
-        initialData={currentItem ? {
-          ...currentItem,
-          tags: currentItem.tags ? currentItem.tags.join(', ') : ''
-        } : null}
-        title={
-          formMode === 'create'
-            ? t('Add New Knowledge Article')
-            : t('Edit Knowledge Article')
-        }
-        mode={formMode}
-      />
-
-      {/* View Modal */}
-      <CrudFormModal
-        isOpen={isFormModalOpen && formMode === 'view'}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={() => {}}
-        formConfig={{
-          fields: [
-            { name: 'title', label: t('Title'), type: 'text' },
-            {
-              name: 'category',
-              label: t('Category'),
-              type: 'text',
-              render: () => {
-                return <div className="rounded-md border bg-gray-50 p-2">
-                  {currentItem?.category?.name || t('No Category')}
-                </div>;
+          {/* Form Modal (Create/Edit) */}
+          <CrudFormModal
+              isOpen={isFormModalOpen && formMode !== 'view'}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      { name: 'title', label: t('Title'), type: 'text', required: true },
+                      {
+                          name: 'category_id',
+                          label: t('Category'),
+                          type: 'select',
+                          options: [...(categories || []).map((cat: any) => ({ value: cat.id, label: cat.name }))],
+                      },
+                      { name: 'content', label: t('Content'), type: 'textarea', required: true, rows: 10 },
+                      {
+                          name: 'tags',
+                          label: t('Tags'),
+                          type: 'text',
+                          placeholder: 'Enter tags separated by commas (e.g., contract, law, precedent)',
+                      },
+                      {
+                          name: 'is_public',
+                          label: t('Make Public'),
+                          type: 'checkbox',
+                          defaultValue: false,
+                      },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: 'draft', label: t('Draft') },
+                              { value: 'published', label: t('Published') },
+                              { value: 'archived', label: t('Archived') },
+                          ],
+                          defaultValue: 'draft',
+                      },
+                  ],
+                  modalSize: 'xl',
+              }}
+              initialData={
+                  currentItem
+                      ? {
+                            ...currentItem,
+                            tags: currentItem.tags ? currentItem.tags.join(', ') : '',
+                        }
+                      : null
               }
-            },
-            { name: 'content', label: t('Content'), type: 'textarea', rows: 10 },
-            {
-              name: 'tags_display',
-              label: t('Tags'),
-              type: 'text',
-              render: () => {
-                const tags = currentItem?.tags || [];
-                return <div className="rounded-md border bg-gray-50 p-2">
-                  {tags.length > 0 ? (
-                    <div className="flex flex-wrap gap-1">
-                      {tags.map((tag: string, index: number) => (
-                        <span key={index} className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  ) : t('No tags')}
-                </div>;
-              }
-            },
-            {
-              name: 'is_public',
-              label: t('Visibility'),
-              type: 'text',
-              render: () => {
-                const isPublic = currentItem?.is_public;
-                return <div className="rounded-md border bg-gray-50 p-2">
-                  {isPublic ? t('Public') : t('Private')}
-                </div>;
-              }
-            },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'text',
-              render: () => {
-                const status = currentItem?.status;
-                return <div className="rounded-md border bg-gray-50 p-2">
-                  {t(status?.charAt(0).toUpperCase() + status?.slice(1))}
-                </div>;
-              }
-            },
-            { name: 'created_at', label: t('Created At'), type: 'text' },
-            { name: 'updated_at', label: t('Updated At'), type: 'text' }
-          ],
-          modalSize: 'xl'
-        }}
-        initialData={currentItem}
-        title={t('View Knowledge Article')}
-        mode="view"
-      />
+              title={formMode === 'create' ? t('Add New Knowledge Article') : t('Edit Knowledge Article')}
+              mode={formMode}
+          />
 
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.title || ''}
-        entityName="knowledge article"
-      />
-    </PageTemplate>
+          {/* View Modal */}
+          <CrudFormModal
+              isOpen={isFormModalOpen && formMode === 'view'}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={() => {}}
+              formConfig={{
+                  fields: [
+                      { name: 'title', label: t('Title'), type: 'text' },
+                      {
+                          name: 'category',
+                          label: t('Category'),
+                          type: 'text',
+                          render: () => {
+                              return <div className="rounded-md border bg-gray-50 p-2">{currentItem?.category?.name || t('No Category')}</div>;
+                          },
+                      },
+                      { name: 'content', label: t('Content'), type: 'textarea', rows: 10 },
+                      {
+                          name: 'tags_display',
+                          label: t('Tags'),
+                          type: 'text',
+                          render: () => {
+                              const tags = currentItem?.tags || [];
+                              return (
+                                  <div className="rounded-md border bg-gray-50 p-2">
+                                      {tags.length > 0 ? (
+                                          <div className="flex flex-wrap gap-1">
+                                              {tags.map((tag: string, index: number) => (
+                                                  <span
+                                                      key={index}
+                                                      className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-600/20 ring-inset"
+                                                  >
+                                                      {tag}
+                                                  </span>
+                                              ))}
+                                          </div>
+                                      ) : (
+                                          t('No tags')
+                                      )}
+                                  </div>
+                              );
+                          },
+                      },
+                      {
+                          name: 'is_public',
+                          label: t('Visibility'),
+                          type: 'text',
+                          render: () => {
+                              const isPublic = currentItem?.is_public;
+                              return <div className="rounded-md border bg-gray-50 p-2">{isPublic ? t('Public') : t('Private')}</div>;
+                          },
+                      },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'text',
+                          render: () => {
+                              const status = currentItem?.status;
+                              return <div className="rounded-md border bg-gray-50 p-2">{t(status?.charAt(0).toUpperCase() + status?.slice(1))}</div>;
+                          },
+                      },
+                      { name: 'created_at', label: t('Created At'), type: 'text' },
+                      { name: 'updated_at', label: t('Updated At'), type: 'text' },
+                  ],
+                  modalSize: 'xl',
+              }}
+              initialData={currentItem}
+              title={t('View Knowledge Article')}
+              mode="view"
+          />
+
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.title || ''}
+              entityName="knowledge article"
+          />
+      </PageTemplate>
   );
 }

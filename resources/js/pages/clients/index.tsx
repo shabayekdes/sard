@@ -459,7 +459,7 @@ export default function Clients() {
     return (
         <PageTemplate title={t('Client Management')} url="/clients" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
             {/* Search and filters section */}
-            <div className="mb-4 rounded-lg bg-white p-4 shadow dark:bg-gray-900">
+            <div className="mb-4 rounded-lg bg-white">
                 <SearchAndFilterBar
                     searchTerm={searchTerm}
                     onSearchChange={setSearchTerm}
@@ -488,25 +488,11 @@ export default function Clients() {
                     activeFilterCount={activeFilterCount}
                     onResetFilters={handleResetFilters}
                     onApplyFilters={applyFilters}
-                    currentPerPage={pageFilters.per_page?.toString() || '10'}
-                    onPerPageChange={(value) => {
-                        router.get(
-                            route('clients.index'),
-                            {
-                                page: 1,
-                                per_page: parseInt(value),
-                                search: searchTerm || undefined,
-                                client_type_id: selectedClientType !== 'all' ? selectedClientType : undefined,
-                                status: selectedStatus !== 'all' ? selectedStatus : undefined,
-                            },
-                            { preserveState: true, preserveScroll: true },
-                        );
-                    }}
                 />
             </div>
 
             {/* Content section */}
-            <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
                 <CrudTable
                     columns={columns}
                     actions={actions}
@@ -533,6 +519,20 @@ export default function Clients() {
                     links={clients?.links}
                     entityName={t('clients')}
                     onPageChange={(url) => router.get(url)}
+                    perPage={pageFilters.per_page?.toString() || '10'}
+                    onPerPageChange={(value) => {
+                        router.get(
+                            route('clients.index'),
+                            {
+                                page: 1,
+                                per_page: parseInt(value),
+                                search: searchTerm || undefined,
+                                client_type_id: selectedClientType !== 'all' ? selectedClientType : undefined,
+                                status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                            },
+                            { preserveState: true, preserveScroll: true },
+                        );
+                    }}
                 />
             </div>
 
@@ -597,19 +597,19 @@ export default function Clients() {
                             required: false,
                             options: clientTypes
                                 ? clientTypes.map((type: any) => {
-                                    // Use name_translations if available, otherwise fallback to name
-                                    const translations = type.name_translations || (typeof type.name === 'object' ? type.name : null);
-                                    let displayName = type.name;
-                                    if (translations && typeof translations === 'object') {
-                                        displayName = translations[currentLocale] || translations.en || translations.ar || type.name || '';
-                                    } else if (typeof type.name === 'object') {
-                                        displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
-                                    }
-                                    return {
-                                        value: type.id.toString(),
-                                        label: displayName,
-                                    };
-                                })
+                                      // Use name_translations if available, otherwise fallback to name
+                                      const translations = type.name_translations || (typeof type.name === 'object' ? type.name : null);
+                                      let displayName = type.name;
+                                      if (translations && typeof translations === 'object') {
+                                          displayName = translations[currentLocale] || translations.en || translations.ar || type.name || '';
+                                      } else if (typeof type.name === 'object') {
+                                          displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+                                      }
+                                      return {
+                                          value: type.id.toString(),
+                                          label: displayName,
+                                      };
+                                  })
                                 : [],
                         },
                         {

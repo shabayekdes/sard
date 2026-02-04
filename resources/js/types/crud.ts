@@ -27,8 +27,8 @@ export interface TableColumn {
 }
 
 export interface TableAction {
-    label: string;
-    icon: string;
+    label: string | ((row: any) => string);
+    icon: string | ((row: any) => string);
     action?: string;
     href?: string | ((row: any) => string);
     openInNewTab?: boolean;

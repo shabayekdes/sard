@@ -347,7 +347,7 @@ export default function CaseNotes() {
 
     return (
         <PageTemplate title={t('Case Notes')} url="/advocate/case-notes" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
-            <div className="mb-4 rounded-lg bg-white p-4 shadow dark:bg-gray-900">
+            <div className="mb-4 rounded-lg bg-white">
                 <SearchAndFilterBar
                     searchTerm={searchTerm}
                     onSearchChange={setSearchTerm}
@@ -384,25 +384,10 @@ export default function CaseNotes() {
                     activeFilterCount={activeFilterCount}
                     onResetFilters={handleResetFilters}
                     onApplyFilters={applyFilters}
-                    currentPerPage={pageFilters.per_page?.toString() || '10'}
-                    onPerPageChange={(value) => {
-                        router.get(
-                            route('advocate.case-notes.index'),
-                            {
-                                page: 1,
-                                per_page: parseInt(value),
-                                search: searchTerm || undefined,
-                                note_type: selectedNoteType !== 'all' ? selectedNoteType : undefined,
-                                priority: selectedPriority !== 'all' ? selectedPriority : undefined,
-                                status: selectedStatus !== 'all' ? selectedStatus : undefined,
-                            },
-                            { preserveState: true, preserveScroll: true },
-                        );
-                    }}
                 />
             </div>
 
-            <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
                 <CrudTable
                     columns={columns}
                     actions={actions}
@@ -428,6 +413,21 @@ export default function CaseNotes() {
                     links={caseNotes?.links}
                     entityName={t('case notes')}
                     onPageChange={(url) => router.get(url)}
+                    currentPerPage={pageFilters.per_page?.toString() || '10'}
+                    onPerPageChange={(value) => {
+                        router.get(
+                            route('advocate.case-notes.index'),
+                            {
+                                page: 1,
+                                per_page: parseInt(value),
+                                search: searchTerm || undefined,
+                                note_type: selectedNoteType !== 'all' ? selectedNoteType : undefined,
+                                priority: selectedPriority !== 'all' ? selectedPriority : undefined,
+                                status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                            },
+                            { preserveState: true, preserveScroll: true },
+                        );
+                    }}
                 />
             </div>
 

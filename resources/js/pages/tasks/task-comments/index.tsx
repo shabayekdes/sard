@@ -268,180 +268,176 @@ export default function TaskComments() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Task Comments")}
-      url="/tasks/task-comments"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'task_id',
-              label: t('Task'),
-              type: 'select',
-              value: selectedTask,
-              onChange: setSelectedTask,
-              options: taskOptions
-            },
-            {
-              name: 'is_internal',
-              label: t('Type'),
-              type: 'select',
-              value: selectedInternal,
-              onChange: setSelectedInternal,
-              options: internalOptions
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('tasks.task-comments.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              task_id: selectedTask !== 'all' ? selectedTask : undefined,
-              is_internal: selectedInternal !== 'all' ? selectedInternal : undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Task Comments')} url="/tasks/task-comments" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'task_id',
+                          label: t('Task'),
+                          type: 'select',
+                          value: selectedTask,
+                          onChange: setSelectedTask,
+                          options: taskOptions,
+                      },
+                      {
+                          name: 'is_internal',
+                          label: t('Type'),
+                          type: 'select',
+                          value: selectedInternal,
+                          onChange: setSelectedInternal,
+                          options: internalOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={comments?.data || []}
-          from={comments?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-task-comments',
-            create: 'create-task-comments',
-            edit: 'edit-task-comments',
-            delete: 'delete-task-comments'
-          }}
-        />
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={comments?.data || []}
+                  from={comments?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-task-comments',
+                      create: 'create-task-comments',
+                      edit: 'edit-task-comments',
+                      delete: 'delete-task-comments',
+                  }}
+              />
 
-        <Pagination
-          from={comments?.from || 0}
-          to={comments?.to || 0}
-          total={comments?.total || 0}
-          links={comments?.links}
-          entityName={t("comments")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={comments?.from || 0}
+                  to={comments?.to || 0}
+                  total={comments?.total || 0}
+                  links={comments?.links}
+                  entityName={t('comments')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('tasks.task-comments.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              task_id: selectedTask !== 'all' ? selectedTask : undefined,
+                              is_internal: selectedInternal !== 'all' ? selectedInternal : undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
+                      );
+                  }}
+              />
+          </div>
 
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            {
-              name: 'task_id',
-              label: t('Task'),
-              type: 'select',
-              required: true,
-              placeholder: t('Select Task'),
-              options: [
-                ...(tasks || []).map((task: any) => ({
-                  value: task.id.toString(),
-                  label: `${task.task_id} - ${task.title}`
-                }))
-              ]
-            },
-            { name: 'comment_text', label: t('Comment'), type: 'textarea', required: true },
-            {
-              name: 'is_internal',
-              label: t('Comment Type'),
-              type: 'select',
-              required: true,
-              options: [
-                { value: false, label: t('External') },
-                { value: true, label: t('Internal') }
-              ],
-              defaultValue: false
-            }
-          ],
-          modalSize: 'lg'
-        }}
-        initialData={currentItem}
-        title={
-          formMode === 'create'
-            ? t('Add New Comment')
-            : formMode === 'edit'
-              ? t('Edit Comment')
-              : t('View Comment')
-        }
-        mode={formMode}
-      />
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'task_id',
+                          label: t('Task'),
+                          type: 'select',
+                          required: true,
+                          placeholder: t('Select Task'),
+                          options: [
+                              ...(tasks || []).map((task: any) => ({
+                                  value: task.id.toString(),
+                                  label: `${task.task_id} - ${task.title}`,
+                              })),
+                          ],
+                      },
+                      { name: 'comment_text', label: t('Comment'), type: 'textarea', required: true },
+                      {
+                          name: 'is_internal',
+                          label: t('Comment Type'),
+                          type: 'select',
+                          required: true,
+                          options: [
+                              { value: false, label: t('External') },
+                              { value: true, label: t('Internal') },
+                          ],
+                          defaultValue: false,
+                      },
+                  ],
+                  modalSize: 'lg',
+              }}
+              initialData={currentItem}
+              title={formMode === 'create' ? t('Add New Comment') : formMode === 'edit' ? t('Edit Comment') : t('View Comment')}
+              mode={formMode}
+          />
 
-      <CrudFormModal
-        isOpen={isViewModalOpen}
-        onClose={() => setIsViewModalOpen(false)}
-        onSubmit={() => {}}
-        formConfig={{
-          fields: [
-            {
-              name: 'task_info',
-              label: t('Task'),
-              type: 'text',
-              readOnly: true
-            },
-            {
-              name: 'comment_text',
-              label: t('Comment'),
-              type: 'textarea',
-              readOnly: true
-            },
-            {
-              name: 'is_internal',
-              label: t('Comment Type'),
-              type: 'text',
-              readOnly: true
-            },
-            {
-              name: 'author_info',
-              label: t('Author'),
-              type: 'text',
-              readOnly: true
-            }
-          ],
-          modalSize: 'lg',
-          hideSubmitButton: true
-        }}
-        initialData={currentItem ? {
-          task_info: currentItem.task ? `${currentItem.task.task_id} - ${currentItem.task.title}` : '-',
-          comment_text: currentItem.comment_text || '-',
-          is_internal: currentItem.is_internal ? t('Internal') : t('External'),
-          author_info: currentItem.creator?.name || '-'
-        } : null}
-        title={t('View Comment Details')}
-        mode='view'
-      />
+          <CrudFormModal
+              isOpen={isViewModalOpen}
+              onClose={() => setIsViewModalOpen(false)}
+              onSubmit={() => {}}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'task_info',
+                          label: t('Task'),
+                          type: 'text',
+                          readOnly: true,
+                      },
+                      {
+                          name: 'comment_text',
+                          label: t('Comment'),
+                          type: 'textarea',
+                          readOnly: true,
+                      },
+                      {
+                          name: 'is_internal',
+                          label: t('Comment Type'),
+                          type: 'text',
+                          readOnly: true,
+                      },
+                      {
+                          name: 'author_info',
+                          label: t('Author'),
+                          type: 'text',
+                          readOnly: true,
+                      },
+                  ],
+                  modalSize: 'lg',
+                  hideSubmitButton: true,
+              }}
+              initialData={
+                  currentItem
+                      ? {
+                            task_info: currentItem.task ? `${currentItem.task.task_id} - ${currentItem.task.title}` : '-',
+                            comment_text: currentItem.comment_text || '-',
+                            is_internal: currentItem.is_internal ? t('Internal') : t('External'),
+                            author_info: currentItem.creator?.name || '-',
+                        }
+                      : null
+              }
+              title={t('View Comment Details')}
+              mode="view"
+          />
 
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.comment_text?.substring(0, 50) + '...' || ''}
-        entityName="comment"
-      />
-    </PageTemplate>
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.comment_text?.substring(0, 50) + '...' || ''}
+              entityName="comment"
+          />
+      </PageTemplate>
   );
 }

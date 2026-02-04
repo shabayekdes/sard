@@ -310,7 +310,7 @@ export default function ClientBilling() {
   return (
       <PageTemplate title={t('Client Billing')} url="/clients/billing" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
           {/* Search and filters section */}
-          <div className="mb-4 rounded-lg bg-white p-4 shadow dark:bg-gray-900">
+          <div className="mb-4 rounded-lg bg-white">
               <SearchAndFilterBar
                   searchTerm={searchTerm}
                   onSearchChange={setSearchTerm}
@@ -366,7 +366,7 @@ export default function ClientBilling() {
           </div>
 
           {/* Content section */}
-          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
               <CrudTable
                   columns={columns}
                   actions={actions}

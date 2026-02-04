@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Filter, Search, List, LayoutGrid } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -27,9 +28,6 @@ interface SearchAndFilterBarProps {
   activeFilterCount: () => number;
   onResetFilters: () => void;
   onApplyFilters?: () => void;
-  perPageOptions?: number[];
-  currentPerPage: string;
-  onPerPageChange: (value: string) => void;
   // View toggle props
   showViewToggle?: boolean;
   activeView?: 'list' | 'grid';
@@ -47,16 +45,12 @@ export function SearchAndFilterBar({
   activeFilterCount,
   onResetFilters,
   onApplyFilters,
-  perPageOptions = [10, 25, 50, 100],
-  currentPerPage,
-  onPerPageChange,
   // View toggle props
   showViewToggle = false,
   activeView = 'list',
   onViewChange,
 }: SearchAndFilterBarProps) {
   const { t } = useTranslation();
-
   return (
     <div className="w-full">
       <div className="flex flex-wrap items-center gap-2">
@@ -76,40 +70,21 @@ export function SearchAndFilterBar({
               <span className="sr-only sm:not-sr-only">{t("Search")}</span>
             </Button>
           </form>
-          
-          {filters.length > 0 && (
-            <div className="ml-2">
-              <Button
-                variant={hasActiveFilters() ? "default" : "outline"}
-                size="sm"
-                className="relative h-8 gap-1.5 px-2.5"
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                <Filter className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{showFilters ? t('Hide Filters') : t('Filters')}</span>
-                {hasActiveFilters() && (
-                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary-foreground text-[10px] text-primary">
-                    {activeFilterCount()}
-                  </span>
-                )}
-              </Button>
-            </div>
-          )}
         </div>
 
-        <div className="ml-auto flex items-center gap-2 whitespace-nowrap">
+        <div className="flex items-center gap-2 whitespace-nowrap">
           {showViewToggle && onViewChange && (
-            <div className="border rounded-md p-0.5 mr-2">
-              <Button 
-                size="sm" 
+            <div className="mr-2 rounded-md border p-0.5">
+              <Button
+                size="sm"
                 variant={activeView === 'list' ? "default" : "ghost"}
                 className="h-7 px-2"
                 onClick={() => onViewChange('list')}
               >
                 <List className="h-4 w-4" />
               </Button>
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 variant={activeView === 'grid' ? "default" : "ghost"}
                 className="h-7 px-2"
                 onClick={() => onViewChange('grid')}
@@ -118,26 +93,28 @@ export function SearchAndFilterBar({
               </Button>
             </div>
           )}
-          
-          <Label className="text-xs text-muted-foreground hidden sm:inline">{t("Per Page:")}</Label>
-          <Select
-            value={currentPerPage}
-            onValueChange={onPerPageChange}
-          >
-            <SelectTrigger className="w-16 h-8">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {perPageOptions.map(option => (
-                <SelectItem key={option} value={option.toString()}>{option}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+
+          {filters.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="relative h-9 gap-1.5 rounded-lg px-3"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <Filter className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{showFilters ? t('Hide Filters') : t('Filters')}</span>
+              {hasActiveFilters() && (
+                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary-foreground text-[10px] text-primary">
+                  {activeFilterCount()}
+                </span>
+              )}
+            </Button>
+          )}
         </div>
       </div>
 
       {showFilters && filters.length > 0 && (
-        <div className="w-full mt-3 p-4 bg-gray-50 dark:bg-gray-800 border dark:border-gray-700 rounded-md">
+        <div className="mt-3 w-full rounded-xl bg-white p-4 dark:bg-gray-900">
           <div className="flex flex-wrap gap-4 items-end">
             {filters.map((filter) => (
               <div key={filter.name} className="space-y-2">
@@ -180,7 +157,7 @@ export function SearchAndFilterBar({
                   {t("Apply Filters")}
                 </Button>
               )}
-              
+
               <Button
                 variant="outline"
                 size="sm"

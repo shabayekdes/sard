@@ -131,97 +131,92 @@ export default function NewsletterPage() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Newsletter Subscriptions")}
-      url="/newsletter"
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              key: 'status',
-              label: t('Status'),
-              type: 'select',
-              value: statusFilter,
-              onChange: setStatusFilter,
-              options: [
-                { value: 'all', label: t('All') },
-                { value: 'subscribed', label: t('Subscribed') },
-                { value: 'unsubscribed', label: t('Unsubscribed') }
-              ]
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={() => searchTerm !== '' || (statusFilter !== '' && statusFilter !== 'all')}
-          activeFilterCount={() => (searchTerm ? 1 : 0) + (statusFilter && statusFilter !== 'all' ? 1 : 0)}
-          onResetFilters={() => {
-            setSearchTerm('');
-            setStatusFilter('all');
-            router.get(route('newsletter.index'));
-          }}
-          onApplyFilters={() => {
-            router.get(route('newsletter.index'), {
-              page: 1,
-              search: searchTerm || undefined,
-              status: statusFilter || undefined,
-              per_page: pageFilters.per_page
-            });
-          }}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('newsletter.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              status: statusFilter || undefined
-            });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Newsletter Subscriptions')} url="/newsletter" breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          key: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: statusFilter,
+                          onChange: setStatusFilter,
+                          options: [
+                              { value: 'all', label: t('All') },
+                              { value: 'subscribed', label: t('Subscribed') },
+                              { value: 'unsubscribed', label: t('Unsubscribed') },
+                          ],
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={() => searchTerm !== '' || (statusFilter !== '' && statusFilter !== 'all')}
+                  activeFilterCount={() => (searchTerm ? 1 : 0) + (statusFilter && statusFilter !== 'all' ? 1 : 0)}
+                  onResetFilters={() => {
+                      setSearchTerm('');
+                      setStatusFilter('all');
+                      router.get(route('newsletter.index'));
+                  }}
+                  onApplyFilters={() => {
+                      router.get(route('newsletter.index'), {
+                          page: 1,
+                          search: searchTerm || undefined,
+                          status: statusFilter || undefined,
+                          per_page: pageFilters.per_page,
+                      });
+                  }}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={subscriptions?.data || []}
-          from={subscriptions?.from || 1}
-          onAction={handleAction}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'manage-contact-us',
-            create: false,
-            edit: false,
-            delete: 'manage-contact-us'
-          }}
-          showActions={true}
-        />
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={subscriptions?.data || []}
+                  from={subscriptions?.from || 1}
+                  onAction={handleAction}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'manage-contact-us',
+                      create: false,
+                      edit: false,
+                      delete: 'manage-contact-us',
+                  }}
+                  showActions={true}
+              />
 
-        <Pagination
-          from={subscriptions?.from || 0}
-          to={subscriptions?.to || 0}
-          total={subscriptions?.total || 0}
-          links={subscriptions?.links}
-          entityName={t("subscriptions")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={subscriptions?.from || 0}
+                  to={subscriptions?.to || 0}
+                  total={subscriptions?.total || 0}
+                  links={subscriptions?.links}
+                  entityName={t('subscriptions')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(route('newsletter.index'), {
+                          page: 1,
+                          per_page: parseInt(value),
+                          search: searchTerm || undefined,
+                          status: statusFilter || undefined,
+                      });
+                  }}
+              />
+          </div>
 
-      <ConfirmDialog
-        open={deleteDialog.open}
-        onOpenChange={(open) => setDeleteDialog({ open, item: null })}
-        title={t('Delete newsletter subscription')}
-        description={t('Are you sure you want to delete {{email}}? This action cannot be undone.', { email: deleteDialog.item?.email })}
-        onConfirm={handleDeleteConfirm}
-        confirmText={t('Delete')}
-        cancelText={t('Cancel')}
-        variant="destructive"
-      />
-    </PageTemplate>
+          <ConfirmDialog
+              open={deleteDialog.open}
+              onOpenChange={(open) => setDeleteDialog({ open, item: null })}
+              title={t('Delete newsletter subscription')}
+              description={t('Are you sure you want to delete {{email}}? This action cannot be undone.', { email: deleteDialog.item?.email })}
+              onConfirm={handleDeleteConfirm}
+              confirmText={t('Delete')}
+              cancelText={t('Cancel')}
+              variant="destructive"
+          />
+      </PageTemplate>
   );
 }

@@ -266,226 +266,227 @@ export default function Payments() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Payments")}
-      url="/billing/payments"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      {/* Search and filters section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'invoice_id',
-              label: t('Invoice'),
-              type: 'select',
-              value: selectedInvoice,
-              onChange: setSelectedInvoice,
-              options: invoiceOptions
-            },
-            {
-              name: 'payment_method',
-              label: t('Payment Method'),
-              type: 'select',
-              value: selectedPaymentMethod,
-              onChange: setSelectedPaymentMethod,
-              options: paymentMethodOptions
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={hasActiveFilters}
-          activeFilterCount={activeFilterCount}
-          onResetFilters={handleResetFilters}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('billing.payments.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              invoice_id: selectedInvoice !== 'all' ? selectedInvoice : undefined,
-              payment_method: selectedPaymentMethod !== 'all' ? selectedPaymentMethod : undefined
-            }, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Payments')} url="/billing/payments" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          {/* Search and filters section */}
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'invoice_id',
+                          label: t('Invoice'),
+                          type: 'select',
+                          value: selectedInvoice,
+                          onChange: setSelectedInvoice,
+                          options: invoiceOptions,
+                      },
+                      {
+                          name: 'payment_method',
+                          label: t('Payment Method'),
+                          type: 'select',
+                          value: selectedPaymentMethod,
+                          onChange: setSelectedPaymentMethod,
+                          options: paymentMethodOptions,
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onResetFilters={handleResetFilters}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      {/* Content section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={payments?.data || []}
-          from={payments?.from || 1}
-          onAction={handleAction}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-payments',
-            create: 'create-payments',
-            edit: 'edit-payments',
-            delete: 'delete-payments'
-          }}
-        />
+          {/* Content section */}
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={payments?.data || []}
+                  from={payments?.from || 1}
+                  onAction={handleAction}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-payments',
+                      create: 'create-payments',
+                      edit: 'edit-payments',
+                      delete: 'delete-payments',
+                  }}
+              />
 
-        {/* Pagination section */}
-        <Pagination
-          from={payments?.from || 0}
-          to={payments?.to || 0}
-          total={payments?.total || 0}
-          links={payments?.links}
-          entityName={t("payments")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
-
-      {/* Form Modal */}
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            {
-              name: 'invoice_id',
-              label: t('Invoice'),
-              type: 'select',
-              required: true,
-              disabled: isAutoOpen,
-              options: (invoices || []).map((invoice: any) => ({
-                value: invoice.id.toString(),
-                label: `${invoice.invoice_number} - ${invoice.client?.name}`
-              }))
-            },
-            {
-              name: 'payment_method',
-              label: t('Payment Method'),
-              type: 'select',
-              required: true,
-              options: [
-                { value: 'cash', label: t('Cash') },
-                { value: 'check', label: t('Check') },
-                { value: 'credit_card', label: t('Credit Card') },
-                { value: 'bank_transfer', label: t('Bank Transfer') },
-                { value: 'online', label: t('Online Payment') }
-              ]
-            },
-            { name: 'amount', label: t('Amount'), type: 'number', step: '0.01', required: true, min: '0', disabled: isAutoOpen },
-            { name: 'payment_date', label: t('Payment Date'), type: 'date', required: true, disabled: isAutoOpen },
-            { name: 'notes', label: t('Notes'), type: 'textarea' },
-            {
-              name: 'attachment',
-              label: t('Attachment'),
-              type: formMode === 'view' ? 'custom' : 'media-picker',
-              multiple: true,
-              placeholder: t('Select files...'),
-              render: formMode === 'view' ? (field, formData) => {
-                const files = formData[field.name];
-                if (!files) {
-                  return <div className="rounded-md border bg-gray-50 p-2">-</div>;
-                }
-
-                // Handle both comma-separated string and array
-                const fileList = typeof files === 'string'
-                  ? files.split(',').filter(Boolean).map(f => f.trim())
-                  : Array.isArray(files)
-                    ? files.filter(Boolean)
-                    : [];
-
-                if (fileList.length === 0) {
-                  return <div className="rounded-md border bg-gray-50 p-2">-</div>;
-                }
-
-                // Get display URL helper
-                const getDisplayUrl = (url: string) => {
-                  if (!url) return '';
-                  if (url.startsWith('http')) return url;
-                  if (url.startsWith('/')) {
-                    return `${window.appSettings?.imageUrl || window.location.origin}${url}`;
-                  }
-                  return `${window.appSettings?.imageUrl || window.location.origin}/${url}`;
-                };
-
-                // Get file extension
-                const getFileExtension = (path: string) => {
-                  const filename = path.split('/').pop() || path;
-                  return filename.split('.').pop()?.toLowerCase() || '';
-                };
-
-                // Check file type
-                const isImage = (path: string) => {
-                  const ext = getFileExtension(path);
-                  return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext);
-                };
-
-                return (
-                  <div className="space-y-2">
-                    {fileList.map((file, index) => {
-                      const displayUrl = getDisplayUrl(file);
-                      const isImg = isImage(file);
-                      const fileName = file.split('/').pop() || file;
-
-                      return (
-                        <div key={index} className="flex items-center gap-2 p-2 border rounded-md bg-gray-50">
-                          {isImg ? (
-                            <img
-                              src={displayUrl}
-                              alt={fileName}
-                              className="w-16 h-16 object-cover rounded"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = 'none';
-                              }}
-                            />
-                          ) : (
-                            <div className="w-16 h-16 flex items-center justify-center bg-gray-200 rounded">
-                              <span className="text-xs text-gray-500">{getFileExtension(file).toUpperCase()}</span>
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">{fileName}</p>
-                            <a
-                              href={displayUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-blue-600 hover:text-blue-800"
-                            >
-                              {t('View')}
-                            </a>
-                          </div>
-                        </div>
+              {/* Pagination section */}
+              <Pagination
+                  from={payments?.from || 0}
+                  to={payments?.to || 0}
+                  total={payments?.total || 0}
+                  links={payments?.links}
+                  entityName={t('payments')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(
+                          route('billing.payments.index'),
+                          {
+                              page: 1,
+                              per_page: parseInt(value),
+                              search: searchTerm || undefined,
+                              invoice_id: selectedInvoice !== 'all' ? selectedInvoice : undefined,
+                              payment_method: selectedPaymentMethod !== 'all' ? selectedPaymentMethod : undefined,
+                          },
+                          { preserveState: true, preserveScroll: true },
                       );
-                    })}
-                  </div>
-                );
-              } : undefined
-            }
-          ],
-          modalSize: 'lg'
-        }}
-        initialData={currentItem}
-        title={
-          formMode === 'create'
-            ? t('Record New Payment')
-            : formMode === 'edit'
-              ? t('Edit Payment')
-              : t('View Payment')
-        }
-        mode={formMode}
-      />
+                  }}
+              />
+          </div>
 
-      {/* Delete Modal */}
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={`${currentItem?.invoice?.invoice_number} - $${currentItem?.amount ? parseFloat(currentItem.amount).toFixed(2) : '0.00'}`}
-        entityName="payment"
-      />
-    </PageTemplate>
+          {/* Form Modal */}
+          <CrudFormModal
+              isOpen={isFormModalOpen}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      {
+                          name: 'invoice_id',
+                          label: t('Invoice'),
+                          type: 'select',
+                          required: true,
+                          disabled: isAutoOpen,
+                          options: (invoices || []).map((invoice: any) => ({
+                              value: invoice.id.toString(),
+                              label: `${invoice.invoice_number} - ${invoice.client?.name}`,
+                          })),
+                      },
+                      {
+                          name: 'payment_method',
+                          label: t('Payment Method'),
+                          type: 'select',
+                          required: true,
+                          options: [
+                              { value: 'cash', label: t('Cash') },
+                              { value: 'check', label: t('Check') },
+                              { value: 'credit_card', label: t('Credit Card') },
+                              { value: 'bank_transfer', label: t('Bank Transfer') },
+                              { value: 'online', label: t('Online Payment') },
+                          ],
+                      },
+                      { name: 'amount', label: t('Amount'), type: 'number', step: '0.01', required: true, min: '0', disabled: isAutoOpen },
+                      { name: 'payment_date', label: t('Payment Date'), type: 'date', required: true, disabled: isAutoOpen },
+                      { name: 'notes', label: t('Notes'), type: 'textarea' },
+                      {
+                          name: 'attachment',
+                          label: t('Attachment'),
+                          type: formMode === 'view' ? 'custom' : 'media-picker',
+                          multiple: true,
+                          placeholder: t('Select files...'),
+                          render:
+                              formMode === 'view'
+                                  ? (field, formData) => {
+                                        const files = formData[field.name];
+                                        if (!files) {
+                                            return <div className="rounded-md border bg-gray-50 p-2">-</div>;
+                                        }
+
+                                        // Handle both comma-separated string and array
+                                        const fileList =
+                                            typeof files === 'string'
+                                                ? files
+                                                      .split(',')
+                                                      .filter(Boolean)
+                                                      .map((f) => f.trim())
+                                                : Array.isArray(files)
+                                                  ? files.filter(Boolean)
+                                                  : [];
+
+                                        if (fileList.length === 0) {
+                                            return <div className="rounded-md border bg-gray-50 p-2">-</div>;
+                                        }
+
+                                        // Get display URL helper
+                                        const getDisplayUrl = (url: string) => {
+                                            if (!url) return '';
+                                            if (url.startsWith('http')) return url;
+                                            if (url.startsWith('/')) {
+                                                return `${window.appSettings?.imageUrl || window.location.origin}${url}`;
+                                            }
+                                            return `${window.appSettings?.imageUrl || window.location.origin}/${url}`;
+                                        };
+
+                                        // Get file extension
+                                        const getFileExtension = (path: string) => {
+                                            const filename = path.split('/').pop() || path;
+                                            return filename.split('.').pop()?.toLowerCase() || '';
+                                        };
+
+                                        // Check file type
+                                        const isImage = (path: string) => {
+                                            const ext = getFileExtension(path);
+                                            return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext);
+                                        };
+
+                                        return (
+                                            <div className="space-y-2">
+                                                {fileList.map((file, index) => {
+                                                    const displayUrl = getDisplayUrl(file);
+                                                    const isImg = isImage(file);
+                                                    const fileName = file.split('/').pop() || file;
+
+                                                    return (
+                                                        <div key={index} className="flex items-center gap-2 rounded-md border bg-gray-50 p-2">
+                                                            {isImg ? (
+                                                                <img
+                                                                    src={displayUrl}
+                                                                    alt={fileName}
+                                                                    className="h-16 w-16 rounded object-cover"
+                                                                    onError={(e) => {
+                                                                        (e.target as HTMLImageElement).style.display = 'none';
+                                                                    }}
+                                                                />
+                                                            ) : (
+                                                                <div className="flex h-16 w-16 items-center justify-center rounded bg-gray-200">
+                                                                    <span className="text-xs text-gray-500">
+                                                                        {getFileExtension(file).toUpperCase()}
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                            <div className="min-w-0 flex-1">
+                                                                <p className="truncate text-sm font-medium text-gray-900">{fileName}</p>
+                                                                <a
+                                                                    href={displayUrl}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-xs text-blue-600 hover:text-blue-800"
+                                                                >
+                                                                    {t('View')}
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        );
+                                    }
+                                  : undefined,
+                      },
+                  ],
+                  modalSize: 'lg',
+              }}
+              initialData={currentItem}
+              title={formMode === 'create' ? t('Record New Payment') : formMode === 'edit' ? t('Edit Payment') : t('View Payment')}
+              mode={formMode}
+          />
+
+          {/* Delete Modal */}
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={`${currentItem?.invoice?.invoice_number} - $${currentItem?.amount ? parseFloat(currentItem.amount).toFixed(2) : '0.00'}`}
+              entityName="payment"
+          />
+      </PageTemplate>
   );
 }

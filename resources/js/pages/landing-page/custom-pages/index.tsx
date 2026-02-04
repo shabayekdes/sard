@@ -184,211 +184,193 @@ export default function CustomPagesIndex() {
   ];
 
   return (
-    <PageTemplate 
-      title="Custom Pages" 
-      url="/landing-page/custom-pages"
-      actions={[
-        {
-          label: 'Add Page',
-          icon: <Plus className="w-4 h-4 mr-2" />,
-          variant: 'default',
-          onClick: () => setIsCreateOpen(true)
-        }
-      ]}
-      noPadding
-    >
-      {/* Search section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[]}
-          showFilters={false}
-          setShowFilters={() => {}}
-          hasActiveFilters={() => false}
-          activeFilterCount={() => 0}
-          onResetFilters={() => {}}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            const params: any = { page: 1, per_page: parseInt(value) };
-            if (searchTerm) {
-              params.search = searchTerm;
-            }
-            router.get(route('landing-page.custom-pages.index'), params, { preserveState: true, preserveScroll: true });
-          }}
-        />
-      </div>
-
-      {/* Table section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={pages?.data || pages || []}
-          from={pages?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-        />
-
-        {/* Pagination section */}
-        {pages?.links && (
-          <Pagination
-            from={pages?.from || 0}
-            to={pages?.to || 0}
-            total={pages?.total || 0}
-            links={pages?.links}
-            entityName="pages"
-            onPageChange={(url) => router.get(url)}
-          />
-        )}
-      </div>
-
-      {/* Edit Dialog */}
-      <Dialog open={!!editingPage} onOpenChange={() => setEditingPage(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Edit Page</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="max-h-[80vh] overflow-y-auto space-y-4">
-            <div>
-              <Label htmlFor="edit_title">Page Title</Label>
-              <Input
-                id="edit_title"
-                value={data.title}
-                onChange={(e) => setData('title', e.target.value)}
-                placeholder="About Us"
+      <PageTemplate
+          title="Custom Pages"
+          url="/landing-page/custom-pages"
+          actions={[
+              {
+                  label: 'Add Page',
+                  icon: <Plus className="mr-2 h-4 w-4" />,
+                  variant: 'default',
+                  onClick: () => setIsCreateOpen(true),
+              },
+          ]}
+          noPadding
+      >
+          {/* Search section */}
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[]}
+                  showFilters={false}
+                  setShowFilters={() => {}}
+                  hasActiveFilters={() => false}
+                  activeFilterCount={() => 0}
+                  onResetFilters={() => {}}
               />
-              {errors.title && <p className="text-red-600 text-sm">{errors.title}</p>}
-            </div>
+          </div>
 
-            <div>
-              <Label htmlFor="edit_content">Content</Label>
-              <RichTextEditor
-                content={data.content}
-                onChange={(content) => setData('content', content)}
-                placeholder="Page content..."
-                className="min-h-[200px]"
+          {/* Table section */}
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={pages?.data || pages || []}
+                  from={pages?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
               />
-              {errors.content && <p className="text-red-600 text-sm">{errors.content}</p>}
-            </div>
 
-            <div>
-              <Label htmlFor="edit_meta_title">Meta Title (SEO)</Label>
-              <Input
-                id="edit_meta_title"
-                value={data.meta_title}
-                onChange={(e) => setData('meta_title', e.target.value)}
-                placeholder="SEO title"
-              />
-            </div>
+              {/* Pagination section */}
+              {pages?.links && (
+                  <Pagination
+                      from={pages?.from || 0}
+                      to={pages?.to || 0}
+                      total={pages?.total || 0}
+                      links={pages?.links}
+                      entityName="pages"
+                      onPageChange={(url) => router.get(url)}
+                      currentPerPage={pageFilters.per_page?.toString() || '10'}
+                      onPerPageChange={(value) => {
+                          const params: any = { page: 1, per_page: parseInt(value) };
+                          if (searchTerm) {
+                              params.search = searchTerm;
+                          }
+                          router.get(route('landing-page.custom-pages.index'), params, { preserveState: true, preserveScroll: true });
+                      }}
+                  />
+              )}
+          </div>
 
-            <div>
-              <Label htmlFor="edit_meta_description">Meta Description (SEO)</Label>
-              <Textarea
-                id="edit_meta_description"
-                value={data.meta_description}
-                onChange={(e) => setData('meta_description', e.target.value)}
-                placeholder="SEO description"
-                rows={3}
-              />
-            </div>
+          {/* Edit Dialog */}
+          <Dialog open={!!editingPage} onOpenChange={() => setEditingPage(null)}>
+              <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                      <DialogTitle>Edit Page</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleSubmit} className="max-h-[80vh] space-y-4 overflow-y-auto">
+                      <div>
+                          <Label htmlFor="edit_title">Page Title</Label>
+                          <Input id="edit_title" value={data.title} onChange={(e) => setData('title', e.target.value)} placeholder="About Us" />
+                          {errors.title && <p className="text-sm text-red-600">{errors.title}</p>}
+                      </div>
 
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="edit_is_active"
-                checked={data.is_active}
-                onCheckedChange={(checked) => setData('is_active', checked)}
-              />
-              <Label htmlFor="edit_is_active">Active</Label>
-            </div>
+                      <div>
+                          <Label htmlFor="edit_content">Content</Label>
+                          <RichTextEditor
+                              content={data.content}
+                              onChange={(content) => setData('content', content)}
+                              placeholder="Page content..."
+                              className="min-h-[200px]"
+                          />
+                          {errors.content && <p className="text-sm text-red-600">{errors.content}</p>}
+                      </div>
 
-            <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={resetForm}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={processing}>
-                {processing ? 'Updating...' : 'Update Page'}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+                      <div>
+                          <Label htmlFor="edit_meta_title">Meta Title (SEO)</Label>
+                          <Input
+                              id="edit_meta_title"
+                              value={data.meta_title}
+                              onChange={(e) => setData('meta_title', e.target.value)}
+                              placeholder="SEO title"
+                          />
+                      </div>
 
-      {/* Create Dialog */}
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Create Custom Page</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="title">Page Title</Label>
-              <Input
-                id="title"
-                value={data.title}
-                onChange={(e) => setData('title', e.target.value)}
-                placeholder="About Us"
-              />
-              {errors.title && <p className="text-red-600 text-sm">{errors.title}</p>}
-            </div>
+                      <div>
+                          <Label htmlFor="edit_meta_description">Meta Description (SEO)</Label>
+                          <Textarea
+                              id="edit_meta_description"
+                              value={data.meta_description}
+                              onChange={(e) => setData('meta_description', e.target.value)}
+                              placeholder="SEO description"
+                              rows={3}
+                          />
+                      </div>
 
-            <div>
-              <Label htmlFor="content">Content</Label>
-              <RichTextEditor
-                content={data.content}
-                onChange={(content) => setData('content', content)}
-                placeholder="Page content..."
-                className="min-h-[200px]"
-              />
-              {errors.content && <p className="text-red-600 text-sm">{errors.content}</p>}
-            </div>
+                      <div className="flex items-center space-x-2">
+                          <Switch id="edit_is_active" checked={data.is_active} onCheckedChange={(checked) => setData('is_active', checked)} />
+                          <Label htmlFor="edit_is_active">Active</Label>
+                      </div>
 
-            <div>
-              <Label htmlFor="meta_title">Meta Title (SEO)</Label>
-              <Input
-                id="meta_title"
-                value={data.meta_title}
-                onChange={(e) => setData('meta_title', e.target.value)}
-                placeholder="SEO title"
-              />
-            </div>
+                      <div className="flex justify-end space-x-2">
+                          <Button type="button" variant="outline" onClick={resetForm}>
+                              Cancel
+                          </Button>
+                          <Button type="submit" disabled={processing}>
+                              {processing ? 'Updating...' : 'Update Page'}
+                          </Button>
+                      </div>
+                  </form>
+              </DialogContent>
+          </Dialog>
 
-            <div>
-              <Label htmlFor="meta_description">Meta Description (SEO)</Label>
-              <Textarea
-                id="meta_description"
-                value={data.meta_description}
-                onChange={(e) => setData('meta_description', e.target.value)}
-                placeholder="SEO description"
-                rows={3}
-              />
-            </div>
+          {/* Create Dialog */}
+          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+              <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+                  <DialogHeader>
+                      <DialogTitle>Create Custom Page</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                      <div>
+                          <Label htmlFor="title">Page Title</Label>
+                          <Input id="title" value={data.title} onChange={(e) => setData('title', e.target.value)} placeholder="About Us" />
+                          {errors.title && <p className="text-sm text-red-600">{errors.title}</p>}
+                      </div>
 
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="is_active"
-                checked={data.is_active}
-                onCheckedChange={(checked) => setData('is_active', checked)}
-              />
-              <Label htmlFor="is_active">Active</Label>
-            </div>
+                      <div>
+                          <Label htmlFor="content">Content</Label>
+                          <RichTextEditor
+                              content={data.content}
+                              onChange={(content) => setData('content', content)}
+                              placeholder="Page content..."
+                              className="min-h-[200px]"
+                          />
+                          {errors.content && <p className="text-sm text-red-600">{errors.content}</p>}
+                      </div>
 
-            <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={resetForm}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={processing}>
-                {processing ? 'Creating...' : 'Create Page'}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+                      <div>
+                          <Label htmlFor="meta_title">Meta Title (SEO)</Label>
+                          <Input
+                              id="meta_title"
+                              value={data.meta_title}
+                              onChange={(e) => setData('meta_title', e.target.value)}
+                              placeholder="SEO title"
+                          />
+                      </div>
 
-      <Toaster />
-    </PageTemplate>
+                      <div>
+                          <Label htmlFor="meta_description">Meta Description (SEO)</Label>
+                          <Textarea
+                              id="meta_description"
+                              value={data.meta_description}
+                              onChange={(e) => setData('meta_description', e.target.value)}
+                              placeholder="SEO description"
+                              rows={3}
+                          />
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                          <Switch id="is_active" checked={data.is_active} onCheckedChange={(checked) => setData('is_active', checked)} />
+                          <Label htmlFor="is_active">Active</Label>
+                      </div>
+
+                      <div className="flex justify-end space-x-2">
+                          <Button type="button" variant="outline" onClick={resetForm}>
+                              Cancel
+                          </Button>
+                          <Button type="submit" disabled={processing}>
+                              {processing ? 'Creating...' : 'Create Page'}
+                          </Button>
+                      </div>
+                  </form>
+              </DialogContent>
+          </Dialog>
+
+          <Toaster />
+      </PageTemplate>
   );
 }

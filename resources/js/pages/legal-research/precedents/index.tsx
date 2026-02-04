@@ -285,257 +285,261 @@ export default function LegalPrecedents() {
   ];
 
   return (
-    <PageTemplate
-      title={t("Legal Precedents")}
-      url="/legal-research/precedents"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-      noPadding
-    >
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
-        <SearchAndFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={handleSearch}
-          filters={[
-            {
-              name: 'category_id',
-              label: t('Category'),
-              type: 'select',
-              value: selectedCategory,
-              onChange: setSelectedCategory,
-              options: categoryOptions
-            },
-            {
-              name: 'jurisdiction',
-              label: t('Jurisdiction'),
-              type: 'select',
-              value: selectedJurisdiction,
-              onChange: setSelectedJurisdiction,
-              options: jurisdictionOptions
-            },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              value: selectedStatus,
-              onChange: setSelectedStatus,
-              options: [
-                { value: 'all', label: t('All Statuses') },
-                { value: 'active', label: t('Active') },
-                { value: 'overruled', label: t('Overruled') },
-                { value: 'questioned', label: t('Questioned') },
-                { value: 'archived', label: t('Archived') }
-              ]
-            },
-            {
-              name: 'relevance_score',
-              label: t('Min Relevance'),
-              type: 'select',
-              value: selectedRelevance,
-              onChange: setSelectedRelevance,
-              options: [
-                { value: 'all', label: t('All Scores') },
-                { value: '8', label: t('8+ Stars') },
-                { value: '6', label: t('6+ Stars') },
-                { value: '4', label: t('4+ Stars') }
-              ]
-            }
-          ]}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          hasActiveFilters={() => searchTerm !== '' || selectedCategory !== 'all' || selectedJurisdiction !== 'all' || selectedStatus !== 'all' || selectedRelevance !== 'all'}
-          activeFilterCount={() => (searchTerm ? 1 : 0) + (selectedCategory !== 'all' ? 1 : 0) + (selectedJurisdiction !== 'all' ? 1 : 0) + (selectedStatus !== 'all' ? 1 : 0) + (selectedRelevance !== 'all' ? 1 : 0)}
-          onResetFilters={() => {
-            setSearchTerm('');
-            setSelectedCategory('all');
-            setSelectedJurisdiction('all');
-            setSelectedStatus('all');
-            setSelectedRelevance('all');
-            setShowFilters(false);
-            router.get(route('legal-research.precedents.index'), { page: 1, per_page: pageFilters.per_page });
-          }}
-          onApplyFilters={applyFilters}
-          currentPerPage={pageFilters.per_page?.toString() || "10"}
-          onPerPageChange={(value) => {
-            router.get(route('legal-research.precedents.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              category_id: selectedCategory !== 'all' ? selectedCategory : undefined,
-              jurisdiction: selectedJurisdiction !== 'all' ? selectedJurisdiction : undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined,
-              relevance_score: selectedRelevance !== 'all' ? selectedRelevance : undefined
-            });
-          }}
-        />
-      </div>
+      <PageTemplate title={t('Legal Precedents')} url="/legal-research/precedents" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <div className="mb-4 rounded-lg bg-white">
+              <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                      {
+                          name: 'category_id',
+                          label: t('Category'),
+                          type: 'select',
+                          value: selectedCategory,
+                          onChange: setSelectedCategory,
+                          options: categoryOptions,
+                      },
+                      {
+                          name: 'jurisdiction',
+                          label: t('Jurisdiction'),
+                          type: 'select',
+                          value: selectedJurisdiction,
+                          onChange: setSelectedJurisdiction,
+                          options: jurisdictionOptions,
+                      },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          value: selectedStatus,
+                          onChange: setSelectedStatus,
+                          options: [
+                              { value: 'all', label: t('All Statuses') },
+                              { value: 'active', label: t('Active') },
+                              { value: 'overruled', label: t('Overruled') },
+                              { value: 'questioned', label: t('Questioned') },
+                              { value: 'archived', label: t('Archived') },
+                          ],
+                      },
+                      {
+                          name: 'relevance_score',
+                          label: t('Min Relevance'),
+                          type: 'select',
+                          value: selectedRelevance,
+                          onChange: setSelectedRelevance,
+                          options: [
+                              { value: 'all', label: t('All Scores') },
+                              { value: '8', label: t('8+ Stars') },
+                              { value: '6', label: t('6+ Stars') },
+                              { value: '4', label: t('4+ Stars') },
+                          ],
+                      },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={() =>
+                      searchTerm !== '' ||
+                      selectedCategory !== 'all' ||
+                      selectedJurisdiction !== 'all' ||
+                      selectedStatus !== 'all' ||
+                      selectedRelevance !== 'all'
+                  }
+                  activeFilterCount={() =>
+                      (searchTerm ? 1 : 0) +
+                      (selectedCategory !== 'all' ? 1 : 0) +
+                      (selectedJurisdiction !== 'all' ? 1 : 0) +
+                      (selectedStatus !== 'all' ? 1 : 0) +
+                      (selectedRelevance !== 'all' ? 1 : 0)
+                  }
+                  onResetFilters={() => {
+                      setSearchTerm('');
+                      setSelectedCategory('all');
+                      setSelectedJurisdiction('all');
+                      setSelectedStatus('all');
+                      setSelectedRelevance('all');
+                      setShowFilters(false);
+                      router.get(route('legal-research.precedents.index'), { page: 1, per_page: pageFilters.per_page });
+                  }}
+                  onApplyFilters={applyFilters}
+              />
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={columns}
-          actions={actions}
-          data={precedents?.data || []}
-          from={precedents?.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          permissions={permissions}
-          entityPermissions={{
-            view: 'view-legal-precedents',
-            create: 'create-legal-precedents',
-            edit: 'edit-legal-precedents',
-            delete: 'delete-legal-precedents'
-          }}
-        />
+          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+              <CrudTable
+                  columns={columns}
+                  actions={actions}
+                  data={precedents?.data || []}
+                  from={precedents?.from || 1}
+                  onAction={handleAction}
+                  sortField={pageFilters.sort_field}
+                  sortDirection={pageFilters.sort_direction}
+                  onSort={handleSort}
+                  permissions={permissions}
+                  entityPermissions={{
+                      view: 'view-legal-precedents',
+                      create: 'create-legal-precedents',
+                      edit: 'edit-legal-precedents',
+                      delete: 'delete-legal-precedents',
+                  }}
+              />
 
-        <Pagination
-          from={precedents?.from || 0}
-          to={precedents?.to || 0}
-          total={precedents?.total || 0}
-          links={precedents?.links}
-          entityName={t("legal precedents")}
-          onPageChange={(url) => router.get(url)}
-        />
-      </div>
+              <Pagination
+                  from={precedents?.from || 0}
+                  to={precedents?.to || 0}
+                  total={precedents?.total || 0}
+                  links={precedents?.links}
+                  entityName={t('legal precedents')}
+                  onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                      router.get(route('legal-research.precedents.index'), {
+                          page: 1,
+                          per_page: parseInt(value),
+                          search: searchTerm || undefined,
+                          category_id: selectedCategory !== 'all' ? selectedCategory : undefined,
+                          jurisdiction: selectedJurisdiction !== 'all' ? selectedJurisdiction : undefined,
+                          status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                          relevance_score: selectedRelevance !== 'all' ? selectedRelevance : undefined,
+                      });
+                  }}
+              />
+          </div>
 
-      {/* Form Modal (Create/Edit) */}
-      <CrudFormModal
-        isOpen={isFormModalOpen && formMode !== 'view'}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            { name: 'case_name', label: t('Case Name'), type: 'text', required: true },
-            { name: 'citation', label: t('Citation'), type: 'text', required: true },
-            { name: 'jurisdiction', label: t('Jurisdiction'), type: 'text', required: true },
-            { 
-              name: 'category_id', 
-              label: t('Category'), 
-              type: 'select',
-              options: [
-                ...(categories || []).map((cat: any) => ({ value: cat.id, label: cat.name }))
-              ]
-            },
-            { name: 'summary', label: t('Summary'), type: 'textarea', required: true, rows: 4 },
-            { 
-              name: 'relevance_score', 
-              label: t('Relevance Score (1-10)'), 
-              type: 'number', 
-              required: true,
-              min: 1,
-              max: 10,
-              defaultValue: 5
-            },
-            { name: 'decision_date', label: t('Decision Date'), type: 'date' },
-            { name: 'court_level', label: t('Court Level'), type: 'text' },
-            { name: 'key_points', label: t('Key Points'), type: 'text', placeholder: 'Enter key points separated by commas' },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              options: [
-                { value: 'active', label: t('Active') },
-                { value: 'overruled', label: t('Overruled') },
-                { value: 'questioned', label: t('Questioned') },
-                { value: 'archived', label: t('Archived') }
-              ],
-              defaultValue: 'active'
-            }
-          ],
-          modalSize: 'xl'
-        }}
-        initialData={currentItem ? {
-          ...currentItem,
-          key_points: currentItem.key_points ? currentItem.key_points.join(', ') : ''
-        } : null}
-        title={
-          formMode === 'create'
-            ? t('Add New Legal Precedent')
-            : t('Edit Legal Precedent')
-        }
-        mode={formMode}
-      />
-
-      {/* View Modal */}
-      <CrudFormModal
-        isOpen={isFormModalOpen && formMode === 'view'}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={() => {}}
-        formConfig={{
-          fields: [
-            { name: 'case_name', label: t('Case Name'), type: 'text' },
-            { name: 'citation', label: t('Citation'), type: 'text' },
-            { name: 'jurisdiction', label: t('Jurisdiction'), type: 'text' },
-            {
-              name: 'category',
-              label: t('Category'),
-              type: 'text',
-              render: () => {
-                return <div className="rounded-md border bg-gray-50 p-2">
-                  {currentItem?.category?.name || t('No Category')}
-                </div>;
+          {/* Form Modal (Create/Edit) */}
+          <CrudFormModal
+              isOpen={isFormModalOpen && formMode !== 'view'}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={handleFormSubmit}
+              formConfig={{
+                  fields: [
+                      { name: 'case_name', label: t('Case Name'), type: 'text', required: true },
+                      { name: 'citation', label: t('Citation'), type: 'text', required: true },
+                      { name: 'jurisdiction', label: t('Jurisdiction'), type: 'text', required: true },
+                      {
+                          name: 'category_id',
+                          label: t('Category'),
+                          type: 'select',
+                          options: [...(categories || []).map((cat: any) => ({ value: cat.id, label: cat.name }))],
+                      },
+                      { name: 'summary', label: t('Summary'), type: 'textarea', required: true, rows: 4 },
+                      {
+                          name: 'relevance_score',
+                          label: t('Relevance Score (1-10)'),
+                          type: 'number',
+                          required: true,
+                          min: 1,
+                          max: 10,
+                          defaultValue: 5,
+                      },
+                      { name: 'decision_date', label: t('Decision Date'), type: 'date' },
+                      { name: 'court_level', label: t('Court Level'), type: 'text' },
+                      { name: 'key_points', label: t('Key Points'), type: 'text', placeholder: 'Enter key points separated by commas' },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          options: [
+                              { value: 'active', label: t('Active') },
+                              { value: 'overruled', label: t('Overruled') },
+                              { value: 'questioned', label: t('Questioned') },
+                              { value: 'archived', label: t('Archived') },
+                          ],
+                          defaultValue: 'active',
+                      },
+                  ],
+                  modalSize: 'xl',
+              }}
+              initialData={
+                  currentItem
+                      ? {
+                            ...currentItem,
+                            key_points: currentItem.key_points ? currentItem.key_points.join(', ') : '',
+                        }
+                      : null
               }
-            },
-            { name: 'summary', label: t('Summary'), type: 'textarea', rows: 4 },
-            {
-              name: 'relevance_score',
-              label: t('Relevance Score'),
-              type: 'text',
-              render: () => {
-                return <div className="rounded-md border bg-gray-50 p-2">
-                  {currentItem?.relevance_score}/10
-                </div>;
-              }
-            },
-            { name: 'decision_date', label: t('Decision Date'), type: 'text' },
-            { name: 'court_level', label: t('Court Level'), type: 'text' },
-            {
-              name: 'key_points_display',
-              label: t('Key Points'),
-              type: 'text',
-              render: () => {
-                const keyPoints = currentItem?.key_points || [];
-                return <div className="rounded-md border bg-gray-50 p-2">
-                  {keyPoints.length > 0 ? (
-                    <ul className="list-disc list-inside space-y-1">
-                      {keyPoints.map((point: string, index: number) => (
-                        <li key={index} className="text-sm">{point}</li>
-                      ))}
-                    </ul>
-                  ) : t('No key points')}
-                </div>;
-              }
-            },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'text',
-              render: () => {
-                const status = currentItem?.status;
-                return <div className="rounded-md border bg-gray-50 p-2">
-                  {t(status?.charAt(0).toUpperCase() + status?.slice(1))}
-                </div>;
-              }
-            },
-            { name: 'created_at', label: t('Created At'), type: 'text' },
-            { name: 'updated_at', label: t('Updated At'), type: 'text' }
-          ],
-          modalSize: 'xl'
-        }}
-        initialData={currentItem}
-        title={t('View Legal Precedent')}
-        mode="view"
-      />
+              title={formMode === 'create' ? t('Add New Legal Precedent') : t('Edit Legal Precedent')}
+              mode={formMode}
+          />
 
-      <CrudDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        itemName={currentItem?.case_name || ''}
-        entityName="legal precedent"
-      />
-    </PageTemplate>
+          {/* View Modal */}
+          <CrudFormModal
+              isOpen={isFormModalOpen && formMode === 'view'}
+              onClose={() => setIsFormModalOpen(false)}
+              onSubmit={() => {}}
+              formConfig={{
+                  fields: [
+                      { name: 'case_name', label: t('Case Name'), type: 'text' },
+                      { name: 'citation', label: t('Citation'), type: 'text' },
+                      { name: 'jurisdiction', label: t('Jurisdiction'), type: 'text' },
+                      {
+                          name: 'category',
+                          label: t('Category'),
+                          type: 'text',
+                          render: () => {
+                              return <div className="rounded-md border bg-gray-50 p-2">{currentItem?.category?.name || t('No Category')}</div>;
+                          },
+                      },
+                      { name: 'summary', label: t('Summary'), type: 'textarea', rows: 4 },
+                      {
+                          name: 'relevance_score',
+                          label: t('Relevance Score'),
+                          type: 'text',
+                          render: () => {
+                              return <div className="rounded-md border bg-gray-50 p-2">{currentItem?.relevance_score}/10</div>;
+                          },
+                      },
+                      { name: 'decision_date', label: t('Decision Date'), type: 'text' },
+                      { name: 'court_level', label: t('Court Level'), type: 'text' },
+                      {
+                          name: 'key_points_display',
+                          label: t('Key Points'),
+                          type: 'text',
+                          render: () => {
+                              const keyPoints = currentItem?.key_points || [];
+                              return (
+                                  <div className="rounded-md border bg-gray-50 p-2">
+                                      {keyPoints.length > 0 ? (
+                                          <ul className="list-inside list-disc space-y-1">
+                                              {keyPoints.map((point: string, index: number) => (
+                                                  <li key={index} className="text-sm">
+                                                      {point}
+                                                  </li>
+                                              ))}
+                                          </ul>
+                                      ) : (
+                                          t('No key points')
+                                      )}
+                                  </div>
+                              );
+                          },
+                      },
+                      {
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'text',
+                          render: () => {
+                              const status = currentItem?.status;
+                              return <div className="rounded-md border bg-gray-50 p-2">{t(status?.charAt(0).toUpperCase() + status?.slice(1))}</div>;
+                          },
+                      },
+                      { name: 'created_at', label: t('Created At'), type: 'text' },
+                      { name: 'updated_at', label: t('Updated At'), type: 'text' },
+                  ],
+                  modalSize: 'xl',
+              }}
+              initialData={currentItem}
+              title={t('View Legal Precedent')}
+              mode="view"
+          />
+
+          <CrudDeleteModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleDeleteConfirm}
+              itemName={currentItem?.case_name || ''}
+              entityName="legal precedent"
+          />
+      </PageTemplate>
   );
 }
