@@ -2,13 +2,13 @@
 
 namespace App\Services;
 
-use App\EmailTemplateName;
-use App\Models\EmailTemplate;
-use App\Models\Business;
+use App\Enum\EmailTemplateName;
 use App\Mail\CommonTemplateMail;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Config;
+use App\Models\Business;
+use App\Models\EmailTemplate;
 use Exception;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Mail;
 
 class EmailTemplateService
 {
@@ -42,7 +42,7 @@ class EmailTemplateService
 
         try {
             // Get email template
-            $template = EmailTemplate::where('name', $templateName)->first();
+            $template = EmailTemplate::where('type', $templateName)->first();
 
             if (!$template) {
                 throw new Exception("Email template '{$templateName}' not found");
@@ -54,26 +54,28 @@ class EmailTemplateService
                 $language = $business->user->lang ?? 'en';
             }
 
-            // Get template content for the language
-            $templateLang = $template->emailTemplateLangs()
-                ->where('lang', $language)
-                ->first();
+            $subjectTemplate = $template->getTranslation('subject', $language, false);
+            $contentTemplate = $template->getTranslation('content', $language, false);
+            $fromTemplate = $template->getTranslation('from', $language, false);
 
-            // Fallback to English if language not found
-            if (!$templateLang) {
-                $templateLang = $template->emailTemplateLangs()
-                    ->where('lang', 'en')
-                    ->first();
+            if (!$subjectTemplate) {
+                $subjectTemplate = $template->getTranslation('subject', 'en', false);
+            }
+            if (!$contentTemplate) {
+                $contentTemplate = $template->getTranslation('content', 'en', false);
+            }
+            if (!$fromTemplate) {
+                $fromTemplate = $template->getTranslation('from', 'en', false);
             }
 
-            if (!$templateLang) {
+            if (!$subjectTemplate && !$contentTemplate) {
                 throw new Exception("No content found for template '{$templateName}'");
             }
 
             // Replace variables in subject and content
-            $subject = $this->replaceVariables($templateLang->subject, $variables);
-            $content = $this->replaceVariables($templateLang->content, $variables);
-            $fromName = $this->replaceVariables($template->from, $variables);
+            $subject = $this->replaceVariables($subjectTemplate, $variables);
+            $content = $this->replaceVariables($contentTemplate, $variables);
+            $fromName = $this->replaceVariables($fromTemplate, $variables);
 
             // Configure SMTP settings
             $this->configureBusinessSMTP();
@@ -141,47 +143,50 @@ class EmailTemplateService
             ]);
 
             // Get email template
-            $template = EmailTemplate::where('name', $templateName->value)->first();
+            $template = EmailTemplate::where('type', $templateName->value)->first();
 
             if (!$template) {
                 throw new Exception("Email template '{$templateName->value}' not found");
             }
 
-            // Get template content for the specified language
-            $templateLang = $template->emailTemplateLangs()
-                ->where('lang', $language)
-                ->first();
+            $subjectTemplate = $template->getTranslation('subject', $language, false);
+            $contentTemplate = $template->getTranslation('content', $language, false);
+            $fromTemplate = $template->getTranslation('from', $language, false);
+
+            if (!$subjectTemplate) {
+                $subjectTemplate = $template->getTranslation('subject', 'en', false);
+            }
+            if (!$contentTemplate) {
+                $contentTemplate = $template->getTranslation('content', 'en', false);
+            }
+            if (!$fromTemplate) {
+                $fromTemplate = $template->getTranslation('from', 'en', false);
+            }
 
             \Log::info('Template language lookup', [
                 'requested_lang' => $language,
-                'found_template' => $templateLang ? true : false,
-                'template_id' => $templateLang?->id ?? null
+                'has_subject' => !empty($subjectTemplate),
+                'has_content' => !empty($contentTemplate),
+                'template_id' => $template->id ?? null
             ]);
 
             // Log template content before replacement
             \Log::info('Template content before replacement:', [
-                'subject' => $templateLang->subject ?? 'N/A',
-                'content_preview' => $templateLang ? substr($templateLang->content, 0, 200) . '...' : 'N/A'
+                'subject' => $subjectTemplate ?? 'N/A',
+                'content_preview' => $contentTemplate ? substr($contentTemplate, 0, 200) . '...' : 'N/A'
             ]);
 
             \Log::info('Variables for replacement:', $variables);
 
 
-            // Fallback to English if language not found
-            if (!$templateLang) {
-                $templateLang = $template->emailTemplateLangs()
-                    ->where('lang', 'en')
-                    ->first();
-            }
-
-            if (!$templateLang) {
+            if (!$subjectTemplate && !$contentTemplate) {
                 throw new Exception("No content found for template '{$templateName->value}'");
             }
 
             // Replace variables in subject and content
-            $subject = $this->replaceVariables($templateLang->subject, $variables);
-            $content = $this->replaceVariables($templateLang->content, $variables);
-            $fromName = $this->replaceVariables($template->from, $variables);
+            $subject = $this->replaceVariables($subjectTemplate, $variables);
+            $content = $this->replaceVariables($contentTemplate, $variables);
+            $fromName = $this->replaceVariables($fromTemplate, $variables);
 
             // Configure SMTP settings
             $this->configureBusinessSMTP();

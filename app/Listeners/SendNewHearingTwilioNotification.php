@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\EmailTemplateName;
+use App\Enum\EmailTemplateName;
 use App\Events\NewHearingCreated;
 use App\Models\User;
 use App\Services\TwilioService;
@@ -20,7 +20,7 @@ class SendNewHearingTwilioNotification
     {
         $hearing = $event->hearing;
         $contact=$hearing->case->client->phone;
-        if (isNotificationTemplateEnabled(EmailTemplateName::NEW_HEARING, createdBy(), 'twilio')) {
+        if (isNotificationTemplateEnabled(EmailTemplateName::HEARING_CREATED, createdBy(), 'twilio')) {
              $variables = [
                 '{hearing_number}' => $hearing->hearing_id ?? '-',
                 '{case_number}' => $hearing->case->case_id ?? '-',
@@ -41,7 +41,7 @@ class SendNewHearingTwilioNotification
                     $createdByUser = User::find(createdBy());
                     $userLanguage = $createdByUser->lang ?? 'en';
                     $this->twilioService->sendTemplateMessageToPhone(
-                        templateName: EmailTemplateName::NEW_HEARING,
+                        templateName: EmailTemplateName::HEARING_CREATED,
                         variables: $variables,
                         toPhone: $contact,
                         language: $userLanguage,

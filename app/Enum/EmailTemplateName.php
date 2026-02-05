@@ -1,19 +1,19 @@
 <?php
 
-namespace App;
+namespace App\Enum;
 
 enum EmailTemplateName: string
 {
-    case NEW_INVOICE = 'New Invoice';
-    case INVOICE_SENT = 'Invoice Sent';
-    case NEW_JUDGE = 'New Judge';
-    case NEW_REGULATORY_BODY = 'New Regulatory Body';
-    case NEW_TEAM_MEMBER = 'New Team Member';
-    case NEW_CASE = 'New Case';
-    case NEW_HEARING = 'New Hearing';
-    case NEW_LICENSE = 'New License';
-    case NEW_COURT = 'New Court';
-    case NEW_TASK = 'New Task';
-    case NEW_CLE_RECORD = 'New CLE Record';
-    case NEW_CLIENT = 'New Client';
+    case INVOICE_CREATED = 'INVOICE_CREATED';
+    case INVOICE_SENT = 'INVOICE_SENT';
+    case JUDGE_CREATED = 'JUDGE_CREATED';
+    case REGULATORY_BODY_CREATED = 'REGULATORY_BODY_CREATED';
+    case TEAM_MEMBER_CREATED = 'TEAM_MEMBER_CREATED';
+    case CASE_CREATED = 'CASE_CREATED';
+    case HEARING_CREATED = 'HEARING_CREATED';
+    case LICENSE_CREATED = 'LICENSE_CREATED';
+    case COURT_CREATED = 'COURT_CREATED';
+    case TASK_CREATED = 'TASK_CREATED';
+    case CLE_RECORD_CREATED = 'CLE_RECORD_CREATED';
+    case CLIENT_CREATED = 'CLIENT_CREATED';
 }

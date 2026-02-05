@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\EmailTemplateName;
+use App\Enum\EmailTemplateName;
 use App\Events\NewCaseCreated;
 use App\Models\User;
 use App\Services\SlackService;
@@ -23,7 +23,7 @@ class SendNewCaseSlackNotification
         $assignedUser = $case->assignedUser;
         $contact = $case->contact;
 
-       if (isNotificationTemplateEnabled(EmailTemplateName::NEW_CASE, createdBy(), 'slack')) {
+       if (isNotificationTemplateEnabled(EmailTemplateName::CASE_CREATED, createdBy(), 'slack')) {
             $variables = [
                 '{case_number}' => $case->case_id ?? '-',
                 '{client_name}' => $case->client->name ?? '-',
@@ -41,7 +41,7 @@ class SendNewCaseSlackNotification
                     $createdByUser = User::find(createdBy());
                     $userLanguage = $createdByUser->lang ?? 'en';
                     $this->slackService->sendTemplateMessageWithLanguage(
-                        templateName: EmailTemplateName::NEW_CASE,
+                        templateName: EmailTemplateName::CASE_CREATED,
                         variables: $variables,
                         webhookUrl: $slackWebhookUrl,
                         language: $userLanguage

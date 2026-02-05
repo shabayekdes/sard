@@ -2,10 +2,10 @@
 
 namespace App\Listeners;
 
-use App\EmailTemplateName;
+use App\Enum\EmailTemplateName;
 use App\Events\NewCaseCreated;
-use App\Services\TwilioService;
 use App\Models\User;
+use App\Services\TwilioService;
 use Exception;
 
 class SendNewCaseTwilioNotification
@@ -28,7 +28,7 @@ class SendNewCaseTwilioNotification
         if (!$userId) {
             return;
         }
-        if (isNotificationTemplateEnabled(EmailTemplateName::NEW_COURT, createdBy(), 'twilio')) {
+        if (isNotificationTemplateEnabled(EmailTemplateName::COURT_CREATED, createdBy(), 'twilio')) {
 
             $variables = [
                 '{case_number}' => $case->case_id ?? '-',
@@ -44,7 +44,7 @@ class SendNewCaseTwilioNotification
                 // Send notification to client if they have a phone number
                 if ($client && !empty($client->phone)) {
                     $this->twilioService->sendTemplateMessageToPhone(
-                        templateName: EmailTemplateName::NEW_CASE,
+                        templateName: EmailTemplateName::CASE_CREATED,
                         variables: $variables,
                         toPhone: $contact,
                         language: $userLanguage,

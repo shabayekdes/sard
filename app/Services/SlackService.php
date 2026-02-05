@@ -2,9 +2,8 @@
 
 namespace App\Services;
 
-use App\EmailTemplateName;
+use App\Enum\EmailTemplateName;
 use App\Models\UserNotificationTemplate;
-use App\Models\Setting;
 
 class SlackService
 {

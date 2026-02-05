@@ -1,15 +1,14 @@
 <?php
 
-use App\EmailTemplateName;
-use App\Models\ClientType;
-use App\Models\Setting;
-use App\Models\User;
+use App\Enum\EmailTemplateName;
 use App\Models\Coupon;
-use Carbon\Carbon;
+use App\Models\PaymentSetting;
 use App\Models\Plan;
 use App\Models\PlanOrder;
 use App\Models\Role;
-use App\Models\PaymentSetting;
+use App\Models\Setting;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 if (!function_exists('getCacheSize')) {
@@ -1408,7 +1407,7 @@ if (! function_exists('isEmailTemplateEnabled')) {
             $userId = createdBy();
         }
 
-        $template = \App\Models\EmailTemplate::where('name', $templateName->value)->first();
+        $template = \App\Models\EmailTemplate::where('type', $templateName->value)->first();
         if (!$template) {
             return false;
         }
@@ -1517,7 +1516,7 @@ if (! function_exists('isNotificationTemplateEnabled')) {
      * @param null $type (slack, twilio, email)
      * @return bool
      */
-    function isNotificationTemplateEnabled(\App\EmailTemplateName $templateName, $userId = null, $type = null)
+    function isNotificationTemplateEnabled(\App\Enum\EmailTemplateName $templateName, $userId = null, $type = null)
     {
         if (is_null($userId)) {
             $userId = createdBy();

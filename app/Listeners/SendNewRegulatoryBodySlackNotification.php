@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\EmailTemplateName;
+use App\Enum\EmailTemplateName;
 use App\Events\NewRegulatoryBodyCreated;
 use App\Models\User;
 use App\Services\SlackService;
@@ -21,7 +21,7 @@ class SendNewRegulatoryBodySlackNotification
     {
         $regulatoryBody = $event->regulatoryBody;
 
-       if (isNotificationTemplateEnabled(EmailTemplateName::NEW_REGULATORY_BODY, createdBy(), 'slack')) {
+       if (isNotificationTemplateEnabled(EmailTemplateName::REGULATORY_BODY_CREATED, createdBy(), 'slack')) {
             $variables = [
                 '{body_name}' => $regulatoryBody->name ?? '-',
                 '{jurisdiction}' => $regulatoryBody->jurisdiction ?? '-',
@@ -39,7 +39,7 @@ class SendNewRegulatoryBodySlackNotification
                     $createdByUser = User::find(createdBy());
                     $userLanguage = $createdByUser->lang ?? 'en';
                     $this->slackService->sendTemplateMessageWithLanguage(
-                        templateName: EmailTemplateName::NEW_REGULATORY_BODY,
+                        templateName: EmailTemplateName::REGULATORY_BODY_CREATED,
                         variables: $variables,
                         webhookUrl: $slackWebhookUrl,
                         language: $userLanguage

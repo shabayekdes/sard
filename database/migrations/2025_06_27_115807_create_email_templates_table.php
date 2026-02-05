@@ -13,9 +13,12 @@ return new class extends Migration
     {
         Schema::create('email_templates', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('from')->nullable();
-            $table->unsignedBigInteger('user_id')->default(1);
+            $table->json('name');
+            $table->json('from');
+            $table->string('type');
+            $table->json('subject');
+            $table->json('content');
+            $table->foreignId('user_id')->default(1);
             $table->timestamps();
         });
     }

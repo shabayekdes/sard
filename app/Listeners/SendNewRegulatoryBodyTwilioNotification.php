@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\EmailTemplateName;
+use App\Enum\EmailTemplateName;
 use App\Events\NewRegulatoryBodyCreated;
 use App\Models\User;
 use App\Services\TwilioService;
@@ -21,7 +21,7 @@ class SendNewRegulatoryBodyTwilioNotification
         $regulatoryBody = $event->regulatoryBody;
         $contact = $regulatoryBody->contact_phone;
 
-        if (isNotificationTemplateEnabled(EmailTemplateName::NEW_REGULATORY_BODY, createdBy(), 'twilio')) {
+        if (isNotificationTemplateEnabled(EmailTemplateName::REGULATORY_BODY_CREATED, createdBy(), 'twilio')) {
             $variables = [
                 '{body_name}' => $regulatoryBody->name ?? '-',
                 '{jurisdiction}' => $regulatoryBody->jurisdiction ?? '-',
@@ -40,7 +40,7 @@ class SendNewRegulatoryBodyTwilioNotification
                     $createdByUser = User::find(createdBy());
                     $userLanguage = $createdByUser->lang ?? 'en';
                     $this->twilioService->sendTemplateMessageToPhone(
-                        templateName: EmailTemplateName::NEW_REGULATORY_BODY,
+                        templateName: EmailTemplateName::REGULATORY_BODY_CREATED,
                         variables: $variables,
                         toPhone: $contact,
                         language: $userLanguage,

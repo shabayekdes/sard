@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { RichTextField } from '@/components/ui/rich-text-field'
@@ -12,18 +13,13 @@ import { Save } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from '@/components/custom-toast'
 
-interface EmailTemplateLang {
-  id: number
-  lang: string
-  subject: string
-  content: string
-}
-
 interface EmailTemplate {
   id: number
-  name: string
-  from: string
-  email_template_langs: EmailTemplateLang[]
+  name: string | Record<string, string>
+  from: string | Record<string, string>
+  type: string
+  subject: Record<string, string>
+  content: Record<string, string>
 }
 
 interface Language {
@@ -34,25 +30,44 @@ interface Language {
 
 interface Props {
   template: EmailTemplate
+  templateTypes: string[]
   languages: Language[]
   variables: Record<string, string>
 }
 
-export default function EmailTemplateShow({ template, languages, variables }: Props) {
-  const { t } = useTranslation()
+export default function EmailTemplateShow({ template, templateTypes, languages, variables }: Props) {
+  const { t, i18n } = useTranslation()
   const { flash } = usePage().props as any
   const allowedLanguages = languages.filter((language) => ['en', 'ar'].includes(language.code))
-  const [fromName, setFromName] = useState(template.from)
+  const [templateType, setTemplateType] = useState(template.type || '')
+  const [templateNames, setTemplateNames] = useState<Record<string, string>>(() => {
+    if (typeof template.name === 'string') {
+      return { en: template.name, ar: template.name }
+    }
+    return { en: template.name?.en || '', ar: template.name?.ar || '' }
+  })
+  const [fromNames, setFromNames] = useState<Record<string, string>>(() => {
+    if (typeof template.from === 'string') {
+      return { en: template.from, ar: template.from }
+    }
+    return { en: template.from?.en || '', ar: template.from?.ar || '' }
+  })
   const [currentLang, setCurrentLang] = useState(allowedLanguages[0]?.code || 'en')
-  const [templateLangs, setTemplateLangs] = useState(
-    template.email_template_langs.reduce((acc, lang) => {
-      acc[lang.lang] = {
-        subject: lang.subject,
-        content: lang.content
+  const currentLocale = i18n.language || 'en'
+  const templateName =
+    typeof template.name === 'string'
+      ? template.name
+      : template.name[currentLocale] || template.name.en || Object.values(template.name)[0] || ''
+  const [templateLangs, setTemplateLangs] = useState(() => {
+    const data: Record<string, { subject: string; content: string }> = {}
+    allowedLanguages.forEach((language) => {
+      data[language.code] = {
+        subject: template.subject?.[language.code] || '',
+        content: template.content?.[language.code] || ''
       }
-      return acc
-    }, {} as Record<string, { subject: string; content: string }>)
-  )
+    })
+    return data
+  })
 
   const handleSubjectChange = (lang: string, subject: string) => {
     setTemplateLangs(prev => ({
@@ -85,19 +100,25 @@ export default function EmailTemplateShow({ template, languages, variables }: Pr
   const breadcrumbs = [
     { title: t('Dashboard'), href: route('dashboard') },
     { title: t('Email Templates'), href: route('email-templates.index') },
-    { title: template.name }
+    { title: templateName }
   ]
 
   const pageActions: any[] = []
+  const formatTemplateType = (type: string) =>
+    type
+      .toLowerCase()
+      .split('_')
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ')
 
   return (
     <PageTemplate
-      title={template.name}
+      title={templateName}
       url={route('email-templates.show', template.id)}
       breadcrumbs={breadcrumbs}
       actions={pageActions}
     >
-      <Head title={`Edit Template - ${template.name}`} />
+      <Head title={`Edit Template - ${templateName}`} />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
@@ -108,7 +129,15 @@ export default function EmailTemplateShow({ template, languages, variables }: Pr
                 <Button
                   onClick={() => {
                     router.put(route('email-templates.update-settings', template.id), {
-                      from: fromName
+                      name: {
+                        en: templateNames.en,
+                        ar: templateNames.ar
+                      },
+                      from: {
+                        en: fromNames.en,
+                        ar: fromNames.ar
+                      },
+                      type: templateType
                     })
                   }}
                   size="sm"
@@ -120,20 +149,63 @@ export default function EmailTemplateShow({ template, languages, variables }: Pr
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-2">
-                <Label>{t("Template Name")}</Label>
-                <Input value={template.name} disabled className="bg-muted" />
-                <p className="text-xs text-muted-foreground">{t("Template name cannot be changed")}</p>
+                <Label>{t("Template Type")}</Label>
+                <Select value={templateType} onValueChange={setTemplateType}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={t("Select template type")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {templateTypes.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {formatTemplateType(type)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="from">{t("From Name")}</Label>
-                <Input
-                  id="from"
-                  value={fromName}
-                  onChange={(e) => setFromName(e.target.value)}
-                  placeholder={t("Enter from name (e.g., {app_name}, Support Team)")}
-                  className="focus:ring-2 focus:ring-primary"
-                />
+              <div className="space-y-3">
+                <Label>{t("Template Name")}</Label>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {allowedLanguages.map((language) => (
+                    <div key={`name-${language.code}`} className="grid gap-2">
+                      <Label htmlFor={`name-${language.code}`} className="text-xs text-muted-foreground">
+                        {language.name} ({language.code.toUpperCase()})
+                      </Label>
+                      <Input
+                        id={`name-${language.code}`}
+                        value={templateNames[language.code] || ''}
+                        onChange={(e) =>
+                          setTemplateNames((prev) => ({ ...prev, [language.code]: e.target.value }))
+                        }
+                        placeholder={t("Enter template name")}
+                        className="focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label>{t("From Name")}</Label>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {allowedLanguages.map((language) => (
+                    <div key={`from-${language.code}`} className="grid gap-2">
+                      <Label htmlFor={`from-${language.code}`} className="text-xs text-muted-foreground">
+                        {language.name} ({language.code.toUpperCase()})
+                      </Label>
+                      <Input
+                        id={`from-${language.code}`}
+                        value={fromNames[language.code] || ''}
+                        onChange={(e) =>
+                          setFromNames((prev) => ({ ...prev, [language.code]: e.target.value }))
+                        }
+                        placeholder={t("Enter from name (e.g., {app_name}, Support Team)")}
+                        className="focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>

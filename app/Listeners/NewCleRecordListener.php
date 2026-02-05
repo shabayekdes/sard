@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\EmailTemplateName;
+use App\Enum\EmailTemplateName;
 use App\Events\NewCleRecordCreated;
 use App\Services\EmailTemplateService;
 use Exception;
@@ -11,7 +11,7 @@ class NewCleRecordListener
 {
     public function handle(NewCleRecordCreated $event)
     {
-         if(isEmailTemplateEnabled(EmailTemplateName::NEW_CLE_RECORD, createdBy())){
+         if(isEmailTemplateEnabled(EmailTemplateName::CLE_RECORD_CREATED, createdBy())){
 
         try {
 
@@ -47,7 +47,7 @@ class NewCleRecordListener
             $userLanguage = auth()->user()->lang ?? 'en';
 
             $emailService->sendTemplateEmailWithLanguage(
-                EmailTemplateName::NEW_CLE_RECORD,
+                EmailTemplateName::CLE_RECORD_CREATED,
                 $variables,
                 (string) $user->email,
                 (string) $user->name,

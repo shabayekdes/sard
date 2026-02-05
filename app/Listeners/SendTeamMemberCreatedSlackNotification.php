@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\EmailTemplateName;
+use App\Enum\EmailTemplateName;
 use App\Events\TeamMemberCreated;
 use App\Models\User;
 use App\Services\SlackService;
@@ -21,7 +21,7 @@ class SendTeamMemberCreatedSlackNotification
     {
         $teamMember = $event->teamMember;
 
-       if (isNotificationTemplateEnabled(EmailTemplateName::NEW_TEAM_MEMBER, createdBy(), 'slack')) {
+       if (isNotificationTemplateEnabled(EmailTemplateName::TEAM_MEMBER_CREATED, createdBy(), 'slack')) {
             $variables = [
                 '{member_name}' => $teamMember->name ?? '-',
                 '{email}' => $teamMember->email ?? '-',
@@ -39,7 +39,7 @@ class SendTeamMemberCreatedSlackNotification
                     $createdByUser = User::find(createdBy());
                     $userLanguage = $createdByUser->lang ?? 'en';
                     $this->slackService->sendTemplateMessageWithLanguage(
-                        templateName: EmailTemplateName::NEW_TEAM_MEMBER,
+                        templateName: EmailTemplateName::TEAM_MEMBER_CREATED,
                         variables: $variables,
                         webhookUrl: $slackWebhookUrl,
                         language: $userLanguage

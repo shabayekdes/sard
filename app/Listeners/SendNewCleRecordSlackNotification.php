@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\EmailTemplateName;
+use App\Enum\EmailTemplateName;
 use App\Events\NewCleRecordCreated;
 use App\Models\User;
 use App\Services\SlackService;
@@ -21,7 +21,7 @@ class SendNewCleRecordSlackNotification
     {
         $cleRecord = $event->cleRecord;
 
-       if (isNotificationTemplateEnabled(EmailTemplateName::NEW_CLE_RECORD, createdBy(), 'slack')) {
+       if (isNotificationTemplateEnabled(EmailTemplateName::CLE_RECORD_CREATED, createdBy(), 'slack')) {
             $variables = [
                 '{course_title}' => $cleRecord->course_name ?? '-',
                 '{provider}' => $cleRecord->provider ?? '-',
@@ -41,7 +41,7 @@ class SendNewCleRecordSlackNotification
                     $createdByUser = User::find(createdBy());
                     $userLanguage = $createdByUser->lang ?? 'en';
                     $this->slackService->sendTemplateMessageWithLanguage(
-                        templateName: EmailTemplateName::NEW_CLE_RECORD,
+                        templateName: EmailTemplateName::CLE_RECORD_CREATED,
                         variables: $variables,
                         webhookUrl: $slackWebhookUrl,
                         language: $userLanguage

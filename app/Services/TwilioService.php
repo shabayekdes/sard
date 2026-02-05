@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\EmailTemplateName;
+use App\Enum\EmailTemplateName;
 use App\Models\NotificationTemplate;
 use App\Models\User;
 use Exception;

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\EmailTemplateName;
+use App\Enum\EmailTemplateName;
 use App\Models\NotificationTemplate;
 use App\Models\NotificationTemplateLang;
 use Illuminate\Http\Request;
@@ -104,31 +104,31 @@ class NotificationTemplateController extends Controller
     private function getDefaultVariablesByName(EmailTemplateName $name)
     {
         return match ($name) {
-            EmailTemplateName::NEW_CASE => [
+            EmailTemplateName::CASE_CREATED => [
                 '{case_number}' => 'Case Number',
                 '{client_name}' => 'Client Name',
                 '{case_type}' => 'Case Type',
                 '{created_by}' => 'Created By User'
             ],
-            EmailTemplateName::NEW_CLIENT => [
+            EmailTemplateName::CLIENT_CREATED => [
                 '{client_name}' => 'Client Name',
                 '{client_type}' => 'Client Type',
                 '{email}' => 'Client Email',
                 '{created_by}' => 'Created By User'
             ],
-            EmailTemplateName::NEW_TASK => [
+            EmailTemplateName::TASK_CREATED => [
                 '{task_title}' => 'Task Title',
                 '{priority}' => 'Task Priority',
                 '{due_date}' => 'Task Due Date',
                 '{assigned_to}' => 'Assigned To User'
             ],
-            EmailTemplateName::NEW_HEARING => [
+            EmailTemplateName::HEARING_CREATED => [
                 '{case_number}' => 'Case Number',
                 '{hearing_date}' => 'Hearing Date',
                 '{court}' => 'Court Name',
                 '{judge}' => 'Judge Name'
             ],
-            EmailTemplateName::NEW_INVOICE => [
+            EmailTemplateName::INVOICE_CREATED => [
                 '{invoice_number}' => 'Invoice Number',
                 '{client_name}' => 'Client Name',
                 '{amount}' => 'Invoice Amount',
@@ -140,35 +140,35 @@ class NotificationTemplateController extends Controller
                 '{amount}' => 'Invoice Amount',
                 '{sent_date}' => 'Date Sent'
             ],
-            EmailTemplateName::NEW_COURT => [
+            EmailTemplateName::COURT_CREATED => [
                 '{court_name}' => 'Court Name',
                 '{court_type}' => 'Court Type',
                 '{circle_type}' => 'Circle Type',
                 '{location}' => 'Court Location'
             ],
-            EmailTemplateName::NEW_JUDGE => [
+            EmailTemplateName::JUDGE_CREATED => [
                 '{judge_name}' => 'Judge Name',
                 '{court}' => 'Court Name',
                 '{specialization}' => 'Judge Specialization'
             ],
-            EmailTemplateName::NEW_LICENSE => [
+            EmailTemplateName::LICENSE_CREATED => [
                 '{license_number}' => 'License Number',
                 '{license_type}' => 'License Type',
                 '{issuing_authority}' => 'Issuing Authority',
                 '{expiry_date}' => 'Expiry Date'
             ],
-            EmailTemplateName::NEW_REGULATORY_BODY => [
+            EmailTemplateName::REGULATORY_BODY_CREATED => [
                 '{body_name}' => 'Regulatory Body Name',
                 '{jurisdiction}' => 'Jurisdiction',
                 '{contact_info}' => 'Contact Information'
             ],
-            EmailTemplateName::NEW_CLE_RECORD => [
+            EmailTemplateName::CLE_RECORD_CREATED => [
                 '{course_title}' => 'Course Title',
                 '{credits_earned}' => 'Credits Earned',
                 '{completion_date}' => 'Completion Date',
                 '{provider}' => 'Course Provider'
             ],
-            EmailTemplateName::NEW_TEAM_MEMBER => [
+            EmailTemplateName::TEAM_MEMBER_CREATED => [
                 '{member_name}' => 'Team Member Name',
                 '{email}' => 'Team Member Email',
                 '{role}' => 'Team Member Role'

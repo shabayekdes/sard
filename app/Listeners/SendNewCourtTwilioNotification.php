@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\EmailTemplateName;
+use App\Enum\EmailTemplateName;
 use App\Events\NewCourtCreated;
 use App\Models\User;
 use App\Services\TwilioService;
@@ -22,7 +22,7 @@ class SendNewCourtTwilioNotification
         $contact = $court->phone;
 
 
-        if (isNotificationTemplateEnabled(EmailTemplateName::NEW_COURT, createdBy(), 'twilio')) {
+        if (isNotificationTemplateEnabled(EmailTemplateName::COURT_CREATED, createdBy(), 'twilio')) {
             $variables = [
                 '{court_name}' => $court->name ?? '-',
                 '{location}' => $court->address ?? '-',
@@ -40,7 +40,7 @@ class SendNewCourtTwilioNotification
                     $createdByUser = User::find(createdBy());
                     $userLanguage = $createdByUser->lang ?? 'en';
                     $this->twilioService->sendTemplateMessageToPhone(
-                        templateName: EmailTemplateName::NEW_COURT,
+                        templateName: EmailTemplateName::COURT_CREATED,
                         variables: $variables,
                         toPhone: $contact,
                         language: $userLanguage,

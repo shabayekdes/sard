@@ -14,8 +14,7 @@ class EmailNotificationController extends Controller
     {
         $user = Auth::user();
 
-        $emailTemplates = EmailTemplate::with('emailTemplateLangs')
-            ->get();
+        $emailTemplates = EmailTemplate::get();
 
         $userSettings = UserEmailTemplate::where('user_id', $user->id)
             ->get()

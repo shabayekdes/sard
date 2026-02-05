@@ -31,22 +31,6 @@ class UserSeeder extends Seeder
         // Assign super admin role
         $superAdmin->assignRole('superadmin');
 
-        // Create default settings for superadmin if not exists
-        if (!Setting::where('user_id', $superAdmin->id)->exists()) {
-            createDefaultSettings($superAdmin->id);
-        }
-
-        $recaptchaSettings = [
-            'recaptchaVersion' => 'v3',
-            'recaptchaSiteKey' => config('services.recaptcha.site_key', ''),
-            'recaptchaSecretKey' => config('services.recaptcha.secret_key', ''),
-        ];
-
-        foreach ($recaptchaSettings as $key => $value) {
-            Setting::updateOrCreate(
-                ['user_id' => $superAdmin->id, 'key' => $key],
-                ['value' => (string) $value]
-            );
-        }
+        // createDefaultSettings($superAdmin->id);
     }
 }

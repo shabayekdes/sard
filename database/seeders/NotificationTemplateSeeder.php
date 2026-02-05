@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\EmailTemplateName;
+use App\Enum\EmailTemplateName;
 use App\Models\NotificationTemplate;
 use App\Models\NotificationTemplateLang;
 use Illuminate\Database\Seeder;
@@ -16,7 +16,7 @@ class NotificationTemplateSeeder extends Seeder
 
         $templates = [
             [
-                'name' => EmailTemplateName::NEW_CASE->value,
+                'name' => EmailTemplateName::CASE_CREATED->value,
                 'type' => 'slack',
                 'translations' => [
                     'en' => [
@@ -31,7 +31,7 @@ class NotificationTemplateSeeder extends Seeder
             ],
 
             [
-                'name' => EmailTemplateName::NEW_CLIENT->value,
+                'name' => EmailTemplateName::CLIENT_CREATED->value,
                 'type' => 'slack',
                 'translations' => [
                     'en' => [
@@ -45,7 +45,7 @@ class NotificationTemplateSeeder extends Seeder
                 ]
             ],
             [
-                'name' => EmailTemplateName::NEW_TASK->value,
+                'name' => EmailTemplateName::TASK_CREATED->value,
                 'type' => 'slack',
                 'translations' => [
                     'en' => [
@@ -59,7 +59,7 @@ class NotificationTemplateSeeder extends Seeder
                 ]
             ],
             [
-                'name' => EmailTemplateName::NEW_HEARING->value,
+                'name' => EmailTemplateName::HEARING_CREATED->value,
                 'type' => 'slack',
                 'translations' => [
                     'en' => [
@@ -73,7 +73,7 @@ class NotificationTemplateSeeder extends Seeder
                 ]
             ],
             [
-                'name' => EmailTemplateName::NEW_INVOICE->value,
+                'name' => EmailTemplateName::INVOICE_CREATED->value,
                 'type' => 'slack',
                 'translations' => [
                     'en' => [
@@ -102,7 +102,7 @@ class NotificationTemplateSeeder extends Seeder
             ],
 
             [
-                'name' => EmailTemplateName::NEW_COURT->value,
+                'name' => EmailTemplateName::COURT_CREATED->value,
                 'type' => 'slack',
                 'translations' => [
                     'en' => [
@@ -116,7 +116,7 @@ class NotificationTemplateSeeder extends Seeder
                 ]
             ],
             [
-                'name' => EmailTemplateName::NEW_JUDGE->value,
+                'name' => EmailTemplateName::JUDGE_CREATED->value,
                 'type' => 'slack',
                 'translations' => [
                     'en' => [
@@ -343,7 +343,7 @@ class NotificationTemplateSeeder extends Seeder
             //     ]
             // ],
             [
-                'name' => EmailTemplateName::NEW_TEAM_MEMBER->value,
+                'name' => EmailTemplateName::TEAM_MEMBER_CREATED->value,
                 'type' => 'slack',
                 'translations' => [
                     'en' => [
@@ -357,7 +357,7 @@ class NotificationTemplateSeeder extends Seeder
                 ]
             ],
             [
-                'name' => EmailTemplateName::NEW_CASE->value,
+                'name' => EmailTemplateName::CASE_CREATED->value,
                 'type' => 'twilio',
                 'translations' => [
                     'en' => [
@@ -371,7 +371,7 @@ class NotificationTemplateSeeder extends Seeder
                 ]
             ],
             [
-                'name' => EmailTemplateName::NEW_CLIENT->value,
+                'name' => EmailTemplateName::CLIENT_CREATED->value,
                 'type' => 'twilio',
                 'translations' => [
                     'en' => [
@@ -385,7 +385,7 @@ class NotificationTemplateSeeder extends Seeder
                 ]
             ],
             [
-                'name' => EmailTemplateName::NEW_HEARING->value,
+                'name' => EmailTemplateName::HEARING_CREATED->value,
                 'type' => 'twilio',
                 'translations' => [
                     'en' => [
@@ -399,7 +399,7 @@ class NotificationTemplateSeeder extends Seeder
                 ]
             ],
             [
-                'name' => EmailTemplateName::NEW_INVOICE->value,
+                'name' => EmailTemplateName::INVOICE_CREATED->value,
                 'type' => 'twilio',
                 'translations' => [
                     'en' => [
@@ -427,7 +427,7 @@ class NotificationTemplateSeeder extends Seeder
                 ]
             ],
             [
-                'name' => EmailTemplateName::NEW_COURT->value,
+                'name' => EmailTemplateName::COURT_CREATED->value,
                 'type' => 'twilio',
                 'translations' => [
                     'en' => [
@@ -441,7 +441,7 @@ class NotificationTemplateSeeder extends Seeder
                 ]
             ],
             [
-                'name' => EmailTemplateName::NEW_JUDGE->value,
+                'name' => EmailTemplateName::JUDGE_CREATED->value,
                 'type' => 'twilio',
                 'translations' => [
                     'en' => [
@@ -455,7 +455,7 @@ class NotificationTemplateSeeder extends Seeder
                 ]
             ],
             [
-                'name' => EmailTemplateName::NEW_REGULATORY_BODY->value,
+                'name' => EmailTemplateName::REGULATORY_BODY_CREATED->value,
                 'type' => 'twilio',
                 'translations' => [
                     'en' => [

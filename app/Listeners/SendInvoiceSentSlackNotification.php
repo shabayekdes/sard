@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\EmailTemplateName;
+use App\Enum\EmailTemplateName;
 use App\Events\InvoiceSent;
 use App\Models\User;
 use App\Services\SlackService;

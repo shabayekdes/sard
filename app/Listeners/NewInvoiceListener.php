@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\EmailTemplateName;
+use App\Enum\EmailTemplateName;
 use App\Events\NewInvoiceCreated;
 use App\Services\EmailTemplateService;
 use Exception;
@@ -11,7 +11,7 @@ class NewInvoiceListener
 {
     public function handle(NewInvoiceCreated $event)
     {
-        if (isEmailTemplateEnabled(EmailTemplateName::NEW_INVOICE, createdBy())) {
+        if (isEmailTemplateEnabled(EmailTemplateName::INVOICE_CREATED, createdBy())) {
             try {
                 // Check if New Invoice email template is active for current user
                 $emailService = new EmailTemplateService();
@@ -44,7 +44,7 @@ class NewInvoiceListener
                 $userLanguage = auth()->user()->lang ?? 'en';
 
                 $emailService->sendTemplateEmailWithLanguage(
-                    EmailTemplateName::NEW_INVOICE,
+                    EmailTemplateName::INVOICE_CREATED,
                     $variables,
                     (string)$client->email,
                     (string)$client->name,

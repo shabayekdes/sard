@@ -13,14 +13,9 @@ import { useTranslation } from 'react-i18next'
 
 interface EmailTemplate {
   id: number
-  name: string
-  from: string
+  name: string | Record<string, string>
+  from: string | Record<string, string>
   created_at: string
-  email_template_langs: Array<{
-    id: number
-    lang: string
-    subject: string
-  }>
 }
 
 interface Props {
@@ -44,8 +39,14 @@ interface Props {
 }
 
 export default function EmailTemplatesIndex({ templates, filters: pageFilters = {} }: Props) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '')
+  const currentLocale = i18n.language || 'en'
+
+  const getLocalizedName = (name: string | Record<string, string>) => {
+    if (typeof name === 'string') return name
+    return name[currentLocale] || name.en || Object.values(name)[0] || ''
+  }
 
   const handleAction = (action: string, item: EmailTemplate) => {
     if (action === 'view') {
@@ -155,7 +156,7 @@ export default function EmailTemplatesIndex({ templates, filters: pageFilters = 
                           {templates?.data?.map((template: EmailTemplate) => (
                               <tr key={template.id} className="border-b hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800">
                                   <td className="px-4 py-3">
-                                      <div className="font-medium">{template.name}</div>
+                                      <div className="font-medium">{getLocalizedName(template.name)}</div>
                                   </td>
                                   <td className="px-4 py-3 text-right">
                                       <Tooltip>

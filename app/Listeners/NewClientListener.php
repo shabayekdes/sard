@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\EmailTemplateName;
+use App\Enum\EmailTemplateName;
 use App\Events\NewClientCreated;
 use App\Services\EmailTemplateService;
 use Exception;
@@ -11,7 +11,7 @@ class NewClientListener
 {
     public function handle(NewClientCreated $event)
     {
-         if(isEmailTemplateEnabled(EmailTemplateName::NEW_CLIENT, createdBy())){
+         if(isEmailTemplateEnabled(EmailTemplateName::CLIENT_CREATED, createdBy())){
 
         try {
 
@@ -48,7 +48,7 @@ class NewClientListener
             $userLanguage = auth()->user()->lang ?? 'en';
 
             $emailService->sendTemplateEmailWithLanguage(
-                EmailTemplateName::NEW_CLIENT,
+                EmailTemplateName::CLIENT_CREATED,
                 $variables,
                 (string) $client->email,
                 (string) $client->name,

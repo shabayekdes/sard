@@ -2,21 +2,28 @@
 
 namespace App\Models;
 
+use App\Enum\EmailTemplateName;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Translatable\HasTranslations;
 
 class EmailTemplate extends BaseModel
 {
+    use HasTranslations;
+
+    public array $translatable = ['name', 'from', 'subject', 'content'];
+
     protected $fillable = [
         'name',
         'from',
+        'subject',
+        'content',
         'user_id',
     ];
 
-    public function emailTemplateLangs(): HasMany
-    {
-        return $this->hasMany(EmailTemplateLang::class, 'parent_id');
-    }
+    protected $casts = [
+        'type' => EmailTemplateName::class
+    ];
 
     public function userEmailTemplates(): HasMany
     {

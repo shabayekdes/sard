@@ -14,8 +14,7 @@ class CompanyEmailNotificationController extends Controller
     {
         $user = Auth::user();
 
-        $emailTemplates = EmailTemplate::with('emailTemplateLangs')
-            ->get();
+        $emailTemplates = EmailTemplate::get();
 
         // Get user's notification settings
         $userSettings = UserEmailTemplate::where('user_id', $user->id)

@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\EmailTemplateName;
+use App\Enum\EmailTemplateName;
 use App\Models\EmailTemplate;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class EmailTemplateController extends Controller
 {
     public function index(Request $request)
     {
-        $query = EmailTemplate::with('emailTemplateLangs');
+        $query = EmailTemplate::query();
 
         // Search functionality
         if ($request->filled('search')) {
@@ -36,13 +37,18 @@ class EmailTemplateController extends Controller
 
     public function show(EmailTemplate $emailTemplate)
     {
-        $template = $emailTemplate->load('emailTemplateLangs');
+        $template = $emailTemplate;
+        $template->setAttribute('name', $template->getTranslations('name'));
+        $template->setAttribute('from', $template->getTranslations('from'));
+        $template->setAttribute('subject', $template->getTranslations('subject'));
+        $template->setAttribute('content', $template->getTranslations('content'));
         $languages = json_decode(file_get_contents(resource_path('lang/language.json')), true);
+        $templateType = $template->type instanceof EmailTemplateName ? $template->type->value : $template->type;
 
         // Template-specific variables
         $variables = [];
 
-        if ($template->name === EmailTemplateName::NEW_INVOICE->value) {
+        if ($templateType === EmailTemplateName::INVOICE_CREATED->value) {
             $variables = [
                 '{user_name}' => 'User Name',
                 '{client}' => 'Client Name',
@@ -53,7 +59,7 @@ class EmailTemplateController extends Controller
                 '{invoice_number}' => 'Invoice Number',
                 '{app_name}' => 'App Name'
             ];
-        } elseif ($template->name === EmailTemplateName::INVOICE_SENT->value) {
+        } elseif ($templateType === EmailTemplateName::INVOICE_SENT->value) {
             $variables = [
                 '{user_name}' => 'User Name',
                 '{client}' => 'Client Name',
@@ -63,7 +69,7 @@ class EmailTemplateController extends Controller
                 '{total_amount}' => 'Total Amount',
                 '{app_name}' => 'App Name'
             ];
-        } elseif ($template->name === EmailTemplateName::NEW_TEAM_MEMBER->value) {
+        } elseif ($templateType === EmailTemplateName::TEAM_MEMBER_CREATED->value) {
             $variables = [
                 '{name}' => 'Member Name',
                 '{email}' => 'Member Email',
@@ -73,7 +79,7 @@ class EmailTemplateController extends Controller
                 '{user_name}' => 'User Name',
                 '{app_name}' => 'App Name'
             ];
-        } elseif ($template->name === EmailTemplateName::NEW_CLIENT->value) {
+        } elseif ($templateType === EmailTemplateName::CLIENT_CREATED->value) {
             $variables = [
                 '{user_name}' => 'User Name',
                 '{name}' => 'Client Name',
@@ -87,7 +93,7 @@ class EmailTemplateController extends Controller
                 '{tax_rate}' => 'Tax Rate',
                 '{app_name}' => 'App Name'
             ];
-        } elseif ($template->name === EmailTemplateName::NEW_CASE->value) {
+        } elseif ($templateType === EmailTemplateName::CASE_CREATED->value) {
             $variables = [
                 '{user_name}' => 'User Name',
                 '{client}' => 'Client Name',
@@ -99,7 +105,7 @@ class EmailTemplateController extends Controller
                 '{app_name}' => 'App Name',
 
             ];
-        } elseif ($template->name === EmailTemplateName::NEW_HEARING->value) {
+        } elseif ($templateType === EmailTemplateName::HEARING_CREATED->value) {
             $variables = [
                 '{user_name}' => 'User Name',
                 '{hearing_number}' => 'Hearing Number',
@@ -112,7 +118,7 @@ class EmailTemplateController extends Controller
                 '{client_name}' => 'Client Name',
                 '{app_name}' => 'App Name'
             ];
-        } elseif ($template->name === EmailTemplateName::NEW_JUDGE->value) {
+        } elseif ($templateType === EmailTemplateName::JUDGE_CREATED->value) {
             $variables = [
                 '{user_name}' => 'User Name',
                 '{judge_name}' => 'Judge Name',
@@ -121,7 +127,7 @@ class EmailTemplateController extends Controller
                 '{contact_no}' => 'Contact Number',
                 '{app_name}' => 'App Name'
             ];
-        } elseif ($template->name === EmailTemplateName::NEW_COURT->value) {
+        } elseif ($templateType === EmailTemplateName::COURT_CREATED->value) {
             $variables = [
                 '{user_name}' => 'User Name',
                 '{name}' => 'Court Name',
@@ -132,7 +138,7 @@ class EmailTemplateController extends Controller
                 '{address}' => 'Address',
                 '{app_name}' => 'App Name'
             ];
-        } elseif ($template->name === EmailTemplateName::NEW_TASK->value) {
+        } elseif ($templateType === EmailTemplateName::TASK_CREATED->value) {
             $variables = [
                 '{user_name}' => 'Assigned By',
                 '{assigned_to}' => 'Assigned To',
@@ -143,7 +149,7 @@ class EmailTemplateController extends Controller
                 '{task_type}' => 'Task Type',
                 '{app_name}' => 'App Name'
             ];
-        } elseif ($template->name === EmailTemplateName::NEW_LICENSE->value) {
+        } elseif ($templateType === EmailTemplateName::LICENSE_CREATED->value) {
             $variables = [
                 '{user_name}' => 'User Name',
                 '{team_member}' => 'Team Member',
@@ -159,7 +165,7 @@ class EmailTemplateController extends Controller
                 '{license_holder_email}' => 'License Holder Email',
                 '{app_name}' => 'App Name'
             ];
-        } elseif ($template->name === EmailTemplateName::NEW_CLE_RECORD->value) {
+        } elseif ($templateType === EmailTemplateName::CLE_RECORD_CREATED->value) {
             $variables = [
                 '{user_name}' => 'User Name',
                 '{team_member}' => 'Team Member',
@@ -170,7 +176,7 @@ class EmailTemplateController extends Controller
                 '{certificate_num}' => 'Certificate Number',
                 '{app_name}' => 'App Name'
             ];
-        } elseif ($template->name === EmailTemplateName::NEW_REGULATORY_BODY->value) {
+        } elseif ($templateType === EmailTemplateName::REGULATORY_BODY_CREATED->value) {
             $variables = [
                 '{user_name}' => 'User Name',
                 '{name}' => 'Regulatory Body Name',
@@ -185,6 +191,7 @@ class EmailTemplateController extends Controller
 
         return Inertia::render('email-templates/show', [
             'template' => $template,
+            'templateTypes' => array_map(fn (EmailTemplateName $case) => $case->value, EmailTemplateName::cases()),
             'languages' => $languages,
             'variables' => $variables
         ]);
@@ -194,12 +201,23 @@ class EmailTemplateController extends Controller
     {
         try {
             $request->validate([
-                'from' => 'required|string|max:255'
+                'name.en' => 'required|string|max:255',
+                'name.ar' => 'required|string|max:255',
+                'from.en' => 'required|string|max:255',
+                'from.ar' => 'required|string|max:255',
+                'type' => ['required', 'string', Rule::in(array_map(fn (EmailTemplateName $case) => $case->value, EmailTemplateName::cases()))],
             ]);
 
-            $emailTemplate->update([
-                'from' => $request->from
+            $emailTemplate->setTranslations('name', [
+                'en' => $request->input('name.en'),
+                'ar' => $request->input('name.ar'),
             ]);
+            $emailTemplate->setTranslations('from', [
+                'en' => $request->input('from.en'),
+                'ar' => $request->input('from.ar'),
+            ]);
+            $emailTemplate->type = $request->input('type');
+            $emailTemplate->save();
 
             return redirect()->back()->with('success', __('Template settings updated successfully.'));
         } catch (\Exception $e) {
@@ -216,12 +234,9 @@ class EmailTemplateController extends Controller
                 'content' => 'required|string'
             ]);
 
-            $emailTemplate->emailTemplateLangs()
-                ->where('lang', $request->lang)
-                ->update([
-                    'subject' => $request->subject,
-                    'content' => $request->get('content')
-                ]);
+            $emailTemplate->setTranslation('subject', $request->lang, $request->subject);
+            $emailTemplate->setTranslation('content', $request->lang, $request->get('content'));
+            $emailTemplate->save();
 
             return redirect()->back()->with('success', __('Email content updated successfully.'));
         } catch (\Exception $e) {
