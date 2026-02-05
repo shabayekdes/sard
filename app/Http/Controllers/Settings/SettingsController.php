@@ -60,10 +60,17 @@ class SettingsController extends Controller
 
         $emailTemplates = [];
         if (Auth::user()->type === 'company') {
+            $locale = app()->getLocale();
             $emailTemplatesQuery = EmailTemplate::get();
             $userSettings = UserEmailTemplate::where('user_id', Auth::id())->get()->keyBy('template_id');
 
-            $emailTemplates = $emailTemplatesQuery->map(function ($template) use ($userSettings) {
+            $emailTemplates = $emailTemplatesQuery->map(function (EmailTemplate $template) use ($userSettings) {
+                $locale = app()->getLocale();
+                $name = $template->getTranslation('name', $locale, false)
+                    ?: $template->getTranslation('name', 'en', false);
+                $from = $template->getTranslation('from', $locale, false)
+                    ?: $template->getTranslation('from', 'en', false);
+
                 // Get or create user setting for this template
                 $userSetting = $userSettings->get($template->id);
 
@@ -78,12 +85,12 @@ class SettingsController extends Controller
 
                 return [
                     'id' => $template->id,
-                    'name' => $template->name,
+                    'name' => $name,
                     'is_active' => $userSetting->is_active,
                     'template' => [
                         'id' => $template->id,
-                        'name' => $template->name,
-                        'from' => $template->from
+                        'name' => $name,
+                        'from' => $from
                     ]
                 ];
             });

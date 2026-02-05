@@ -26,12 +26,48 @@ interface Props {
 }
 
 export default function EmailNotificationSettings({ templates: initialTemplates = [] }: Props) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { props } = usePage();
 
     const [templates, setTemplates] = useState<EmailTemplate[]>(initialTemplates);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        setTemplates(initialTemplates);
+    }, [initialTemplates]);
+
+    useEffect(() => {
+        const handleLanguageChange = async () => {
+            try {
+                setLoading(true);
+                const response = await fetch(route('settings.email-notifications.get'), {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load templates');
+                }
+
+                const data = await response.json();
+                setTemplates(data.templates || []);
+            } catch (error) {
+                toast.error(t('Failed to load email templates'));
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        window.addEventListener('languageChanged', handleLanguageChange);
+        i18n.on('languageChanged', handleLanguageChange);
+
+        return () => {
+            window.removeEventListener('languageChanged', handleLanguageChange);
+            i18n.off('languageChanged', handleLanguageChange);
+        };
+    }, [i18n, t]);
 
     // Handle notification toggle
     const handleNotificationToggle = (templateId: number, enabled: boolean) => {

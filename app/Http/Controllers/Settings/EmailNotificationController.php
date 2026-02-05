@@ -20,7 +20,13 @@ class EmailNotificationController extends Controller
             ->get()
             ->keyBy('template_id');
 
-        $templates = $emailTemplates->map(function ($template) use ($userSettings, $user) {
+        $templates = $emailTemplates->map(function (EmailTemplate $template) use ($userSettings, $user) {
+            $locale = app()->getLocale();
+            $name = $template->getTranslation('name', $locale, false)
+                ?: $template->getTranslation('name', 'en', false);
+            $from = $template->getTranslation('from', $locale, false)
+                ?: $template->getTranslation('from', 'en', false);
+
             // Get or create user setting for this template
             $userSetting = $userSettings->get($template->id);
 
@@ -38,12 +44,12 @@ class EmailNotificationController extends Controller
 
             return [
                 'id' => $template->id,
-                'name' => $template->name,
+                'name' => $name,
                 'is_active' => $isEnabled,
                 'template' => [
                     'id' => $template->id,
-                    'name' => $template->name,
-                    'from' => $template->from
+                    'name' => $name,
+                    'from' => $from
                 ]
             ];
         });
