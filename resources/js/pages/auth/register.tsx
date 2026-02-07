@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
 
 import AuthButton from '@/components/auth/auth-button';
@@ -13,6 +13,7 @@ import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS, useAppearance } from '@/hooks/use-appearance';
 import AuthLayout from '@/layouts/auth-layout';
 import { useTranslation } from 'react-i18next';
+import { PhoneInput, defaultCountries } from 'react-international-phone';
 
 type RegisterForm = {
     name: string;
@@ -34,7 +35,20 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
     const { appearance } = useAppearance();
     const primaryColor = themeColor === 'custom' ? customColor : THEME_COLORS[themeColor as keyof typeof THEME_COLORS];
     const currentLogo = appearance === 'light' ? logoDark : logoLight;
-    console.log(currentLogo, appearance);
+    const { props } = usePage();
+    const { phoneCountries = [], defaultCountry = '' } = props as any;
+    const phoneCountriesByCode = new Map((phoneCountries || []).map((country: any) => [String(country.code || '').toLowerCase(), country]));
+    const phoneCountryCodes = (phoneCountries || [])
+        .map((country: any) => String(country.code || '').toLowerCase())
+        .filter((code: string) => code);
+    const allowedPhoneCountries = phoneCountryCodes.length
+        ? defaultCountries.filter((country) => phoneCountryCodes.includes(String(country[1]).toLowerCase()))
+        : defaultCountries;
+    const defaultPhoneCountry =
+        phoneCountriesByCode.get(String(defaultCountry).toLowerCase()) ||
+        phoneCountriesByCode.get('sa') ||
+        (phoneCountries || [])[0];
+
     const { data, setData, post, processing, errors, reset } = useForm<RegisterForm>({
         name: '',
         phone: '',
@@ -54,13 +68,12 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
             onFinish: () => reset('password', 'password_confirmation'),
         });
     };
+    const currentCountryCode = String(defaultPhoneCountry?.code || defaultCountry || 'sa').toLowerCase();
 
     return (
         <AuthLayout
             title={t('Create account')}
             leftImageSrc="/images/sign-in.jpeg"
-            showHeader={false}
-            showLanguageSwitcher={false}
             contentClassName="max-w-[720px]"
         >
             <form className="space-y-4" onSubmit={submit}>
@@ -109,17 +122,20 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
                         <Label htmlFor="phone" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                             {t('Phone Number')}
                         </Label>
-                        <Input
-                            id="phone"
-                            type="text"
-                            required
-                            tabIndex={2}
-                            autoComplete="phone"
-                            value={data.phone}
-                            onChange={(e) => setData('phone', e.target.value)}
-                            placeholder="+966 XXX XXX XX"
-                            className="h-10 w-full rounded-md border-slate-200 bg-white px-3 text-sm text-slate-700 transition-all duration-200 placeholder:text-slate-400 dark:border-gray-600 dark:bg-gray-700"
-                            style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
+                        <PhoneInput
+                            defaultCountry={currentCountryCode || undefined}
+                            value={data.phone || ''}
+                            countries={allowedPhoneCountries}
+                            inputProps={{ id: 'phone', name: 'phone', required: true }}
+                            className="w-full"
+                            inputClassName="w-full !h-10 !border !border-input !bg-background !text-sm !text-foreground"
+                            countrySelectorStyleProps={{
+                                buttonClassName: '!h-10 !border !border-input !bg-background',
+                                dropdownStyleProps: {
+                                    className: '!bg-background !text-foreground',
+                                },
+                            }}
+                            onChange={(value, meta) => setData('phone', value || '')}
                         />
                         <InputError message={errors.phone} />
                     </div>

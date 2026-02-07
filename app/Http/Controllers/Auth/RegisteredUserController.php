@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Country;
 use App\Models\User;
 use App\Models\Plan;
 use App\Models\Referral;
@@ -44,9 +45,23 @@ class RegisteredUserController extends Controller
                 ->first();
         }
 
+        $phoneCountries = Country::where('is_active', true)
+            ->whereNotNull('country_code')
+            ->get(['id', 'name', 'country_code'])
+            ->map(function ($country) {
+                return [
+                    'value' => $country->id,
+                    'label' => $country->name,
+                    'code' => $country->country_code,
+                ];
+            })
+            ->values();
+
         return Inertia::render('auth/register', [
             'referralCode' => $referralCode,
             'planId' => $planId,
+            'phoneCountries' => $phoneCountries,
+            'defaultCountry' => getSetting('defaultCountry', ''),
             'referrer' => $referrer ? $referrer->name : null,
             'settings' => settings(),
         ]);

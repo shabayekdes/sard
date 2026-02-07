@@ -26,15 +26,10 @@ interface AuthLayoutProps {
 export default function AuthLayout({
     children,
     title,
-    description,
-    icon,
     status,
     statusType = 'success',
     leftImageSrc,
     leftImageAlt,
-    showHeader = true,
-    showLanguageSwitcher = true,
-    contentClassName,
 }: AuthLayoutProps) {
     const { t } = useTranslation();
     const [mounted, setMounted] = useState(false);
@@ -96,17 +91,8 @@ export default function AuthLayout({
 
             {/* Right side - Content */}
             <div className="relative flex w-full items-center justify-center bg-white px-[62px] py-[60px] lg:w-1/2 dark:bg-slate-900">
-                {/* Language Switcher - Top Right */}
-                {showLanguageSwitcher && (
-                    <div className="absolute top-4 right-4">
-                        <LanguageSwitcher />
-                    </div>
-                )}
-
                 <div
-                    className={`w-full transition-all duration-700 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'} ${
-                        contentClassName || ''
-                    }`}
+                    className={`w-full max-w-[720px] transition-all duration-700 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
                 >
                     {/* Mobile branding - only visible on small screens */}
                     <div className="mb-8 flex flex-col items-center lg:hidden">
@@ -120,21 +106,6 @@ export default function AuthLayout({
                     </div>
 
                     <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xl dark:border-slate-700 dark:bg-slate-800">
-                        {showHeader && (icon || title || description) && (
-                            <div className="mb-6 text-center">
-                                {icon && (
-                                    <div
-                                        className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full"
-                                        style={{ backgroundColor: `${primaryColor}20` }}
-                                    >
-                                        {icon}
-                                    </div>
-                                )}
-                                {title && <h1 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white">{title}</h1>}
-                                {description && <p className="text-slate-600 dark:text-slate-400">{description}</p>}
-                            </div>
-                        )}
-
                         {status && (
                             <div
                                 className={`mb-6 text-center text-sm font-medium ${
