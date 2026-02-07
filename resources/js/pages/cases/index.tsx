@@ -440,23 +440,6 @@ export default function Cases() {
                   activeFilterCount={activeFilterCount}
                   onResetFilters={handleResetFilters}
                   onApplyFilters={applyFilters}
-                  currentPerPage={pageFilters.per_page?.toString() || '10'}
-                  onPerPageChange={(value) => {
-                      router.get(
-                          route('cases.index'),
-                          {
-                              page: 1,
-                              per_page: parseInt(value),
-                              search: searchTerm || undefined,
-                              case_type_id: selectedCaseType !== 'all' ? selectedCaseType : undefined,
-                              case_status_id: selectedCaseStatus !== 'all' ? selectedCaseStatus : undefined,
-                              priority: selectedPriority !== 'all' ? selectedPriority : undefined,
-                              status: selectedStatus !== 'all' ? selectedStatus : undefined,
-                              court_id: selectedCourt !== 'all' ? selectedCourt : undefined,
-                          },
-                          { preserveState: true, preserveScroll: true },
-                      );
-                  }}
               />
           </div>
 
@@ -486,6 +469,23 @@ export default function Cases() {
                   links={cases?.links}
                   entityName={t('cases')}
                   onPageChange={(url) => router.get(url)}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) => {
+                    router.get(
+                      route('cases.index'),
+                      {
+                        page: 1,
+                        per_page: parseInt(value),
+                        search: searchTerm || undefined,
+                        case_type_id: selectedCaseType !== 'all' ? selectedCaseType : undefined,
+                        case_status_id: selectedCaseStatus !== 'all' ? selectedCaseStatus : undefined,
+                        priority: selectedPriority !== 'all' ? selectedPriority : undefined,
+                        status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                        court_id: selectedCourt !== 'all' ? selectedCourt : undefined,
+                      },
+                      { preserveState: true, preserveScroll: true },
+                    );
+                  }}
               />
           </div>
 
