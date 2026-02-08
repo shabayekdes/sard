@@ -250,11 +250,11 @@ export default function Clients() {
             onClick: canCreate
                 ? () => handleAddNew()
                 : () =>
-                      toast.error(
-                          t('Client limit exceeded. Your plan allows maximum {{max}} clients. Please upgrade your plan.', {
-                              max: planLimits.max_clients,
-                          }),
-                      ),
+                    toast.error(
+                        t('Client limit exceeded. Your plan allows maximum {{max}} clients. Please upgrade your plan.', {
+                            max: planLimits.max_clients,
+                        }),
+                    ),
             disabled: !canCreate,
         });
     }

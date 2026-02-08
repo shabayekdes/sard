@@ -161,10 +161,9 @@ export default function CreateClient() {
     ];
 
     return (
-        <PageTemplate title={t('Client Management')} url="/clients" breadcrumbs={breadcrumbs} noPadding>
-            <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
-                <h2 className="text-lg font-semibold">{t('Add New Client')}</h2>
-                <form onSubmit={handleFormSubmit} className="mt-6 space-y-6">
+        <PageTemplate title={t('Add New Client')} url="/clients" breadcrumbs={breadcrumbs} noPadding>
+            <form onSubmit={handleFormSubmit}>
+                <div className="mb-6 rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div className="space-y-2">
                             <Label htmlFor="name">{t('Client Name')}</Label>
@@ -203,13 +202,13 @@ export default function CreateClient() {
                                 onValueChange={(value) => updateField('business_type', value)}
                                 className={isRtl ? 'flex justify-end gap-6' : 'flex gap-6'}
                             >
-                                <div className={isRtl ? 'flex items-center gap-2 flex-row-reverse' : 'flex items-center gap-2'}>
+                                <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
                                     <RadioGroupItem value="b2c" id="business_type_b2c" />
                                     <Label htmlFor="business_type_b2c" className="font-normal">
                                         {t('Individual')}
                                     </Label>
                                 </div>
-                                <div className={isRtl ? 'flex items-center gap-2 flex-row-reverse' : 'flex items-center gap-2'}>
+                                <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
                                     <RadioGroupItem value="b2b" id="business_type_b2b" />
                                     <Label htmlFor="business_type_b2b" className="font-normal">
                                         {t('Business')}
@@ -295,13 +294,13 @@ export default function CreateClient() {
                                     onValueChange={(value) => updateField('gender', value)}
                                     className={isRtl ? 'flex justify-end gap-6' : 'flex gap-6'}
                                 >
-                                    <div className={isRtl ? 'flex items-center gap-2 flex-row-reverse' : 'flex items-center gap-2'}>
+                                    <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
                                         <RadioGroupItem value="male" id="gender_male" />
                                         <Label htmlFor="gender_male" className="font-normal">
                                             {t('Male')}
                                         </Label>
                                     </div>
-                                    <div className={isRtl ? 'flex items-center gap-2 flex-row-reverse' : 'flex items-center gap-2'}>
+                                    <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
                                         <RadioGroupItem value="female" id="gender_female" />
                                         <Label htmlFor="gender_female" className="font-normal">
                                             {t('Female')}
@@ -396,6 +395,9 @@ export default function CreateClient() {
                         <Textarea id="notes" value={formData.notes} onChange={(e) => updateField('notes', e.target.value)} />
                         {renderError('notes')}
                     </div>
+                </div>
+                <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
+                    <h2 className="text-lg font-semibold">{t('Client Documents')}</h2>
 
                     <div className="space-y-4 rounded-lg border border-slate-200 bg-slate-50/50 p-4">
                         <div className="flex items-center justify-between">
@@ -415,7 +417,9 @@ export default function CreateClient() {
                         />
                         {renderError('documents')}
                     </div>
-
+                </div>
+              
+                <div className="sticky bottom-0 -mx-6 mt-6 border-t border-slate-200 bg-white px-6 py-4">
                     <div className="flex justify-end gap-2">
                         <Button type="button" variant="outline" onClick={() => router.get(route('clients.index'))}>
                             {t('Cancel')}
@@ -424,8 +428,8 @@ export default function CreateClient() {
                             {t('Save')}
                         </Button>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
         </PageTemplate>
     );
 }

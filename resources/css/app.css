@@ -306,6 +306,11 @@ html[dir="rtl"] [role="listbox"] {
   text-align: right !important;
 }
 
+html[dir="rtl"] .react-international-phone-country-selector-button__dropdown-arrow {
+    margin-left: 4px !important;
+    margin-right: 0 !important;
+}
+
 html[dir="rtl"] .react-international-phone {
   direction: rtl;
 }

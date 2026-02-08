@@ -269,64 +269,64 @@ export function Repeater({
         <div className="space-y-3">
           <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-800">
-              <tr>
-                {allowReorder && <th className="w-10 px-3 py-3"></th>}
-                {showItemNumbers && (
-                  <th className="w-12 px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300">#</th>
-                )}
-                {fields.map((field) => (
-                  <th
-                    key={field.name}
-                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300"
-                  >
-                    {field.label}
-                    {field.required && <span className="text-red-500 dark:text-red-400 ml-1">*</span>}
-                  </th>
-                ))}
-                <th className="w-24 px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300">
-                  {removeButtonText}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
-              {items.map((item, index) => (
-                <tr key={index} className={cn(itemClassName)}>
-                  {allowReorder && (
-                    <td className="px-3 py-3 align-top text-gray-400">
-                      <GripVertical className="h-4 w-4" />
-                    </td>
-                  )}
+              <thead className="bg-gray-50 dark:bg-gray-800">
+                <tr>
+                  {allowReorder && <th className="w-10 px-3 py-3"></th>}
                   {showItemNumbers && (
-                    <td className="px-3 py-3 align-top text-sm text-gray-600 dark:text-gray-300">{index + 1}</td>
+                    <th className="w-12 px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300">#</th>
                   )}
                   {fields.map((field) => (
-                    <td key={field.name} className="px-3 py-3 align-top">
-                      {renderField(
-                        field,
-                        item[field.name],
-                        (value) => updateItem(index, field.name, value),
-                        index
+                    <th
+                      key={field.name}
+                      className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300"
+                    >
+                      {field.label}
+                      {field.required && <span className="text-red-500 dark:text-red-400 ml-1">*</span>}
+                    </th>
+                  ))}
+                  <th className="w-24 px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300">
+                    {removeButtonText}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                {items.map((item, index) => (
+                  <tr key={index} className={cn(itemClassName)}>
+                    {allowReorder && (
+                      <td className="px-3 py-3 align-top text-gray-400">
+                        <GripVertical className="h-4 w-4" />
+                      </td>
+                    )}
+                    {showItemNumbers && (
+                      <td className="px-3 py-3 align-top text-sm text-gray-600 dark:text-gray-300">{index + 1}</td>
+                    )}
+                    {fields.map((field) => (
+                      <td key={field.name} className="px-3 py-3 align-top">
+                        {renderField(
+                          field,
+                          item[field.name],
+                          (value) => updateItem(index, field.name, value),
+                          index
+                        )}
+                      </td>
+                    ))}
+                    <td className="px-3 py-3 align-top">
+                      {items.length > minItems && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeItem(index)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 dark:border-gray-600"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       )}
                     </td>
-                  ))}
-                  <td className="px-3 py-3 align-top">
-                    {items.length > minItems && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeItem(index)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 dark:border-gray-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
           {(maxItems === -1 || items.length < maxItems) && (
             <div className="flex items-center justify-between">

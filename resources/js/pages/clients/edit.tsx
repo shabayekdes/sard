@@ -120,9 +120,8 @@ export default function EditClient() {
     const renderError = (field: string) => (normalizedErrors[field] ? <p className="text-xs text-red-500">{normalizedErrors[field]}</p> : null);
 
     return (
-        <PageTemplate title={t('Client Management')} url="/clients" breadcrumbs={breadcrumbs} noPadding>
-            <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
-                <h2 className="text-lg font-semibold">{t('Edit Client')}</h2>
+        <PageTemplate title={t('Edit Client')} url="/clients" breadcrumbs={breadcrumbs} noPadding>
+            <div className="rounded-lg border border-slate-200 bg-white px-6 pb-10 dark:border-gray-800">
                 <form onSubmit={handleFormSubmit} className="mt-6 space-y-6">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div className="space-y-2">
