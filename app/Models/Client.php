@@ -23,7 +23,6 @@ class Client extends BaseModel
         'tax_id',
         'date_of_birth',
         'notes',
-        'referral_source',
         'created_by',
         'business_type',
         'nationality_id',

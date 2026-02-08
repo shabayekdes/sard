@@ -28,6 +28,8 @@ interface SearchAndFilterBarProps {
   activeFilterCount: () => number;
   onResetFilters: () => void;
   onApplyFilters?: () => void;
+  currentPerPage?: string;
+  onPerPageChange?: (value: string) => void;
   // View toggle props
   showViewToggle?: boolean;
   activeView?: 'list' | 'grid';

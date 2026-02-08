@@ -24,7 +24,6 @@ return new class extends Migration
             $table->string('tax_id')->nullable();
             $table->date('date_of_birth')->nullable();
             $table->text('notes')->nullable();
-            $table->string('referral_source')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();
             

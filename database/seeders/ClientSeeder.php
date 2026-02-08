@@ -150,7 +150,6 @@ class ClientSeeder extends Seeder
                     'tax_id' => $isCorporate ? 'TAX' . str_pad($companyUser->id . $i, 6, '0', STR_PAD_LEFT) : null,
                     'tax_rate' => rand(0, 15) / 100, // 0% to 15% tax rate
                     'date_of_birth' => !$isCorporate ? '198' . rand(0, 9) . '-' . str_pad(rand(1, 12), 2, '0', STR_PAD_LEFT) . '-' . str_pad(rand(1, 28), 2, '0', STR_PAD_LEFT) : null,
-                    'referral_source' => ['Website', 'Referral', 'Advertisement', 'Social Media', 'Word of Mouth', 'Legal Directory'][rand(0, 5)],
                     'notes' => 'Client #' . $i . ' for ' . $companyUser->name . '. ' . ($isCorporate ? 'Corporate client with business needs.' : 'Individual client seeking legal assistance.'),
                 ];
 

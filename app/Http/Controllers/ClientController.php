@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use App\Models\ClientType;
+use App\Models\CaseType;
+use App\Models\CaseStatus;
+use App\Models\Court;
 use App\Models\ClientDocument;
 use App\Models\DocumentType;
 use App\Models\Country;
@@ -266,7 +269,6 @@ class ClientController extends Controller
             'tax_rate' => 'nullable|numeric|min:0|max:100',
             'date_of_birth' => 'nullable|date',
             'notes' => 'nullable|string',
-            'referral_source' => 'nullable|string|max:255',
             'documents' => 'nullable|array',
             'documents.*.document_name' => 'required_with:documents|string|max:255',
             'documents.*.document_type_id' => 'required_with:documents|exists:document_types,id',
@@ -428,7 +430,6 @@ class ClientController extends Controller
                     'tax_rate' => 'nullable|numeric|min:0|max:100',
                     'date_of_birth' => 'nullable|date',
                     'notes' => 'nullable|string',
-                    'referral_source' => 'nullable|string|max:255',
                 ]);
 
                 $phoneCountry = Country::where('id', $validated['country_id'])
@@ -525,6 +526,26 @@ class ClientController extends Controller
             });
         }
 
+        if ($request->has('case_type_id') && ! empty($request->case_type_id) && $request->case_type_id !== 'all') {
+            $casesQuery->where('case_type_id', $request->case_type_id);
+        }
+
+        if ($request->has('case_status_id') && ! empty($request->case_status_id) && $request->case_status_id !== 'all') {
+            $casesQuery->where('case_status_id', $request->case_status_id);
+        }
+
+        if ($request->has('priority') && ! empty($request->priority) && $request->priority !== 'all') {
+            $casesQuery->where('priority', $request->priority);
+        }
+
+        if ($request->has('status') && ! empty($request->status) && $request->status !== 'all') {
+            $casesQuery->where('status', $request->status);
+        }
+
+        if ($request->has('court_id') && ! empty($request->court_id) && $request->court_id !== 'all') {
+            $casesQuery->where('court_id', $request->court_id);
+        }
+
         // Apply sorting
         if ($request->has('sort_field') && ! empty($request->sort_field)) {
             $casesQuery->orderBy($request->sort_field, $request->sort_direction ?? 'asc');
@@ -533,6 +554,25 @@ class ClientController extends Controller
         }
 
         $cases = $casesQuery->paginate($request->per_page ?? 10);
+
+        $caseTypes = CaseType::where('created_by', createdBy())
+            ->where('status', 'active')
+            ->get(['id', 'name'])
+            ->map(function (CaseType $caseType) {
+                return [
+                    'id' => $caseType->id,
+                    'name' => $caseType->name,
+                    'name_translations' => $caseType->getTranslations('name'),
+                ];
+            });
+
+        $caseStatuses = CaseStatus::where('created_by', createdBy())
+            ->where('status', 'active')
+            ->get(['id', 'name']);
+
+        $courts = Court::where('created_by', createdBy())
+            ->where('status', 'active')
+            ->get(['id', 'name']);
 
         // Load invoices for this client
         $invoicesQuery = \App\Models\Invoice::withPermissionCheck()
@@ -629,10 +669,31 @@ class ClientController extends Controller
             'client' => $client,
             'documents' => $documents,
             'cases' => $cases,
+            'caseTypes' => $caseTypes,
+            'caseStatuses' => $caseStatuses,
+            'courts' => $courts,
             'invoices' => $invoices,
             'payments' => $payments,
             'allInvoices' => $allInvoices,
-            'filters' => $request->all(['search', 'sort_field', 'sort_direction', 'per_page', 'invoice_search', 'invoice_sort_field', 'invoice_sort_direction', 'invoice_per_page', 'payment_search', 'payment_sort_field', 'payment_sort_direction', 'payment_per_page']),
+            'filters' => $request->all([
+                'search',
+                'case_type_id',
+                'case_status_id',
+                'priority',
+                'status',
+                'court_id',
+                'sort_field',
+                'sort_direction',
+                'per_page',
+                'invoice_search',
+                'invoice_sort_field',
+                'invoice_sort_direction',
+                'invoice_per_page',
+                'payment_search',
+                'payment_sort_field',
+                'payment_sort_direction',
+                'payment_per_page',
+            ]),
         ]);
     }
 

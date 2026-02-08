@@ -66,7 +66,7 @@ const Loader = React.forwardRef<HTMLDivElement, LoaderProps>(
           animation: 'smoothRotate 3s linear infinite'
         }}></div>
         
-        <style jsx>{`
+        <style>{`
           @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.8); }
             to { opacity: 1; transform: scale(1); }

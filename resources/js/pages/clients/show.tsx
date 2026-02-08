@@ -1,24 +1,39 @@
-import { useState } from 'react';
-import { PageTemplate } from '@/components/page-template';
-import { usePage, router } from '@inertiajs/react';
-import { useTranslation } from 'react-i18next';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
-import { Pagination } from '@/components/ui/pagination';
 import { CrudFormModal } from '@/components/CrudFormModal';
 import { CrudTable } from '@/components/CrudTable';
-import { toast } from '@/components/custom-toast';
-import { ArrowLeft, FileText, Briefcase, Receipt, CreditCard } from 'lucide-react';
-import { formatCurrency } from '@/utils/helpers';
+import { PageTemplate } from '@/components/page-template';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { Pagination } from '@/components/ui/pagination';
+import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { useLayout } from '@/contexts/LayoutContext';
+import { formatCurrency } from '@/utils/helpers';
+import { router, usePage } from '@inertiajs/react';
+import { ArrowLeft, Briefcase, CreditCard, FileText, Receipt } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function ClientShow() {
     const { t, i18n } = useTranslation();
-    const { client, documents, cases, invoices, payments, allInvoices, filters = {} } = usePage().props as any;
-    const { position } = useLayout();
+    const {
+        client,
+        documents,
+        cases,
+        caseTypes,
+        caseStatuses,
+        courts,
+        invoices,
+        payments,
+        allInvoices,
+        filters = {},
+    } = usePage().props as any;
+    const { isRtl } = useLayout();
     const [activeTab, setActiveTab] = useState('cases');
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
+    const [selectedCaseType, setSelectedCaseType] = useState(filters.case_type_id || 'all');
+    const [selectedCaseStatus, setSelectedCaseStatus] = useState(filters.case_status_id || 'all');
+    const [selectedPriority, setSelectedPriority] = useState(filters.priority || 'all');
+    const [selectedStatus, setSelectedStatus] = useState(filters.status || 'all');
+    const [selectedCourt, setSelectedCourt] = useState(filters.court_id || 'all');
     const [invoiceSearchTerm, setInvoiceSearchTerm] = useState(filters.invoice_search || '');
     const [paymentSearchTerm, setPaymentSearchTerm] = useState(filters.payment_search || '');
     const [showFilters, setShowFilters] = useState(false);
@@ -41,49 +56,86 @@ export default function ClientShow() {
         { title: t('Dashboard'), href: route('dashboard') },
         { title: t('Client Management'), href: route('clients.index') },
         { title: t('Clients'), href: route('clients.index') },
-        { title: client.name }
+        { title: client.name },
     ];
 
     const pageActions = [
         {
             label: t('Back to Clients'),
-            icon: <ArrowLeft className="h-4 w-4 mr-2" />,
+            icon: <ArrowLeft className="mr-2 h-4 w-4" />,
             variant: 'outline' as const,
-            onClick: () => window.location.href = route('clients.index')
-        }
+            onClick: () => (window.location.href = route('clients.index')),
+        },
     ];
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        router.get(route('clients.show', client.id), {
-            page: 1,
-            search: searchTerm || undefined,
-            per_page: filters.per_page || 10
-        }, { preserveState: true, preserveScroll: true });
+        router.get(
+            route('clients.show', client.id),
+            {
+                page: 1,
+                search: searchTerm || undefined,
+                case_type_id: selectedCaseType !== 'all' ? selectedCaseType : undefined,
+                case_status_id: selectedCaseStatus !== 'all' ? selectedCaseStatus : undefined,
+                priority: selectedPriority !== 'all' ? selectedPriority : undefined,
+                status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                court_id: selectedCourt !== 'all' ? selectedCourt : undefined,
+                per_page: filters.per_page || 10,
+            },
+            { preserveState: true, preserveScroll: true },
+        );
     };
 
     const handleResetFilters = () => {
         setSearchTerm('');
-        router.get(route('clients.show', client.id), {
-            page: 1,
-            per_page: filters.per_page || 10
-        }, { preserveState: true, preserveScroll: true });
+        setSelectedCaseType('all');
+        setSelectedCaseStatus('all');
+        setSelectedPriority('all');
+        setSelectedStatus('all');
+        setSelectedCourt('all');
+        router.get(
+            route('clients.show', client.id),
+            {
+                page: 1,
+                per_page: filters.per_page || 10,
+            },
+            { preserveState: true, preserveScroll: true },
+        );
     };
 
     const applyFilters = () => {
-        router.get(route('clients.show', client.id), {
-            page: 1,
-            search: searchTerm || undefined,
-            per_page: filters.per_page || 10
-        }, { preserveState: true, preserveScroll: true });
+        router.get(
+            route('clients.show', client.id),
+            {
+                page: 1,
+                search: searchTerm || undefined,
+                case_type_id: selectedCaseType !== 'all' ? selectedCaseType : undefined,
+                case_status_id: selectedCaseStatus !== 'all' ? selectedCaseStatus : undefined,
+                priority: selectedPriority !== 'all' ? selectedPriority : undefined,
+                status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                court_id: selectedCourt !== 'all' ? selectedCourt : undefined,
+                per_page: filters.per_page || 10,
+            },
+            { preserveState: true, preserveScroll: true },
+        );
     };
 
     const hasActiveFilters = () => {
-        return searchTerm !== '';
+        return searchTerm !== '' ||
+            selectedCaseType !== 'all' ||
+            selectedCaseStatus !== 'all' ||
+            selectedPriority !== 'all' ||
+            selectedStatus !== 'all' ||
+            selectedCourt !== 'all';
     };
 
     const activeFilterCount = () => {
-        return searchTerm ? 1 : 0;
+        return (searchTerm ? 1 : 0)
+            + (selectedCaseType !== 'all' ? 1 : 0)
+            + (selectedCaseStatus !== 'all' ? 1 : 0)
+            + (selectedPriority !== 'all' ? 1 : 0)
+            + (selectedStatus !== 'all' ? 1 : 0)
+            + (selectedCourt !== 'all' ? 1 : 0);
     };
 
     const casesData = cases?.data || cases || [];
@@ -97,7 +149,7 @@ export default function ClientShow() {
         {
             key: 'case_id',
             label: t('Case ID'),
-            sortable: true
+            sortable: true,
         },
         {
             key: 'title',
@@ -107,7 +159,7 @@ export default function ClientShow() {
                 const title = row.title || '-';
                 const caseNumber = row.case_number ? ` - ${row.case_number}` : '';
                 return `${title}${caseNumber}`;
-            }
+            },
         },
         {
             key: 'case_status',
@@ -117,12 +169,12 @@ export default function ClientShow() {
                     className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
                     style={{
                         backgroundColor: `${row.case_status?.color}20`,
-                        color: row.case_status?.color
+                        color: row.case_status?.color,
                     }}
                 >
                     {row.case_status?.name || '-'}
                 </span>
-            )
+            ),
         },
         {
             key: 'priority',
@@ -131,21 +183,23 @@ export default function ClientShow() {
                 const colors = {
                     low: 'bg-green-50 text-green-700 ring-green-600/20',
                     medium: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
-                    high: 'bg-red-50 text-red-700 ring-red-600/20'
+                    high: 'bg-red-50 text-red-700 ring-red-600/20',
                 };
                 return (
-                    <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${colors[value as keyof typeof colors] || colors.medium}`}>
+                    <span
+                        className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${colors[value as keyof typeof colors] || colors.medium}`}
+                    >
                         {value ? t(value.charAt(0).toUpperCase() + value.slice(1)) : '-'}
                     </span>
                 );
-            }
+            },
         },
         {
             key: 'filing_date',
             label: t('Filing Date'),
             sortable: true,
-            render: (value: string) => value ? (window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()) : '-'
-        }
+            render: (value: string) => (value ? window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString() : '-'),
+        },
     ];
 
     const caseActions = [
@@ -154,15 +208,15 @@ export default function ClientShow() {
             icon: 'Eye',
             action: 'view',
             className: 'text-primary',
-            href: (row: any) => route('cases.show', row.id)
-        }
+            href: (row: any) => route('cases.show', row.id),
+        },
     ];
 
     const invoiceColumns = [
         {
             key: 'invoice_number',
             label: t('Invoice #'),
-            sortable: true
+            sortable: true,
         },
         {
             key: 'case',
@@ -175,27 +229,27 @@ export default function ClientShow() {
                         <span className="text-xs text-gray-500 dark:text-gray-400">{row.case.title || '-'}</span>
                     </div>
                 );
-            }
+            },
         },
         {
             key: 'total_amount',
             label: t('Total'),
             render: (value: any) => {
                 const amount = parseFloat(value);
-                return isNaN(amount) ? formatCurrency(0.00) : formatCurrency(amount);
-            }
+                return isNaN(amount) ? formatCurrency(0.0) : formatCurrency(amount);
+            },
         },
         {
             key: 'invoice_date',
             label: t('Invoice Date'),
             sortable: true,
-            render: (value: string) => value ? (window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()) : '-'
+            render: (value: string) => (value ? window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString() : '-'),
         },
         {
             key: 'due_date',
             label: t('Due Date'),
             sortable: true,
-            render: (value: string) => value ? (window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()) : '-'
+            render: (value: string) => (value ? window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString() : '-'),
         },
         {
             key: 'status',
@@ -208,15 +262,17 @@ export default function ClientShow() {
                     partial: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
                     partial_paid: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
                     overdue: 'bg-red-50 text-red-700 ring-red-600/20',
-                    cancelled: 'bg-gray-50 text-gray-700 ring-gray-600/20'
+                    cancelled: 'bg-gray-50 text-gray-700 ring-gray-600/20',
                 };
                 return (
-                    <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${statusColors[value as keyof typeof statusColors] || statusColors.draft}`}>
+                    <span
+                        className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${statusColors[value as keyof typeof statusColors] || statusColors.draft}`}
+                    >
                         {t(value === 'partial_paid' ? 'Partial Paid' : value?.charAt(0).toUpperCase() + value?.slice(1).replace('_', ' '))}
                     </span>
                 );
-            }
-        }
+            },
+        },
     ];
 
     const invoiceActions = [
@@ -225,47 +281,47 @@ export default function ClientShow() {
             icon: 'Eye',
             action: 'view',
             className: 'text-primary',
-            href: (row: any) => route('billing.invoices.show', row.id)
-        }
+            href: (row: any) => route('billing.invoices.show', row.id),
+        },
     ];
 
     const paymentColumns = [
         {
             key: 'invoice',
             label: t('Invoice #'),
-            render: (value: any) => value?.invoice_number || '-'
+            render: (value: any) => value?.invoice_number || '-',
         },
         {
             key: 'amount',
             label: t('Amount'),
             render: (value: any) => {
                 const amount = parseFloat(value);
-                return isNaN(amount) ? formatCurrency(0.00) : formatCurrency(amount.toFixed(2));
-            }
+                return isNaN(amount) ? formatCurrency(0.0) : formatCurrency(amount.toFixed(2));
+            },
         },
         {
             key: 'payment_method',
             label: t('Payment Method'),
             render: (value: string) => (
-                <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800 dark:bg-gray-700 dark:text-gray-300">
                     {t(value ? value.charAt(0).toUpperCase() + value.slice(1).replace('_', ' ') : '-')}
                 </span>
-            )
+            ),
         },
         {
             key: 'payment_date',
             label: t('Payment Date'),
             sortable: true,
-            render: (value: string) => value ? (window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()) : '-'
-        }
+            render: (value: string) => (value ? window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString() : '-'),
+        },
     ];
 
     const handlePaymentAction = (action: string, item: any) => {
         if (action === 'view') {
             const paymentData = {
                 ...item,
-                invoice_id: item.invoice_id ? String(item.invoice_id) : (item.invoice?.id ? String(item.invoice.id) : ''),
-                invoice: item.invoice
+                invoice_id: item.invoice_id ? String(item.invoice_id) : item.invoice?.id ? String(item.invoice.id) : '',
+                invoice: item.invoice,
             };
             setCurrentPayment(paymentData);
             setPaymentFormMode('view');
@@ -278,159 +334,79 @@ export default function ClientShow() {
             label: t('View Payment'),
             icon: 'Eye',
             action: 'view',
-            className: 'text-primary'
-        }
+            className: 'text-primary',
+        },
     ];
 
+    const formatDate = (value?: string | null) => {
+        if (!value) return '-';
+        return window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString();
+    };
+
+    const businessTypeLabel = client.business_type === 'b2b' ? t('Business') : t('Individual');
+    const statusLabel = client.status === 'active' ? t('Active') : t('Inactive');
+    const isBusiness = client.business_type === 'b2b';
+
+    const detailItems: { label?: string; value?: ReactNode; type?: 'divider' }[] = [
+        { label: t('Name'), value: client.name || '-' },
+        { label: t('Client Type'), value: getTranslatedValue(client.client_type?.name_translations || client.client_type?.name) || '-' },
+        { label: t('Business Type'), value: businessTypeLabel },
+        { label: t('Phone'), value: client.phone || '-' },
+        { label: t('Email'), value: client.email || '-' },
+        { label: t('Client ID'), value: client.client_id || '-' },
+        { type: 'divider' },
+        { label: t('Nationality'), value: getTranslatedValue(client.nationality?.nationality_name) },
+        { label: t('ID Number'), value: client.id_number || '-' },
+        { label: t('Gender'), value: client.gender ? t(client.gender.charAt(0).toUpperCase() + client.gender.slice(1)) : '-' },
+        { label: t('Date of Birth'), value: formatDate(client.date_of_birth) },
+        { label: t('Tax Rate'), value: client.tax_rate ? `${client.tax_rate}%` : '0%' },
+        { label: t('Address'), value: client.address || '-' },
+        { label: t('Status'), value: statusLabel },
+        { label: t('Created'), value: formatDate(client.created_at) },
+    ];
+
+    if (isBusiness) {
+        detailItems.splice(
+            4,
+            0,
+            { label: t('Unified Number'), value: client.unified_number || '-' },
+            { label: t('CR Number'), value: client.cr_number || '-' },
+            { label: t('CR Issuance Date'), value: formatDate(client.cr_issuance_date) },
+            { label: t('Tax ID'), value: client.tax_id || '-' },
+        );
+    }
 
     return (
-        <PageTemplate title={`${t('Client')}: ${client.name}`} url={route('clients.show', client.id)} breadcrumbs={breadcrumbs} actions={pageActions} noPadding>
+        <PageTemplate
+            title={`${t('Client Details')}: ${client.name}`}
+            url={route('clients.show', client.id)}
+            breadcrumbs={breadcrumbs}
+            actions={pageActions}
+            noPadding
+        >
             <div className="space-y-6">
                 {/* Client Details Card */}
-                <Card className="p-6">
-                    {(client.business_type === 'b2c' || !client.business_type) ? (
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            <div>
-                                <h3 className="mb-4 text-lg font-semibold">{t('Basic Info')}</h3>
-                                <div className="space-y-2">
-                                    <div>
-                                        <strong>{t('Client ID')}:</strong> {client.client_id}
-                                    </div>
-                                    <div>
-                                        <strong>{t('Name')}:</strong> {client.name}
-                                        <Badge className="ml-2" variant="outline">{t('Individual')}</Badge>
-                                    </div>
-                                    <div>
-                                        <strong>{t('Type')}:</strong> {getTranslatedValue(client.client_type?.name_translations || client.client_type?.name) || '-'}
-                                    </div>
-                                    <div>
-                                        <strong>{t('Nationality')}:</strong> {getTranslatedValue(client.nationality?.nationality_name)}
-                                    </div>
-                                    <div>
-                                        <strong>{t('ID')}:</strong> {client.id_number || '-'}
-                                    </div>
-                                    <div>
-                                        <strong>{t('Gender')}:</strong> {client.gender ? t(client.gender.charAt(0).toUpperCase() + client.gender.slice(1)) : '-'}
-                                    </div>
-                                    <div>
-                                        <strong>{t('Date of Birth')}:</strong>{' '}
-                                        {client.date_of_birth
-                                            ? window.appSettings?.formatDate(client.date_of_birth) || new Date(client.date_of_birth).toLocaleDateString()
-                                            : '-'}
-                                    </div>
-                                    <div>
-                                        <strong>{t('Status')}:</strong>
-                                        <Badge className="ml-2" variant={client.status === 'active' ? 'default' : 'secondary'}>
-                                            {client.status === 'active' ? t('Active') : t('Inactive')}
-                                        </Badge>
-                                    </div>
-                                </div>
-                            </div>
+                <Card className="px-6">
+                    <div className={`mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 ${isRtl ? 'text-right' : 'text-left'}`}>
+                        {detailItems.map((item, index) => {
+                            if (item.type === 'divider') {
+                                return <div key={`divider-${index}`} className="col-span-full h-px bg-gray-200 dark:bg-gray-800" />;
+                            }
 
-                            <div>
-                                <h3 className="mb-4 text-lg font-semibold">{t('Contact Info')}</h3>
-                                <div className="space-y-2">
-                                    <div>
-                                        <strong>{t('Email')}:</strong> {client.email || '-'}
-                                    </div>
-                                    <div>
-                                        <strong>{t('Phone')}:</strong> {client.phone || '-'}
-                                    </div>
-                                    <div>
-                                        <strong>{t('Address')}:</strong> {client.address || '-'}
-                                    </div>
+                            return (
+                                <div key={`${item.label}-${index}`} className="space-y-1">
+                                    <div className="text-lx font-medium text-gray-500 dark:text-gray-400">{item.label}</div>
+                                    <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">{item.value || '-'}</div>
                                 </div>
-                            </div>
-
-                            <div>
-                                <h3 className="mb-4 text-lg font-semibold">{t('Additional Info')}</h3>
-                                <div className="space-y-2">
-                                    <div>
-                                        <strong>{t('Tax Rate')}:</strong> {client.tax_rate ? `${client.tax_rate}%` : '0%'}
-                                    </div>
-                                    <div>
-                                        <strong>{t('Notes')}:</strong>
-                                    </div>
-                                    <div className="rounded bg-gray-50 p-3 text-sm text-gray-600 dark:bg-gray-800 dark:text-gray-300">{client.notes || t('No notes available')}</div>
-                                    <div>
-                                        <strong>{t('Referral Source')}:</strong> {client.referral_source || '-'}
-                                    </div>
-                                    <div>
-                                        <strong>{t('Created')}:</strong>{' '}
-                                        {window.appSettings?.formatDate(client.created_at) || new Date(client.created_at).toLocaleDateString()}
-                                    </div>
-                                </div>
-                            </div>
+                            );
+                        })}
+                    </div>
+                    <div className="my-6 space-y-2">
+                        <div className="text-xs font-medium text-gray-500 dark:text-gray-400">{t('Notes')}</div>
+                        <div className="rounded p-3 text-sm text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                            {client.notes || t('No notes available')}
                         </div>
-                    ) : (
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            <div>
-                                <h3 className="mb-4 text-lg font-semibold">{t('Basic Info')}</h3>
-                                <div className="space-y-2">
-                                    <div>
-                                        <strong>{t('Client ID')}:</strong> {client.client_id}
-                                    </div>
-                                    <div>
-                                        <strong>{t('Name')}:</strong> {client.name}
-                                        <Badge className="ml-2" variant="outline">{t('Business')}</Badge>
-                                    </div>
-                                    <div>
-                                        <strong>{t('Type')}:</strong> {getTranslatedValue(client.client_type?.name_translations || client.client_type?.name) || '-'}
-                                    </div>
-                                    <div>
-                                        <strong>{t('Unified Number')}:</strong> {client.unified_number || '-'}
-                                    </div>
-                                    <div>
-                                        <strong>{t('CR Number')}:</strong> {client.cr_number || '-'}
-                                    </div>
-                                    <div>
-                                        <strong>{t('CR Issuance Date')}:</strong>{' '}
-                                        {client.cr_issuance_date
-                                            ? window.appSettings?.formatDate(client.cr_issuance_date) || new Date(client.cr_issuance_date).toLocaleDateString()
-                                            : '-'}
-                                    </div>
-                                    <div>
-                                        <strong>{t('Tax ID')}:</strong> {client.tax_id || '-'}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h3 className="mb-4 text-lg font-semibold">{t('Contact Info')}</h3>
-                                <div className="space-y-2">
-                                    <div>
-                                        <strong>{t('Email')}:</strong> {client.email || '-'}
-                                    </div>
-                                    <div>
-                                        <strong>{t('Phone')}:</strong> {client.phone || '-'}
-                                    </div>
-                                    <div>
-                                        <strong>{t('Address')}:</strong> {client.address || '-'}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h3 className="mb-4 text-lg font-semibold">{t('Additional Info')}</h3>
-                                <div className="space-y-2">
-                                    <div>
-                                        <strong>{t('Tax Rate')}:</strong> {client.tax_rate ? `${client.tax_rate}%` : '0%'}
-                                    </div>
-                                    <div>
-                                        <strong>{t('Notes')}:</strong>
-                                    </div>
-                                    <div className="rounded bg-gray-50 p-3 text-sm text-gray-600 dark:bg-gray-800 dark:text-gray-300">{client.notes || t('No notes available')}</div>
-                                    {/*<div>*/}
-                                    {/*    <strong>{t('Referral Source')}:</strong> {client.referral_source || '-'}*/}
-                                    {/*</div>*/}
-                                    <div>
-                                        <strong>{t('Created')}:</strong>{' '}
-                                        {window.appSettings?.formatDate(client.created_at) || new Date(client.created_at).toLocaleDateString()}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    </div>
                 </Card>
 
                 {/* Tabs */}
@@ -440,61 +416,71 @@ export default function ClientShow() {
                             <button
                                 onClick={() => setActiveTab('cases')}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'cases'
-                                    ? 'border-primary text-primary'
-                                    : 'border-transparent text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary'
+                                        ? 'border-primary text-primary'
+                                        : 'hover:text-primary dark:hover:text-primary border-transparent text-gray-500 dark:text-gray-400'
                                     }`}
                             >
                                 <div className="flex items-center space-x-2">
                                     <Briefcase className="h-4 w-4" />
-                                    <span>{t('Cases')} ({casesTotal})</span>
+                                    <span>
+                                        {t('Cases')} ({casesTotal})
+                                    </span>
                                 </div>
                             </button>
                             <button
                                 onClick={() => setActiveTab('invoices')}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'invoices'
-                                    ? 'border-primary text-primary'
-                                    : 'border-transparent text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary'
+                                        ? 'border-primary text-primary'
+                                        : 'hover:text-primary dark:hover:text-primary border-transparent text-gray-500 dark:text-gray-400'
                                     }`}
                             >
                                 <div className="flex items-center space-x-2">
                                     <Receipt className="h-4 w-4" />
-                                    <span>{t('Invoices')} ({invoicesTotal})</span>
+                                    <span>
+                                        {t('Invoices')} ({invoicesTotal})
+                                    </span>
                                 </div>
                             </button>
                             <button
                                 onClick={() => setActiveTab('payments')}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'payments'
-                                    ? 'border-primary text-primary'
-                                    : 'border-transparent text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary'
+                                        ? 'border-primary text-primary'
+                                        : 'hover:text-primary dark:hover:text-primary border-transparent text-gray-500 dark:text-gray-400'
                                     }`}
                             >
                                 <div className="flex items-center space-x-2">
                                     <CreditCard className="h-4 w-4" />
-                                    <span>{t('Payments')} ({paymentsTotal})</span>
+                                    <span>
+                                        {t('Payments')} ({paymentsTotal})
+                                    </span>
                                 </div>
                             </button>
                             <button
                                 onClick={() => setActiveTab('documents')}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'documents'
-                                    ? 'border-primary text-primary'
-                                    : 'border-transparent text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary'
+                                        ? 'border-primary text-primary'
+                                        : 'hover:text-primary dark:hover:text-primary border-transparent text-gray-500 dark:text-gray-400'
                                     }`}
                             >
                                 <div className="flex items-center space-x-2">
                                     <FileText className="h-4 w-4" />
-                                    <span>{t('Documents')} ({documents?.length || 0})</span>
+                                    <span>
+                                        {t('Documents')} ({documents?.length || 0})
+                                    </span>
                                 </div>
                             </button>
                             <button
                                 onClick={() => setActiveTab('billing')}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'billing'
-                                    ? 'border-primary text-primary'
-                                    : 'border-transparent text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary'
+                                        ? 'border-primary text-primary'
+                                        : 'hover:text-primary dark:hover:text-primary border-transparent text-gray-500 dark:text-gray-400'
                                     }`}
                             >
                                 <div className="flex items-center space-x-2">
                                     <FileText className="h-4 w-4" />
-                                    <span>{t('Billing Info')} ({client.billing_info ? 1 : 0})</span>
+                                    <span>
+                                        {t('Billing Info')} ({client.billing_info ? 1 : 0})
+                                    </span>
                                 </div>
                             </button>
                         </nav>
@@ -508,26 +494,86 @@ export default function ClientShow() {
                                         searchTerm={searchTerm}
                                         onSearchChange={setSearchTerm}
                                         onSearch={handleSearch}
-                                        filters={[]}
+                                        filters={[
+                                            {
+                                                name: 'case_type_id',
+                                                label: t('Case Type'),
+                                                type: 'select',
+                                                value: selectedCaseType,
+                                                onChange: setSelectedCaseType,
+                                                options: [
+                                                    { value: 'all', label: t('All Types') },
+                                                    ...(caseTypes || []).map((type: any) => ({
+                                                        value: type.id.toString(),
+                                                        label: type.name,
+                                                    })),
+                                                ],
+                                            },
+                                            {
+                                                name: 'case_status_id',
+                                                label: t('Case Status'),
+                                                type: 'select',
+                                                value: selectedCaseStatus,
+                                                onChange: setSelectedCaseStatus,
+                                                options: [
+                                                    { value: 'all', label: t('All Statuses') },
+                                                    ...(caseStatuses || []).map((status: any) => ({
+                                                        value: status.id.toString(),
+                                                        label: status.name,
+                                                    })),
+                                                ],
+                                            },
+                                            {
+                                                name: 'priority',
+                                                label: t('Priority'),
+                                                type: 'select',
+                                                value: selectedPriority,
+                                                onChange: setSelectedPriority,
+                                                options: [
+                                                    { value: 'all', label: t('All Priorities') },
+                                                    { value: 'low', label: t('Low') },
+                                                    { value: 'medium', label: t('Medium') },
+                                                    { value: 'high', label: t('High') },
+                                                ],
+                                            },
+                                            {
+                                                name: 'status',
+                                                label: t('Status'),
+                                                type: 'select',
+                                                value: selectedStatus,
+                                                onChange: setSelectedStatus,
+                                                options: [
+                                                    { value: 'all', label: t('All Statuses') },
+                                                    { value: 'active', label: t('Active') },
+                                                    { value: 'inactive', label: t('Inactive') },
+                                                ],
+                                            },
+                                            {
+                                                name: 'court_id',
+                                                label: t('Court'),
+                                                type: 'select',
+                                                value: selectedCourt,
+                                                onChange: setSelectedCourt,
+                                                options: [
+                                                    { value: 'all', label: t('All Courts') },
+                                                    ...(courts || []).map((court: any) => ({
+                                                        value: court.id.toString(),
+                                                        label: court.name,
+                                                    })),
+                                                ],
+                                            },
+                                        ]}
                                         showFilters={showFilters}
                                         setShowFilters={setShowFilters}
                                         hasActiveFilters={hasActiveFilters}
                                         activeFilterCount={activeFilterCount}
                                         onResetFilters={handleResetFilters}
                                         onApplyFilters={applyFilters}
-                                        currentPerPage={filters.per_page?.toString() || '10'}
-                                        onPerPageChange={(value) => {
-                                            router.get(route('clients.show', client.id), {
-                                                page: 1,
-                                                per_page: parseInt(value),
-                                                search: searchTerm || undefined
-                                            }, { preserveState: true, preserveScroll: true });
-                                        }}
                                     />
                                 </div>
                                 {casesData && casesData.length > 0 ? (
                                     <>
-                                        <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
+                                        <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
                                             <CrudTable
                                                 columns={caseColumns}
                                                 actions={caseActions}
@@ -564,38 +610,38 @@ export default function ClientShow() {
                                         onSearchChange={setInvoiceSearchTerm}
                                         onSearch={(e) => {
                                             e.preventDefault();
-                                            router.get(route('clients.show', client.id), {
-                                                invoice_page: 1,
-                                                invoice_search: invoiceSearchTerm || undefined,
-                                                invoice_per_page: filters.invoice_per_page || 10
-                                            }, { preserveState: true, preserveScroll: true });
+                                            router.get(
+                                                route('clients.show', client.id),
+                                                {
+                                                    invoice_page: 1,
+                                                    invoice_search: invoiceSearchTerm || undefined,
+                                                    invoice_per_page: filters.invoice_per_page || 10,
+                                                },
+                                                { preserveState: true, preserveScroll: true },
+                                            );
                                         }}
                                         filters={[]}
                                         showFilters={false}
                                         setShowFilters={() => { }}
                                         hasActiveFilters={() => invoiceSearchTerm !== ''}
-                                        activeFilterCount={() => invoiceSearchTerm ? 1 : 0}
+                                        activeFilterCount={() => (invoiceSearchTerm ? 1 : 0)}
                                         onResetFilters={() => {
                                             setInvoiceSearchTerm('');
-                                            router.get(route('clients.show', client.id), {
-                                                invoice_page: 1,
-                                                invoice_per_page: filters.invoice_per_page || 10
-                                            }, { preserveState: true, preserveScroll: true });
+                                            router.get(
+                                                route('clients.show', client.id),
+                                                {
+                                                    invoice_page: 1,
+                                                    invoice_per_page: filters.invoice_per_page || 10,
+                                                },
+                                                { preserveState: true, preserveScroll: true },
+                                            );
                                         }}
                                         onApplyFilters={() => { }}
-                                        currentPerPage={filters.invoice_per_page?.toString() || '10'}
-                                        onPerPageChange={(value) => {
-                                            router.get(route('clients.show', client.id), {
-                                                invoice_page: 1,
-                                                invoice_per_page: parseInt(value),
-                                                invoice_search: invoiceSearchTerm || undefined
-                                            }, { preserveState: true, preserveScroll: true });
-                                        }}
                                     />
                                 </div>
                                 {invoicesData && invoicesData.length > 0 ? (
                                     <>
-                                        <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
+                                        <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
                                             <CrudTable
                                                 columns={invoiceColumns}
                                                 actions={invoiceActions}
@@ -632,38 +678,38 @@ export default function ClientShow() {
                                         onSearchChange={setPaymentSearchTerm}
                                         onSearch={(e) => {
                                             e.preventDefault();
-                                            router.get(route('clients.show', client.id), {
-                                                payment_page: 1,
-                                                payment_search: paymentSearchTerm || undefined,
-                                                payment_per_page: filters.payment_per_page || 10
-                                            }, { preserveState: true, preserveScroll: true });
+                                            router.get(
+                                                route('clients.show', client.id),
+                                                {
+                                                    payment_page: 1,
+                                                    payment_search: paymentSearchTerm || undefined,
+                                                    payment_per_page: filters.payment_per_page || 10,
+                                                },
+                                                { preserveState: true, preserveScroll: true },
+                                            );
                                         }}
                                         filters={[]}
                                         showFilters={false}
                                         setShowFilters={() => { }}
                                         hasActiveFilters={() => paymentSearchTerm !== ''}
-                                        activeFilterCount={() => paymentSearchTerm ? 1 : 0}
+                                        activeFilterCount={() => (paymentSearchTerm ? 1 : 0)}
                                         onResetFilters={() => {
                                             setPaymentSearchTerm('');
-                                            router.get(route('clients.show', client.id), {
-                                                payment_page: 1,
-                                                payment_per_page: filters.payment_per_page || 10
-                                            }, { preserveState: true, preserveScroll: true });
+                                            router.get(
+                                                route('clients.show', client.id),
+                                                {
+                                                    payment_page: 1,
+                                                    payment_per_page: filters.payment_per_page || 10,
+                                                },
+                                                { preserveState: true, preserveScroll: true },
+                                            );
                                         }}
                                         onApplyFilters={() => { }}
-                                        currentPerPage={filters.payment_per_page?.toString() || '10'}
-                                        onPerPageChange={(value) => {
-                                            router.get(route('clients.show', client.id), {
-                                                payment_page: 1,
-                                                payment_per_page: parseInt(value),
-                                                payment_search: paymentSearchTerm || undefined
-                                            }, { preserveState: true, preserveScroll: true });
-                                        }}
                                     />
                                 </div>
                                 {paymentsData && paymentsData.length > 0 ? (
                                     <>
-                                        <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
+                                        <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
                                             <CrudTable
                                                 columns={paymentColumns}
                                                 actions={paymentActions}
@@ -848,19 +894,19 @@ export default function ClientShow() {
                                 // Get all invoices and ensure the payment's invoice is included
                                 const invoiceOptions = (allInvoices || []).map((invoice: any) => ({
                                     value: invoice.id.toString(),
-                                    label: `${invoice.invoice_number} - ${invoice.client?.name}`
+                                    label: `${invoice.invoice_number} - ${invoice.client?.name}`,
                                 }));
 
                                 // If currentPayment has an invoice that's not in allInvoices, add it
                                 if (currentPayment?.invoice && !invoiceOptions.find((opt: any) => opt.value === String(currentPayment.invoice.id))) {
                                     invoiceOptions.push({
                                         value: String(currentPayment.invoice.id),
-                                        label: `${currentPayment.invoice.invoice_number} - ${currentPayment.invoice.client?.name || ''}`
+                                        label: `${currentPayment.invoice.invoice_number} - ${currentPayment.invoice.client?.name || ''}`,
                                     });
                                 }
 
                                 return invoiceOptions;
-                            })()
+                            })(),
                         },
                         {
                             name: 'payment_method',
@@ -873,8 +919,8 @@ export default function ClientShow() {
                                 { value: 'check', label: t('Check') },
                                 { value: 'credit_card', label: t('Credit Card') },
                                 { value: 'bank_transfer', label: t('Bank Transfer') },
-                                { value: 'online', label: t('Online Payment') }
-                            ]
+                                { value: 'online', label: t('Online Payment') },
+                            ],
                         },
                         { name: 'amount', label: t('Amount'), type: 'number', step: '0.01', required: true, min: '0', disabled: true },
                         { name: 'payment_date', label: t('Payment Date'), type: 'date', required: true, disabled: true },
@@ -890,11 +936,15 @@ export default function ClientShow() {
                                 }
 
                                 // Handle both comma-separated string and array
-                                const fileList = typeof files === 'string'
-                                    ? files.split(',').filter(Boolean).map(f => f.trim())
-                                    : Array.isArray(files)
-                                        ? files.filter(Boolean)
-                                        : [];
+                                const fileList =
+                                    typeof files === 'string'
+                                        ? files
+                                            .split(',')
+                                            .filter(Boolean)
+                                            .map((f) => f.trim())
+                                        : Array.isArray(files)
+                                            ? files.filter(Boolean)
+                                            : [];
 
                                 if (fileList.length === 0) {
                                     return <div className="rounded-md border bg-gray-50 p-2">-</div>;
@@ -930,23 +980,23 @@ export default function ClientShow() {
                                             const fileName = file.split('/').pop() || file;
 
                                             return (
-                                                <div key={index} className="flex items-center gap-2 p-2 border rounded-md bg-gray-50">
+                                                <div key={index} className="flex items-center gap-2 rounded-md border bg-gray-50 p-2">
                                                     {isImg ? (
                                                         <img
                                                             src={displayUrl}
                                                             alt={fileName}
-                                                            className="w-16 h-16 object-cover rounded"
+                                                            className="h-16 w-16 rounded object-cover"
                                                             onError={(e) => {
                                                                 (e.target as HTMLImageElement).style.display = 'none';
                                                             }}
                                                         />
                                                     ) : (
-                                                        <div className="w-16 h-16 flex items-center justify-center bg-gray-200 rounded">
+                                                        <div className="flex h-16 w-16 items-center justify-center rounded bg-gray-200">
                                                             <span className="text-xs text-gray-500">{getFileExtension(file).toUpperCase()}</span>
                                                         </div>
                                                     )}
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-sm font-medium text-gray-900 truncate">{fileName}</p>
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="truncate text-sm font-medium text-gray-900">{fileName}</p>
                                                         <a
                                                             href={displayUrl}
                                                             target="_blank"
@@ -961,10 +1011,10 @@ export default function ClientShow() {
                                         })}
                                     </div>
                                 );
-                            }
-                        }
+                            },
+                        },
                     ],
-                    modalSize: 'lg'
+                    modalSize: 'lg',
                 }}
                 initialData={currentPayment}
                 title={t('View Payment')}
