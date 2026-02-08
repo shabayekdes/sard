@@ -40,11 +40,11 @@ class ClientController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Handle sorting
-        if ($request->has('sort_field') && ! empty($request->sort_field)) {
-            $query->orderBy($request->sort_field, $request->sort_direction ?? 'asc');
-        } else {
-            $query->orderBy('created_at', 'desc');
+        // Handle sorting (default to latest)
+        $sortField = $request->input('sort_field', 'created_at');
+        $sortDirection = $request->input('sort_direction', 'desc');
+        if (! empty($sortField)) {
+            $query->orderBy($sortField, $sortDirection);
         }
 
         $clients = $query->paginate($request->per_page ?? 10);
@@ -129,7 +129,13 @@ class ClientController extends Controller
             'defaultCountry' => getSetting('defaultCountry', ''),
             'defaultTaxRate' => getSetting('defaultTaxRate', ''),
             'planLimits' => $planLimits,
-            'filters' => $request->all(['search', 'client_type_id', 'status', 'sort_field', 'sort_direction', 'per_page']),
+            'filters' => array_merge(
+                $request->all(['search', 'client_type_id', 'status', 'per_page']),
+                [
+                    'sort_field' => $sortField,
+                    'sort_direction' => $sortDirection,
+                ]
+            ),
         ]);
     }
 

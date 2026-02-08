@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
+import { Switch } from '@/components/ui/switch';
 import { hasPermission } from '@/utils/authorization';
 import { router, usePage } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
@@ -364,16 +365,23 @@ export default function Clients() {
         {
             key: 'status',
             label: t('Status'),
-            render: (value: string) => {
+            render: (value: string, row: any) => {
+                const canToggleStatus = hasPermission(permissions, 'edit-clients');
                 return (
-                    <span
-                        className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'active'
-                            ? 'bg-green-50 text-green-700 ring-1 ring-green-600/20 ring-inset'
-                            : 'bg-red-50 text-red-700 ring-1 ring-red-600/20 ring-inset'
-                            }`}
-                    >
-                        {value === 'active' ? t('Active') : t('Inactive')}
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <Switch
+                            checked={value === 'active'}
+                            disabled={!canToggleStatus}
+                            onCheckedChange={() => {
+                                if (!canToggleStatus) return;
+                                handleToggleStatus(row);
+                            }}
+                            aria-label={value === 'active' ? t('Deactivate client') : t('Activate client')}
+                        />
+                        <span className="text-xs text-muted-foreground">
+                            {value === 'active' ? t('Active') : t('Inactive')}
+                        </span>
+                    </div>
                 );
             },
         },
@@ -597,19 +605,19 @@ export default function Clients() {
                             required: false,
                             options: clientTypes
                                 ? clientTypes.map((type: any) => {
-                                      // Use name_translations if available, otherwise fallback to name
-                                      const translations = type.name_translations || (typeof type.name === 'object' ? type.name : null);
-                                      let displayName = type.name;
-                                      if (translations && typeof translations === 'object') {
-                                          displayName = translations[currentLocale] || translations.en || translations.ar || type.name || '';
-                                      } else if (typeof type.name === 'object') {
-                                          displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
-                                      }
-                                      return {
-                                          value: type.id.toString(),
-                                          label: displayName,
-                                      };
-                                  })
+                                    // Use name_translations if available, otherwise fallback to name
+                                    const translations = type.name_translations || (typeof type.name === 'object' ? type.name : null);
+                                    let displayName = type.name;
+                                    if (translations && typeof translations === 'object') {
+                                        displayName = translations[currentLocale] || translations.en || translations.ar || type.name || '';
+                                    } else if (typeof type.name === 'object') {
+                                        displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+                                    }
+                                    return {
+                                        value: type.id.toString(),
+                                        label: displayName,
+                                    };
+                                })
                                 : [],
                         },
                         {
