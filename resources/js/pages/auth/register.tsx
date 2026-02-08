@@ -10,8 +10,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useBrand } from '@/contexts/BrandContext';
+import { useLayout } from '@/contexts/LayoutContext';
 import { THEME_COLORS, useAppearance } from '@/hooks/use-appearance';
 import AuthLayout from '@/layouts/auth-layout';
+import { Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PhoneInput, defaultCountries } from 'react-international-phone';
 
@@ -30,6 +32,8 @@ type RegisterForm = {
 
 export default function Register({ referralCode, planId }: { referralCode?: string; planId?: string }) {
     const { t } = useTranslation();
+    const { position } = useLayout();
+
     const [recaptchaToken, setRecaptchaToken] = useState<string>('');
     const { themeColor, customColor, logoLight, logoDark } = useBrand();
     const { appearance } = useAppearance();
@@ -38,16 +42,12 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
     const { props } = usePage();
     const { phoneCountries = [], defaultCountry = '' } = props as any;
     const phoneCountriesByCode = new Map((phoneCountries || []).map((country: any) => [String(country.code || '').toLowerCase(), country]));
-    const phoneCountryCodes = (phoneCountries || [])
-        .map((country: any) => String(country.code || '').toLowerCase())
-        .filter((code: string) => code);
+    const phoneCountryCodes = (phoneCountries || []).map((country: any) => String(country.code || '').toLowerCase()).filter((code: string) => code);
     const allowedPhoneCountries = phoneCountryCodes.length
         ? defaultCountries.filter((country) => phoneCountryCodes.includes(String(country[1]).toLowerCase()))
         : defaultCountries;
     const defaultPhoneCountry =
-        phoneCountriesByCode.get(String(defaultCountry).toLowerCase()) ||
-        phoneCountriesByCode.get('sa') ||
-        (phoneCountries || [])[0];
+        phoneCountriesByCode.get(String(defaultCountry).toLowerCase()) || phoneCountriesByCode.get('sa') || (phoneCountries || [])[0];
 
     const { data, setData, post, processing, errors, reset } = useForm<RegisterForm>({
         name: '',
@@ -71,11 +71,7 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
     const currentCountryCode = String(defaultPhoneCountry?.code || defaultCountry || 'sa').toLowerCase();
 
     return (
-        <AuthLayout
-            title={t('Create account')}
-            leftImageSrc="/images/sign-in.jpeg"
-            contentClassName="max-w-[720px]"
-        >
+        <AuthLayout title={t('Create account')} leftImageSrc="/images/sign-in.jpeg">
             <form className="space-y-4" onSubmit={submit}>
                 <div className="flex items-center justify-between">
                     {currentLogo && <img src={currentLogo} alt={t('SARD')} className="h-8 object-contain" />}
@@ -112,7 +108,7 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
                             autoComplete="name"
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
-                            placeholder={t('أحمد محمد')}
+                            placeholder={t('Enter your full name')}
                             className="h-10 w-full rounded-md border-slate-200 bg-white px-3 text-sm text-slate-700 transition-all duration-200 placeholder:text-slate-400 dark:border-gray-600 dark:bg-gray-700"
                             style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
                         />
@@ -152,7 +148,7 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
                             autoComplete="email"
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
-                            placeholder="ahmad@sard.app"
+                            placeholder={t('Enter your email address')}
                             className="h-10 w-full rounded-md border-slate-200 bg-white px-3 text-sm text-slate-700 transition-all duration-200 placeholder:text-slate-400 dark:border-gray-600 dark:bg-gray-700"
                             style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
                         />
@@ -182,18 +178,25 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
                         <Label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                             {t('Password')}
                         </Label>
-                        <Input
-                            id="password"
-                            type="password"
-                            required
-                            tabIndex={5}
-                            autoComplete="new-password"
-                            value={data.password}
-                            onChange={(e) => setData('password', e.target.value)}
-                            placeholder={t('كلمة المرور')}
-                            className="h-10 w-full rounded-md border-slate-200 bg-white px-3 text-sm text-slate-700 transition-all duration-200 placeholder:text-slate-400 dark:border-gray-600 dark:bg-gray-700"
-                            style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                        />
+                        <div className="relative">
+                            <div
+                                className={`pointer-events-none absolute inset-y-0 z-10 flex items-center px-3 ${position === 'right' ? 'right-0' : 'left-0'}`}
+                            >
+                                <Lock className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <Input
+                                id="password"
+                                type="password"
+                                required
+                                tabIndex={5}
+                                autoComplete="new-password"
+                                value={data.password}
+                                onChange={(e) => setData('password', e.target.value)}
+                                placeholder="••••••••"
+                                className="w-full rounded-lg border-gray-300 bg-white pr-12 pl-10 transition-all duration-200 dark:border-gray-600 dark:bg-gray-700"
+                                style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
+                            />
+                        </div>
                         <InputError message={errors.password} />
                     </div>
 
@@ -201,18 +204,25 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
                         <Label htmlFor="password_confirmation" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                             {t('Confirm Password')}
                         </Label>
-                        <Input
-                            id="password_confirmation"
-                            type="password"
-                            required
-                            tabIndex={6}
-                            autoComplete="new-password"
-                            value={data.password_confirmation}
-                            onChange={(e) => setData('password_confirmation', e.target.value)}
-                            placeholder={t('تأكيد كلمة المرور')}
-                            className="h-10 w-full rounded-md border-slate-200 bg-white px-3 text-sm text-slate-700 transition-all duration-200 placeholder:text-slate-400 dark:border-gray-600 dark:bg-gray-700"
-                            style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                        />
+                        <div className="relative">
+                            <div
+                                className={`pointer-events-none absolute inset-y-0 z-10 flex items-center px-3 ${position === 'right' ? 'right-0' : 'left-0'}`}
+                            >
+                                <Lock className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <Input
+                                id="password_confirmation"
+                                type="password"
+                                required
+                                tabIndex={6}
+                                autoComplete="new-password"
+                                value={data.password_confirmation}
+                                onChange={(e) => setData('password_confirmation', e.target.value)}
+                                placeholder="••••••••"
+                                className="w-full rounded-lg border-gray-300 bg-white pr-12 pl-10 transition-all duration-200 dark:border-gray-600 dark:bg-gray-700"
+                                style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
+                            />
+                        </div>
                         <InputError message={errors.password_confirmation} />
                     </div>
 

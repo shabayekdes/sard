@@ -1,19 +1,21 @@
-import { useForm, router, usePage } from '@inertiajs/react';
-import { Mail, Lock } from 'lucide-react';
-import { FormEventHandler, useState, useEffect } from 'react';
+import { router, useForm, usePage } from '@inertiajs/react';
+import { Lock, Mail } from 'lucide-react';
+import { FormEventHandler, useEffect, useState } from 'react';
 
+import AuthButton from '@/components/auth/auth-button';
 import InputError from '@/components/input-error';
+import { LanguageSwitcher } from '@/components/language-switcher';
+import Recaptcha from '@/components/recaptcha';
 import TextLink from '@/components/text-link';
+import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useTranslation } from 'react-i18next';
-import AuthLayout from '@/layouts/auth-layout';
-import AuthButton from '@/components/auth/auth-button';
-import Recaptcha from '@/components/recaptcha';
 import { useBrand } from '@/contexts/BrandContext';
-import { THEME_COLORS } from '@/hooks/use-appearance';
-import { Button } from '@/components/ui/button';
+import { THEME_COLORS, useAppearance } from '@/hooks/use-appearance';
+import AuthLayout from '@/layouts/auth-layout';
+import { useTranslation } from 'react-i18next';
+import { useLayout } from '@/contexts/LayoutContext';
 
 type LoginForm = {
     email: string;
@@ -37,9 +39,13 @@ interface LoginProps {
 
 export default function Login({ status, canResetPassword, demoBusinesses = [] }: LoginProps) {
     const { t } = useTranslation();
+    const { position } = useLayout();
+
     const [recaptchaToken, setRecaptchaToken] = useState<string>('');
-    const { themeColor, customColor } = useBrand();
+    const { themeColor, customColor, logoLight, logoDark } = useBrand();
+    const { appearance } = useAppearance();
     const primaryColor = themeColor === 'custom' ? customColor : THEME_COLORS[themeColor as keyof typeof THEME_COLORS];
+    const currentLogo = appearance === 'light' ? logoDark : logoLight;
     const [isDemo, setIsDemo] = useState<boolean>(false);
     // Always show business buttons by default
     const [showBusinessButtons, setShowBusinessButtons] = useState<boolean>(true);
@@ -62,7 +68,7 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
             setData({
                 email: 'company@example.com',
                 password: 'password',
-                remember: false
+                remember: false,
             });
         }
     }, []);
@@ -75,19 +81,39 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
         });
     };
 
-
     return (
-        <AuthLayout
-            title={t("Welcome back to Advocate")}
-            description={t("Access your legal practice management dashboard")}
-            status={status}
-        >
+        <AuthLayout title={t('Welcome back to Advocate')} leftImageSrc="/images/sign-in.jpeg">
             <form className="space-y-5" onSubmit={submit}>
+                <div className="flex items-center justify-between">
+                    {currentLogo && <img src={currentLogo} alt={t('SARD')} className="h-8 object-contain" />}
+                    <div className="rounded-md border border-slate-200 bg-white px-2">
+                        <LanguageSwitcher />
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 rounded-lg border border-slate-200 bg-white p-1 text-sm font-medium">
+                    <dev
+                        className="flex items-center justify-center rounded-md px-3 py-2"
+                        style={{ backgroundColor: `${primaryColor}1A`, color: primaryColor }}
+                        aria-current="page"
+                    >
+                        {t('Log in')}
+                    </dev>
+                    <TextLink
+                        href={route('register')}
+                        className="flex items-center justify-center rounded-md px-3 py-2 text-slate-600 transition-colors duration-200"
+                    >
+                        {t('Create account')}
+                    </TextLink>
+                </div>
                 <div className="space-y-4">
                     <div className="relative">
-                        <Label htmlFor="email" className="text-gray-700 dark:text-gray-300 font-medium mb-1 block">{t("Email address")}</Label>
+                        <Label htmlFor="email" className="mb-1 block font-medium text-gray-700 dark:text-gray-300">
+                            {t('Email address')}
+                        </Label>
                         <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <div
+                                className={`pointer-events-none absolute inset-y-0 z-10 flex items-center px-3 ${position === 'right' ? 'right-0' : 'left-0'}`}
+                            >
                                 <Mail className="h-5 w-5 text-gray-400" />
                             </div>
                             <Input
@@ -100,7 +126,7 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
                                 value={data.email}
                                 onChange={(e) => setData('email', e.target.value)}
                                 placeholder="email@example.com"
-                                className="pl-10 w-full border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg transition-all duration-200"
+                                className="w-full rounded-lg border-gray-300 bg-white pr-12 pl-10 transition-all duration-200 dark:border-gray-600 dark:bg-gray-700"
                                 style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
                             />
                         </div>
@@ -108,8 +134,10 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
                     </div>
 
                     <div>
-                        <div className="flex items-center justify-between mb-1">
-                            <Label htmlFor="password" className="text-gray-700 dark:text-gray-300 font-medium">{t("Password")}</Label>
+                        <div className="mb-1 flex items-center justify-between">
+                            <Label htmlFor="password" className="font-medium text-gray-700 dark:text-gray-300">
+                                {t('Password')}
+                            </Label>
                             {canResetPassword && (
                                 <TextLink
                                     href={route('password.request')}
@@ -117,12 +145,14 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
                                     style={{ color: primaryColor }}
                                     tabIndex={5}
                                 >
-                                    {t("Forgot password?")}
+                                    {t('Forgot password?')}
                                 </TextLink>
                             )}
                         </div>
                         <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                            <div
+                                className={`pointer-events-none absolute inset-y-0 z-10 flex items-center px-3 ${position === 'right' ? 'right-0' : 'left-0'}`}
+                            >
                                 <Lock className="h-5 w-5 text-gray-400" />
                             </div>
                             <Input
@@ -134,7 +164,7 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
                                 value={data.password}
                                 onChange={(e) => setData('password', e.target.value)}
                                 placeholder="••••••••"
-                                className="pl-10 pr-12 w-full border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg transition-all duration-200"
+                                className="w-full rounded-lg border-gray-300 bg-white pr-12 pl-10 transition-all duration-200 dark:border-gray-600 dark:bg-gray-700"
                                 style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
                             />
                         </div>
@@ -148,33 +178,28 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
                             checked={data.remember}
                             onClick={() => setData('remember', !data.remember)}
                             tabIndex={3}
-                            className="border-gray-300 rounded"
+                            className="rounded border-gray-300"
                             style={{ '--tw-ring-color': primaryColor, color: primaryColor } as React.CSSProperties}
                         />
-                        <Label htmlFor="remember" className="ml-2 text-gray-600 dark:text-gray-400">{t("Remember me")}</Label>
+                        <Label htmlFor="remember" className="ml-2 text-gray-600 dark:text-gray-400">
+                            {t('Remember me')}
+                        </Label>
                     </div>
                 </div>
 
-                <Recaptcha
-                    onVerify={setRecaptchaToken}
-                    onExpired={() => setRecaptchaToken('')}
-                    onError={() => setRecaptchaToken('')}
-                />
+                <Recaptcha onVerify={setRecaptchaToken} onExpired={() => setRecaptchaToken('')} onError={() => setRecaptchaToken('')} />
 
-                <AuthButton
-                    tabIndex={4}
-                    processing={processing}
-                >
-                    {t("Log in")}
+                <AuthButton tabIndex={4} processing={processing}>
+                    {t('Log in')}
                 </AuthButton>
 
                 {isDemo && (
                     <div className="mt-6">
-                        <div className="border-t border-gray-200 dark:border-gray-700 pt-5">
-                            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 text-center">Demo Quick Access</h3>
+                        <div className="border-t border-gray-200 pt-5 dark:border-gray-700">
+                            <h3 className="mb-4 text-center text-sm font-medium text-gray-700 dark:text-gray-300">Demo Quick Access</h3>
 
                             <div className="flex flex-col space-y-4">
-                                <div className="flex gap-3 justify-center">
+                                <div className="flex justify-center gap-3">
                                     <Button
                                         type="button"
                                         onClick={() => {
@@ -183,10 +208,10 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
                                                 email: 'esmail@sard.app',
                                                 password: '12345678',
                                                 remember: false,
-                                                recaptcha_token: recaptchaToken
+                                                recaptcha_token: recaptchaToken,
                                             });
                                         }}
-                                        className="shadow-sm text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 w-45"
+                                        className="w-45 rounded-md px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200"
                                         style={{ backgroundColor: primaryColor }}
                                     >
                                         Login as Super Admin
@@ -199,17 +224,17 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
                                                 email: 'company@example.com',
                                                 password: 'password',
                                                 remember: false,
-                                                recaptcha_token: recaptchaToken
+                                                recaptcha_token: recaptchaToken,
                                             });
                                         }}
-                                        className="shadow-sm text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 w-45"
+                                        className="w-45 rounded-md px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200"
                                         style={{ backgroundColor: primaryColor }}
                                     >
                                         Login as Company
                                     </Button>
                                 </div>
 
-                              <div className="flex gap-3 justify-center">
+                                <div className="flex justify-center gap-3">
                                     <Button
                                         type="button"
                                         onClick={() => {
@@ -218,10 +243,10 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
                                                 email: 'michael_brown_2@example.com',
                                                 password: 'password',
                                                 remember: false,
-                                                recaptcha_token: recaptchaToken
+                                                recaptcha_token: recaptchaToken,
                                             });
                                         }}
-                                        className="shadow-sm text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 w-45"
+                                        className="w-45 rounded-md px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200"
                                         style={{ backgroundColor: primaryColor }}
                                     >
                                         Login as Client
@@ -234,10 +259,10 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
                                                 email: 'linda_davis_2@example.com',
                                                 password: 'password',
                                                 remember: false,
-                                                recaptcha_token: recaptchaToken
+                                                recaptcha_token: recaptchaToken,
                                             });
                                         }}
-                                        className="shadow-sm text-white px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 w-45"
+                                        className="w-45 rounded-md px-3 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200"
                                         style={{ backgroundColor: primaryColor }}
                                     >
                                         Login as Team Member
@@ -248,7 +273,7 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
                     </div>
                 )}
 
-                <div className="text-center text-sm text-gray-600 dark:text-gray-400 mt-6">
+                <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
                     {t("Don't have an account?")}{' '}
                     <TextLink
                         href={route('register')}
@@ -256,7 +281,7 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
                         style={{ color: primaryColor }}
                         tabIndex={6}
                     >
-                        {t("Sign Up")}
+                        {t('Sign Up')}
                     </TextLink>
                 </div>
             </form>

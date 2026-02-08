@@ -2,10 +2,13 @@ import * as React from "react"
 import { Eye, EyeOff } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { useState } from 'react';
+import { LayoutPosition, useLayout } from '@/contexts/LayoutContext';
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   const [showPassword, setShowPassword] = React.useState(false)
   const isPassword = type === "password"
+  const { position } = useLayout();
 
   if (isPassword) {
     return (
@@ -23,8 +26,7 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
         />
         <button
           type="button"
-                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-
+          className={`absolute top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors ${position === 'right' ? 'left-3' : 'right-3'}`}
           onClick={() => setShowPassword(!showPassword)}
         >
           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}

@@ -45,46 +45,6 @@ export default function AuthLayout({
         setMounted(true);
     }, []);
 
-    // RTL Support for landing page
-    React.useEffect(() => {
-        const isDemo = globalSettings?.is_demo || false;
-        let storedPosition = 'left';
-        if (isDemo) {
-            // In demo mode, use cookies
-            const getCookie = (name: string): string | null => {
-                if (typeof document === 'undefined') return null;
-                const value = `; ${document.cookie}`;
-                const parts = value.split(`; ${name}=`);
-                if (parts.length === 2) {
-                    const cookieValue = parts.pop()?.split(';').shift();
-                    return cookieValue ? decodeURIComponent(cookieValue) : null;
-                }
-                return null;
-            };
-            const stored = getCookie('layoutPosition');
-            if (stored === 'left' || stored === 'right') {
-                storedPosition = stored;
-            }
-        } else {
-            // In normal mode, get from database via globalSettings
-            const stored = globalSettings?.layoutDirection;
-            if (stored === 'left' || stored === 'right') {
-                storedPosition = stored;
-            }
-        }
-        const dir = storedPosition === 'right' ? 'rtl' : 'ltr';
-        document.documentElement.dir = dir;
-        document.documentElement.setAttribute('dir', dir);
-        // Check if it was actually set
-        setTimeout(() => {
-            const actualDir = document.documentElement.getAttribute('dir');
-            if (actualDir !== dir) {
-                document.documentElement.dir = dir;
-                document.documentElement.setAttribute('dir', dir);
-            }
-        }, 1);
-    }, []);
-
     return (
         <div className="flex h-screen w-full overflow-hidden bg-slate-50 dark:bg-slate-900">
             <Head title={title} />
