@@ -8,10 +8,7 @@ import { hasPermission } from '@/utils/authorization';
 import { getImagePath } from '@/utils/helpers';
 import { Link, usePage } from '@inertiajs/react';
 import {
-    Bell,
-    BookOpen,
     Briefcase,
-    Calendar,
     CalendarDays,
     CheckSquare,
     CreditCard,
@@ -26,7 +23,6 @@ import {
     Palette,
     Percent,
     Settings,
-    UserCheck,
     Users,
     Wrench,
 } from 'lucide-react';
@@ -159,45 +155,17 @@ export function AppSidebar() {
         }
 
         // 2. Client
-        const clientChildren = [];
         if (
             hasPermission(permissions, 'manage-clients') ||
             hasPermission(permissions, 'manage-any-clients') ||
             hasPermission(permissions, 'manage-own-clients')
         ) {
-            clientChildren.push({
-                title: t('Clients'),
+            items.push({
+                title: t('Client'),
+                icon: Users,
                 href: route('clients.index'),
             });
         }
-        if (
-            hasPermission(permissions, 'manage-client-documents') ||
-            hasPermission(permissions, 'manage-any-client-documents') ||
-            hasPermission(permissions, 'manage-own-client-documents')
-        ) {
-            clientChildren.push({
-                title: t('Clients Documents'),
-                href: route('clients.documents.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-client-billing') ||
-            hasPermission(permissions, 'manage-any-client-billing') ||
-            hasPermission(permissions, 'manage-own-client-billing')
-        ) {
-            clientChildren.push({
-                title: t('Client Billing'),
-                href: route('clients.billing.index'),
-            });
-        }
-        if (clientChildren.length > 0) {
-            items.push({
-                title: t('Client'),
-                icon: UserCheck,
-                children: clientChildren,
-            });
-        }
-
         // 3. Cases
         const caseChildren = [];
         if (
@@ -654,10 +622,10 @@ export function AppSidebar() {
         }
         // Notifications
         if (userRole === 'company') {
-          setupChildren.push({
-              title: t('Notification Template'),
-              href: route('notification-templates.index'),
-          });
+            setupChildren.push({
+                title: t('Notification Template'),
+                href: route('notification-templates.index'),
+            });
         }
 
         if (setupChildren.length > 0) {
@@ -678,13 +646,13 @@ export function AppSidebar() {
             hasPermission(permissions, 'manage-any-company-profiles') ||
             hasPermission(permissions, 'manage-own-company-profiles')
         ) {
-          settingsChildren.push({
-              title: t('Company Profile'),
-              href: route('advocate.company-profiles.index'),
-          });
+            settingsChildren.push({
+                title: t('Company Profile'),
+                href: route('advocate.company-profiles.index'),
+            });
         }
         if (hasPermission(permissions, 'manage-settings')) {
-          settingsChildren.push({
+            settingsChildren.push({
                 title: t('System Settings'),
                 href: route('settings'),
             });
@@ -712,7 +680,7 @@ export function AppSidebar() {
                 href: route('roles.index'),
             });
         }
-        
+
         if (userManagementChildren.length > 0) {
             settingsChildren.push({
                 title: t('User Management'),
