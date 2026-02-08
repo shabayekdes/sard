@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use App\Models\ClientType;
+use App\Models\ClientDocument;
+use App\Models\DocumentType;
 use App\Models\Country;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -58,6 +60,88 @@ class ClientController extends Controller
             return $client;
         });
 
+        $clientTypes = ClientType::withPermissionCheck()
+            ->where('status', 'active')
+            ->get(['id', 'name'])
+            ->map(function (ClientType $clientType) {
+                return [
+                    'id' => $clientType->id,
+                    'name' => $clientType->name,
+                    'name_translations' => $clientType->getTranslations('name'),
+                ];
+            });
+
+        $authUser = auth()->user();
+        $planLimits = null;
+        if ($authUser->type === 'company' && $authUser->plan) {
+            $currentClients = Client::where('created_by', $authUser->id)->count();
+            $maxClients = $authUser->plan->max_clients;
+            $isUnlimited = $authUser->plan->isUnlimitedLimit($maxClients);
+            $planLimits = [
+                'current_clients' => $currentClients,
+                'max_clients' => $maxClients,
+                'can_create' => $isUnlimited ? true : $currentClients < $maxClients,
+            ];
+        } elseif ($authUser->type !== 'superadmin' && $authUser->created_by) {
+            $companyUser = User::find($authUser->created_by);
+            if ($companyUser && $companyUser->type === 'company' && $companyUser->plan) {
+                $currentClients = Client::where('created_by', $companyUser->id)->count();
+                $maxClients = $companyUser->plan->max_clients;
+                $isUnlimited = $companyUser->plan->isUnlimitedLimit($maxClients);
+                $planLimits = [
+                    'current_clients' => $currentClients,
+                    'max_clients' => $maxClients,
+                    'can_create' => $isUnlimited ? true : $currentClients < $maxClients,
+                ];
+            }
+        }
+
+        return Inertia::render('clients/index', [
+            'clients' => $clients,
+            'clientTypes' => $clientTypes,
+            'planLimits' => $planLimits,
+            'filters' => array_merge(
+                $request->all(['search', 'client_type_id', 'status', 'per_page']),
+                [
+                    'sort_field' => $sortField,
+                    'sort_direction' => $sortDirection,
+                ]
+            ),
+        ]);
+    }
+
+    public function create()
+    {
+        return Inertia::render('clients/create', $this->getClientFormProps());
+    }
+
+    public function edit($clientId)
+    {
+        $client = Client::withPermissionCheck()
+            ->with(['clientType', 'creator'])
+            ->where('id', $clientId)
+            ->first();
+
+        if (! $client) {
+            return redirect()->back()->with('error', 'Client not found.');
+        }
+
+        if ($client->clientType) {
+            $client->clientType->name_translations = $client->clientType->getTranslations('name');
+            $client->clientType->description_translations = $client->clientType->getTranslations('description');
+        }
+
+        return Inertia::render(
+            'clients/edit',
+            array_merge(
+                ['client' => $client],
+                $this->getClientFormProps()
+            )
+        );
+    }
+
+    private function getClientFormProps(): array
+    {
         // Get client types for filter dropdown
         $clientTypes = ClientType::withPermissionCheck()
             ->where('status', 'active')
@@ -121,22 +205,19 @@ class ClientController extends Controller
             }
         }
 
-        return Inertia::render('clients/index', [
-            'clients' => $clients,
+        $documentTypes = DocumentType::withPermissionCheck()
+            ->where('status', 'active')
+            ->get(['id', 'name', 'color']);
+
+        return [
             'clientTypes' => $clientTypes,
             'countries' => $countries,
             'phoneCountries' => $phoneCountries,
             'defaultCountry' => getSetting('defaultCountry', ''),
             'defaultTaxRate' => getSetting('defaultTaxRate', ''),
             'planLimits' => $planLimits,
-            'filters' => array_merge(
-                $request->all(['search', 'client_type_id', 'status', 'per_page']),
-                [
-                    'sort_field' => $sortField,
-                    'sort_direction' => $sortDirection,
-                ]
-            ),
-        ]);
+            'documentTypes' => $documentTypes,
+        ];
     }
 
     public function store(Request $request)
@@ -186,6 +267,12 @@ class ClientController extends Controller
             'date_of_birth' => 'nullable|date',
             'notes' => 'nullable|string',
             'referral_source' => 'nullable|string|max:255',
+            'documents' => 'nullable|array',
+            'documents.*.document_name' => 'required_with:documents|string|max:255',
+            'documents.*.document_type_id' => 'required_with:documents|exists:document_types,id',
+            'documents.*.file' => 'required_with:documents|string',
+            'documents.*.description' => 'nullable|string',
+            'documents.*.status' => 'nullable|in:active,archived',
         ]);
 
         $phoneCountry = Country::where('id', $validated['country_id'])
@@ -204,6 +291,9 @@ class ClientController extends Controller
         if ($phoneValidator->fails()) {
             return redirect()->back()->withErrors($phoneValidator)->withInput();
         }
+
+        $documents = $validated['documents'] ?? [];
+        unset($validated['documents']);
 
         $validated['created_by'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
@@ -231,6 +321,21 @@ class ClientController extends Controller
         }
 
         $client = Client::create($validated);
+
+        if (! empty($documents)) {
+            foreach ($documents as $document) {
+                $filePath = $this->convertToRelativePath($document['file'] ?? '');
+                ClientDocument::create([
+                    'client_id' => $client->id,
+                    'document_name' => $document['document_name'] ?? '',
+                    'document_type_id' => $document['document_type_id'] ?? null,
+                    'description' => $document['description'] ?? null,
+                    'status' => $document['status'] ?? 'active',
+                    'file_path' => $filePath,
+                    'created_by' => createdBy(),
+                ]);
+            }
+        }
 
         // Create user account for client if email and password provided
         if (! empty($validated['email']) && ! empty($validated['password'])) {
@@ -275,6 +380,24 @@ class ClientController extends Controller
         }
 
         return redirect()->back()->with('success', 'Client created successfully.');
+    }
+
+    private function convertToRelativePath(string $url): string
+    {
+        if (! $url) {
+            return $url;
+        }
+
+        if (! str_starts_with($url, 'http')) {
+            return $url;
+        }
+
+        $storageIndex = strpos($url, '/storage/');
+        if ($storageIndex !== false) {
+            return substr($url, $storageIndex);
+        }
+
+        return $url;
     }
 
     public function update(Request $request, $clientId)

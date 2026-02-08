@@ -471,6 +471,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Client routes
         Route::middleware('permission:manage-clients')->group(function () {
             Route::get('clients', [\App\Http\Controllers\ClientController::class, 'index'])->name('clients.index');
+            Route::get('clients/create', [\App\Http\Controllers\ClientController::class, 'create'])->middleware('permission:create-clients')->name('clients.create');
+            Route::get('clients/{client}/edit', [\App\Http\Controllers\ClientController::class, 'edit'])->middleware('permission:edit-clients')->name('clients.edit');
             Route::get('clients/{client}', [\App\Http\Controllers\ClientController::class, 'show'])->middleware('permission:view-clients')->name('clients.show');
             Route::post('clients', [\App\Http\Controllers\ClientController::class, 'store'])->middleware('permission:create-clients')->name('clients.store');
             Route::put('clients/{client}', [\App\Http\Controllers\ClientController::class, 'update'])->middleware('permission:edit-clients')->name('clients.update');

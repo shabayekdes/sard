@@ -55,7 +55,7 @@ export function FloatingChatGpt() {
   return (
     <>
       <div 
-        className="fixed bottom-6 rtl:left-6 ltr:right-6 z-[9999]"
+        className="fixed bottom-6 rtl:right-6 ltr:left-6 z-[9999]"
         onClickCapture={(e) => {
           e.preventDefault();
           e.stopPropagation();

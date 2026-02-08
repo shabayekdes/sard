@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
+import MediaPicker from '@/components/MediaPicker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -7,11 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Plus, Trash2, GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLayout } from '@/contexts/LayoutContext';
 
 export interface RepeaterField {
   name: string;
   label: string;
-  type: 'text' | 'textarea' | 'number' | 'email' | 'password' | 'file' | 'select' | 'switch' | 'date' | 'time' | 'datetime-local';
+  type: 'text' | 'textarea' | 'number' | 'email' | 'password' | 'file' | 'media-picker' | 'select' | 'switch' | 'date' | 'time' | 'datetime-local';
   placeholder?: string;
   required?: boolean;
   options?: { value: string | number; label: string }[];
@@ -53,6 +55,7 @@ export function Repeater({
   allowReorder = false,
   emptyMessage = 'No items added yet.'
 }: RepeaterProps) {
+  const { isRtl } = useLayout();
   const [items, setItems] = useState<any[]>(value.length > 0 ? value : []);
   // Generate a unique ID for this repeater instance to ensure unique keys across multiple repeaters
   const repeaterIdRef = useRef(`repeater_${Math.random().toString(36).substr(2, 9)}_${Date.now()}`);
@@ -151,6 +154,17 @@ export function Repeater({
           />
         );
 
+      case 'media-picker':
+        return (
+          <MediaPicker
+            value={value || ''}
+            onChange={onChange}
+            placeholder={field.placeholder || `Select ${field.label}`}
+            showPreview={true}
+            multiple={false}
+          />
+        );
+
       case 'select':
         {
           const selectId = `${repeaterIdRef.current}_${itemIndex}_${field.name}`;
@@ -161,10 +175,10 @@ export function Repeater({
               onValueChange={onChange}
               disabled={field.disabled}
             >
-              <SelectTrigger className={field.className}>
+              <SelectTrigger className={field.className} dir={isRtl ? 'rtl' : 'ltr'}>
                 <SelectValue placeholder={field.placeholder} />
               </SelectTrigger>
-              <SelectContent className="z-[9999]">
+              <SelectContent className="z-[9999]" dir={isRtl ? 'rtl' : 'ltr'}>
                 {field.options?.map((option, optionIndex) => (
                   <SelectItem
                     key={`${selectId}_${optionIndex}_${option.value}`}
@@ -228,87 +242,109 @@ export function Repeater({
 
   return (
     <div className={cn('space-y-4', className)}>
-      {items.length === 0 && (
-        <div className="text-center py-8 text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
-          {emptyMessage}
-        </div>
-      )}
-
-      {items.map((item, index) => (
-        <div
-          key={index}
-          className={cn(
-            'relative border rounded-lg p-4 space-y-4 bg-white dark:bg-gray-800 dark:border-gray-700',
-            itemClassName
-          )}
-        >
-          {/* Item Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {allowReorder && (
-                <div className="cursor-move text-gray-400">
-                  <GripVertical className="h-4 w-4" />
-                </div>
-              )}
-              {showItemNumbers && (
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                  Item #{index + 1}
-                </span>
-              )}
-            </div>
-
-            {items.length > minItems && (
+      {items.length === 0 ? (
+        <div className="space-y-3">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
+            {emptyMessage}
+          </div>
+          {(maxItems === -1 || items.length < maxItems) && (
+            <div className="flex items-center justify-between">
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
-                onClick={() => removeItem(index)}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 dark:border-gray-600"
+                onClick={addItem}
+                className="border-dashed border-2 hover:border-primary hover:bg-primary/5 dark:border-gray-700 dark:hover:border-primary dark:text-gray-200"
               >
-                <Trash2 className="h-4 w-4 mr-1" />
-                {removeButtonText}
+                <Plus className="h-4 w-4 mr-2" />
+                {addButtonText}
               </Button>
-            )}
-          </div>
-
-          {/* Fields Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {fields.map((field) => (
-              <div key={field.name} className="space-y-2">
-                <Label htmlFor={`${field.name}_${index}`} className="text-sm font-medium dark:text-gray-200">
-                  {field.label}
-                  {field.required && <span className="text-red-500 dark:text-red-400 ml-1">*</span>}
-                </Label>
-                {renderField(
-                  field,
-                  item[field.name],
-                  (value) => updateItem(index, field.name, value),
-                  index
-                )}
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                {items.length} of {maxItems === -1 ? <span className="text-lg font-medium dark:text-gray-300">∞</span> : maxItems} items
+                {minItems > 0 && ` (minimum ${minItems} required)`}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
-      ))}
-
-      {/* Add Button */}
-      {(maxItems === -1 || items.length < maxItems) && (
-        <Button
-          type="button"
-          variant="outline"
-          onClick={addItem}
-          className="w-full border-dashed border-2 hover:border-primary hover:bg-primary/5 dark:border-gray-700 dark:hover:border-primary dark:text-gray-200"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          {addButtonText}
-        </Button>
-      )}
-
-      {/* Items Count */}
-      {items.length > 0 && (
-        <div className="text-sm text-gray-500 dark:text-gray-400 text-center">
-          {items.length} of {maxItems === -1 ? <span className="text-lg font-medium dark:text-gray-300">∞</span> : maxItems} items
-          {minItems > 0 && ` (minimum ${minItems} required)`}
+      ) : (
+        <div className="space-y-3">
+          <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-800">
+              <tr>
+                {allowReorder && <th className="w-10 px-3 py-3"></th>}
+                {showItemNumbers && (
+                  <th className="w-12 px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300">#</th>
+                )}
+                {fields.map((field) => (
+                  <th
+                    key={field.name}
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300"
+                  >
+                    {field.label}
+                    {field.required && <span className="text-red-500 dark:text-red-400 ml-1">*</span>}
+                  </th>
+                ))}
+                <th className="w-24 px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300">
+                  {removeButtonText}
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+              {items.map((item, index) => (
+                <tr key={index} className={cn(itemClassName)}>
+                  {allowReorder && (
+                    <td className="px-3 py-3 align-top text-gray-400">
+                      <GripVertical className="h-4 w-4" />
+                    </td>
+                  )}
+                  {showItemNumbers && (
+                    <td className="px-3 py-3 align-top text-sm text-gray-600 dark:text-gray-300">{index + 1}</td>
+                  )}
+                  {fields.map((field) => (
+                    <td key={field.name} className="px-3 py-3 align-top">
+                      {renderField(
+                        field,
+                        item[field.name],
+                        (value) => updateItem(index, field.name, value),
+                        index
+                      )}
+                    </td>
+                  ))}
+                  <td className="px-3 py-3 align-top">
+                    {items.length > minItems && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeItem(index)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 dark:border-gray-600"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          </div>
+          {(maxItems === -1 || items.length < maxItems) && (
+            <div className="flex items-center justify-between">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={addItem}
+                className="border-dashed border-2 hover:border-primary hover:bg-primary/5 dark:border-gray-700 dark:hover:border-primary dark:text-gray-200"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                {addButtonText}
+              </Button>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                {items.length} of {maxItems === -1 ? <span className="text-lg font-medium dark:text-gray-300">∞</span> : maxItems} items
+                {minItems > 0 && ` (minimum ${minItems} required)`}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -27,7 +27,7 @@ export function FloatingQuickActions() {
   );
 
   return (
-    <div className="fixed bottom-24 rtl:left-6 ltr:right-6 z-[9999] hidden md:block">
+    <div className="fixed bottom-24 rtl:right-6 ltr:left-6 z-[9999] hidden md:block">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow" size="lg">

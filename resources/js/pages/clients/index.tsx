@@ -1,5 +1,4 @@
 import { CrudDeleteModal } from '@/components/CrudDeleteModal';
-import { CrudFormModal } from '@/components/CrudFormModal';
 import { CrudTable } from '@/components/CrudTable';
 import { toast } from '@/components/custom-toast';
 import { PageTemplate } from '@/components/page-template';
@@ -15,11 +14,10 @@ import { router, usePage } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PhoneInput, defaultCountries } from 'react-international-phone';
 
 export default function Clients() {
     const { t, i18n } = useTranslation();
-    const { auth, clients, clientTypes, countries, phoneCountries, planLimits, defaultCountry = '', defaultTaxRate = '', filters: pageFilters = {} } = usePage().props as any;
+    const { auth, clients, clientTypes, planLimits, filters: pageFilters = {} } = usePage().props as any;
     const permissions = auth?.permissions || [];
     const currentLocale = i18n.language || 'en';
 
@@ -28,12 +26,10 @@ export default function Clients() {
     const [selectedClientType, setSelectedClientType] = useState(pageFilters.client_type_id || 'all');
     const [selectedStatus, setSelectedStatus] = useState(pageFilters.status || 'all');
     const [showFilters, setShowFilters] = useState(false);
-    const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
     const [resetPasswordData, setResetPasswordData] = useState({ password: '', password_confirmation: '' });
     const [currentItem, setCurrentItem] = useState<any>(null);
-    const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
 
     // Reload data when language changes to refresh translations
     useEffect(() => {
@@ -111,8 +107,7 @@ export default function Clients() {
 
         switch (action) {
             case 'edit':
-                setFormMode('edit');
-                setIsFormModalOpen(true);
+                router.get(route('clients.edit', item.id));
                 break;
             case 'delete':
                 setIsDeleteModalOpen(true);
@@ -131,57 +126,7 @@ export default function Clients() {
     };
 
     const handleAddNew = () => {
-        setCurrentItem(null);
-        setFormMode('create');
-        setIsFormModalOpen(true);
-    };
-
-    const handleFormSubmit = (formData: any) => {
-        if (formMode === 'create') {
-            toast.loading(t('Creating client...'));
-
-            router.post(route('clients.store'), formData, {
-                onSuccess: (page) => {
-                    setIsFormModalOpen(false);
-                    toast.dismiss();
-                    if (page.props.flash.success) {
-                        toast.success(page.props.flash.success);
-                    } else if (page.props.flash.error) {
-                        toast.error(page.props.flash.error);
-                    }
-                },
-                onError: (errors) => {
-                    toast.dismiss();
-                    if (typeof errors === 'string') {
-                        toast.error(errors);
-                    } else {
-                        toast.error(`Failed to create client: ${Object.values(errors).join(', ')}`);
-                    }
-                },
-            });
-        } else if (formMode === 'edit') {
-            toast.loading(t('Updating client...'));
-
-            router.put(route('clients.update', currentItem.id), formData, {
-                onSuccess: (page) => {
-                    setIsFormModalOpen(false);
-                    toast.dismiss();
-                    if (page.props.flash.success) {
-                        toast.success(page.props.flash.success);
-                    } else if (page.props.flash.error) {
-                        toast.error(page.props.flash.error);
-                    }
-                },
-                onError: (errors) => {
-                    toast.dismiss();
-                    if (typeof errors === 'string') {
-                        toast.error(errors);
-                    } else {
-                        toast.error(`Failed to update client: ${Object.values(errors).join(', ')}`);
-                    }
-                },
-            });
-        }
+        router.get(route('clients.create'));
     };
 
     const handleDeleteConfirm = () => {
@@ -305,11 +250,11 @@ export default function Clients() {
             onClick: canCreate
                 ? () => handleAddNew()
                 : () =>
-                    toast.error(
-                        t('Client limit exceeded. Your plan allows maximum {{max}} clients. Please upgrade your plan.', {
-                            max: planLimits.max_clients,
-                        }),
-                    ),
+                      toast.error(
+                          t('Client limit exceeded. Your plan allows maximum {{max}} clients. Please upgrade your plan.', {
+                              max: planLimits.max_clients,
+                          }),
+                      ),
             disabled: !canCreate,
         });
     }
@@ -323,24 +268,20 @@ export default function Clients() {
     // Define table columns
     const columns = [
         {
-            key: 'client_id',
-            label: t('Client ID'),
-            sortable: true,
-        },
-        {
             key: 'name',
             label: t('Name'),
             sortable: true,
+        },
+
+        {
+            key: 'phone',
+            label: t('Phone'),
+            render: (value: number) => value || '-',
         },
         {
             key: 'email',
             label: t('Email'),
             render: (value: string) => value || '-',
-        },
-        {
-            key: 'phone',
-            label: t('Phone'),
-            render: (value: number) => value || '-',
         },
         {
             key: 'client_type',
@@ -378,18 +319,10 @@ export default function Clients() {
                             }}
                             aria-label={value === 'active' ? t('Deactivate client') : t('Activate client')}
                         />
-                        <span className="text-xs text-muted-foreground">
-                            {value === 'active' ? t('Active') : t('Inactive')}
-                        </span>
+                        <span className="text-muted-foreground text-xs">{value === 'active' ? t('Active') : t('Inactive')}</span>
                     </div>
                 );
             },
-        },
-        {
-            key: 'created_at',
-            label: t('Created At'),
-            sortable: true,
-            type: 'date',
         },
     ];
 
@@ -448,21 +381,6 @@ export default function Clients() {
         { value: 'active', label: t('Active') },
         { value: 'inactive', label: t('Inactive') },
     ];
-
-    const phoneCountriesById = new Map((phoneCountries || []).map((country: any) => [String(country.value), country]));
-    const phoneCountriesByCode = new Map((phoneCountries || []).map((country: any) => [String(country.code).toLowerCase(), country]));
-    const phoneCountryCodes = (phoneCountries || [])
-        .map((country: any) => String(country.code || '').toLowerCase())
-        .filter((code: string) => code);
-    const allowedPhoneCountries = phoneCountryCodes.length
-        ? defaultCountries.filter((country) => phoneCountryCodes.includes(String(country[1]).toLowerCase()))
-        : defaultCountries;
-    const defaultPhoneCountry =
-        phoneCountriesByCode.get(String(defaultCountry).toLowerCase()) ||
-        phoneCountriesByCode.get('sa') ||
-        (phoneCountries || [])[0];
-    const countriesByCode = new Map((countries || []).map((country: any) => [String(country.code || '').toLowerCase(), country]));
-    const defaultNationality = countriesByCode.get(String(defaultCountry).toLowerCase()) || (countries || [])[0];
 
     return (
         <PageTemplate title={t('Client Management')} url="/clients" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
@@ -543,188 +461,6 @@ export default function Clients() {
                     }}
                 />
             </div>
-
-            {/* Form Modal */}
-            <CrudFormModal
-                isOpen={isFormModalOpen}
-                onClose={() => setIsFormModalOpen(false)}
-                onSubmit={handleFormSubmit}
-                formConfig={{
-                    fields: [
-                        { name: 'name', label: t('Client Name'), type: 'text', required: true },
-                        {
-                            name: 'country_id',
-                            label: t('Phone Country'),
-                            type: 'text',
-                            defaultValue: defaultPhoneCountry?.value,
-                            conditional: () => false,
-                        },
-                        {
-                            name: 'phone',
-                            label: t('Phone Number'),
-                            type: 'text',
-                            required: true,
-                            render: (_, data, handleChange) => {
-                                const currentCountryId = data?.country_id || currentItem?.country_id || defaultPhoneCountry?.value;
-                                const currentCountry = phoneCountriesById.get(String(currentCountryId));
-                                const currentCountryCode = (currentCountry?.code || defaultPhoneCountry?.code || '').toLowerCase();
-
-                                return (
-                                    <PhoneInput
-                                        defaultCountry={currentCountryCode || undefined}
-                                        value={data?.phone || ''}
-                                        countries={allowedPhoneCountries}
-                                        inputProps={{ name: 'phone', required: true }}
-                                        className="w-full"
-                                        inputClassName="w-full !h-10 !border !border-input !bg-background !text-sm !text-foreground"
-                                        countrySelectorStyleProps={{
-                                            buttonClassName: '!h-10 !border !border-input !bg-background',
-                                            dropdownStyleProps: {
-                                                className: '!bg-background !text-foreground',
-                                            },
-                                        }}
-                                        onChange={(value, meta) => {
-                                            handleChange('phone', value || '');
-
-                                            const code = String(meta?.country?.iso2 || '').toLowerCase();
-                                            const selectedCountry = phoneCountriesByCode.get(code);
-                                            if (selectedCountry) {
-                                                handleChange('country_id', selectedCountry.value);
-                                            }
-                                        }}
-                                    />
-                                );
-                            },
-                        },
-                        { name: 'email', label: t('Email'), type: 'email', required: true },
-                        ...(formMode === 'create' ? [{ name: 'password', label: t('Password'), type: 'password', required: true }] : []),
-                        {
-                            name: 'client_type_id',
-                            label: t('Client Type'),
-                            type: 'select',
-                            required: false,
-                            options: clientTypes
-                                ? clientTypes.map((type: any) => {
-                                    // Use name_translations if available, otherwise fallback to name
-                                    const translations = type.name_translations || (typeof type.name === 'object' ? type.name : null);
-                                    let displayName = type.name;
-                                    if (translations && typeof translations === 'object') {
-                                        displayName = translations[currentLocale] || translations.en || translations.ar || type.name || '';
-                                    } else if (typeof type.name === 'object') {
-                                        displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
-                                    }
-                                    return {
-                                        value: type.id.toString(),
-                                        label: displayName,
-                                    };
-                                })
-                                : [],
-                        },
-                        {
-                            name: 'business_type',
-                            label: t('Business Type'),
-                            type: 'radio',
-                            required: true,
-                            colSpan: 12,
-                            options: [
-                                { value: 'b2c', label: t('Individual') },
-                                { value: 'b2b', label: t('Business') },
-                            ],
-                            defaultValue: 'b2c',
-                        },
-                        // Individual fields
-                        {
-                            name: 'nationality_id',
-                            label: t('Nationality'),
-                            type: 'select',
-                            required: false,
-                            options: countries,
-                            defaultValue: defaultNationality ? defaultNationality.value : '',
-                            conditional: (_, data) => data?.business_type === 'b2c',
-                        },
-                        {
-                            name: 'id_number',
-                            label: t('ID Number'),
-                            type: 'text',
-                            required: false,
-                            conditional: (_, data) => data?.business_type === 'b2c',
-                        },
-                        {
-                            name: 'gender',
-                            label: t('Gender'),
-                            type: 'select',
-                            required: false,
-                            options: [
-                                { value: 'male', label: t('Male') },
-                                { value: 'female', label: t('Female') },
-                            ],
-                            conditional: (_, data) => data?.business_type === 'b2c',
-                        },
-                        {
-                            name: 'date_of_birth',
-                            label: t('Date of Birth'),
-                            type: 'date',
-                            conditional: (_, data) => data?.business_type === 'b2c',
-                        },
-                        // Business fields
-                        // Company Name field hidden per requirements
-                        {
-                            name: 'unified_number',
-                            label: t('Unified Number'),
-                            type: 'text',
-                            required: false,
-                            conditional: (_, data) => data?.business_type === 'b2b',
-                        },
-                        {
-                            name: 'cr_number',
-                            label: t('CR Number'),
-                            type: 'text',
-                            required: false,
-                            conditional: (_, data) => data?.business_type === 'b2b',
-                        },
-                        {
-                            name: 'cr_issuance_date',
-                            label: t('CR Issuance Date'),
-                            type: 'date',
-                            required: false,
-                            conditional: (_, data) => data?.business_type === 'b2b',
-                        },
-                        {
-                            name: 'tax_id',
-                            label: t('Tax ID'),
-                            type: 'text',
-                            required: false,
-                            conditional: (_, data) => data?.business_type === 'b2b',
-                        },
-                        { name: 'address', label: t('Address'), type: 'textarea' },
-                        {
-                            name: 'tax_rate',
-                            label: t('Tax Rate') + ' (%)',
-                            type: 'number',
-                            step: '0.01',
-                            min: '0',
-                            max: '100',
-                            defaultValue: defaultTaxRate ? Number(defaultTaxRate) : 0,
-                        },
-                        // Referral Source field hidden per requirements
-                        { name: 'notes', label: t('Note'), type: 'textarea' },
-                        {
-                            name: 'status',
-                            label: t('Status'),
-                            type: 'select',
-                            options: [
-                                { value: 'active', label: t('Active') },
-                                { value: 'inactive', label: t('Inactive') },
-                            ],
-                            defaultValue: 'active',
-                        },
-                    ],
-                    modalSize: 'xl',
-                }}
-                initialData={currentItem}
-                title={formMode === 'create' ? t('Add New Client') : formMode === 'edit' ? t('Edit Client') : t('View Client')}
-                mode={formMode}
-            />
 
             {/* Delete Modal */}
             <CrudDeleteModal
