@@ -19,6 +19,7 @@ return [
     'Asia/Aden' => '(GMT+3:00) Asia/Aden (Arabia Standard Time)',
     'Asia/Baghdad' => '(GMT+3:00) Asia/Baghdad (Arabia Standard Time)',
     'Asia/Bahrain' => '(GMT+3:00) Asia/Bahrain (Arabia Standard Time)',
+    'Asia/Riyadh' => '(GMT+3:00) Asia/Riyadh (Arabia Standard Time)',
     'Asia/Kuwait' => '(GMT+3:00) Asia/Kuwait (Arabia Standard Time)',
     'Asia/Qatar' => '(GMT+3:00) Asia/Qatar (Arabia Standard Time)',
     'Indian/Comoro' => '(GMT+3:00) Indian/Comoro (Eastern African Time)',

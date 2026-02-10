@@ -1174,13 +1174,13 @@ if (! function_exists('defaultSettings')) {
         return [
             // System Settings
             'defaultCountry' => 'SA',
-            'defaultLanguage' => 'en',
+            'defaultLanguage' => 'ar',
             'dateFormat' => 'Y-m-d',
             'timeFormat' => 'H:i',
             'calendarStartDay' => 'sunday',
-            'defaultTimezone' => 'UTC',
+            'defaultTimezone' => 'Asia/Riyadh',
             'emailVerification' => false,
-            'landingPageEnabled' => true,
+            'landingPageEnabled' => false,
             'defaultTaxRate' => '15',
             'recaptchaEnabled' => config('services.recaptcha.enabled'),
             'recaptchaVersion' => config('services.recaptcha.version', 'v3'),
