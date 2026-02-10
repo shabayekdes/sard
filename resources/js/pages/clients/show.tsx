@@ -402,7 +402,9 @@ export default function ClientShow() {
                         })}
                     </div>
                     <div className="my-6 space-y-2">
-                        <div className="text-xs font-medium text-gray-500 dark:text-gray-400">{t('Notes')}</div>
+                      <div className="col-span-full h-px bg-gray-200 dark:bg-gray-800" />
+                      
+                      <div className="text-xs font-medium text-gray-500 dark:text-gray-400">{t('Notes')}</div>
                         <div className="rounded p-3 text-sm text-gray-600 dark:bg-gray-800 dark:text-gray-300">
                             {client.notes || t('No notes available')}
                         </div>

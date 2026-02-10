@@ -50,29 +50,14 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
     // Always show business buttons by default
     const [showBusinessButtons, setShowBusinessButtons] = useState<boolean>(true);
     const { props } = usePage();
-    const isDemos = (props as any).globalSettings?.is_demo;
+    const isNonProduction = import.meta.env.MODE !== 'production';
 
     const { data, setData, post, processing, errors, reset } = useForm<LoginForm>({
         email: '',
         password: '',
         remember: false,
     });
-
-    useEffect(() => {
-        // Check if demo mode is enabled
-        // const isDemoMode = (window as any).isDemo === true;
-        setIsDemo(isDemos);
-
-        // Set default credentials if in demo mode
-        if (isDemos) {
-            setData({
-                email: 'company@example.com',
-                password: 'password',
-                remember: false,
-            });
-        }
-    }, []);
-
+    
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         const formData = { ...data, recaptcha_token: recaptchaToken };
@@ -193,7 +178,7 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
                     {t('Log in')}
                 </AuthButton>
 
-                {isDemo && (
+                {isNonProduction && (
                     <div className="mt-6">
                         <div className="border-t border-gray-200 pt-5 dark:border-gray-700">
                             <h3 className="mb-4 text-center text-sm font-medium text-gray-700 dark:text-gray-300">Demo Quick Access</h3>
@@ -221,7 +206,7 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
                                         onClick={() => {
                                             // Use Inertia router to handle CSRF token automatically
                                             router.post(route('login'), {
-                                                email: 'company@example.com',
+                                                email: 'acmecorporation@example.com',
                                                 password: 'password',
                                                 remember: false,
                                                 recaptcha_token: recaptchaToken,
@@ -240,7 +225,7 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
                                         onClick={() => {
                                             // Use Inertia router to handle CSRF token automatically
                                             router.post(route('login'), {
-                                                email: 'michael_brown_2@example.com',
+                                                email: 'alaa@sard.app',
                                                 password: 'password',
                                                 remember: false,
                                                 recaptcha_token: recaptchaToken,
@@ -272,18 +257,6 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
                         </div>
                     </div>
                 )}
-
-                <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-                    {t("Don't have an account?")}{' '}
-                    <TextLink
-                        href={route('register')}
-                        className="font-medium transition-colors duration-200"
-                        style={{ color: primaryColor }}
-                        tabIndex={6}
-                    >
-                        {t('Sign Up')}
-                    </TextLink>
-                </div>
             </form>
         </AuthLayout>
     );

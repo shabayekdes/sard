@@ -60,6 +60,7 @@ class CompanySeeder extends Seeder
                 'plan_id' => $plans->random()->id,
                 'referral_code' => rand(100000, 999999),
                 'created_at' => $faker->dateTimeBetween('-1 year', 'now'),
+                'created_by' => 1
             ]);
             
             // Assign company role
