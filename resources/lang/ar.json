@@ -3194,5 +3194,9 @@
   "Select Document Type": "اختر نوع المستند",
   "Client Details": "تفاصيل العميل",
   "Select Status": "اختر الحالة",
-  "ID National": "الهوية الوطنية"
+  "ID National": "الهوية الوطنية",
+  "Next Session" : "الجلسة القادمة",
+  "No upcoming or recent sessions": "لا توجد جلسات قادمة أو حديثة",
+  "Details": "التفاصيل",
+  "Case Details": "بيانات القضية"
 }
