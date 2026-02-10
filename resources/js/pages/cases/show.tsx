@@ -1244,7 +1244,7 @@ export default function CaseShow() {
                                                 className={`inline-flex items-center rounded px-2 py-1 text-xs font-medium ${caseData.status === 'active'
                                                     ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                                                     : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                                }`}
+                                                    }`}
                                             >
                                                 {caseData.status === 'active' ? t('Active') : t('Inactive')}
                                             </span>
@@ -1354,7 +1354,7 @@ export default function CaseShow() {
                     {activeTab === 'timelines' && (
                         <div>
                             <div className="mb-6 flex items-center justify-between">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('Timeline Events')}</h3>
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('Timeline')}</h3>
                                 {hasPermission(permissions, 'create-case-timelines') && (
                                     <button
                                         onClick={() => handleTimelineAction('create')}

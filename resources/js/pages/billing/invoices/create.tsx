@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, Plus, Clock, FileText, ArrowLeft } from 'lucide-react';
+import { Repeater, type RepeaterField } from '@/components/ui/repeater';
+import { Clock, FileText, ArrowLeft } from 'lucide-react';
 import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { formatCurrency } from '@/utils/helpers';
@@ -25,6 +26,7 @@ export default function CreateInvoice() {
     notes: '',
     line_items: [{ description: '', quantity: 1, rate: 0, amount: 0 }]
   });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const [filteredCases, setFilteredCases] = useState([]);
   const [unbilledTimeEntries, setUnbilledTimeEntries] = useState([]);
@@ -171,29 +173,73 @@ export default function CreateInvoice() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const addLineItem = () => {
-    setFormData(prev => ({
-      ...prev,
-      line_items: [...prev.line_items, { description: '', quantity: 1, rate: 0, amount: 0 }]
-    }));
-  };
-
-  const removeLineItem = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      line_items: prev.line_items.filter((_, i) => i !== index)
-    }));
-  };
-
-  const updateLineItem = (index, field, value) => {
-    const newItems = [...formData.line_items];
-    newItems[index] = { ...newItems[index], [field]: value };
-    
-    if (field === 'quantity' || field === 'rate') {
-      newItems[index].amount = newItems[index].quantity * newItems[index].rate;
+  const lineItemFields: RepeaterField[] = [
+    {
+      name: 'description',
+      label: t('Description'),
+      type: 'text',
+      placeholder: t('Item description')
+    },
+    {
+      name: 'quantity',
+      label: t('Quantity'),
+      type: 'number',
+      defaultValue: 1,
+      min: 0,
+      step: '0.01'
+    },
+    {
+      name: 'rate',
+      label: t('Rate'),
+      type: 'number',
+      defaultValue: 0,
+      min: 0,
+      step: '0.01'
+    },
+    {
+      name: 'amount',
+      label: t('Amount'),
+      type: 'number',
+      defaultValue: 0,
+      min: 0,
+      step: '0.01'
     }
-    
-    setFormData(prev => ({ ...prev, line_items: newItems }));
+  ];
+
+  const handleLineItemsChange = (items) => {
+    const nextItems = items.map((item, index) => {
+      const previousItem = formData.line_items[index] || {};
+      const quantity = parseFloat(item.quantity) || 0;
+      const rate = parseFloat(item.rate) || 0;
+      const amount = parseFloat(item.amount) || 0;
+      const previousQuantity = parseFloat(previousItem.quantity) || 0;
+      const previousRate = parseFloat(previousItem.rate) || 0;
+      const shouldRecalculateAmount = quantity !== previousQuantity || rate !== previousRate;
+      const roundedAmount = parseFloat((quantity * rate).toFixed(2));
+
+      return {
+        ...previousItem,
+        ...item,
+        quantity,
+        rate,
+        amount: shouldRecalculateAmount ? roundedAmount : amount
+      };
+    });
+
+    setFormData(prev => ({ ...prev, line_items: nextItems }));
+  };
+
+  const normalizeErrors = (errors) => {
+    if (!errors || typeof errors === 'string') {
+      return { _error: errors || '' };
+    }
+
+    return Object.fromEntries(
+      Object.entries(errors).map(([key, value]) => [
+        key,
+        Array.isArray(value) ? value.join(', ') : String(value)
+      ])
+    );
   };
 
   const importTimeEntries = () => {
@@ -227,6 +273,7 @@ export default function CreateInvoice() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setFormErrors({});
     
     if (!formData.client_id) {
       toast.error('Please select a client');
@@ -265,7 +312,9 @@ export default function CreateInvoice() {
       },
       onError: (errors) => {
         toast.dismiss();
-        const errorMessages = Object.values(errors).flat().join(', ');
+        const normalizedErrors = normalizeErrors(errors);
+        setFormErrors(normalizedErrors);
+        const errorMessages = Object.values(normalizedErrors).filter(Boolean).join(', ');
         toast.error(`Failed to create invoice: ${errorMessages}`);
       }
     });
@@ -293,6 +342,11 @@ export default function CreateInvoice() {
       noPadding
     >
       <form onSubmit={handleSubmit} className="space-y-6">
+        {formErrors._error && (
+          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {formErrors._error}
+          </div>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Invoice Details */}
           <div className="lg:col-span-2 space-y-6">
@@ -321,6 +375,9 @@ export default function CreateInvoice() {
                         )}
                       </SelectContent>
                     </Select>
+                    {formErrors.client_id && (
+                      <p className="text-xs text-red-600 mt-1">{formErrors.client_id}</p>
+                    )}
                     {paymentTermsText && (
                       <p className="text-xs text-gray-500 mt-1">
                         {t('Payment terms')}: {paymentTermsText}
@@ -348,6 +405,9 @@ export default function CreateInvoice() {
                         )}
                       </SelectContent>
                     </Select>
+                    {formErrors.case_id && (
+                      <p className="text-xs text-red-600 mt-1">{formErrors.case_id}</p>
+                    )}
                   </div>
                 </div>
 
@@ -360,6 +420,9 @@ export default function CreateInvoice() {
                       onChange={(e) => updateFormData('invoice_date', e.target.value)}
                       required
                     />
+                    {formErrors.invoice_date && (
+                      <p className="text-xs text-red-600 mt-1">{formErrors.invoice_date}</p>
+                    )}
                   </div>
                   
                   <div>
@@ -370,6 +433,9 @@ export default function CreateInvoice() {
                       onChange={(e) => updateFormData('due_date', e.target.value)}
                       required
                     />
+                    {formErrors.due_date && (
+                      <p className="text-xs text-red-600 mt-1">{formErrors.due_date}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -379,95 +445,24 @@ export default function CreateInvoice() {
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">{t('Invoice Items')}</h3>
-                <div className="flex gap-2">
-                  {unbilledTimeEntries.length > 0 && (
-                    <div className="text-sm text-green-600 flex items-center">
-                      <Clock className="h-4 w-4 mr-1" />
-                      {unbilledTimeEntries.filter(item => item.type === 'time').length} {t('time entries')}, {unbilledTimeEntries.filter(item => item.type === 'expense').length} {t('expenses available')}
-                    </div>
-                  )}
-                  <Button type="button" variant="outline" size="sm" onClick={addLineItem}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    {t('Add Item')}
-                  </Button>
-                </div>
-              </div>
-              <div className="space-y-4">
-                {/* Header */}
-                <div className="grid grid-cols-12 gap-2 text-sm font-medium text-gray-700 border-b pb-2">
-                  <div className="col-span-5">{t('Description')}</div>
-                  <div className="col-span-2">{t('Quantity')}</div>
-                  <div className="col-span-2">{t('Rate')}</div>
-                  <div className="col-span-2">{t('Amount')}</div>
-                  <div className="col-span-1"></div>
-                </div>
-
-                {/* Line Items */}
-                {formData.line_items.map((item, index) => (
-                  <div key={index} className={`grid grid-cols-12 gap-2 items-center p-2 rounded ${item.type === 'expense' ? 'bg-orange-50 border border-orange-200' : ''}`}>
-                    <div className="col-span-5">
-                      <div className="space-y-1">
-                        <Input
-                          value={item.description}
-                          onChange={(e) => updateLineItem(index, 'description', e.target.value)}
-                          placeholder={t('Item description')}
-                        />
-                        {item.type === 'expense' && (
-                          <div className="text-xs text-orange-600 flex items-center">
-                            <span className="bg-orange-100 px-2 py-1 rounded text-orange-700 font-medium">Expense</span>
-                            {item.expense_date && <span className="ml-2">{new Date(item.expense_date).toLocaleDateString()}</span>}
-                          </div>
-                        )}
-                        {item.type === 'time' && (
-                          <div className="text-xs text-blue-600 flex items-center">
-                            <span className="bg-blue-100 px-2 py-1 rounded text-blue-700 font-medium">Time Entry</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="col-span-2">
-                      <Input
-                        type="number"
-                        value={item.quantity}
-                        onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
-                        min="0"
-                        step="0.01"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <Input
-                        type="number"
-                        value={item.rate}
-                        onChange={(e) => updateLineItem(index, 'rate', parseFloat(e.target.value) || 0)}
-                        min="0"
-                        step="0.01"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <Input
-                        type="number"
-                        value={item.amount}
-                        onChange={(e) => updateLineItem(index, 'amount', parseFloat(e.target.value) || 0)}
-                        min="0"
-                        step="0.01"
-                      />
-                    </div>
-                    <div className="col-span-1">
-                      {formData.line_items.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeLineItem(index)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
+                {unbilledTimeEntries.length > 0 && (
+                  <div className="text-sm text-green-600 flex items-center">
+                    <Clock className="h-4 w-4 mr-1" />
+                    {unbilledTimeEntries.filter(item => item.type === 'time').length} {t('time entries')}, {unbilledTimeEntries.filter(item => item.type === 'expense').length} {t('expenses available')}
                   </div>
-                ))}
+                )}
               </div>
+              <Repeater
+                fields={lineItemFields}
+                value={formData.line_items}
+                onChange={handleLineItemsChange}
+                getFieldError={(itemIndex, fieldName) => formErrors[`line_items.${itemIndex}.${fieldName}`]}
+                minItems={1}
+                maxItems={-1}
+                addButtonText={t('Add Item')}
+                removeButtonText={t('Remove')}
+                emptyMessage={t('No items added yet.')}
+              />
             </div>
 
             {/* Notes */}

@@ -39,6 +39,7 @@ export interface RepeaterProps {
   showItemNumbers?: boolean;
   allowReorder?: boolean;
   emptyMessage?: string;
+  getFieldError?: (itemIndex: number, fieldName: string) => string | undefined;
 }
 
 export function Repeater({
@@ -53,7 +54,8 @@ export function Repeater({
   itemClassName,
   showItemNumbers = true,
   allowReorder = false,
-  emptyMessage = 'No items added yet.'
+  emptyMessage = 'No items added yet.',
+  getFieldError
 }: RepeaterProps) {
   const { isRtl } = useLayout();
   const [items, setItems] = useState<any[]>(value.length > 0 ? value : []);
@@ -109,10 +111,13 @@ export function Repeater({
 
   const renderField = (field: RepeaterField, value: any, onChange: (value: any) => void, itemIndex: number) => {
     const fieldId = `${field.name}_${itemIndex}`;
+    const errorMessage = getFieldError?.(itemIndex, field.name);
+    const errorClassName = errorMessage ? 'border-red-500 focus-visible:ring-red-500' : undefined;
+    let fieldNode: React.ReactNode;
 
     switch (field.type) {
       case 'textarea':
-        return (
+        fieldNode = (
           <Textarea
             id={fieldId}
             placeholder={field.placeholder}
@@ -120,12 +125,13 @@ export function Repeater({
             onChange={(e) => onChange(e.target.value)}
             required={field.required}
             disabled={field.disabled}
-            className={field.className}
+            className={cn(field.className, errorClassName)}
           />
         );
+        break;
 
       case 'number':
-        return (
+        fieldNode = (
           <Input
             id={fieldId}
             type="number"
@@ -137,12 +143,13 @@ export function Repeater({
             min={field.min}
             max={field.max}
             step={field.step}
-            className={field.className}
+            className={cn(field.className, errorClassName)}
           />
         );
+        break;
 
       case 'file':
-        return (
+        fieldNode = (
           <Input
             id={fieldId}
             type="file"
@@ -150,12 +157,13 @@ export function Repeater({
             onChange={(e) => onChange(e.target.files?.[0] || null)}
             required={field.required}
             disabled={field.disabled}
-            className={field.className}
+            className={cn(field.className, errorClassName)}
           />
         );
+        break;
 
       case 'media-picker':
-        return (
+        fieldNode = (
           <MediaPicker
             value={value || ''}
             onChange={onChange}
@@ -164,18 +172,19 @@ export function Repeater({
             multiple={false}
           />
         );
+        break;
 
       case 'select':
         {
           const selectId = `${repeaterIdRef.current}_${itemIndex}_${field.name}`;
 
-          return (
+          fieldNode = (
             <Select
               value={value ? String(value) : ''}
               onValueChange={onChange}
               disabled={field.disabled}
             >
-              <SelectTrigger className={field.className} dir={isRtl ? 'rtl' : 'ltr'}>
+              <SelectTrigger className={cn(field.className, errorClassName)} dir={isRtl ? 'rtl' : 'ltr'}>
                 <SelectValue placeholder={field.placeholder} />
               </SelectTrigger>
               <SelectContent className="z-[9999]" dir={isRtl ? 'rtl' : 'ltr'}>
@@ -191,9 +200,10 @@ export function Repeater({
             </Select>
           );
         }
+        break;
 
       case 'switch':
-        return (
+        fieldNode = (
           <div className="flex items-center space-x-2">
             <Switch
               id={fieldId}
@@ -206,11 +216,12 @@ export function Repeater({
             </Label>
           </div>
         );
+        break;
 
       case 'date':
       case 'time':
       case 'datetime-local':
-        return (
+        fieldNode = (
           <Input
             id={fieldId}
             type={field.type}
@@ -220,12 +231,13 @@ export function Repeater({
             disabled={field.disabled}
             min={field.min}
             max={field.max}
-            className={field.className}
+            className={cn(field.className, errorClassName)}
           />
         );
+        break;
 
       default: // text, email, password
-        return (
+        fieldNode = (
           <Input
             id={fieldId}
             type={field.type}
@@ -234,10 +246,18 @@ export function Repeater({
             onChange={(e) => onChange(e.target.value)}
             required={field.required}
             disabled={field.disabled}
-            className={field.className}
+            className={cn(field.className, errorClassName)}
           />
         );
+        break;
     }
+
+    return (
+      <div className="space-y-1">
+        {fieldNode}
+        {errorMessage && <p className="text-xs text-red-600">{errorMessage}</p>}
+      </div>
+    );
   };
 
   return (
