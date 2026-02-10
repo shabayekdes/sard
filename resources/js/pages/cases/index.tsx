@@ -9,6 +9,7 @@ import { CrudDeleteModal } from '@/components/CrudDeleteModal';
 import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
+import { Switch } from '@/components/ui/switch';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { Repeater, RepeaterField } from '@/components/ui/repeater';
 
@@ -314,14 +315,16 @@ export default function Cases() {
     {
       key: 'status',
       label: t('Active Status'),
-      render: (value: string) => (
-        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'active'
-          ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
-          : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
-          }`}>
-          {value === 'active' ? t('Active') : t('Inactive')}
-        </span>
-      )
+      render: (value: string, row: any) => {
+        const canToggle = hasPermission(permissions, 'edit-cases');
+        return (
+          <Switch
+            checked={value === 'active'}
+            disabled={!canToggle}
+            onCheckedChange={() => handleToggleStatus(row)}
+          />
+        );
+      }
     }
   ];
 
@@ -358,351 +361,351 @@ export default function Cases() {
 
 
   return (
-      <PageTemplate title={t('Case Management')} url="/cases" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
-          <div className="mb-4 rounded-lg bg-white">
-              <SearchAndFilterBar
-                  searchTerm={searchTerm}
-                  onSearchChange={setSearchTerm}
-                  onSearch={handleSearch}
-                  filters={[
-                      {
-                          name: 'case_type_id',
-                          label: t('Case Type'),
-                          type: 'select',
-                          value: selectedCaseType,
-                          onChange: setSelectedCaseType,
-                          options: [
-                              { value: 'all', label: t('All Types') },
-                              ...(caseTypes || []).map((type: any) => ({
-                                  value: type.id.toString(),
-                                  label: type.name,
-                              })),
-                          ],
-                      },
-                      {
-                          name: 'case_status_id',
-                          label: t('Case Status'),
-                          type: 'select',
-                          value: selectedCaseStatus,
-                          onChange: setSelectedCaseStatus,
-                          options: [
-                              { value: 'all', label: t('All Statuses') },
-                              ...(caseStatuses || []).map((status: any) => ({
-                                  value: status.id.toString(),
-                                  label: status.name,
-                              })),
-                          ],
-                      },
-                      {
-                          name: 'priority',
-                          label: t('Priority'),
-                          type: 'select',
-                          value: selectedPriority,
-                          onChange: setSelectedPriority,
-                          options: [
-                              { value: 'all', label: t('All Priorities') },
-                              { value: 'low', label: t('Low') },
-                              { value: 'medium', label: t('Medium') },
-                              { value: 'high', label: t('High') },
-                          ],
-                      },
-                      {
-                          name: 'status',
-                          label: t('Status'),
-                          type: 'select',
-                          value: selectedStatus,
-                          onChange: setSelectedStatus,
-                          options: [
-                              { value: 'all', label: t('All Statuses') },
-                              { value: 'active', label: t('Active') },
-                              { value: 'inactive', label: t('Inactive') },
-                          ],
-                      },
-                      {
-                          name: 'court_id',
-                          label: t('Court'),
-                          type: 'select',
-                          value: selectedCourt,
-                          onChange: setSelectedCourt,
-                          options: [
-                              { value: 'all', label: t('All Courts') },
-                              ...(courts || []).map((court: any) => ({
-                                  value: court.id.toString(),
-                                  label: court.name,
-                                  key: `filter-court-${court.id}`,
-                              })),
-                          ],
-                      },
-                  ]}
-                  showFilters={showFilters}
-                  setShowFilters={setShowFilters}
-                  hasActiveFilters={hasActiveFilters}
-                  activeFilterCount={activeFilterCount}
-                  onResetFilters={handleResetFilters}
-                  onApplyFilters={applyFilters}
-              />
-          </div>
+    <PageTemplate title={t('Case Management')} url="/cases" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+      <div className="mb-4 rounded-lg bg-white">
+        <SearchAndFilterBar
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          onSearch={handleSearch}
+          filters={[
+            {
+              name: 'case_type_id',
+              label: t('Case Type'),
+              type: 'select',
+              value: selectedCaseType,
+              onChange: setSelectedCaseType,
+              options: [
+                { value: 'all', label: t('All Types') },
+                ...(caseTypes || []).map((type: any) => ({
+                  value: type.id.toString(),
+                  label: type.name,
+                })),
+              ],
+            },
+            {
+              name: 'case_status_id',
+              label: t('Case Status'),
+              type: 'select',
+              value: selectedCaseStatus,
+              onChange: setSelectedCaseStatus,
+              options: [
+                { value: 'all', label: t('All Statuses') },
+                ...(caseStatuses || []).map((status: any) => ({
+                  value: status.id.toString(),
+                  label: status.name,
+                })),
+              ],
+            },
+            {
+              name: 'priority',
+              label: t('Priority'),
+              type: 'select',
+              value: selectedPriority,
+              onChange: setSelectedPriority,
+              options: [
+                { value: 'all', label: t('All Priorities') },
+                { value: 'low', label: t('Low') },
+                { value: 'medium', label: t('Medium') },
+                { value: 'high', label: t('High') },
+              ],
+            },
+            {
+              name: 'status',
+              label: t('Status'),
+              type: 'select',
+              value: selectedStatus,
+              onChange: setSelectedStatus,
+              options: [
+                { value: 'all', label: t('All Statuses') },
+                { value: 'active', label: t('Active') },
+                { value: 'inactive', label: t('Inactive') },
+              ],
+            },
+            {
+              name: 'court_id',
+              label: t('Court'),
+              type: 'select',
+              value: selectedCourt,
+              onChange: setSelectedCourt,
+              options: [
+                { value: 'all', label: t('All Courts') },
+                ...(courts || []).map((court: any) => ({
+                  value: court.id.toString(),
+                  label: court.name,
+                  key: `filter-court-${court.id}`,
+                })),
+              ],
+            },
+          ]}
+          showFilters={showFilters}
+          setShowFilters={setShowFilters}
+          hasActiveFilters={hasActiveFilters}
+          activeFilterCount={activeFilterCount}
+          onResetFilters={handleResetFilters}
+          onApplyFilters={applyFilters}
+        />
+      </div>
 
-          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
-              <CrudTable
-                  columns={columns}
-                  actions={actions}
-                  data={cases?.data || []}
-                  from={cases?.from || 1}
-                  onAction={handleAction}
-                  sortField={pageFilters.sort_field}
-                  sortDirection={pageFilters.sort_direction}
-                  onSort={handleSort}
-                  permissions={permissions}
-                  entityPermissions={{
-                      view: 'view-cases',
-                      create: 'create-cases',
-                      edit: 'edit-cases',
-                      delete: 'delete-cases',
-                  }}
-              />
+      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
+        <CrudTable
+          columns={columns}
+          actions={actions}
+          data={cases?.data || []}
+          from={cases?.from || 1}
+          onAction={handleAction}
+          sortField={pageFilters.sort_field}
+          sortDirection={pageFilters.sort_direction}
+          onSort={handleSort}
+          permissions={permissions}
+          entityPermissions={{
+            view: 'view-cases',
+            create: 'create-cases',
+            edit: 'edit-cases',
+            delete: 'delete-cases',
+          }}
+        />
 
-              <Pagination
-                  from={cases?.from || 0}
-                  to={cases?.to || 0}
-                  total={cases?.total || 0}
-                  links={cases?.links}
-                  entityName={t('cases')}
-                  onPageChange={(url) => router.get(url)}
-                  currentPerPage={pageFilters.per_page?.toString() || '10'}
-                  onPerPageChange={(value) => {
-                    router.get(
-                      route('cases.index'),
-                      {
-                        page: 1,
-                        per_page: parseInt(value),
-                        search: searchTerm || undefined,
-                        case_type_id: selectedCaseType !== 'all' ? selectedCaseType : undefined,
-                        case_status_id: selectedCaseStatus !== 'all' ? selectedCaseStatus : undefined,
-                        priority: selectedPriority !== 'all' ? selectedPriority : undefined,
-                        status: selectedStatus !== 'all' ? selectedStatus : undefined,
-                        court_id: selectedCourt !== 'all' ? selectedCourt : undefined,
-                      },
-                      { preserveState: true, preserveScroll: true },
-                    );
-                  }}
-              />
-          </div>
+        <Pagination
+          from={cases?.from || 0}
+          to={cases?.to || 0}
+          total={cases?.total || 0}
+          links={cases?.links}
+          entityName={t('cases')}
+          onPageChange={(url) => router.get(url)}
+          currentPerPage={pageFilters.per_page?.toString() || '10'}
+          onPerPageChange={(value) => {
+            router.get(
+              route('cases.index'),
+              {
+                page: 1,
+                per_page: parseInt(value),
+                search: searchTerm || undefined,
+                case_type_id: selectedCaseType !== 'all' ? selectedCaseType : undefined,
+                case_status_id: selectedCaseStatus !== 'all' ? selectedCaseStatus : undefined,
+                priority: selectedPriority !== 'all' ? selectedPriority : undefined,
+                status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                court_id: selectedCourt !== 'all' ? selectedCourt : undefined,
+              },
+              { preserveState: true, preserveScroll: true },
+            );
+          }}
+        />
+      </div>
 
-          <CrudFormModal
-              isOpen={isFormModalOpen}
-              onClose={() => setIsFormModalOpen(false)}
-              onSubmit={handleFormSubmit}
-              formConfig={{
-                  fields: [
-                      {
-                          name: 'client_id',
-                          label: t('Client'),
-                          type: 'select',
-                          required: true,
-                          options: clients
-                              ? [
-                                    ...clients.map((client: any) => ({
-                                        value: client.id.toString(),
-                                        label: client.name,
-                                    })),
-                                    {
-                                        value: auth.user.id.toString(),
-                                        label: `${auth.user.name} (Me)`,
-                                    },
-                                ]
-                              : [
-                                    {
-                                        value: auth.user.id.toString(),
-                                        label: `${auth.user.name} (Me)`,
-                                    },
-                                ],
-                      },
-                      {
-                          name: 'attributes',
-                          label: t('Attributes'),
-                          type: 'radio',
-                          required: true,
-                          defaultValue: 'petitioner',
-                          options: [
-                              { value: 'petitioner', label: t('Petitioner') },
-                              { value: 'respondent', label: t('Respondent') },
-                          ],
-                      },
-                      {
-                          name: 'opposite_parties',
-                          label: t('Opposite Party'),
-                          type: 'custom',
-                          render: (field: any, formData: any, onChange: (name: string, value: any) => void) => {
-                              const repeaterFields: RepeaterField[] = [
-                                  { name: 'name', label: t('Name'), type: 'text', required: true },
-                                  { name: 'id_number', label: t('ID'), type: 'text' },
-                                  {
-                                      name: 'nationality_id',
-                                      label: t('Nationality'),
-                                      type: 'select',
-                                      options: countries,
-                                      placeholder: countries.length > 0 ? t('Select Nationality') : t('No nationalities available'),
-                                  },
-                                  { name: 'lawyer_name', label: t('Lawyer Name'), type: 'text' },
-                              ];
+      <CrudFormModal
+        isOpen={isFormModalOpen}
+        onClose={() => setIsFormModalOpen(false)}
+        onSubmit={handleFormSubmit}
+        formConfig={{
+          fields: [
+            {
+              name: 'client_id',
+              label: t('Client'),
+              type: 'select',
+              required: true,
+              options: clients
+                ? [
+                  ...clients.map((client: any) => ({
+                    value: client.id.toString(),
+                    label: client.name,
+                  })),
+                  {
+                    value: auth.user.id.toString(),
+                    label: `${auth.user.name} (Me)`,
+                  },
+                ]
+                : [
+                  {
+                    value: auth.user.id.toString(),
+                    label: `${auth.user.name} (Me)`,
+                  },
+                ],
+            },
+            {
+              name: 'attributes',
+              label: t('Attributes'),
+              type: 'radio',
+              required: true,
+              defaultValue: 'petitioner',
+              options: [
+                { value: 'petitioner', label: t('Petitioner') },
+                { value: 'respondent', label: t('Respondent') },
+              ],
+            },
+            {
+              name: 'opposite_parties',
+              label: t('Opposite Party'),
+              type: 'custom',
+              render: (field: any, formData: any, onChange: (name: string, value: any) => void) => {
+                const repeaterFields: RepeaterField[] = [
+                  { name: 'name', label: t('Name'), type: 'text', required: true },
+                  { name: 'id_number', label: t('ID'), type: 'text' },
+                  {
+                    name: 'nationality_id',
+                    label: t('Nationality'),
+                    type: 'select',
+                    options: countries,
+                    placeholder: countries.length > 0 ? t('Select Nationality') : t('No nationalities available'),
+                  },
+                  { name: 'lawyer_name', label: t('Lawyer Name'), type: 'text' },
+                ];
 
-                              return (
-                                  <Repeater
-                                      fields={repeaterFields}
-                                      value={formData.opposite_parties || []}
-                                      onChange={(value) => onChange('opposite_parties', value)}
-                                      minItems={1}
-                                      maxItems={-1}
-                                      addButtonText={t('Add Opposite Party')}
-                                      removeButtonText={t('Remove')}
-                                  />
-                              );
-                          },
-                      },
-                      { name: 'title', label: t('Case Title'), type: 'text', required: true },
-                      { name: 'case_number', label: t('Case Number'), type: 'text' },
-                      { name: 'file_number', label: t('File Number'), type: 'text' },
-                      {
-                          name: 'case_category_subcategory',
-                          type: 'dependent-dropdown',
-                          required: true,
-                          dependentConfig: [
-                              {
-                                  name: 'case_category_id',
-                                  label: t('Case Main Category'),
-                                  options: caseCategories
-                                      ? caseCategories.map((cat: any) => {
-                                            // Handle translatable name
-                                            let displayName = cat.name;
-                                            if (typeof cat.name === 'object' && cat.name !== null) {
-                                                displayName = cat.name[i18n.language] || cat.name.en || cat.name.ar || '';
-                                            } else if (cat.name_translations && typeof cat.name_translations === 'object') {
-                                                displayName =
-                                                    cat.name_translations[i18n.language] ||
-                                                    cat.name_translations.en ||
-                                                    cat.name_translations.ar ||
-                                                    '';
-                                            }
-                                            return {
-                                                value: cat.id.toString(),
-                                                label: displayName,
-                                            };
-                                        })
-                                      : [],
-                              },
-                              {
-                                  name: 'case_subcategory_id',
-                                  label: t('Case Sub Category'),
-                                  apiEndpoint: '/case/case-categories/{case_category_id}/subcategories',
-                                  showCurrentValue: true,
-                              },
-                          ],
-                      },
-                      {
-                          name: 'case_type_id',
-                          label: t('Case Type'),
-                          type: 'select',
-                          required: true,
-                          options: caseTypes
-                              ? caseTypes.map((type: any) => ({
-                                    value: type.id.toString(),
-                                    label: type.name,
-                                }))
-                              : [],
-                      },
-                      {
-                          name: 'case_status_id',
-                          label: t('Case Status'),
-                          type: 'select',
-                          required: true,
-                          options: caseStatuses
-                              ? caseStatuses.map((status: any) => ({
-                                    value: status.id.toString(),
-                                    label: status.name,
-                                }))
-                              : [],
-                      },
-                      {
-                          name: 'priority',
-                          label: t('Priority'),
-                          type: 'select',
-                          required: true,
-                          options: [
-                              { value: 'low', label: t('Low') },
-                              { value: 'medium', label: t('Medium') },
-                              { value: 'high', label: t('High') },
-                          ],
-                          defaultValue: 'medium',
-                      },
-                      {
-                          name: 'court_id',
-                          label: t('Court'),
-                          type: 'select',
-                          options: courts
-                              ? courts.map((court: any) => ({
-                                    value: court.id.toString(),
-                                    label: court.name,
-                                    key: `court-${court.id}`,
-                                }))
-                              : [],
-                      },
-                      { name: 'filing_date', label: t('Filling Date'), type: 'date' },
-                      { name: 'expected_completion_date', label: t('Expecting Completion'), type: 'date' },
-                      { name: 'estimated_value', label: t('Estimated Value'), type: 'number' },
-                      { name: 'description', label: t('Description'), type: 'textarea' },
-                      {
-                          name: 'status',
-                          label: t('Status'),
-                          type: 'select',
-                          options: [
-                              { value: 'active', label: 'Active' },
-                              { value: 'inactive', label: 'Inactive' },
-                          ],
-                          defaultValue: 'active',
-                      },
-                  ].concat(
-                      googleCalendarEnabled
-                          ? [
-                                {
-                                    name: 'sync_with_google_calendar',
-                                    label: t('Synchronize in Google Calendar'),
-                                    type: 'switch',
-                                    defaultValue: false,
-                                },
-                            ]
-                          : [],
-                  ),
-                  modalSize: 'xl',
-              }}
-              initialData={
-                  currentItem
-                      ? {
-                            ...currentItem,
-                            case_category_id: currentItem.case_category_id ? currentItem.case_category_id.toString() : '',
-                            case_subcategory_id: currentItem.case_subcategory_id ? currentItem.case_subcategory_id.toString() : '',
-                            opposite_parties: currentItem.opposite_parties
-                                ? currentItem.opposite_parties.map((party: any) => ({
-                                      name: party.name || '',
-                                      id_number: party.id_number || '',
-                                      nationality_id: party.nationality_id ? party.nationality_id.toString() : '',
-                                      lawyer_name: party.lawyer_name || '',
-                                  }))
-                                : [],
-                        }
-                      : { case_category_id: '', case_subcategory_id: '', opposite_parties: [] }
-              }
-              title={formMode === 'create' ? t('Add New Case') : formMode === 'edit' ? t('Edit Case') : t('View Case')}
-              mode={formMode}
-          />
+                return (
+                  <Repeater
+                    fields={repeaterFields}
+                    value={formData.opposite_parties || []}
+                    onChange={(value) => onChange('opposite_parties', value)}
+                    minItems={1}
+                    maxItems={-1}
+                    addButtonText={t('Add Opposite Party')}
+                    removeButtonText={t('Remove')}
+                  />
+                );
+              },
+            },
+            { name: 'title', label: t('Case Title'), type: 'text', required: true },
+            { name: 'case_number', label: t('Case Number'), type: 'text' },
+            { name: 'file_number', label: t('File Number'), type: 'text' },
+            {
+              name: 'case_category_subcategory',
+              type: 'dependent-dropdown',
+              required: true,
+              dependentConfig: [
+                {
+                  name: 'case_category_id',
+                  label: t('Case Main Category'),
+                  options: caseCategories
+                    ? caseCategories.map((cat: any) => {
+                      // Handle translatable name
+                      let displayName = cat.name;
+                      if (typeof cat.name === 'object' && cat.name !== null) {
+                        displayName = cat.name[i18n.language] || cat.name.en || cat.name.ar || '';
+                      } else if (cat.name_translations && typeof cat.name_translations === 'object') {
+                        displayName =
+                          cat.name_translations[i18n.language] ||
+                          cat.name_translations.en ||
+                          cat.name_translations.ar ||
+                          '';
+                      }
+                      return {
+                        value: cat.id.toString(),
+                        label: displayName,
+                      };
+                    })
+                    : [],
+                },
+                {
+                  name: 'case_subcategory_id',
+                  label: t('Case Sub Category'),
+                  apiEndpoint: '/case/case-categories/{case_category_id}/subcategories',
+                  showCurrentValue: true,
+                },
+              ],
+            },
+            {
+              name: 'case_type_id',
+              label: t('Case Type'),
+              type: 'select',
+              required: true,
+              options: caseTypes
+                ? caseTypes.map((type: any) => ({
+                  value: type.id.toString(),
+                  label: type.name,
+                }))
+                : [],
+            },
+            {
+              name: 'case_status_id',
+              label: t('Case Status'),
+              type: 'select',
+              required: true,
+              options: caseStatuses
+                ? caseStatuses.map((status: any) => ({
+                  value: status.id.toString(),
+                  label: status.name,
+                }))
+                : [],
+            },
+            {
+              name: 'priority',
+              label: t('Priority'),
+              type: 'select',
+              required: true,
+              options: [
+                { value: 'low', label: t('Low') },
+                { value: 'medium', label: t('Medium') },
+                { value: 'high', label: t('High') },
+              ],
+              defaultValue: 'medium',
+            },
+            {
+              name: 'court_id',
+              label: t('Court'),
+              type: 'select',
+              options: courts
+                ? courts.map((court: any) => ({
+                  value: court.id.toString(),
+                  label: court.name,
+                  key: `court-${court.id}`,
+                }))
+                : [],
+            },
+            { name: 'filing_date', label: t('Filling Date'), type: 'date' },
+            { name: 'expected_completion_date', label: t('Expecting Completion'), type: 'date' },
+            { name: 'estimated_value', label: t('Estimated Value'), type: 'number' },
+            { name: 'description', label: t('Description'), type: 'textarea' },
+            {
+              name: 'status',
+              label: t('Status'),
+              type: 'select',
+              options: [
+                { value: 'active', label: 'Active' },
+                { value: 'inactive', label: 'Inactive' },
+              ],
+              defaultValue: 'active',
+            },
+          ].concat(
+            googleCalendarEnabled
+              ? [
+                {
+                  name: 'sync_with_google_calendar',
+                  label: t('Synchronize in Google Calendar'),
+                  type: 'switch',
+                  defaultValue: false,
+                },
+              ]
+              : [],
+          ),
+          modalSize: 'xl',
+        }}
+        initialData={
+          currentItem
+            ? {
+              ...currentItem,
+              case_category_id: currentItem.case_category_id ? currentItem.case_category_id.toString() : '',
+              case_subcategory_id: currentItem.case_subcategory_id ? currentItem.case_subcategory_id.toString() : '',
+              opposite_parties: currentItem.opposite_parties
+                ? currentItem.opposite_parties.map((party: any) => ({
+                  name: party.name || '',
+                  id_number: party.id_number || '',
+                  nationality_id: party.nationality_id ? party.nationality_id.toString() : '',
+                  lawyer_name: party.lawyer_name || '',
+                }))
+                : [],
+            }
+            : { case_category_id: '', case_subcategory_id: '', opposite_parties: [] }
+        }
+        title={formMode === 'create' ? t('Add New Case') : formMode === 'edit' ? t('Edit Case') : t('View Case')}
+        mode={formMode}
+      />
 
-          <CrudDeleteModal
-              isOpen={isDeleteModalOpen}
-              onClose={() => setIsDeleteModalOpen(false)}
-              onConfirm={handleDeleteConfirm}
-              itemName={currentItem?.title || ''}
-              entityName="case"
-          />
-      </PageTemplate>
+      <CrudDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        itemName={currentItem?.title || ''}
+        entityName="case"
+      />
+    </PageTemplate>
   );
 }

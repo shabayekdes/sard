@@ -66,10 +66,9 @@ class CaseController extends BaseController
         if ($request->has('sort_field') && !empty($request->sort_field)) {
             $query->orderBy($request->sort_field, $request->sort_direction ?? 'asc');
         } else {
-            $query->orderBy('created_at', 'desc');
+            $query->latest('id');
         }
-
-
+        
         $cases = $query->paginate($request->per_page ?? 10);
 
         $caseTypes = CaseType::where('created_by', createdBy())->where('status', 'active')->get(['id', 'name']);
