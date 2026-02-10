@@ -724,6 +724,8 @@ class PermissionSeeder extends Seeder
             ['name' => 'create-payments', 'module' => 'payments', 'label' => 'Create Payments', 'description' => 'Can create payments'],
             ['name' => 'edit-payments', 'module' => 'payments', 'label' => 'Edit Payments', 'description' => 'Can edit payments'],
             ['name' => 'delete-payments', 'module' => 'payments', 'label' => 'Delete Payments', 'description' => 'Can delete payments'],
+            ['name' => 'approve-payments', 'module' => 'payments', 'label' => 'Approve Payments', 'description' => 'Can approve bank transfer payments'],
+            ['name' => 'reject-payments', 'module' => 'payments', 'label' => 'Reject Payments', 'description' => 'Can reject bank transfer payments'],
 
             // Task Management
             ['name' => 'manage-tasks', 'module' => 'tasks', 'label' => 'Manage Tasks', 'description' => 'Can manage tasks'],

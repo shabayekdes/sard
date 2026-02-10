@@ -5,7 +5,7 @@ export const PAYMENT_METHODS = {
   MERCADOPAGO: 'mercadopago',
   PAYSTACK: 'paystack',
   FLUTTERWAVE: 'flutterwave',
-  BANK: 'bank',
+  BANK: 'bank_transfer',
   PAYTABS: 'paytabs',
   SKRILL: 'skrill',
   COINGATE: 'coingate',

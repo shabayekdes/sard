@@ -11,7 +11,7 @@ interface PaymentMethods {
   paypal?: PaymentMethodConfig;
   razorpay?: PaymentMethodConfig;
   mercadopago?: PaymentMethodConfig;
-  bank?: PaymentMethodConfig;
+  bank_transfer?: PaymentMethodConfig;
   cashfree?: PaymentMethodConfig;
 }
 

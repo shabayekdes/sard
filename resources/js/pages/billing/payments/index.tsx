@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { Plus, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
 import { CrudFormModal } from '@/components/CrudFormModal';
@@ -11,6 +12,10 @@ import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { capitalize, formatCurrency } from '@/utils/helpers';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 export default function Payments() {
   const { t } = useTranslation();
@@ -21,11 +26,14 @@ export default function Payments() {
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
   const [selectedInvoice, setSelectedInvoice] = useState(pageFilters.invoice_id || 'all');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(pageFilters.payment_method || 'all');
+  const [selectedApprovalStatus, setSelectedApprovalStatus] = useState(pageFilters.approval_status || 'all');
   const [showFilters, setShowFilters] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<any>(null);
   const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
 
   // Auto-open modal from invoice page
   const [isAutoOpen, setIsAutoOpen] = useState(false);
@@ -54,12 +62,15 @@ export default function Payments() {
 
   // Check if any filters are active
   const hasActiveFilters = () => {
-    return searchTerm !== '' || selectedInvoice !== 'all' || selectedPaymentMethod !== 'all';
+    return searchTerm !== '' || selectedInvoice !== 'all' || selectedPaymentMethod !== 'all' || selectedApprovalStatus !== 'all';
   };
 
   // Count active filters
   const activeFilterCount = () => {
-    return (searchTerm ? 1 : 0) + (selectedInvoice !== 'all' ? 1 : 0) + (selectedPaymentMethod !== 'all' ? 1 : 0);
+    return (searchTerm ? 1 : 0)
+      + (selectedInvoice !== 'all' ? 1 : 0)
+      + (selectedPaymentMethod !== 'all' ? 1 : 0)
+      + (selectedApprovalStatus !== 'all' ? 1 : 0);
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -73,6 +84,7 @@ export default function Payments() {
       search: searchTerm || undefined,
       invoice_id: selectedInvoice !== 'all' ? selectedInvoice : undefined,
       payment_method: selectedPaymentMethod !== 'all' ? selectedPaymentMethod : undefined,
+      approval_status: selectedApprovalStatus !== 'all' ? selectedApprovalStatus : undefined,
       per_page: pageFilters.per_page
     }, { preserveState: true, preserveScroll: true });
   };
@@ -91,6 +103,25 @@ export default function Payments() {
         break;
       case 'delete':
         setIsDeleteModalOpen(true);
+        break;
+      case 'approve':
+        toast.loading(t('Approving payment...'));
+        router.post(route('billing.payments.approve', item.id), {}, {
+          onSuccess: (page) => {
+            toast.dismiss();
+            if (page.props.flash?.success) {
+              toast.success(page.props.flash.success);
+            }
+          },
+          onError: (errors) => {
+            toast.dismiss();
+            toast.error(`Failed to approve payment: ${Object.values(errors).join(', ')}`);
+          }
+        });
+        break;
+      case 'reject':
+        setRejectionReason('');
+        setIsRejectModalOpen(true);
         break;
     }
   };
@@ -159,12 +190,33 @@ export default function Payments() {
     setSearchTerm('');
     setSelectedInvoice('all');
     setSelectedPaymentMethod('all');
+    setSelectedApprovalStatus('all');
     setShowFilters(false);
 
     router.get(route('billing.payments.index'), {
       page: 1,
       per_page: pageFilters.per_page
     }, { preserveState: true, preserveScroll: true });
+  };
+
+  const handleRejectConfirm = () => {
+    if (!currentItem) return;
+    toast.loading(t('Rejecting payment...'));
+
+    router.post(route('billing.payments.reject', currentItem.id), { rejection_reason: rejectionReason }, {
+      onSuccess: (page) => {
+        setIsRejectModalOpen(false);
+        setRejectionReason('');
+        toast.dismiss();
+        if (page.props.flash?.success) {
+          toast.success(page.props.flash.success);
+        }
+      },
+      onError: (errors) => {
+        toast.dismiss();
+        toast.error(`Failed to reject payment: ${Object.values(errors).join(', ')}`);
+      }
+    });
   };
 
   // Define page actions
@@ -210,9 +262,32 @@ export default function Payments() {
       label: t('Method'),
       render: (value: string) => (
         <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-          {t(capitalize(value))}
+          {value === 'bank_transfer' ? t('Bank Transfer') : t(capitalize(value))}
         </span>
       )
+    },
+    {
+      key: 'approval_status',
+      label: t('Approval'),
+      render: (value: string) => {
+        const status = value || 'approved';
+        const statusClasses: Record<string, string> = {
+          pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+          approved: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+          rejected: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+        };
+        const statusIcons: Record<string, ReactNode> = {
+          pending: <Clock className="h-3.5 w-3.5" />,
+          approved: <CheckCircle className="h-3.5 w-3.5" />,
+          rejected: <XCircle className="h-3.5 w-3.5" />,
+        };
+        return (
+          <span className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium ${statusClasses[status] || 'bg-gray-100 text-gray-800'}`}>
+            {statusIcons[status] || null}
+            {t(capitalize(status))}
+          </span>
+        );
+      }
     },
     {
       key: 'payment_date',
@@ -224,6 +299,22 @@ export default function Payments() {
 
   // Define table actions
   const actions = [
+    {
+      label: t('Approve'),
+      icon: 'Check',
+      action: 'approve',
+      className: 'text-green-600',
+      requiredPermission: 'approve-payments',
+      condition: (row: any) => row.payment_method === 'bank_transfer' && row.approval_status === 'pending'
+    },
+    {
+      label: t('Reject'),
+      icon: 'X',
+      action: 'reject',
+      className: 'text-red-600',
+      requiredPermission: 'reject-payments',
+      condition: (row: any) => row.payment_method === 'bank_transfer' && row.approval_status === 'pending'
+    },
     {
       label: t('View'),
       icon: 'Eye',
@@ -265,6 +356,13 @@ export default function Payments() {
     { value: 'online', label: t('Online Payment') }
   ];
 
+  const approvalStatusOptions = [
+    { value: 'all', label: t('All Statuses') },
+    { value: 'pending', label: t('Pending') },
+    { value: 'approved', label: t('Approved') },
+    { value: 'rejected', label: t('Rejected') },
+  ];
+
   return (
       <PageTemplate title={t('Payments')} url="/billing/payments" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
           {/* Search and filters section */}
@@ -289,6 +387,14 @@ export default function Payments() {
                           value: selectedPaymentMethod,
                           onChange: setSelectedPaymentMethod,
                           options: paymentMethodOptions,
+                      },
+                      {
+                          name: 'approval_status',
+                          label: t('Approval Status'),
+                          type: 'select',
+                          value: selectedApprovalStatus,
+                          onChange: setSelectedApprovalStatus,
+                          options: approvalStatusOptions,
                       },
                   ]}
                   showFilters={showFilters}
@@ -335,6 +441,7 @@ export default function Payments() {
                               search: searchTerm || undefined,
                               invoice_id: selectedInvoice !== 'all' ? selectedInvoice : undefined,
                               payment_method: selectedPaymentMethod !== 'all' ? selectedPaymentMethod : undefined,
+                              approval_status: selectedApprovalStatus !== 'all' ? selectedApprovalStatus : undefined,
                           },
                           { preserveState: true, preserveScroll: true },
                       );
@@ -349,6 +456,34 @@ export default function Payments() {
               onSubmit={handleFormSubmit}
               formConfig={{
                   fields: [
+                      {
+                          name: 'approval_status',
+                          label: t('Approval Status'),
+                          type: 'custom',
+                          conditional: (mode) => mode === 'view',
+                          render: (field, formData) => {
+                              const status = formData?.approval_status || 'approved';
+                              const statusClasses: Record<string, string> = {
+                                  pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                                  approved: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                                  rejected: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                              };
+                              return (
+                                  <div className="space-y-2">
+                                      <div className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium">
+                                          <span className={`rounded-md px-2 py-1 text-xs font-medium ${statusClasses[status] || 'bg-gray-100 text-gray-800'}`}>
+                                              {t(capitalize(status))}
+                                          </span>
+                                      </div>
+                                      {status === 'rejected' && formData?.rejection_reason && (
+                                          <div className="rounded-md border bg-gray-50 p-2 text-sm">
+                                              {formData.rejection_reason}
+                                          </div>
+                                      )}
+                                  </div>
+                              );
+                          },
+                      },
                       {
                           name: 'invoice_id',
                           label: t('Invoice'),
@@ -487,6 +622,34 @@ export default function Payments() {
               itemName={`${currentItem?.invoice?.invoice_number} - $${currentItem?.amount ? parseFloat(currentItem.amount).toFixed(2) : '0.00'}`}
               entityName="payment"
           />
+
+          <Dialog open={isRejectModalOpen} onOpenChange={setIsRejectModalOpen}>
+              <DialogContent>
+                  <DialogHeader>
+                      <DialogTitle>{t('Reject Payment')}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                      <div>
+                          <Label htmlFor="payment-rejection-reason">{t('Rejection Reason (Optional)')}</Label>
+                          <Textarea
+                              id="payment-rejection-reason"
+                              value={rejectionReason}
+                              onChange={(e) => setRejectionReason(e.target.value)}
+                              placeholder={t('Enter reason for rejection...')}
+                              rows={4}
+                          />
+                      </div>
+                  </div>
+                  <DialogFooter>
+                      <Button variant="outline" onClick={() => setIsRejectModalOpen(false)}>
+                          {t('Cancel')}
+                      </Button>
+                      <Button variant="destructive" onClick={handleRejectConfirm}>
+                          {t('Reject Payment')}
+                      </Button>
+                  </DialogFooter>
+              </DialogContent>
+          </Dialog>
       </PageTemplate>
   );
 }

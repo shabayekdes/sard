@@ -242,15 +242,10 @@ class PaiementPaymentController extends Controller
                     'payment_method' => 'paiement',
                     'payment_date' => now(),
                     'transaction_id' => $request->transaction_id,
-                    'status' => 'completed',
-                    'created_by' => $invoice->created_by
+                    'created_by' => $invoice->created_by,
+                    'approval_status' => 'approved',
+                    'approved_at' => now(),
                 ]);
-
-                // Update invoice status
-                $totalPaid = $invoice->payments()->sum('amount');
-                if ($totalPaid >= $invoice->total_amount) {
-                    $invoice->update(['status' => 'paid']);
-                }
                   $invoice->createPaymentRecord(
                             $request->amount,
                             'paiement',

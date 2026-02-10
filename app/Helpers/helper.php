@@ -108,7 +108,7 @@ if (! function_exists('sanitizeSettingsForUi')) {
         }
 
         $paymentKeyMap = [
-            'bank_detail' => ['bank', 'detail'],
+            'bank_detail' => ['bank_transfer', 'detail'],
             'stripe_key' => ['stripe', 'key'],
             'stripe_secret' => ['stripe', 'secret'],
             'paypal_client_id' => ['paypal', 'client_id'],
@@ -355,7 +355,7 @@ if (! function_exists('isPaymentMethodEnabled')) {
     /**
      * Check if a payment method is enabled
      *
-     * @param string $method (stripe, paypal, razorpay, mercadopago, bank)
+     * @param string $method (stripe, paypal, razorpay, mercadopago, bank_transfer)
      * @param int|null $userId
      * @return bool
      */
@@ -426,9 +426,9 @@ if (! function_exists('getPaymentMethodConfig')) {
                     'secret_key' => $settings['flutterwave_secret_key'] ?? null,
                 ];
 
-            case 'bank':
+            case 'bank_transfer':
                 return [
-                    'enabled' => isPaymentMethodEnabled('bank', $userId),
+                    'enabled' => isPaymentMethodEnabled('bank_transfer', $userId),
                     'details' => $settings['bank_detail'] ?? null,
                 ];
 
@@ -642,7 +642,7 @@ if (! function_exists('getEnabledPaymentMethods')) {
     function getEnabledPaymentMethods($userId = null)
     {
         $userId = $userId ?: getPaymentSettingsUserId();
-        $methods = ['stripe', 'paypal', 'razorpay', 'mercadopago', 'paystack', 'flutterwave', 'bank', 'paytabs', 'skrill', 'coingate', 'payfast', 'tap', 'xendit', 'paytr', 'mollie', 'toyyibpay', 'cashfree', 'iyzipay', 'benefit', 'ozow', 'easebuzz', 'khalti', 'authorizenet', 'fedapay', 'payhere', 'cinetpay', 'paiement', 'paymentwall', 'sspay', 'yookassa', 'aamarpay'];
+        $methods = ['stripe', 'paypal', 'razorpay', 'mercadopago', 'paystack', 'flutterwave', 'bank_transfer', 'paytabs', 'skrill', 'coingate', 'payfast', 'tap', 'xendit', 'paytr', 'mollie', 'toyyibpay', 'cashfree', 'iyzipay', 'benefit', 'ozow', 'easebuzz', 'khalti', 'authorizenet', 'fedapay', 'payhere', 'cinetpay', 'paiement', 'paymentwall', 'sspay', 'yookassa', 'aamarpay'];
         $enabled = [];
 
         foreach ($methods as $method) {
@@ -701,7 +701,7 @@ if (! function_exists('validatePaymentMethodConfig')) {
                 }
                 break;
 
-            case 'bank':
+            case 'bank_transfer':
                 if (empty($config['details'])) {
                     $errors[] = 'Bank details are required';
                 }

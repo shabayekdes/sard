@@ -98,9 +98,9 @@ export function PaymentFormWrapper({
         });
       }
       
-      if (data.is_bank_enabled) {
+      if (data.bank_transfer_enabled) {
         methods.push({
-          id: 'bank',
+          id: 'bank_transfer',
           name: 'Bank Transfer',
           enabled: true,
           config: {
@@ -166,7 +166,7 @@ export function PaymentFormWrapper({
           />
         );
       
-      case 'bank':
+      case 'bank_transfer':
         return (
           <BankTransferForm
             {...commonProps}

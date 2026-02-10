@@ -305,7 +305,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Payment routes - accessible without plan check
     Route::post('payments/stripe', [StripePaymentController::class, 'processPayment'])->name('stripe.payment');
     Route::post('payments/paypal', [PayPalPaymentController::class, 'processPayment'])->name('paypal.payment');
-    Route::post('payments/bank', [BankPaymentController::class, 'processPayment'])->name('bank.payment');
+    Route::post('payments/bank-transfer', [BankPaymentController::class, 'processPayment'])->name('bank-transfer.payment');
     Route::post('payments/paystack', [PaystackPaymentController::class, 'processPayment'])->name('paystack.payment');
     Route::post('payments/flutterwave', [FlutterwavePaymentController::class, 'processPayment'])->name('flutterwave.payment');
     Route::post('payments/paytabs', [PayTabsPaymentController::class, 'processPayment'])->name('paytabs.payment');
@@ -1085,6 +1085,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('billing/payments', [\App\Http\Controllers\PaymentController::class, 'store'])->middleware('permission:create-payments')->name('billing.payments.store');
             Route::put('billing/payments/{payment}', [\App\Http\Controllers\PaymentController::class, 'update'])->middleware('permission:edit-payments')->name('billing.payments.update');
             Route::delete('billing/payments/{payment}', [\App\Http\Controllers\PaymentController::class, 'destroy'])->middleware('permission:delete-payments')->name('billing.payments.destroy');
+            Route::post('billing/payments/{payment}/approve', [\App\Http\Controllers\PaymentController::class, 'approve'])->name('billing.payments.approve');
+            Route::post('billing/payments/{payment}/reject', [\App\Http\Controllers\PaymentController::class, 'reject'])->name('billing.payments.reject');
         });
 
         // Task Management routes

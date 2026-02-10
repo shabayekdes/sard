@@ -111,7 +111,7 @@ class PaymentSetting extends Model
         
         $booleanKeys = [
             'is_manually_enabled', 
-            'is_bank_enabled', 
+            'is_bank_transfer_enabled', 
             'is_stripe_enabled', 
             'is_paypal_enabled', 
             'is_razorpay_enabled',

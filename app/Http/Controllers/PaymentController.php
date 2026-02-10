@@ -28,6 +28,10 @@ class PaymentController extends Controller
             $query->where('payment_method', $request->payment_method);
         }
 
+        if ($request->approval_status) {
+            $query->where('approval_status', $request->approval_status);
+        }
+
         if ($request->invoice_id) {
             $query->where('invoice_id', $request->invoice_id);
         }
@@ -51,7 +55,7 @@ class PaymentController extends Controller
         return Inertia::render('billing/payments/index', [
             'payments' => $payments,
             'invoices' => $invoices,
-            'filters' => $request->only(['search', 'payment_method', 'invoice_id']),
+            'filters' => $request->only(['search', 'payment_method', 'invoice_id', 'approval_status']),
         ]);
     }
 
@@ -91,6 +95,8 @@ class PaymentController extends Controller
             }
         }
 
+        $isBankTransfer = $request->payment_method === 'bank_transfer';
+
         Payment::create([
             'created_by' => createdBy(),
             'invoice_id' => $request->invoice_id,
@@ -99,6 +105,9 @@ class PaymentController extends Controller
             'payment_date' => $request->payment_date,
             'notes' => $request->notes,
             'attachment' => $attachmentFiles,
+            'approval_status' => $isBankTransfer ? 'pending' : 'approved',
+            'approved_at' => $isBankTransfer ? null : now(),
+            'approved_by' => $isBankTransfer ? null : auth()->id(),
         ]);
 
         return redirect()->back()->with('success', 'Payment recorded successfully.');
@@ -141,14 +150,44 @@ class PaymentController extends Controller
             }
         }
 
-        $payment->update([
+        $newMethod = $request->payment_method;
+        $currentMethod = $payment->payment_method;
+        $isBankTransfer = $newMethod === 'bank_transfer';
+        $approvalUpdates = [];
+
+        if ($currentMethod !== $newMethod) {
+            if ($isBankTransfer) {
+                $approvalUpdates = [
+                    'approval_status' => 'pending',
+                    'approved_at' => null,
+                    'approved_by' => null,
+                    'rejection_reason' => null,
+                ];
+            } else {
+                $approvalUpdates = [
+                    'approval_status' => 'approved',
+                    'approved_at' => now(),
+                    'approved_by' => auth()->id(),
+                    'rejection_reason' => null,
+                ];
+            }
+        } elseif (!$isBankTransfer && $payment->approval_status !== 'approved') {
+            $approvalUpdates = [
+                'approval_status' => 'approved',
+                'approved_at' => now(),
+                'approved_by' => auth()->id(),
+                'rejection_reason' => null,
+            ];
+        }
+
+        $payment->update(array_merge([
             'invoice_id' => $request->invoice_id,
             'payment_method' => $request->payment_method,
             'amount' => $request->amount,
             'payment_date' => $request->payment_date,
             'notes' => $request->notes,
             'attachment' => $attachmentFiles,
-        ]);
+        ], $approvalUpdates));
 
         return redirect()->back()->with('success', 'Payment updated successfully.');
     }
@@ -157,6 +196,42 @@ class PaymentController extends Controller
     {
         $payment->delete();
         return redirect()->back()->with('success', 'Payment deleted successfully.');
+    }
+
+    public function approve(Payment $payment)
+    {
+        if ($payment->payment_method !== 'bank_transfer' || $payment->approval_status !== 'pending') {
+            return redirect()->back()->with('error', 'Only pending bank transfer payments can be approved.');
+        }
+
+        $payment->update([
+            'approval_status' => 'approved',
+            'approved_at' => now(),
+            'approved_by' => auth()->id(),
+            'rejection_reason' => null,
+        ]);
+
+        return redirect()->back()->with('success', 'Payment approved successfully.');
+    }
+
+    public function reject(Request $request, Payment $payment)
+    {
+        if ($payment->payment_method !== 'bank_transfer' || $payment->approval_status !== 'pending') {
+            return redirect()->back()->with('error', 'Only pending bank transfer payments can be rejected.');
+        }
+
+        $request->validate([
+            'rejection_reason' => 'nullable|string|max:1000',
+        ]);
+
+        $payment->update([
+            'approval_status' => 'rejected',
+            'approved_at' => null,
+            'approved_by' => null,
+            'rejection_reason' => $request->rejection_reason,
+        ]);
+
+        return redirect()->back()->with('success', 'Payment rejected successfully.');
     }
 
     /**

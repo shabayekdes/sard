@@ -349,15 +349,10 @@ class EasebuzzPaymentController extends Controller
                     'payment_method' => 'easebuzz',
                     'payment_date' => now(),
                     'transaction_id' => $easepayid,
-                    'status' => 'completed',
-                    'created_by' => $invoice->created_by
+                    'created_by' => $invoice->created_by,
+                    'approval_status' => 'approved',
+                    'approved_at' => now(),
                 ]);
-
-                // Update invoice status if fully paid
-                $totalPaid = $invoice->payments()->sum('amount');
-                if ($totalPaid >= $invoice->total_amount) {
-                    $invoice->update(['status' => 'paid']);
-                }
 
                 return redirect()->route('invoice.payment', $invoice->payment_token)
                     ->with('success', __('Payment successful'));

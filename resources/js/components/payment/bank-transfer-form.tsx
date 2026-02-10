@@ -36,7 +36,7 @@ export function BankTransferForm({
   const handleConfirmPayment = () => {
     setProcessing(true);
     
-    router.post(route('bank.payment'), {
+    router.post(route('bank-transfer.payment'), {
       plan_id: planId,
       billing_cycle: billingCycle,
       coupon_code: couponCode,

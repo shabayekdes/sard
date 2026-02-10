@@ -22,7 +22,7 @@ interface PaymentSettings {
   currency: string;
   currency_symbol: string;
   manually_enabled: boolean;
-  bank_enabled: boolean;
+  bank_transfer_enabled: boolean;
   bank_detail: string;
   stripe_enabled: boolean;
   stripe_key: string;
@@ -151,7 +151,7 @@ export default function PaymentSettings({ settings = {} }: PaymentSettingsProps)
       currency: settings.currency || 'USD',
       currency_symbol: settings.currency_symbol || '$',
       manually_enabled: settings.manually_enabled === true || settings.manually_enabled === '1',
-      bank_enabled: settings.bank_enabled === true || settings.bank_enabled === '1',
+      bank_transfer_enabled: settings.bank_transfer_enabled === true || settings.bank_transfer_enabled === '1',
       bank_detail: settings.bank_detail || '',
       stripe_enabled: settings.stripe_enabled === true || settings.stripe_enabled === '1',
       stripe_key: settings.stripe_key || '',
@@ -270,7 +270,7 @@ export default function PaymentSettings({ settings = {} }: PaymentSettingsProps)
 
   // Payment methods data for search
   const paymentMethods = useMemo(() => [
-    { key: 'bank', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.BANK]) },
+    { key: 'bank_transfer', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.BANK]) },
     { key: 'stripe', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.STRIPE]) },
     { key: 'paypal', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.PAYPAL]) },
     // { key: 'razorpay', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.RAZORPAY]) },
@@ -480,12 +480,12 @@ export default function PaymentSettings({ settings = {} }: PaymentSettingsProps)
               )}
 
               {/* Bank Transfer */}
-              {shouldShowMethod('bank') && (
+              {shouldShowMethod('bank_transfer') && (
               <PaymentMethodCard
                 title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.BANK])}
                 icon={<Banknote className="h-5 w-5" />}
-                enabled={data.bank_enabled}
-                onToggle={(checked) => setData('bank_enabled', checked)}
+                enabled={data.bank_transfer_enabled}
+                onToggle={(checked) => setData('bank_transfer_enabled', checked)}
               >
                 <div className="space-y-2">
                   <Label htmlFor="bank_detail">{t("Bank Details")}</Label>

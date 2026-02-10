@@ -683,6 +683,8 @@ class RoleSeeder extends Seeder
             'create-payments',
             'edit-payments',
             'delete-payments',
+            'approve-payments',
+            'reject-payments',
 
             // Task Management permissions
             'manage-tasks',

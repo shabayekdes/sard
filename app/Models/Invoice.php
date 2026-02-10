@@ -172,7 +172,7 @@ class Invoice extends BaseModel
 
     public function getRemainingAmountAttribute(): float
     {
-        $totalPaid = $this->payments()->sum('amount');
+        $totalPaid = $this->payments()->where('approval_status', 'approved')->sum('amount');
         return max(0, $this->total_amount - $totalPaid);
     }
 
@@ -237,7 +237,7 @@ class Invoice extends BaseModel
             'payment_method' => $paymentMethod,
             'transaction_id' => $transactionId,
             'invoice_total' => $this->total_amount,
-             'current_paid' => $this->payments()->sum('amount'),
+             'current_paid' => $this->payments()->where('approval_status', 'approved')->sum('amount'),
             'remaining_amount' => $this->remaining_amount,
             'stack_trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)
         ]);
@@ -247,13 +247,16 @@ class Invoice extends BaseModel
             ->first();
 
         if (!$existingPayment) {
+            $isBankTransfer = $paymentMethod === 'bank_transfer';
             $payment = \App\Models\Payment::create([
                 'invoice_id' => $this->id,
                 'amount' => $amount,
                 'payment_method' => $paymentMethod,
                 'transaction_id' => $transactionId,
                 'payment_date' => now(),
-                'created_by' => $this->created_by
+                'created_by' => $this->created_by,
+                'approval_status' => $isBankTransfer ? 'pending' : 'approved',
+                'approved_at' => $isBankTransfer ? null : now(),
             ]);
 
             \Log::info('Payment record created', [
@@ -277,7 +280,7 @@ class Invoice extends BaseModel
      */
     public function updatePaymentStatus()
     {
-        $totalPaid = $this->payments()->sum('amount');
+        $totalPaid = $this->payments()->where('approval_status', 'approved')->sum('amount');
         $oldStatus = $this->status;
 
         \Log::info('updatePaymentStatus called', [

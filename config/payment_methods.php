@@ -10,7 +10,7 @@ return [
             'ar' => 'يدوي',
         ],
     ],
-    'bank' => [
+    'bank_transfer' => [
         'enabled' => env('PAYMENT_BANK_ENABLED', true),
         'name' => [
             'en' => 'Bank Transfer',

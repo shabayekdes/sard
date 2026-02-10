@@ -66,7 +66,7 @@ export default function InvoicePayment() {
 
     const getPaymentMethodIcon = (gatewayId: string) => {
         const iconMap = {
-            bank: <Banknote className="h-5 w-5" />,
+            bank_transfer: <Banknote className="h-5 w-5" />,
             stripe: <CreditCard className="h-5 w-5" />,
             paypal: <CreditCard className="h-5 w-5" />,
             razorpay: <IndianRupee className="h-5 w-5" />,
@@ -205,7 +205,7 @@ export default function InvoicePayment() {
         switch (selectedGateway) {
             case 'stripe':
                 return <StripePaymentModal {...modalProps} />;
-            case 'bank':
+            case 'bank_transfer':
                 return <BankPaymentModal {...modalProps} />;
             case 'paypal':
                 return <PayPalPaymentModal {...modalProps} paypalClientId={paypalClientId} />;

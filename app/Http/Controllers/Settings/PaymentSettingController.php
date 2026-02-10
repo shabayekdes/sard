@@ -140,7 +140,7 @@ class PaymentSettingController extends Controller
     {
         return [
             'is_manually_enabled' => $request->boolean('is_manually_enabled'),
-            'is_bank_enabled' => $request->boolean('is_bank_enabled'),
+            'bank_transfer_enabled' => $request->boolean('bank_transfer_enabled'),
             'is_stripe_enabled' => $request->boolean('is_stripe_enabled'),
             'is_paypal_enabled' => $request->boolean('is_paypal_enabled'),
             'is_razorpay_enabled' => $request->boolean('is_razorpay_enabled'),
@@ -309,9 +309,9 @@ class PaymentSettingController extends Controller
             }
         }
 
-        if ($request->boolean('is_bank_enabled')) {
+        if ($request->boolean('bank_transfer_enabled') || $request->boolean('is_bank_transfer_enabled')) {
             $config = ['details' => $validatedData['bank_detail']];
-            $validation = validatePaymentMethodConfig('bank', $config);
+            $validation = validatePaymentMethodConfig('bank_transfer', $config);
             if (!$validation['valid']) {
                 $errors = array_merge($errors, $validation['errors']);
             }
@@ -562,7 +562,7 @@ class PaymentSettingController extends Controller
         
         // Only include enabled status and safe configuration
         $enabledKeys = [
-            'manually_enabled', 'bank_enabled', 'stripe_enabled', 'paypal_enabled',
+            'manually_enabled', 'bank_transfer_enabled', 'stripe_enabled', 'paypal_enabled',
             'razorpay_enabled', 'mercadopago_enabled', 'paystack_enabled', 'flutterwave_enabled',
             'paytabs_enabled', 'skrill_enabled', 'coingate_enabled', 'payfast_enabled',
             'tap_enabled', 'xendit_enabled', 'paytr_enabled', 'mollie_enabled',

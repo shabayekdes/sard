@@ -212,9 +212,9 @@ export default function Plans({
   const formatPaymentMethods = (paymentSettings: any) => {
     const methods = [];
     
-    if (paymentSettings?.bank_enabled === true || paymentSettings?.bank_enabled === '1') {
+    if (paymentSettings?.bank_transfer_enabled === true || paymentSettings?.bank_transfer_enabled === '1') {
       methods.push({
-        id: 'bank',
+        id: 'bank_transfer',
         name: t('Bank Transfer'),
         icon: <Banknote className="h-5 w-5" />,
         enabled: true

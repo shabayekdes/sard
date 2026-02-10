@@ -165,7 +165,7 @@ export function PaymentProcessor({
             currency={plan.paymentMethods?.defaultCurrency || 'usd'}
           />
         );
-      case 'bank':
+      case 'bank_transfer':
         return (
           <BankTransferForm
             {...commonProps}

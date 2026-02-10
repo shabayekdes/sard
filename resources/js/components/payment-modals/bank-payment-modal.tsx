@@ -21,7 +21,7 @@ export function BankPaymentModal({ isOpen, onClose, invoice, amount }: BankPayme
     setProcessing(true);
 
     router.post(route('invoice.payment.process', invoice.payment_token), {
-      payment_method: 'bank',
+      payment_method: 'bank_transfer',
       invoice_token: invoice.payment_token,
       amount: amount
     }, {

@@ -26,7 +26,7 @@ export function usePaymentProcessor(options: UsePaymentProcessorOptions = {}) {
     const routes = {
       stripe: 'stripe.payment',
       paypal: 'paypal.payment',
-      bank: 'bank.payment',
+      bank_transfer: 'bank-transfer.payment',
       razorpay: 'razorpay.payment',
       mercadopago: 'mercadopago.payment',
       paystack: 'paystack.payment',
@@ -68,7 +68,7 @@ export function usePaymentProcessor(options: UsePaymentProcessorOptions = {}) {
     const requiredFields = {
       stripe: ['payment_method_id', 'cardholder_name'],
       paypal: ['order_id', 'payment_id'],
-      bank: ['amount'],
+      bank_transfer: ['amount'],
       razorpay: ['payment_id', 'order_id', 'signature'],
       mercadopago: ['payment_id', 'status'],
       paystack: ['payment_id'],

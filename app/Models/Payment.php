@@ -15,6 +15,10 @@ class Payment extends BaseModel
         'created_by',
         'invoice_id',
         'payment_method',
+        'approval_status',
+        'approved_at',
+        'approved_by',
+        'rejection_reason',
         'amount',
         'payment_date',
         'transaction_id',
@@ -26,6 +30,7 @@ class Payment extends BaseModel
         'amount' => 'decimal:2',
         'payment_date' => 'date',
         'attachment' => 'array',
+        'approved_at' => 'datetime',
     ];
 
     protected static function booted()
@@ -83,6 +88,16 @@ class Payment extends BaseModel
         return $this->belongsTo(Invoice::class);
     }
 
+    public function approvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('approval_status', 'approved');
+    }
+
     public function client()
     {
         return $this->hasOneThrough(Client::class, Invoice::class, 'id', 'id', 'invoice_id', 'client_id');
@@ -96,7 +111,6 @@ class Payment extends BaseModel
             'credit_card' => 'Credit Card',
             'bank_transfer' => 'Bank Transfer',
             'online' => 'Online Payment',
-            'bank' => 'Bank Transfer',
             'stripe' => 'Stripe',
             'paypal' => 'PayPal',
             'razorpay' => 'Razorpay',

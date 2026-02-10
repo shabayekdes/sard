@@ -26,7 +26,7 @@ class BankPaymentController extends Controller
                 'user_id' => auth()->id(),
                 'plan_id' => $plan->id,
                 'billing_cycle' => $validated['billing_cycle'],
-                'payment_method' => 'bank',
+                'payment_method' => 'bank_transfer',
                 'coupon_code' => $validated['coupon_code'] ?? null,
                 'payment_id' => 'BANK_' . strtoupper(uniqid()),
                 'status' => 'pending',
@@ -35,7 +35,7 @@ class BankPaymentController extends Controller
             return back()->with('success', __('Payment request submitted. Your plan will be activated after payment verification.'));
 
         } catch (\Exception $e) {
-            return handlePaymentError($e, 'bank');
+            return handlePaymentError($e, 'bank_transfer');
         }
     }
     
@@ -52,9 +52,10 @@ class BankPaymentController extends Controller
             Payment::create([
                 'invoice_id' => $invoice->id,
                 'amount' => $request->amount,
-                'payment_method' => 'bank',
+                'payment_method' => 'bank_transfer',
                 'payment_date' => now(),
-                'created_by' => $invoice->created_by
+                'created_by' => $invoice->created_by,
+                'approval_status' => 'pending',
             ]);
             
             return redirect()->route('invoice.payment', $invoice->payment_token)
