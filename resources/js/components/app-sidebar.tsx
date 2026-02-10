@@ -141,6 +141,7 @@ export function AppSidebar() {
     const getCompanyNavItems = (): NavItem[] => {
         const items: NavItem[] = [];
 
+        items.push({ type: 'label', title: t('Overview') });
         // 1. Dashboard
         if (
             hasPermission(permissions, 'manage-dashboard') ||
@@ -209,6 +210,7 @@ export function AppSidebar() {
             });
         }
         if (caseChildren.length > 0) {
+            items.push({ type: 'label', title: t('Case Management') });
             items.push({
                 title: t('Cases'),
                 icon: Briefcase,
@@ -629,6 +631,7 @@ export function AppSidebar() {
         }
 
         if (setupChildren.length > 0) {
+            items.push({ type: 'label', title: t('General settings') });
             items.push({
                 title: t('Setup'),
                 icon: Wrench,
@@ -953,7 +956,6 @@ export function AppSidebar() {
 
                 {/* Business Switcher removed */}
             </SidebarHeader>
-
             <SidebarContent>
                 <div style={sidebarStyle} className={`h-full ${style !== 'plain' ? 'sidebar-styled' : ''}`}>
                     <NavMain items={filteredNavItems} position={position} />

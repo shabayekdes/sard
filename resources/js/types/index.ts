@@ -12,8 +12,9 @@ export interface SharedData {
 
 export interface NavItem {
     title: string;
+    type?: 'item' | 'label';
     href?: string;
-    icon?: React.ReactNode;
+    icon?: LucideIcon;
     permission?: string;
     children?: NavItem[];
     target?: string;

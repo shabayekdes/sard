@@ -19,6 +19,8 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
     // Determine the actual position considering RTL mode
     const effectivePosition = isRtl ? (position === 'left' ? 'right' : 'left') : position;
 
+    const isLabelItem = (item: NavItem) => item.type === 'label';
+
     // Initialize expanded state
     useEffect(() => {
         // Start with a clean slate - close all menus
@@ -27,6 +29,7 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
         // Process menus that should be expanded
         const processMenuItems = (menuItems: NavItem[], parentKey?: string) => {
             menuItems.forEach(item => {
+                if (isLabelItem(item)) return;
                 // If this is the active item or contains the active item
                 const isItemActive = isActive(item.href);
                 const hasActiveChild = item.children && isChildActive(item.children);
@@ -69,6 +72,7 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
         newExpandedItems: Record<string, boolean>
     ) => {
         children.forEach(child => {
+            if (isLabelItem(child)) return;
             const childKey = `${level}-${child.title}`;
             const isChildItemActive = isActive(child.href);
             const hasActiveChild = child.children && isChildActive(child.children);
@@ -107,166 +111,194 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
         return active;
     };
 
-    const isChildActive = (children?: NavItem[]) => {
+    const isChildActive = (children?: NavItem[]): boolean => {
         if (!children) return false;
-        return children.some(child => isActive(child.href) || isChildActive(child.children));
+        return children.some(child => {
+            if (isLabelItem(child)) return false;
+            return isActive(child.href) || isChildActive(child.children);
+        });
     };
 
     const renderSubMenu = (children: NavItem[], level: number = 1) => {
         return (
             <SidebarMenuSub>
-                {children.map((child) => (
-                    <div key={child.title}>
-                        {child.children ? (
-                            // Nested submenu item with children
-                            <>
+                {children.map((child) => {
+                    if (isLabelItem(child)) return null;
+
+                    return (
+                        <div key={child.title}>
+                            {child.children ? (
+                                // Nested submenu item with children
+                                <>
+                                    <SidebarMenuSubItem>
+                                        <SidebarMenuSubButton
+                                            isActive={isChildActive(child.children)}
+                                            onClick={() => toggleExpand(`${level}-${child.title}`)}
+                                        >
+                                            <div
+                                                className={`flex items-center gap-2 ${effectivePosition === 'right' ? 'justify-end text-right' : 'justify-start text-left'}`}
+                                            >
+                                                <span>{child.title}</span>
+                                                {state !== 'collapsed' &&
+                                                    (expandedItems[`${level}-${child.title}`] ? (
+                                                        <ChevronDown className="ml-auto h-3 w-3" />
+                                                    ) : position === 'right' ? (
+                                                        <ChevronLeft className="mr-auto h-3 w-3" />
+                                                    ) : (
+                                                        <ChevronRight className="ml-auto h-3 w-3" />
+                                                    ))}
+                                            </div>
+                                        </SidebarMenuSubButton>
+                                    </SidebarMenuSubItem>
+
+                                    {/* Render nested children */}
+                                    {expandedItems[`${level}-${child.title}`] && renderSubMenu(child.children, level + 1)}
+                                </>
+                            ) : (
+                                // Regular submenu item
                                 <SidebarMenuSubItem>
-                                    <SidebarMenuSubButton
-                                        isActive={isChildActive(child.children)}
-                                        onClick={() => toggleExpand(`${level}-${child.title}`)}
-                                    >
-                                        <div
+                                    <SidebarMenuSubButton asChild isActive={isActive(child.href)}>
+                                        <Link
+                                            href={child.href || '#'}
+                                            target={child.target}
                                             className={`flex items-center gap-2 ${effectivePosition === 'right' ? 'justify-end text-right' : 'justify-start text-left'}`}
                                         >
                                             <span>{child.title}</span>
-                                            {state !== 'collapsed' &&
-                                                (expandedItems[`${level}-${child.title}`] ? (
-                                                    <ChevronDown className="ml-auto h-3 w-3" />
-                                                ) : position === 'right' ? (
-                                                    <ChevronLeft className="mr-auto h-3 w-3" />
-                                                ) : (
-                                                    <ChevronRight className="ml-auto h-3 w-3" />
-                                                ))}
-                                        </div>
+                                        </Link>
                                     </SidebarMenuSubButton>
                                 </SidebarMenuSubItem>
-
-                                {/* Render nested children */}
-                                {expandedItems[`${level}-${child.title}`] && renderSubMenu(child.children, level + 1)}
-                            </>
-                        ) : (
-                            // Regular submenu item
-                            <SidebarMenuSubItem>
-                                <SidebarMenuSubButton asChild isActive={isActive(child.href)}>
-                                    <Link
-                                        href={child.href || '#'}
-                                        target={child.target}
-                                        className={`flex items-center gap-2 ${effectivePosition === 'right' ? 'justify-end text-right' : 'justify-start text-left'}`}
-                                    >
-                                        <span>{child.title}</span>
-                                    </Link>
-                                </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                        )}
-                    </div>
-                ))}
+                            )}
+                        </div>
+                    );
+                })}
             </SidebarMenuSub>
         );
     };
 
+    const sections = items.reduce<{ label?: NavItem; items: NavItem[] }[]>((acc, item) => {
+        if (isLabelItem(item)) {
+            acc.push({ label: item, items: [] });
+            return acc;
+        }
+
+        if (acc.length === 0) {
+            acc.push({ items: [] });
+        }
+
+        acc[acc.length - 1].items.push(item);
+        return acc;
+    }, []);
+
     return (
         <SidebarGroup className="px-1.5 py-0">
-            <SidebarMenu>
-                {items.map((item) => (
-                    <div key={item.title}>
-                        {item.children ? (
-                            // Parent item with children
-                            <>
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton
-                                        isActive={isChildActive(item.children)}
-                                        tooltip={{ children: item.title }}
-                                        onClick={() => toggleExpand(item.title)}
-                                    >
-                                        <div className={`flex items-center gap-2 w-full ${effectivePosition === 'right' ? 'justify-end text-right' : 'justify-start text-left'}`}>
-                                            {effectivePosition === 'right' ? (
-                                                <>
-                                                    <span>{state !== "collapsed" ? item.title : ""}</span>
-                                                    {item.icon && <item.icon className="h-4 w-4" />}
-                                                    {state !== "collapsed" && (
-                                                        expandedItems[item.title] ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />
+            {sections.map((section, sectionIndex) => (
+                <div key={section.label?.title ?? `section-${sectionIndex}`}>
+                    {section.label && <SidebarGroupLabel className="flex w-full justify-start text-xs">{section.label.title}</SidebarGroupLabel>}
+                    <SidebarMenu>
+                        {section.items.map((item) => (
+                            <div key={item.title}>
+                                {item.children ? (
+                                    // Parent item with children
+                                    <>
+                                        <SidebarMenuItem>
+                                            <SidebarMenuButton
+                                                isActive={isChildActive(item.children)}
+                                                tooltip={{ children: item.title }}
+                                                onClick={() => toggleExpand(item.title)}
+                                            >
+                                                <div
+                                                    className={`flex w-full items-center gap-2 ${effectivePosition === 'right' ? 'justify-end text-right' : 'justify-start text-left'}`}
+                                                >
+                                                    {effectivePosition === 'right' ? (
+                                                        <>
+                                                            <span>{state !== 'collapsed' ? item.title : ''}</span>
+                                                            {item.icon && <item.icon className="h-4 w-4" />}
+                                                            {state !== 'collapsed' &&
+                                                                (expandedItems[item.title] ? (
+                                                                    <ChevronDown className="h-3 w-3" />
+                                                                ) : (
+                                                                    <ChevronRight className="h-3 w-3" />
+                                                                ))}
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            {item.icon && <item.icon className="h-4 w-4" />}
+                                                            <div className="flex items-center gap-1">
+                                                                {state !== 'collapsed' && <span>{item.title}</span>}
+                                                                {state !== 'collapsed' && item.badge && (
+                                                                    <span className="bg-primary rounded-full px-1.5 py-0.5 text-[10px] font-medium text-white">
+                                                                        {item.badge.label}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            {state !== 'collapsed' &&
+                                                                (expandedItems[item.title] ? (
+                                                                    <ChevronDown
+                                                                        className={`h-3 w-3 ${position === 'right' ? 'mr-auto' : 'ml-auto'}`}
+                                                                    />
+                                                                ) : position === 'right' ? (
+                                                                    <ChevronLeft className="mr-auto h-3 w-3" />
+                                                                ) : (
+                                                                    <ChevronRight className="ml-auto h-3 w-3" />
+                                                                ))}
+                                                        </>
                                                     )}
-                                                </>
-                                            ) : (
-                                                <>
-                                                    {item.icon && <item.icon className="h-4 w-4" />}
-                                                    <div className="flex items-center gap-1">
-                                                        {state !== "collapsed" && <span>{item.title}</span>}
-                                                        {state !== "collapsed" && item.badge && (
-                                                            <span className="px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-primary text-white">
-                                                                {item.badge.label}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    {state !== "collapsed" && (
-                                                        expandedItems[item.title] ? (
-                                                            <ChevronDown
-                                                                className={`h-3 w-3 ${position === "right" ? "mr-auto" : "ml-auto"}`}
-                                                            />
-                                                        ) : position === "right" ? (
-                                                            <ChevronLeft className="h-3 w-3 mr-auto" />
-                                                        ) : (
-                                                            <ChevronRight className="h-3 w-3 ml-auto" />
-                                                        )
+                                                </div>
+                                            </SidebarMenuButton>
+                                        </SidebarMenuItem>
+
+                                        {/* Child items */}
+                                        {state !== 'collapsed' && expandedItems[item.title] && renderSubMenu(item.children)}
+                                    </>
+                                ) : (
+                                    // Regular item without children
+                                    <SidebarMenuItem>
+                                        <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={{ children: item.title }}>
+                                            {item.target === '_blank' ? (
+                                                <a
+                                                    href={item.href || '#'}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className={`flex items-center gap-2 ${effectivePosition === 'right' ? 'justify-end text-right' : 'justify-start text-left'}`}
+                                                >
+                                                    {effectivePosition === 'right' ? (
+                                                        <>
+                                                            {state !== 'collapsed' && <span>{item.title}</span>}
+                                                            {item.icon && <item.icon className="h-4 w-4" />}
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            {item.icon && <item.icon className="h-4 w-4" />}
+                                                            {state !== 'collapsed' && <span>{item.title}</span>}
+                                                        </>
                                                     )}
-
-                                                </>
-                                            )}
-                                        </div>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-
-                                {/* Child items */}
-                                {state !== "collapsed" && expandedItems[item.title] && renderSubMenu(item.children)}
-                            </>
-                        ) : (
-                            // Regular item without children
-                            <SidebarMenuItem>
-                                <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={{ children: item.title }}>
-                                    {item.target === '_blank' ? (
-                                        <a
-                                            href={item.href || '#'}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className={`flex items-center gap-2 ${effectivePosition === 'right' ? 'justify-end text-right' : 'justify-start text-left'}`}
-                                        >
-                                            {effectivePosition === 'right' ? (
-                                                <>
-                                                    {state !== "collapsed" && <span>{item.title}</span>}
-                                                    {item.icon && <item.icon className="h-4 w-4" />}
-                                                </>
+                                                </a>
                                             ) : (
-                                                <>
-                                                    {item.icon && <item.icon className="h-4 w-4" />}
-                                                    {state !== "collapsed" && <span>{item.title}</span>}
-                                                </>
+                                                <Link
+                                                    href={item.href || '#'}
+                                                    className={`flex items-center gap-2 ${effectivePosition === 'right' ? 'justify-end text-right' : 'justify-start text-left'}`}
+                                                >
+                                                    {effectivePosition === 'right' ? (
+                                                        <>
+                                                            {state !== 'collapsed' && <span>{item.title}</span>}
+                                                            {item.icon && <item.icon className="h-4 w-4" />}
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            {item.icon && <item.icon className="h-4 w-4" />}
+                                                            {state !== 'collapsed' && <span>{item.title}</span>}
+                                                        </>
+                                                    )}
+                                                </Link>
                                             )}
-                                        </a>
-                                    ) : (
-                                        <Link
-                                            href={item.href || '#'}
-
-                                            className={`flex items-center gap-2 ${effectivePosition === 'right' ? 'justify-end text-right' : 'justify-start text-left'}`}
-                                        >
-                                            {effectivePosition === 'right' ? (
-                                                <>
-                                                    {state !== "collapsed" && <span>{item.title}</span>}
-                                                    {item.icon && <item.icon className="h-4 w-4" />}
-                                                </>
-                                            ) : (
-                                                <>
-                                                    {item.icon && <item.icon className="h-4 w-4" />}
-                                                    {state !== "collapsed" && <span>{item.title}</span>}
-                                                </>
-                                            )}
-                                        </Link>
-                                    )}
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                        )}
-                    </div>
-                ))}
-            </SidebarMenu>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                )}
+                            </div>
+                        ))}
+                    </SidebarMenu>
+                </div>
+            ))}
         </SidebarGroup>
     );
 }

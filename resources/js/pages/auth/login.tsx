@@ -57,7 +57,7 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
         password: '',
         remember: false,
     });
-    
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         const formData = { ...data, recaptcha_token: recaptchaToken };
