@@ -132,10 +132,10 @@ export default function EditClient() {
                         <div className="space-y-2">
                             <Label>{t('Client Type')}</Label>
                             <Select value={formData.client_type_id} onValueChange={(value) => updateField('client_type_id', value)}>
-                                <SelectTrigger dir={isRtl ? 'rtl' : 'ltr'}>
+                                <SelectTrigger>
                                     <SelectValue placeholder={t('Select Type')} />
                                 </SelectTrigger>
-                                <SelectContent dir={isRtl ? 'rtl' : 'ltr'}>
+                                <SelectContent>
                                     {(clientTypes || []).map((type: any) => {
                                         const translations = type.name_translations || (typeof type.name === 'object' ? type.name : null);
                                         let displayName = type.name;
@@ -217,10 +217,10 @@ export default function EditClient() {
                         <div className="space-y-2">
                             <Label>{t('Status')}</Label>
                             <Select value={formData.status} onValueChange={(value) => updateField('status', value)}>
-                                <SelectTrigger dir={isRtl ? 'rtl' : 'ltr'}>
+                                <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent dir={isRtl ? 'rtl' : 'ltr'}>
+                                <SelectContent>
                                     <SelectItem value="active">{t('Active')}</SelectItem>
                                     <SelectItem value="inactive">{t('Inactive')}</SelectItem>
                                 </SelectContent>
@@ -234,10 +234,10 @@ export default function EditClient() {
                             <div className="space-y-2">
                                 <Label>{t('Nationality')}</Label>
                                 <Select value={formData.nationality_id} onValueChange={(value) => updateField('nationality_id', value)}>
-                                    <SelectTrigger dir={isRtl ? 'rtl' : 'ltr'}>
+                                    <SelectTrigger>
                                         <SelectValue placeholder={t('Select Nationality')} />
                                     </SelectTrigger>
-                                    <SelectContent dir={isRtl ? 'rtl' : 'ltr'}>
+                                    <SelectContent>
                                         {(countries || []).map((country: any) => (
                                             <SelectItem key={country.value} value={String(country.value)}>
                                                 {country.label || country.name}
@@ -279,7 +279,6 @@ export default function EditClient() {
                                 <Input
                                     id="date_of_birth"
                                     type="date"
-                                    dir={isRtl ? 'rtl' : 'ltr'}
                                     className={isRtl ? 'rtl-date-input' : ''}
                                     lang={i18n.language}
                                     value={formData.date_of_birth}

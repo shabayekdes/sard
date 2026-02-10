@@ -182,10 +182,10 @@ export default function EditCase() {
                         <div className="space-y-2">
                             <Label>{t('Client')}</Label>
                             <Select value={formData.client_id} onValueChange={(value) => updateField('client_id', value)}>
-                                <SelectTrigger dir={isRtl ? 'rtl' : 'ltr'}>
+                                <SelectTrigger>
                                     <SelectValue placeholder={t('Select Client')} />
                                 </SelectTrigger>
-                                <SelectContent dir={isRtl ? 'rtl' : 'ltr'}>
+                                <SelectContent>
                                     {(clients || []).map((client: any) => (
                                         <SelectItem key={client.id} value={client.id.toString()}>
                                             {client.name}
@@ -227,10 +227,10 @@ export default function EditCase() {
                         <div className="space-y-2">
                             <Label>{t('Case Type')}</Label>
                             <Select value={formData.case_type_id} onValueChange={(value) => updateField('case_type_id', value)}>
-                                <SelectTrigger dir={isRtl ? 'rtl' : 'ltr'}>
+                                <SelectTrigger>
                                     <SelectValue placeholder={t('Select Type')} />
                                 </SelectTrigger>
-                                <SelectContent dir={isRtl ? 'rtl' : 'ltr'}>
+                                <SelectContent>
                                     {(caseTypes || []).map((type: any) => (
                                         <SelectItem key={type.id} value={type.id.toString()}>
                                             {resolveTranslatableName(type)}
@@ -243,10 +243,10 @@ export default function EditCase() {
                         <div className="space-y-2">
                             <Label>{t('Case Status')}</Label>
                             <Select value={formData.case_status_id} onValueChange={(value) => updateField('case_status_id', value)}>
-                                <SelectTrigger dir={isRtl ? 'rtl' : 'ltr'}>
+                                <SelectTrigger>
                                     <SelectValue placeholder={t('Select Status')} />
                                 </SelectTrigger>
-                                <SelectContent dir={isRtl ? 'rtl' : 'ltr'}>
+                                <SelectContent>
                                     {(caseStatuses || []).map((status: any) => (
                                         <SelectItem key={status.id} value={status.id.toString()}>
                                             {resolveTranslatableName(status)}
@@ -259,10 +259,10 @@ export default function EditCase() {
                         <div className="space-y-2">
                             <Label>{t('Priority')}</Label>
                             <Select value={formData.priority} onValueChange={(value) => updateField('priority', value)}>
-                                <SelectTrigger dir={isRtl ? 'rtl' : 'ltr'}>
+                                <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent dir={isRtl ? 'rtl' : 'ltr'}>
+                                <SelectContent>
                                     <SelectItem value="low">{t('Low')}</SelectItem>
                                     <SelectItem value="medium">{t('Medium')}</SelectItem>
                                     <SelectItem value="high">{t('High')}</SelectItem>
@@ -288,10 +288,10 @@ export default function EditCase() {
                         <div className="space-y-2">
                             <Label>{t('Court')}</Label>
                             <Select value={formData.court_id} onValueChange={(value) => updateField('court_id', value)}>
-                                <SelectTrigger dir={isRtl ? 'rtl' : 'ltr'}>
+                                <SelectTrigger>
                                     <SelectValue placeholder={t('Select Court')} />
                                 </SelectTrigger>
-                                <SelectContent dir={isRtl ? 'rtl' : 'ltr'}>
+                                <SelectContent>
                                     {(courts || []).map((court: any) => (
                                         <SelectItem key={court.id} value={court.id.toString()}>
                                             {court.name}
@@ -313,10 +313,10 @@ export default function EditCase() {
                                     updateField('case_subcategory_id', '');
                                 }}
                             >
-                                <SelectTrigger dir={isRtl ? 'rtl' : 'ltr'}>
+                                <SelectTrigger>
                                     <SelectValue placeholder={t('Select Main Category')} />
                                 </SelectTrigger>
-                                <SelectContent dir={isRtl ? 'rtl' : 'ltr'}>
+                                <SelectContent>
                                     {(caseCategories || []).map((category: any) => (
                                         <SelectItem key={category.id} value={category.id.toString()}>
                                             {resolveTranslatableName(category)}
@@ -333,7 +333,7 @@ export default function EditCase() {
                                 onValueChange={(value) => updateField('case_subcategory_id', value)}
                                 disabled={!formData.case_category_id || isSubcategoryLoading}
                             >
-                                <SelectTrigger dir={isRtl ? 'rtl' : 'ltr'}>
+                                <SelectTrigger>
                                     <SelectValue
                                         placeholder={
                                             isSubcategoryLoading
@@ -344,7 +344,7 @@ export default function EditCase() {
                                         }
                                     />
                                 </SelectTrigger>
-                                <SelectContent dir={isRtl ? 'rtl' : 'ltr'}>
+                                <SelectContent>
                                     {subcategoryOptions.map((sub) => (
                                         <SelectItem key={sub.value} value={sub.value}>
                                             {sub.label}
@@ -392,10 +392,10 @@ export default function EditCase() {
                         <div className="space-y-2">
                             <Label>{t('Status')}</Label>
                             <Select value={formData.status} onValueChange={(value) => updateField('status', value)}>
-                                <SelectTrigger dir={isRtl ? 'rtl' : 'ltr'}>
+                                <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent dir={isRtl ? 'rtl' : 'ltr'}>
+                                <SelectContent>
                                     <SelectItem value="active">{t('Active')}</SelectItem>
                                     <SelectItem value="inactive">{t('Inactive')}</SelectItem>
                                 </SelectContent>

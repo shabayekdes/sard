@@ -184,10 +184,10 @@ export function Repeater({
               onValueChange={onChange}
               disabled={field.disabled}
             >
-              <SelectTrigger className={cn(field.className, errorClassName)} dir={isRtl ? 'rtl' : 'ltr'}>
+              <SelectTrigger className={cn(field.className, errorClassName)}>
                 <SelectValue placeholder={field.placeholder} />
               </SelectTrigger>
-              <SelectContent className="z-[9999]" dir={isRtl ? 'rtl' : 'ltr'}>
+              <SelectContent className="z-[9999]">
                 {field.options?.map((option, optionIndex) => (
                   <SelectItem
                     key={`${selectId}_${optionIndex}_${option.value}`}

@@ -539,7 +539,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
 
                 return (
                     <Select value={currentValue} onValueChange={handleSelectChange} disabled={mode === 'view' || field.disabled}>
-                        <SelectTrigger className={errors[field.name] ? 'border-red-500' : ''} dir={position === 'right' ? 'rtl' : 'ltr'}>
+                        <SelectTrigger className={errors[field.name] ? 'border-red-500' : ''}>
                             <SelectValue placeholder={field.placeholder || `Select ${field.label}`}>
                                 {displayText || field.placeholder || `Select ${field.label}`}
                             </SelectValue>
