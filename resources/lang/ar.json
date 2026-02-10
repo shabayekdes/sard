@@ -3192,5 +3192,7 @@
   "No credit card needed": "لا حاجة لبطاقة ائتمان",
   "Create a free account": "إنشاء حساب مجاني",
   "Select Document Type": "اختر نوع المستند",
-  "Client Details": "تفاصيل العميل"
+  "Client Details": "تفاصيل العميل",
+  "Select Status": "اختر الحالة",
+  "ID National": "الهوية الوطنية"
 }

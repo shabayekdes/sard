@@ -283,7 +283,7 @@ export default function CreateClient() {
                                 {renderError('nationality_id')}
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="id_number">{t('ID Number')}</Label>
+                                <Label htmlFor="id_number">{t('ID National')}</Label>
                                 <Input id="id_number" value={formData.id_number} onChange={(e) => updateField('id_number', e.target.value)} />
                                 {renderError('id_number')}
                             </div>
@@ -418,7 +418,7 @@ export default function CreateClient() {
                         {renderError('documents')}
                     </div>
                 </div>
-              
+
                 <div className="sticky bottom-0 -mx-6 mt-6 border-t border-slate-200 bg-white px-6 py-4">
                     <div className="flex justify-end gap-2">
                         <Button type="button" variant="outline" onClick={() => router.get(route('clients.index'))}>

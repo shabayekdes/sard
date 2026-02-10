@@ -84,8 +84,7 @@ export default function Cases() {
         router.get(route('cases.show', item.id));
         break;
       case 'edit':
-        setFormMode('edit');
-        setIsFormModalOpen(true);
+        router.get(route('cases.edit', item.id));
         break;
       case 'delete':
         setIsDeleteModalOpen(true);
@@ -97,9 +96,7 @@ export default function Cases() {
   };
 
   const handleAddNew = () => {
-    setCurrentItem(null);
-    setFormMode('create');
-    setIsFormModalOpen(true);
+    router.get(route('cases.create'));
   };
 
   const handleFormSubmit = (formData: any) => {
@@ -538,16 +535,16 @@ export default function Cases() {
               type: 'custom',
               render: (field: any, formData: any, onChange: (name: string, value: any) => void) => {
                 const repeaterFields: RepeaterField[] = [
-                  { name: 'name', label: t('Name'), type: 'text', required: true },
-                  { name: 'id_number', label: t('ID'), type: 'text' },
-                  {
-                    name: 'nationality_id',
-                    label: t('Nationality'),
-                    type: 'select',
-                    options: countries,
-                    placeholder: countries.length > 0 ? t('Select Nationality') : t('No nationalities available'),
-                  },
-                  { name: 'lawyer_name', label: t('Lawyer Name'), type: 'text' },
+                    { name: 'name', label: t('Name'), type: 'text', required: true },
+                    { name: 'id_number', label: t('ID National'), type: 'text' },
+                    {
+                        name: 'nationality_id',
+                        label: t('Nationality'),
+                        type: 'select',
+                        options: countries,
+                        placeholder: countries.length > 0 ? t('Select Nationality') : t('No nationalities available'),
+                    },
+                    { name: 'lawyer_name', label: t('Lawyer Name'), type: 'text' },
                 ];
 
                 return (

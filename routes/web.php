@@ -748,6 +748,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Case Management routes
         Route::middleware('permission:manage-cases')->group(function () {
             Route::get('cases', [\App\Http\Controllers\CaseController::class, 'index'])->name('cases.index');
+            Route::get('cases/create', [\App\Http\Controllers\CaseController::class, 'create'])->middleware('permission:create-cases')->name('cases.create');
+            Route::get('cases/{case}/edit', [\App\Http\Controllers\CaseController::class, 'edit'])->middleware('permission:edit-cases')->name('cases.edit');
             Route::get('cases/{case}', [\App\Http\Controllers\CaseController::class, 'show'])->middleware('permission:view-cases')->name('cases.show');
             Route::post('cases', [\App\Http\Controllers\CaseController::class, 'store'])->middleware('permission:create-cases')->name('cases.store');
             Route::put('cases/{case}', [\App\Http\Controllers\CaseController::class, 'update'])->middleware('permission:edit-cases')->name('cases.update');

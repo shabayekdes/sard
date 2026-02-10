@@ -273,12 +273,12 @@ export function Repeater({
                 <tr>
                   {allowReorder && <th className="w-10 px-3 py-3"></th>}
                   {showItemNumbers && (
-                    <th className="w-12 px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300">#</th>
+                    <th className="w-12 px-3 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-300">#</th>
                   )}
                   {fields.map((field) => (
                     <th
                       key={field.name}
-                      className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300"
+                      className="px-3 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-300"
                     >
                       {field.label}
                       {field.required && <span className="text-red-500 dark:text-red-400 ml-1">*</span>}

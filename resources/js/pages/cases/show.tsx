@@ -7,7 +7,7 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { hasPermission } from '@/utils/authorization';
 import { router, usePage } from '@inertiajs/react';
-import { ArrowLeft, Clock, FileText, Plus, Search, Users, CheckSquare, Calendar } from 'lucide-react';
+import { ArrowLeft, Clock, FileText, Pencil, Plus, Search, Users, CheckSquare, Calendar } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GoogleCalendarModal from '@/components/GoogleCalendarModal';
@@ -764,6 +764,16 @@ export default function CaseShow() {
             variant: 'outline',
             onClick: () => router.get(route('cases.index')),
         },
+        ...(hasPermission(permissions, 'edit-cases')
+            ? [
+                  {
+                      label: t('Edit Case'),
+                      icon: <Pencil className="mr-2 h-4 w-4" />,
+                      variant: 'default' as const,
+                      onClick: () => router.get(route('cases.edit', caseData.id)),
+                  },
+              ]
+            : []),
     ];
 
     const timelineColumns = [
@@ -1256,7 +1266,7 @@ export default function CaseShow() {
                                                             <p className="mt-1 text-sm text-gray-900 dark:text-white">{party.name || '-'}</p>
                                                         </div>
                                                         <div>
-                                                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('ID')}:</span>
+                                                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('ID National')}:</span>
                                                             <p className="mt-1 text-sm text-gray-900 dark:text-white">{party.id_number || '-'}</p>
                                                         </div>
                                                         <div>

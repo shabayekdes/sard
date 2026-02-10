@@ -470,6 +470,25 @@ class CaseController extends BaseController
         $caseTypes = CaseType::where('created_by', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
+        $caseTypes->transform(function ($caseType) {
+            return [
+                'id' => $caseType->id,
+                'name' => $caseType->name,
+                'name_translations' => $caseType->getTranslations('name'),
+            ];
+        });
+
+        $caseCategories = CaseCategory::where('created_by', createdBy())
+            ->where('status', 'active')
+            ->whereNull('parent_id')
+            ->get(['id', 'name']);
+        $caseCategories->transform(function ($caseCategory) {
+            return [
+                'id' => $caseCategory->id,
+                'name' => $caseCategory->name,
+                'name_translations' => $caseCategory->getTranslations('name'),
+            ];
+        });
 
         $caseStatuses = CaseStatus::where('created_by', createdBy())
             ->where('status', 'active')
@@ -479,11 +498,180 @@ class CaseController extends BaseController
             ->where('status', 'active')
             ->get(['id', 'name']);
 
+        $locale = app()->getLocale();
+        $countries = Country::where('is_active', true)
+            ->orderByRaw("JSON_EXTRACT(nationality_name, '$.{$locale}')")
+            ->orderByRaw("JSON_EXTRACT(nationality_name, '$.en')")
+            ->get(['id', 'name', 'nationality_name'])
+            ->map(function ($country) {
+                $nationalityLabel = $country->nationality_name;
+                $countryName = $country->name;
+
+                $label = !empty($nationalityLabel) ? $nationalityLabel : $countryName;
+
+                return [
+                    'value' => $country->id,
+                    'label' => $label,
+                ];
+            })
+            ->filter(function ($country) {
+                return !empty($country['label']);
+            })
+            ->values()
+            ->toArray();
+
+        $documentTypes = DocumentType::withPermissionCheck()
+            ->where('status', 'active')
+            ->get(['id', 'name', 'color']);
+        $documentTypes->transform(function ($docType) {
+            return [
+                'id' => $docType->id,
+                'name' => $docType->name,
+                'name_translations' => $docType->getTranslations('name'),
+            ];
+        });
+
+        $googleCalendarEnabled = Setting::where('user_id', createdBy())
+            ->where('key', 'googleCalendarEnabled')
+            ->value('value') == '1';
+
+        $authUser = auth()->user();
+        $planLimits = null;
+        if ($authUser->type === 'company' && $authUser->plan) {
+            $currentCases = CaseModel::where('created_by', $authUser->id)->count();
+            $maxCases = $authUser->plan->max_cases;
+            $isUnlimited = $authUser->plan->isUnlimitedLimit($maxCases);
+            $planLimits = [
+                'current_cases' => $currentCases,
+                'max_cases' => $maxCases,
+                'can_create' => $isUnlimited ? true : $currentCases < $maxCases
+            ];
+        }
+        elseif ($authUser->type !== 'superadmin' && $authUser->created_by) {
+            $companyUser = User::find($authUser->created_by);
+            if ($companyUser && $companyUser->type === 'company' && $companyUser->plan) {
+                $currentCases = CaseModel::where('created_by', $companyUser->id)->count();
+                $maxCases = $companyUser->plan->max_cases;
+                $isUnlimited = $companyUser->plan->isUnlimitedLimit($maxCases);
+                $planLimits = [
+                    'current_cases' => $currentCases,
+                    'max_cases' => $maxCases,
+                    'can_create' => $isUnlimited ? true : $currentCases < $maxCases
+                ];
+            }
+        }
+
         return Inertia::render('cases/create', [
             'clients' => $clients,
             'caseTypes' => $caseTypes,
+            'caseCategories' => $caseCategories,
             'caseStatuses' => $caseStatuses,
             'courts' => $courts,
+            'countries' => $countries,
+            'documentTypes' => $documentTypes,
+            'googleCalendarEnabled' => $googleCalendarEnabled,
+            'planLimits' => $planLimits,
+        ]);
+    }
+
+    public function edit($caseId)
+    {
+        $case = CaseModel::withPermissionCheck()
+            ->with(['oppositeParties'])
+            ->where('id', $caseId)
+            ->first();
+
+        if (!$case) {
+            return redirect()->route('cases.index')->with('error', __('Case not found.'));
+        }
+
+        $clients = Client::where('created_by', createdBy())
+            ->where('status', 'active')
+            ->get(['id', 'name']);
+
+        $caseTypes = CaseType::where('created_by', createdBy())
+            ->where('status', 'active')
+            ->get(['id', 'name']);
+        $caseTypes->transform(function ($caseType) {
+            return [
+                'id' => $caseType->id,
+                'name' => $caseType->name,
+                'name_translations' => $caseType->getTranslations('name'),
+            ];
+        });
+
+        $caseCategories = CaseCategory::where('created_by', createdBy())
+            ->where('status', 'active')
+            ->whereNull('parent_id')
+            ->get(['id', 'name']);
+        $caseCategories->transform(function ($caseCategory) {
+            return [
+                'id' => $caseCategory->id,
+                'name' => $caseCategory->name,
+                'name_translations' => $caseCategory->getTranslations('name'),
+            ];
+        });
+
+        $caseStatuses = CaseStatus::where('created_by', createdBy())
+            ->where('status', 'active')
+            ->get(['id', 'name']);
+
+        $courts = Court::where('created_by', createdBy())
+            ->where('status', 'active')
+            ->get(['id', 'name']);
+
+        $locale = app()->getLocale();
+        $countries = Country::where('is_active', true)
+            ->orderByRaw("JSON_EXTRACT(nationality_name, '$.{$locale}')")
+            ->orderByRaw("JSON_EXTRACT(nationality_name, '$.en')")
+            ->get(['id', 'name', 'nationality_name'])
+            ->map(function ($country) {
+                $nationalityLabel = $country->nationality_name;
+                $countryName = $country->name;
+                $label = !empty($nationalityLabel) ? $nationalityLabel : $countryName;
+                return [
+                    'value' => $country->id,
+                    'label' => $label,
+                ];
+            })
+            ->filter(function ($country) {
+                return !empty($country['label']);
+            })
+            ->values()
+            ->toArray();
+
+        $googleCalendarEnabled = Setting::where('user_id', createdBy())
+            ->where('key', 'googleCalendarEnabled')
+            ->value('value') == '1';
+
+        $caseData = $case->toArray();
+        $caseData['opposite_parties'] = $case->oppositeParties->map(function ($party) {
+            return [
+                'name' => $party->name,
+                'id_number' => $party->id_number ?? '',
+                'nationality_id' => $party->nationality_id ? (string) $party->nationality_id : '',
+                'lawyer_name' => $party->lawyer_name ?? '',
+            ];
+        })->toArray();
+        $caseData['case_category_id'] = $case->case_category_id ? (string) $case->case_category_id : '';
+        $caseData['case_subcategory_id'] = $case->case_subcategory_id ? (string) $case->case_subcategory_id : '';
+        $caseData['client_id'] = $case->client_id ? (string) $case->client_id : '';
+        $caseData['case_type_id'] = $case->case_type_id ? (string) $case->case_type_id : '';
+        $caseData['case_status_id'] = $case->case_status_id ? (string) $case->case_status_id : '';
+        $caseData['court_id'] = $case->court_id ? (string) $case->court_id : '';
+        $caseData['filing_date'] = $case->filing_date ? $case->filing_date->format('Y-m-d') : '';
+        $caseData['expected_completion_date'] = $case->expected_completion_date ? $case->expected_completion_date->format('Y-m-d') : '';
+        $caseData['estimated_value'] = $case->estimated_value !== null && $case->estimated_value !== '' ? (string) $case->estimated_value : '';
+
+        return Inertia::render('cases/edit', [
+            'case' => $caseData,
+            'clients' => $clients,
+            'caseTypes' => $caseTypes,
+            'caseCategories' => $caseCategories,
+            'caseStatuses' => $caseStatuses,
+            'courts' => $courts,
+            'countries' => $countries,
+            'googleCalendarEnabled' => $googleCalendarEnabled,
         ]);
     }
 
@@ -539,6 +727,11 @@ class CaseController extends BaseController
             'opposite_parties.*.id_number' => 'nullable|string|max:255',
             'opposite_parties.*.nationality_id' => 'nullable|exists:countries,id',
             'opposite_parties.*.lawyer_name' => 'nullable|string|max:255',
+            'documents' => 'nullable|array',
+            'documents.*.document_name' => 'required_with:documents|string|max:255',
+            'documents.*.document_type_id' => 'required_with:documents|exists:document_types,id',
+            'documents.*.confidentiality' => 'required_with:documents|in:public,confidential,privileged',
+            'documents.*.file' => 'required_with:documents|string',
         ]);
 
         $validated['created_by'] = createdBy();
@@ -554,9 +747,10 @@ class CaseController extends BaseController
             return redirect()->back()->with('error', 'Invalid selection. Please try again.');
         }
 
-        // Extract opposite parties before creating case
+        // Extract opposite parties and documents before creating case
         $oppositeParties = $validated['opposite_parties'] ?? [];
-        unset($validated['opposite_parties']);
+        $documents = $validated['documents'] ?? [];
+        unset($validated['opposite_parties'], $validated['documents']);
 
         $case = CaseModel::create($validated);
 
@@ -571,6 +765,24 @@ class CaseController extends BaseController
                     'lawyer_name' => $party['lawyer_name'] ?? null,
                     'created_by' => createdBy(),
                 ]);
+            }
+        }
+
+        // Create case documents
+        if (!empty($documents)) {
+            foreach ($documents as $doc) {
+                $filePath = $this->convertToRelativePath($doc['file'] ?? '');
+                if ($filePath) {
+                    CaseDocument::create([
+                        'case_id' => $case->id,
+                        'document_name' => $doc['document_name'],
+                        'document_type_id' => $doc['document_type_id'],
+                        'confidentiality' => $doc['confidentiality'],
+                        'file_path' => $filePath,
+                        'status' => 'active',
+                        'created_by' => createdBy(),
+                    ]);
+                }
             }
         }
 
@@ -672,7 +884,7 @@ class CaseController extends BaseController
             }
         }
 
-        return redirect()->back()->with('success', 'Case updated successfully.');
+        return redirect()->route('cases.show', $case->id)->with('success', __('Case updated successfully.'));
     }
 
     public function destroy($caseId)
@@ -692,5 +904,20 @@ class CaseController extends BaseController
         $case->save();
 
         return redirect()->back()->with('success', 'Case status updated successfully.');
+    }
+
+    private function convertToRelativePath(string $url): string
+    {
+        if (!$url) {
+            return $url;
+        }
+        if (!str_starts_with($url, 'http')) {
+            return $url;
+        }
+        $storageIndex = strpos($url, '/storage/');
+        if ($storageIndex !== false) {
+            return substr($url, $storageIndex);
+        }
+        return $url;
     }
 }

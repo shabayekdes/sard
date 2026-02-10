@@ -206,16 +206,16 @@ export function GlobalQuickActionModals() {
           type: 'custom',
           render: (_field: any, formData: any, onChange: (name: string, value: any) => void) => {
             const repeaterFields: RepeaterField[] = [
-              { name: 'name', label: t('Name'), type: 'text', required: true },
-              { name: 'id_number', label: t('ID'), type: 'text' },
-              {
-                name: 'nationality_id',
-                label: t('Nationality'),
-                type: 'select',
-                options: caseData.countries || [],
-                placeholder: (caseData.countries || []).length > 0 ? t('Select Nationality') : t('No nationalities available'),
-              },
-              { name: 'lawyer_name', label: t('Lawyer Name'), type: 'text' },
+                { name: 'name', label: t('Name'), type: 'text', required: true },
+                { name: 'id_number', label: t('ID National'), type: 'text' },
+                {
+                    name: 'nationality_id',
+                    label: t('Nationality'),
+                    type: 'select',
+                    options: caseData.countries || [],
+                    placeholder: (caseData.countries || []).length > 0 ? t('Select Nationality') : t('No nationalities available'),
+                },
+                { name: 'lawyer_name', label: t('Lawyer Name'), type: 'text' },
             ];
 
             return (
@@ -347,175 +347,175 @@ export function GlobalQuickActionModals() {
     const defaultNationality = countriesByCode.get(String(clientData.defaultCountry || '').toLowerCase()) || (clientData.countries || [])[0];
 
     return {
-      fields: [
-        { name: 'name', label: t('Client Name'), type: 'text', required: true },
-        {
-          name: 'country_id',
-          label: t('Phone Country'),
-          type: 'text',
-          defaultValue: defaultPhoneCountry?.value,
-          conditional: () => false,
-        },
-        {
-          name: 'phone',
-          label: t('Phone Number'),
-          type: 'text',
-          required: true,
-          render: (_: any, data: any, handleChange: (name: string, value: any) => void) => {
-            const currentCountryId = data?.country_id || clientData.defaultCountryId || defaultPhoneCountry?.value;
-            const currentCountry = phoneCountriesById.get(String(currentCountryId));
-            const currentCountryCode = (currentCountry?.code || defaultPhoneCountry?.code || '').toLowerCase();
+        fields: [
+            { name: 'name', label: t('Client Name'), type: 'text', required: true },
+            {
+                name: 'country_id',
+                label: t('Phone Country'),
+                type: 'text',
+                defaultValue: defaultPhoneCountry?.value,
+                conditional: () => false,
+            },
+            {
+                name: 'phone',
+                label: t('Phone Number'),
+                type: 'text',
+                required: true,
+                render: (_: any, data: any, handleChange: (name: string, value: any) => void) => {
+                    const currentCountryId = data?.country_id || clientData.defaultCountryId || defaultPhoneCountry?.value;
+                    const currentCountry = phoneCountriesById.get(String(currentCountryId));
+                    const currentCountryCode = (currentCountry?.code || defaultPhoneCountry?.code || '').toLowerCase();
 
-            return (
-              <PhoneInput
-                defaultCountry={currentCountryCode || undefined}
-                value={data?.phone || ''}
-                countries={allowedPhoneCountries}
-                inputProps={{ name: 'phone', required: true }}
-                className="w-full"
-                inputClassName="w-full !h-10 !border !border-input !bg-background !text-sm !text-foreground"
-                countrySelectorStyleProps={{
-                  buttonClassName: '!h-10 !border !border-input !bg-background',
-                  dropdownStyleProps: {
-                    className: '!bg-background !text-foreground',
-                  },
-                }}
-                onChange={(value, meta) => {
-                  handleChange('phone', value || '');
+                    return (
+                        <PhoneInput
+                            defaultCountry={currentCountryCode || undefined}
+                            value={data?.phone || ''}
+                            countries={allowedPhoneCountries}
+                            inputProps={{ name: 'phone', required: true }}
+                            className="w-full"
+                            inputClassName="w-full !h-10 !border !border-input !bg-background !text-sm !text-foreground"
+                            countrySelectorStyleProps={{
+                                buttonClassName: '!h-10 !border !border-input !bg-background',
+                                dropdownStyleProps: {
+                                    className: '!bg-background !text-foreground',
+                                },
+                            }}
+                            onChange={(value, meta) => {
+                                handleChange('phone', value || '');
 
-                  const code = String(meta?.country?.iso2 || '').toLowerCase();
-                  const selectedCountry = phoneCountriesByCode.get(code);
-                  if (selectedCountry) {
-                    handleChange('country_id', selectedCountry.value);
-                  }
-                }}
-              />
-            );
-          },
-        },
-        { name: 'email', label: t('Email'), type: 'email', required: true },
-        { name: 'password', label: t('Password'), type: 'password', required: true },
-        {
-          name: 'client_type_id',
-          label: t('Client Type'),
-          type: 'select',
-          required: false,
-          options: clientData.clientTypes
-            ? clientData.clientTypes.map((type) => {
-              const translations = type.name_translations || (typeof type.name === 'object' ? type.name : null);
-              let displayName: string | Record<string, string> = type.name;
-              if (translations && typeof translations === 'object') {
-                displayName = translations[currentLocale] || translations.en || translations.ar || type.name || '';
-              } else if (typeof type.name === 'object') {
-                displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
-              }
-              return {
-                value: type.id.toString(),
-                label: displayName,
-              };
-            })
-            : [],
-        },
-        {
-          name: 'business_type',
-          label: t('Business Type'),
-          type: 'radio',
-          required: true,
-          colSpan: 12,
-          options: [
-            { value: 'b2c', label: t('Individual') },
-            { value: 'b2b', label: t('Business') },
-          ],
-          defaultValue: 'b2c',
-        },
-        {
-          name: 'nationality_id',
-          label: t('Nationality'),
-          type: 'select',
-          required: false,
-          options: clientData.countries || [],
-          defaultValue: defaultNationality ? defaultNationality.value : '',
-          conditional: (_: any, data: any) => data?.business_type === 'b2c',
-        },
-        {
-          name: 'id_number',
-          label: t('ID Number'),
-          type: 'text',
-          required: false,
-          conditional: (_: any, data: any) => data?.business_type === 'b2c',
-        },
-        {
-          name: 'gender',
-          label: t('Gender'),
-          type: 'select',
-          required: false,
-          options: [
-            { value: 'male', label: t('Male') },
-            { value: 'female', label: t('Female') },
-          ],
-          conditional: (_: any, data: any) => data?.business_type === 'b2c',
-        },
-        {
-          name: 'date_of_birth',
-          label: t('Date of Birth'),
-          type: 'date',
-          conditional: (_: any, data: any) => data?.business_type === 'b2c',
-        },
-        {
-          name: 'unified_number',
-          label: t('Unified Number'),
-          type: 'text',
-          required: false,
-          conditional: (_: any, data: any) => data?.business_type === 'b2b',
-        },
-        {
-          name: 'cr_number',
-          label: t('CR Number'),
-          type: 'text',
-          required: false,
-          conditional: (_: any, data: any) => data?.business_type === 'b2b',
-        },
-        {
-          name: 'cr_issuance_date',
-          label: t('CR Issuance Date'),
-          type: 'date',
-          required: false,
-          conditional: (_: any, data: any) => data?.business_type === 'b2b',
-        },
-        {
-          name: 'tax_id',
-          label: t('Tax ID'),
-          type: 'text',
-          required: false,
-          conditional: (_: any, data: any) => data?.business_type === 'b2b',
-        },
-        {
-          name: 'address',
-          label: t('Address'),
-          type: 'textarea',
-        },
-        {
-          name: 'tax_rate',
-          label: t('Tax Rate') + ' (%)',
-          type: 'number',
-          step: '0.01',
-          min: '0',
-          max: '100',
-          defaultValue: clientData.defaultTaxRate ? Number(clientData.defaultTaxRate) : 0,
-        },
-        { name: 'notes', label: t('Note'), type: 'textarea' },
-        {
-          name: 'status',
-          label: t('Status'),
-          type: 'select',
-          options: [
-            { value: 'active', label: t('Active') },
-            { value: 'inactive', label: t('Inactive') },
-          ],
-          defaultValue: 'active',
-        },
-      ],
-      modalSize: 'xl',
+                                const code = String(meta?.country?.iso2 || '').toLowerCase();
+                                const selectedCountry = phoneCountriesByCode.get(code);
+                                if (selectedCountry) {
+                                    handleChange('country_id', selectedCountry.value);
+                                }
+                            }}
+                        />
+                    );
+                },
+            },
+            { name: 'email', label: t('Email'), type: 'email', required: true },
+            { name: 'password', label: t('Password'), type: 'password', required: true },
+            {
+                name: 'client_type_id',
+                label: t('Client Type'),
+                type: 'select',
+                required: false,
+                options: clientData.clientTypes
+                    ? clientData.clientTypes.map((type) => {
+                          const translations = type.name_translations || (typeof type.name === 'object' ? type.name : null);
+                          let displayName: string | Record<string, string> = type.name;
+                          if (translations && typeof translations === 'object') {
+                              displayName = translations[currentLocale] || translations.en || translations.ar || type.name || '';
+                          } else if (typeof type.name === 'object') {
+                              displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+                          }
+                          return {
+                              value: type.id.toString(),
+                              label: displayName,
+                          };
+                      })
+                    : [],
+            },
+            {
+                name: 'business_type',
+                label: t('Business Type'),
+                type: 'radio',
+                required: true,
+                colSpan: 12,
+                options: [
+                    { value: 'b2c', label: t('Individual') },
+                    { value: 'b2b', label: t('Business') },
+                ],
+                defaultValue: 'b2c',
+            },
+            {
+                name: 'nationality_id',
+                label: t('Nationality'),
+                type: 'select',
+                required: false,
+                options: clientData.countries || [],
+                defaultValue: defaultNationality ? defaultNationality.value : '',
+                conditional: (_: any, data: any) => data?.business_type === 'b2c',
+            },
+            {
+                name: 'id_number',
+                label: t('ID National'),
+                type: 'text',
+                required: false,
+                conditional: (_: any, data: any) => data?.business_type === 'b2c',
+            },
+            {
+                name: 'gender',
+                label: t('Gender'),
+                type: 'select',
+                required: false,
+                options: [
+                    { value: 'male', label: t('Male') },
+                    { value: 'female', label: t('Female') },
+                ],
+                conditional: (_: any, data: any) => data?.business_type === 'b2c',
+            },
+            {
+                name: 'date_of_birth',
+                label: t('Date of Birth'),
+                type: 'date',
+                conditional: (_: any, data: any) => data?.business_type === 'b2c',
+            },
+            {
+                name: 'unified_number',
+                label: t('Unified Number'),
+                type: 'text',
+                required: false,
+                conditional: (_: any, data: any) => data?.business_type === 'b2b',
+            },
+            {
+                name: 'cr_number',
+                label: t('CR Number'),
+                type: 'text',
+                required: false,
+                conditional: (_: any, data: any) => data?.business_type === 'b2b',
+            },
+            {
+                name: 'cr_issuance_date',
+                label: t('CR Issuance Date'),
+                type: 'date',
+                required: false,
+                conditional: (_: any, data: any) => data?.business_type === 'b2b',
+            },
+            {
+                name: 'tax_id',
+                label: t('Tax ID'),
+                type: 'text',
+                required: false,
+                conditional: (_: any, data: any) => data?.business_type === 'b2b',
+            },
+            {
+                name: 'address',
+                label: t('Address'),
+                type: 'textarea',
+            },
+            {
+                name: 'tax_rate',
+                label: t('Tax Rate') + ' (%)',
+                type: 'number',
+                step: '0.01',
+                min: '0',
+                max: '100',
+                defaultValue: clientData.defaultTaxRate ? Number(clientData.defaultTaxRate) : 0,
+            },
+            { name: 'notes', label: t('Note'), type: 'textarea' },
+            {
+                name: 'status',
+                label: t('Status'),
+                type: 'select',
+                options: [
+                    { value: 'active', label: t('Active') },
+                    { value: 'inactive', label: t('Inactive') },
+                ],
+                defaultValue: 'active',
+            },
+        ],
+        modalSize: 'xl',
     };
   }, [clientData, t, currentLocale]);
 

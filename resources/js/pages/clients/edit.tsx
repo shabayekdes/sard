@@ -161,13 +161,13 @@ export default function EditClient() {
                                 onValueChange={(value) => updateField('business_type', value)}
                                 className={isRtl ? 'flex justify-end gap-6' : 'flex gap-6'}
                             >
-                                <div className={isRtl ? 'flex items-center gap-2 flex-row-reverse' : 'flex items-center gap-2'}>
+                                <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
                                     <RadioGroupItem value="b2c" id="business_type_b2c" />
                                     <Label htmlFor="business_type_b2c" className="font-normal">
                                         {t('Individual')}
                                     </Label>
                                 </div>
-                                <div className={isRtl ? 'flex items-center gap-2 flex-row-reverse' : 'flex items-center gap-2'}>
+                                <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
                                     <RadioGroupItem value="b2b" id="business_type_b2b" />
                                     <Label htmlFor="business_type_b2b" className="font-normal">
                                         {t('Business')}
@@ -248,7 +248,7 @@ export default function EditClient() {
                                 {renderError('nationality_id')}
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="id_number">{t('ID Number')}</Label>
+                                <Label htmlFor="id_number">{t('ID National')}</Label>
                                 <Input id="id_number" value={formData.id_number} onChange={(e) => updateField('id_number', e.target.value)} />
                                 {renderError('id_number')}
                             </div>
@@ -259,13 +259,13 @@ export default function EditClient() {
                                     onValueChange={(value) => updateField('gender', value)}
                                     className={isRtl ? 'flex justify-end gap-6' : 'flex gap-6'}
                                 >
-                                    <div className={isRtl ? 'flex items-center gap-2 flex-row-reverse' : 'flex items-center gap-2'}>
+                                    <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
                                         <RadioGroupItem value="male" id="gender_male" />
                                         <Label htmlFor="gender_male" className="font-normal">
                                             {t('Male')}
                                         </Label>
                                     </div>
-                                    <div className={isRtl ? 'flex items-center gap-2 flex-row-reverse' : 'flex items-center gap-2'}>
+                                    <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
                                         <RadioGroupItem value="female" id="gender_female" />
                                         <Label htmlFor="gender_female" className="font-normal">
                                             {t('Female')}
@@ -294,7 +294,11 @@ export default function EditClient() {
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div className="space-y-2">
                                 <Label htmlFor="unified_number">{t('Unified Number')}</Label>
-                                <Input id="unified_number" value={formData.unified_number} onChange={(e) => updateField('unified_number', e.target.value)} />
+                                <Input
+                                    id="unified_number"
+                                    value={formData.unified_number}
+                                    onChange={(e) => updateField('unified_number', e.target.value)}
+                                />
                                 {renderError('unified_number')}
                             </div>
                             <div className="space-y-2">
@@ -350,9 +354,7 @@ export default function EditClient() {
                         <Button type="button" variant="outline" onClick={() => router.get(route('clients.index'))}>
                             {t('Cancel')}
                         </Button>
-                        <Button type="submit">
-                            {t('Save')}
-                        </Button>
+                        <Button type="submit">{t('Save')}</Button>
                     </div>
                 </form>
             </div>

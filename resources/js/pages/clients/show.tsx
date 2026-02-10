@@ -356,7 +356,7 @@ export default function ClientShow() {
         { label: t('Client ID'), value: client.client_id || '-' },
         { type: 'divider' },
         { label: t('Nationality'), value: getTranslatedValue(client.nationality?.nationality_name) },
-        { label: t('ID Number'), value: client.id_number || '-' },
+        { label: t('ID National'), value: client.id_number || '-' },
         { label: t('Gender'), value: client.gender ? t(client.gender.charAt(0).toUpperCase() + client.gender.slice(1)) : '-' },
         { label: t('Date of Birth'), value: formatDate(client.date_of_birth) },
         { label: t('Tax Rate'), value: client.tax_rate ? `${client.tax_rate}%` : '0%' },
