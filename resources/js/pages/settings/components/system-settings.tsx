@@ -183,7 +183,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
                             value={systemSettings.defaultCountry}
                             onValueChange={(value) => handleSystemSettingsChange('defaultCountry', value)}
                         >
-                        <SelectTrigger>
+                            <SelectTrigger>
                                 <SelectValue placeholder={t('Select country')} />
                             </SelectTrigger>
                             <SelectContent>
@@ -208,7 +208,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
                             value={systemSettings.defaultLanguage}
                             onValueChange={(value) => handleSystemSettingsChange('defaultLanguage', value)}
                         >
-                        <SelectTrigger>
+                            <SelectTrigger>
                                 <SelectValue placeholder={t('Select language')}>
                                     {systemSettings.defaultLanguage &&
                                         (() => {
@@ -254,7 +254,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
                     <div className="grid gap-2">
                         <Label htmlFor="dateFormat">{t('Date Format')}</Label>
                         <Select value={systemSettings.dateFormat} onValueChange={(value) => handleSystemSettingsChange('dateFormat', value)}>
-                        <SelectTrigger>
+                            <SelectTrigger>
                                 <SelectValue placeholder={t('Select date format')} />
                             </SelectTrigger>
                             <SelectContent>
@@ -282,7 +282,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
                     <div className="grid gap-2">
                         <Label htmlFor="timeFormat">{t('Time Format')}</Label>
                         <Select value={systemSettings.timeFormat} onValueChange={(value) => handleSystemSettingsChange('timeFormat', value)}>
-                        <SelectTrigger>
+                            <SelectTrigger>
                                 <SelectValue placeholder={t('Select time format')} />
                             </SelectTrigger>
                             <SelectContent>
@@ -312,7 +312,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
                             value={systemSettings.calendarStartDay}
                             onValueChange={(value) => handleSystemSettingsChange('calendarStartDay', value)}
                         >
-                        <SelectTrigger>
+                            <SelectTrigger>
                                 <SelectValue placeholder={t('Select start day')} />
                             </SelectTrigger>
                             <SelectContent>
@@ -328,7 +328,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
                             value={systemSettings.defaultTimezone}
                             onValueChange={(value) => handleSystemSettingsChange('defaultTimezone', value)}
                         >
-                        <SelectTrigger>
+                            <SelectTrigger>
                                 <SelectValue placeholder={t('Select timezone')} />
                             </SelectTrigger>
                             <SelectContent>
@@ -361,7 +361,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
                                 )
                             }
                         >
-                        <SelectTrigger>
+                            <SelectTrigger>
                                 <SelectValue placeholder={t('Select tax rate')} />
                             </SelectTrigger>
                             <SelectContent>

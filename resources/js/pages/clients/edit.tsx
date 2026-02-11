@@ -195,7 +195,7 @@ export default function EditClient() {
                                 countrySelectorStyleProps={{
                                     buttonClassName: '!h-10 !border !border-input !bg-background',
                                     dropdownStyleProps: {
-                                        className: '!bg-background !text-foreground',
+                                        className: '!bg-background !text-foreground phone-country-dropdown',
                                     },
                                 }}
                                 onChange={(value, meta) => {

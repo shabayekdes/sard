@@ -217,33 +217,32 @@ export default function CreateClient() {
                             </RadioGroup>
                             {renderError('business_type')}
                         </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div className="space-y-2">
                             <Label htmlFor="phone">{t('Phone Number')}</Label>
-                            <PhoneInput
-                                defaultCountry={(defaultPhoneCountry?.code || '').toLowerCase() || undefined}
-                                value={formData.phone}
-                                countries={allowedPhoneCountries}
-                                inputProps={{ name: 'phone', required: true }}
-                                className="w-full"
-                                inputClassName="w-full !h-10 !border !border-input !bg-background !text-sm !text-foreground"
+                            <div className="phone-left-selector">
+                                <PhoneInput
+                                    defaultCountry={(defaultPhoneCountry?.code || '').toLowerCase() || undefined}
+                                    value={formData.phone}
+                                    countries={allowedPhoneCountries}
+                                    inputProps={{ name: 'phone', required: true }}
+                                    className="w-full"
+                                    inputClassName="w-full !h-10 !border !border-input !bg-background !text-sm !text-foreground"
                                 countrySelectorStyleProps={{
                                     buttonClassName: '!h-10 !border !border-input !bg-background',
                                     dropdownStyleProps: {
-                                        className: '!bg-background !text-foreground',
+                                        className: '!bg-background !text-foreground phone-country-dropdown',
                                     },
                                 }}
-                                onChange={(value, meta) => {
-                                    updateField('phone', value || '');
-                                    const code = String(meta?.country?.iso2 || '').toLowerCase();
-                                    const selectedCountry = phoneCountriesByCode.get(code) as any;
-                                    if (selectedCountry) {
-                                        updateField('country_id', String(selectedCountry.value));
-                                    }
-                                }}
-                            />
+                                    onChange={(value, meta) => {
+                                        updateField('phone', value || '');
+                                        const code = String(meta?.country?.iso2 || '').toLowerCase();
+                                        const selectedCountry = phoneCountriesByCode.get(code) as any;
+                                        if (selectedCountry) {
+                                            updateField('country_id', String(selectedCountry.value));
+                                        }
+                                    }}
+                                />
+                            </div>
                             {renderError('phone')}
                         </div>
                         <div className="space-y-2">
@@ -262,101 +261,98 @@ export default function CreateClient() {
                             />
                             {renderError('password')}
                         </div>
-                    </div>
 
-                    {formData.business_type === 'b2c' && (
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                            <div className="space-y-2">
-                                <Label>{t('Nationality')}</Label>
-                                <Select value={formData.nationality_id} onValueChange={(value) => updateField('nationality_id', value)}>
-                                <SelectTrigger>
-                                        <SelectValue placeholder={t('Select Nationality')} />
-                                    </SelectTrigger>
-                                <SelectContent>
-                                        {(countries || []).map((country: any) => (
-                                            <SelectItem key={country.value} value={String(country.value)}>
-                                                {country.label || country.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {renderError('nationality_id')}
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="id_number">{t('ID National')}</Label>
-                                <Input id="id_number" value={formData.id_number} onChange={(e) => updateField('id_number', e.target.value)} />
-                                {renderError('id_number')}
-                            </div>
-                            <div className="space-y-2">
-                                <Label className={isRtl ? 'block text-right' : ''}>{t('Gender')}</Label>
-                                <RadioGroup
-                                    value={formData.gender}
-                                    onValueChange={(value) => updateField('gender', value)}
-                                    className={isRtl ? 'flex justify-end gap-6' : 'flex gap-6'}
-                                >
-                                    <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
-                                        <RadioGroupItem value="male" id="gender_male" />
-                                        <Label htmlFor="gender_male" className="font-normal">
-                                            {t('Male')}
-                                        </Label>
-                                    </div>
-                                    <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
-                                        <RadioGroupItem value="female" id="gender_female" />
-                                        <Label htmlFor="gender_female" className="font-normal">
-                                            {t('Female')}
-                                        </Label>
-                                    </div>
-                                </RadioGroup>
-                                {renderError('gender')}
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="date_of_birth">{t('Date of Birth')}</Label>
-                                <Input
-                                    id="date_of_birth"
-                                    type="date"
-                                    value={formData.date_of_birth}
-                                    onChange={(e) => updateField('date_of_birth', e.target.value)}
-                                />
-                                {renderError('date_of_birth')}
-                            </div>
-                        </div>
-                    )}
+                        {formData.business_type === 'b2c' && (
+                            <>
+                                <div className="space-y-2">
+                                    <Label>{t('Nationality')}</Label>
+                                    <Select value={formData.nationality_id} onValueChange={(value) => updateField('nationality_id', value)}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder={t('Select Nationality')} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {(countries || []).map((country: any) => (
+                                                <SelectItem key={country.value} value={String(country.value)}>
+                                                    {country.label || country.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {renderError('nationality_id')}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="id_number">{t('ID National')}</Label>
+                                    <Input id="id_number" value={formData.id_number} onChange={(e) => updateField('id_number', e.target.value)} />
+                                    {renderError('id_number')}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className={isRtl ? 'block text-right' : ''}>{t('Gender')}</Label>
+                                    <RadioGroup
+                                        value={formData.gender}
+                                        onValueChange={(value) => updateField('gender', value)}
+                                        className={isRtl ? 'flex justify-end gap-6' : 'flex gap-6'}
+                                    >
+                                        <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
+                                            <RadioGroupItem value="male" id="gender_male" />
+                                            <Label htmlFor="gender_male" className="font-normal">
+                                                {t('Male')}
+                                            </Label>
+                                        </div>
+                                        <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
+                                            <RadioGroupItem value="female" id="gender_female" />
+                                            <Label htmlFor="gender_female" className="font-normal">
+                                                {t('Female')}
+                                            </Label>
+                                        </div>
+                                    </RadioGroup>
+                                    {renderError('gender')}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="date_of_birth">{t('Date of Birth')}</Label>
+                                    <Input
+                                        id="date_of_birth"
+                                        type="date"
+                                        value={formData.date_of_birth}
+                                        onChange={(e) => updateField('date_of_birth', e.target.value)}
+                                    />
+                                    {renderError('date_of_birth')}
+                                </div>
+                            </>
+                        )}
 
-                    {formData.business_type === 'b2b' && (
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                            <div className="space-y-2">
-                                <Label htmlFor="unified_number">{t('Unified Number')}</Label>
-                                <Input
-                                    id="unified_number"
-                                    value={formData.unified_number}
-                                    onChange={(e) => updateField('unified_number', e.target.value)}
-                                />
-                                {renderError('unified_number')}
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="cr_number">{t('CR Number')}</Label>
-                                <Input id="cr_number" value={formData.cr_number} onChange={(e) => updateField('cr_number', e.target.value)} />
-                                {renderError('cr_number')}
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="cr_issuance_date">{t('CR Issuance Date')}</Label>
-                                <Input
-                                    id="cr_issuance_date"
-                                    type="date"
-                                    value={formData.cr_issuance_date}
-                                    onChange={(e) => updateField('cr_issuance_date', e.target.value)}
-                                />
-                                {renderError('cr_issuance_date')}
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="tax_id">{t('Tax ID')}</Label>
-                                <Input id="tax_id" value={formData.tax_id} onChange={(e) => updateField('tax_id', e.target.value)} />
-                                {renderError('tax_id')}
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                        {formData.business_type === 'b2b' && (
+                            <>
+                                <div className="space-y-2">
+                                    <Label htmlFor="unified_number">{t('Unified Number')}</Label>
+                                    <Input
+                                        id="unified_number"
+                                        value={formData.unified_number}
+                                        onChange={(e) => updateField('unified_number', e.target.value)}
+                                    />
+                                    {renderError('unified_number')}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="cr_number">{t('CR Number')}</Label>
+                                    <Input id="cr_number" value={formData.cr_number} onChange={(e) => updateField('cr_number', e.target.value)} />
+                                    {renderError('cr_number')}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="cr_issuance_date">{t('CR Issuance Date')}</Label>
+                                    <Input
+                                        id="cr_issuance_date"
+                                        type="date"
+                                        value={formData.cr_issuance_date}
+                                        onChange={(e) => updateField('cr_issuance_date', e.target.value)}
+                                    />
+                                    {renderError('cr_issuance_date')}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="tax_id">{t('Tax ID')}</Label>
+                                    <Input id="tax_id" value={formData.tax_id} onChange={(e) => updateField('tax_id', e.target.value)} />
+                                    {renderError('tax_id')}
+                                </div>
+                            </>
+                        )}
                         <div className="space-y-2">
                             <Label htmlFor="tax_rate">{t('Tax Rate')} (%)</Label>
                             <Input
@@ -388,12 +384,11 @@ export default function CreateClient() {
                             <Input id="address" value={formData.address} onChange={(e) => updateField('address', e.target.value)} />
                             {renderError('address')}
                         </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="notes">{t('Note')}</Label>
-                        <Textarea id="notes" value={formData.notes} onChange={(e) => updateField('notes', e.target.value)} />
-                        {renderError('notes')}
+                        <div className="space-y-2">
+                            <Label htmlFor="notes">{t('Note')}</Label>
+                            <Textarea id="notes" value={formData.notes} onChange={(e) => updateField('notes', e.target.value)} />
+                            {renderError('notes')}
+                        </div>
                     </div>
                 </div>
                 <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
