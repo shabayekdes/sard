@@ -904,9 +904,29 @@ export default function CaseShow() {
         },
     ];
 
+    const pageTitleString = `${caseData.title}${caseData.case_number ? ` - ${caseData.case_number}` : ''} (${caseData.case_id})`;
+    const isActive = caseData.status === 'active';
+
     return (
         <PageTemplate
-            title={`${caseData.title}${caseData.case_number ? ` - ${caseData.case_number}` : ''} (${caseData.case_id})`}
+            title={
+                <div className="flex flex-wrap items-center gap-3">
+                    <span>
+                        {caseData.title}
+                        {caseData.case_number ? ` (${caseData.case_number})` : ''}
+                    </span>
+                  <span
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                      isActive
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200'
+                        : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'
+                    }`}
+                  >
+                        {isActive ? t('Active') : t('Inactive')}
+                    </span>
+                </div>
+            }
+            titleForHead={pageTitleString}
             url={`/cases/${caseData.id}`}
             actions={pageActions}
             breadcrumbs={breadcrumbs}
@@ -1257,9 +1277,11 @@ export default function CaseShow() {
                                 </div>
                             </div>
 
-                            {/* Client Details (Plaintiff) */}
+                            {/* Client Details - role from case attributes (petitioner | respondent) */}
                             <div>
-                                <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">{t('Client Details')} ({t('Plaintiff')})</h3>
+                                <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
+                                    {t('Client Details')} ({caseData.attributes === 'respondent' ? t('Respondent') : t('Petitioner')})
+                                </h3>
                                 <div className="grid grid-cols-1 gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800 md:grid-cols-3">
                                     <div>
                                         <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Client')}:</span>
@@ -1288,67 +1310,53 @@ export default function CaseShow() {
                                 </div>
                             </div>
 
-                            {/* Opposite Party Details (Defendant) */}
-                            {caseData.opposite_parties && caseData.opposite_parties.length > 0 && (
-                                <div>
-                                    <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">{t('Opposite Party Details')} ({t('Defendant')})</h3>
-                                    <div className="space-y-4">
-                                        {caseData.opposite_parties.map((party: any, index: number) => (
-                                            <div key={party.id || index} className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
-                                                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                                    <div>
-                                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Defendant Name')}:</span>
-                                                        <p className="mt-1 text-sm text-gray-900 dark:text-white">{party.name || '-'}</p>
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Defendant Nationality')}:</span>
-                                                        <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                            {/* Opposite Party Details - role from case attributes (opposite of client: petitioner → Respondent, respondent → Petitioner) */}
+                            {(() => {
+                                const oppositeIsPetitioner = caseData.attributes === 'respondent';
+                                const oppositeRoleLabel = oppositeIsPetitioner ? t('Petitioner') : t('Respondent');
+                                const lawyerKey = oppositeIsPetitioner ? "Petitioner's Lawyer" : "Respondent's Lawyer";
+                                const nameKey = oppositeIsPetitioner ? "Petitioner's Name" : "Respondent's Name";
+                                const nationalityKey = oppositeIsPetitioner ? "Petitioner's Nationality" : "Respondent's Nationality";
+                                return (
+                            <div>
+                                <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
+                                    {t('Opposite Party Details')} ({oppositeRoleLabel})
+                                </h3>
+                                <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+                                    {caseData.opposite_parties && caseData.opposite_parties.length > 0 ? (
+                                        <table className="w-full min-w-full table-fixed border-collapse bg-gray-50 dark:bg-gray-800">
+                                            <thead>
+                                                <tr className="border-b border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-700">
+                                                    <th className="px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">#</th>
+                                                    <th className="px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t(lawyerKey)}</th>
+                                                    <th className="px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t(nameKey)}</th>
+                                                    <th className="px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t(nationalityKey)}</th>
+                                                    <th className="px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t('ID Number')}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {caseData.opposite_parties.map((party: any, index: number) => (
+                                                    <tr key={party.id || index} className="border-b border-gray-200 last:border-b-0 dark:border-gray-700">
+                                                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{index + 1}</td>
+                                                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{party.lawyer_name || '-'}</td>
+                                                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{party.name || '-'}</td>
+                                                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
                                                             {party.nationality ? getTranslatedValue(party.nationality.name || party.nationality) : '-'}
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Defendant Lawyer')}:</span>
-                                                        <p className="mt-1 text-sm text-gray-900 dark:text-white">{party.lawyer_name || '-'}</p>
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('ID Number')}:</span>
-                                                        <p className="mt-1 text-sm text-gray-900 dark:text-white">{party.id_number || '-'}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
+                                                        </td>
+                                                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{party.id_number || '-'}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    ) : (
+                                        <div className="bg-gray-50 p-4 dark:bg-gray-800">
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">{t('No opposing party added.')}</p>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-
-                            {/* Court Section */}
-                            {caseData.court && (
-                                <div>
-                                    <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">{t('Court')}:</h3>
-                                    <div className="grid grid-cols-1 gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800 md:grid-cols-3">
-                                        <div>
-                                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Court Name')}:</span>
-                                            <p className="mt-1 text-sm text-gray-900 dark:text-white">{caseData.court.name || '-'}</p>
-                                        </div>
-                                        <div>
-                                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Court Type')}:</span>
-                                            <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                                {caseData.court.court_type ? getTranslatedValue(caseData.court.court_type.name) : '-'}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Circle Type')}:</span>
-                                            <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                                {caseData.court.circle_type ? getTranslatedValue(caseData.court.circle_type.name) : '-'}
-                                            </p>
-                                        </div>
-                                        <div className="md:col-span-3">
-                                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Address')}:</span>
-                                            <p className="mt-1 text-sm text-gray-900 dark:text-white">{caseData.court.address || '-'}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                            </div>
+                                );
+                            })()}
                         </div>
                     )}
                     {activeTab === 'timelines' && (

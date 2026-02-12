@@ -3201,5 +3201,17 @@
   "Next Session" : "الجلسة القادمة",
   "No upcoming or recent sessions": "لا توجد جلسات قادمة أو حديثة",
   "Details": "التفاصيل",
-  "Case Details": "بيانات القضية"
+  "Case Details": "بيانات القضية",
+  "Expected Completion": "الانتهاء المتوقع",
+  "Opposite Party Details": "تفاصيل الطرف الآخر",
+  "No opposing party added": "لم يتم إضافة طرف معارض",
+  "No opposing party added.": "لم يتم إضافة طرف معارض.",
+  "Plaintiff": "المدعي",
+  "Defendant": "المدعى عليه",
+  "Petitioner's Lawyer": "محامي المدعي",
+  "Petitioner's Name": "اسم المدعي",
+  "Petitioner's Nationality": "جنسية المدعي",
+  "Respondent's Lawyer": "محامي المدعى عليه",
+  "Respondent's Name": "اسم المدعى عليه",
+  "Respondent's Nationality": "جنسية المدعى عليه"
 }

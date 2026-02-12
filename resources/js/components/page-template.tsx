@@ -14,7 +14,10 @@ export interface PageAction {
 }
 
 export interface PageTemplateProps {
-  title: string;
+  /** Page title: string or custom React node (e.g. title + badge) */
+  title: string | ReactNode;
+  /** Optional string used for document <Head> and breadcrumb when title is a React node */
+  titleForHead?: string;
   // description: string; //TODO:: NOT USED
   url: string;
   actions?: PageAction[];
@@ -25,6 +28,7 @@ export interface PageTemplateProps {
 
 export function PageTemplate({
   title,
+  titleForHead,
   // description, //TODO:: NOT USED
   url,
   actions,
@@ -32,24 +36,25 @@ export function PageTemplate({
   noPadding = false,
   breadcrumbs
 }: PageTemplateProps) {
+  const titleString = titleForHead ?? (typeof title === 'string' ? title : '');
   // Default breadcrumbs if none provided
   const pageBreadcrumbs: BreadcrumbItem[] = breadcrumbs || [
     {
-      title,
+      title: titleString,
       href: url,
     },
   ];
 
   return (
     <AppLayout breadcrumbs={pageBreadcrumbs}>
-      <Head title={`${title} - ${(usePage().props as any).globalSettings?.titleText || 'Advocate'}`} />
+      <Head title={`${titleString || 'Page'} - ${(usePage().props as any).globalSettings?.titleText || 'Advocate'}`} />
 
 
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden p-4">
         {/* Header with action buttons */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex min-w-0 flex-col gap-1">
-            <h1 className="text-xl font-semibold">{title}</h1>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h1>
             {pageBreadcrumbs.length > 0 && (
               <div className="text-xs text-muted-foreground md:hidden">
                 <Breadcrumbs items={pageBreadcrumbs.map((item) => ({ label: item.title, href: item.href }))} />
