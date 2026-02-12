@@ -46,26 +46,15 @@ export default function AuthLayout({
     }, []);
 
     return (
-        <div className="flex h-screen w-full overflow-hidden bg-slate-50 dark:bg-slate-900">
+        <div className="flex min-h-svh w-full bg-slate-50 dark:bg-slate-900 lg:h-screen lg:overflow-hidden">
             <Head title={title} />
 
-            {/* Right side - Content - z-10 so phone country dropdown appears above the left image */}
-            <div className="relative z-10 flex w-full items-center justify-center bg-white px-[62px] py-[60px] lg:w-1/2 dark:bg-slate-900">
+            {/* Right side - Content. On mobile: no overflow so country dropdown isn't clipped; page scrolls. On lg: centered panel. */}
+            <div className="relative z-10 flex min-h-svh w-full flex-col items-center justify-center bg-white px-4 py-6 sm:px-6 sm:py-8 lg:min-h-0 lg:w-1/2 lg:flex-1 lg:py-[60px] lg:px-[62px] dark:bg-slate-900">
                 <div
-                    className={`w-full max-w-[720px] transition-all duration-700 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
+                    className={`flex w-full max-w-[720px] flex-col transition-all duration-700 lg:flex-1 lg:min-h-0 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
                 >
-                    {/* Mobile branding - only visible on small screens */}
-                    <div className="mb-8 flex flex-col items-center lg:hidden">
-                        <div className="mb-4 inline-flex rounded-xl p-4 shadow-lg" style={{ backgroundColor: primaryColor }}>
-                            {currentLogo ? (
-                                <img src={currentLogo} alt="Logo" className="h-8 w-8 object-contain" />
-                            ) : (
-                                <CreditCard className="h-8 w-8 text-white" />
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xl dark:border-slate-700 dark:bg-slate-800">
+                    <div className="flex flex-1 flex-col rounded-none border-0 bg-white p-4 shadow-none sm:rounded-2xl sm:border sm:border-slate-200 sm:p-6 sm:shadow-xl lg:rounded-2xl lg:border lg:border-slate-200 lg:p-8 lg:shadow-xl dark:bg-slate-800 dark:sm:border-slate-700 dark:lg:border-slate-700">
                         {status && (
                             <div
                                 className={`mb-6 text-center text-sm font-medium ${

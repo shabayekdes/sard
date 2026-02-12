@@ -364,6 +364,31 @@ html[dir="rtl"] .react-international-phone-input {
   text-align: right;
 }
 
+/* Keep country dropdown above other content and within view on mobile */
+.phone-country-dropdown {
+  z-index: 10000;
+}
+
+/* On mobile: use fixed positioning so dropdown is never clipped by overflow */
+@media (max-width: 1023px) {
+  .phone-country-dropdown {
+    position: fixed !important;
+    left: 1rem !important;
+    right: 1rem !important;
+    width: auto !important;
+    max-width: none !important;
+    top: 25vh !important;
+    max-height: 50vh !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  }
+}
+
+@media (min-width: 1024px) {
+  .phone-country-dropdown {
+    max-width: 300px;
+  }
+}
+
 html[dir="rtl"] .phone-country-dropdown {
   right: 0;
   left: auto;
