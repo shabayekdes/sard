@@ -186,7 +186,7 @@ export default function ViewResearchProject() {
 
   const breadcrumbs = [
     { title: t('Dashboard'), href: route('dashboard') },
-    { title: t('Legal Research') },
+    { title: t('Cases Management'), href: route('cases.index') },
     { title: t('Research Projects'), href: route('legal-research.projects.index') },
     { title: project?.title || t('View Project') }
   ];
@@ -332,7 +332,7 @@ export default function ViewResearchProject() {
                 {hasPermission(permissions, 'create-research-notes') && (
                   <button
                     onClick={handleAddNote}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     {t('Add Note')}
@@ -403,7 +403,7 @@ export default function ViewResearchProject() {
                 {hasPermission(permissions, 'create-research-citations') && (
                   <button
                     onClick={handleAddCitation}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     {t('Add Citation')}

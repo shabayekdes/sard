@@ -180,30 +180,28 @@ export default function Hearings() {
 
   const breadcrumbs = [
     { title: t('Dashboard'), href: route('dashboard') },
-    { title: t('Cases'), href: route('cases.index') },
+    { title: t('Cases Management'), href: route('cases.index') },
     { title: t('Sessions') }
   ];
 
   const columns = [
-    { key: 'hearing_id', label: t('Session ID'), sortable: true },
     { key: 'title', label: t('Title'), sortable: true },
     {
       key: 'case',
       label: t('Case'),
       render: (value: any) => {
         if (!value) return '-';
-        const caseId = value.case_id || '-';
         const caseName = value.title || '-';
-        const caseNumber = value.file_number || '';
+        const caseNumber = value.case_number || '';
         const displayText = caseNumber
-          ? `${caseId} + ${caseName} + ${caseNumber}`
-          : `${caseId} + ${caseName}`;
+          ? `${caseName} (${caseNumber})`
+          : `${caseName}`;
 
         return (
           <button
             type="button"
             onClick={() => router.get(route('cases.show', value.id))}
-            className="text-primary hover:text-primary/80 hover:underline focus:outline-none cursor-pointer"
+            className="text-primary font-semibold hover:text-primary/80 focus:outline-none cursor-pointer"
           >
             {displayText}
           </button>
@@ -218,37 +216,17 @@ export default function Hearings() {
         const courtName = value.name || '-';
         const courtType = value.court_type ? getTranslatedValue(value.court_type.name) : '';
         const circleType = value.circle_type ? getTranslatedValue(value.circle_type.name) : '';
-        // Extract circle number from court name if it exists (e.g., "Court #123" or "Court 123")
-        const circleNoMatch = value.name?.match(/#?\s*(\d+)/);
-        const circleNo = circleNoMatch ? circleNoMatch[1] : '';
-
+        
         const parts = [courtName];
         if (courtType) parts.push(courtType);
         if (circleType) parts.push(circleType);
-        if (circleNo) parts.push(circleNo);
 
         return parts.join(' + ');
       }
     },
     {
-      key: 'circle',
-      label: t('Circle'),
-      render: (value: any) => {
-        if (!value) return '-';
-        const circleType = value.circle_type ? getTranslatedValue(value.circle_type.name) : '';
-        // Extract circle number from court name if it exists
-        const circleNoMatch = value.name?.match(/#?\s*(\d+)/);
-        const circleNo = circleNoMatch ? circleNoMatch[1] : '';
-
-        if (circleType && circleNo) {
-          return `${circleType} + ${circleNo}`;
-        } else if (circleType) {
-          return circleType;
-        } else if (circleNo) {
-          return circleNo;
-        }
-        return '-';
-      },
+      key: 'circle_number',
+      label: t('Circle Number')
     },
     {
       key: 'hearing_date',
