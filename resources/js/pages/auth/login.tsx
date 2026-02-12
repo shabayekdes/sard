@@ -92,7 +92,7 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
                 </div>
                 <div className="space-y-4">
                     <div className="relative">
-                        <Label htmlFor="email" className="mb-1 block font-medium text-gray-700 dark:text-gray-300">
+                        <Label htmlFor="email" className="mb-3 block font-medium text-gray-700 dark:text-gray-300">
                             {t('Email address')}
                         </Label>
                         <div className="relative">
@@ -130,7 +130,7 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
                                     style={{ color: primaryColor }}
                                     tabIndex={5}
                                 >
-                                    {t('Forgot password?')}
+                                    {t('Forgot password')}?
                                 </TextLink>
                             )}
                         </div>

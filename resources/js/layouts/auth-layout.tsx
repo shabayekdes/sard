@@ -49,8 +49,8 @@ export default function AuthLayout({
         <div className="flex h-screen w-full overflow-hidden bg-slate-50 dark:bg-slate-900">
             <Head title={title} />
 
-            {/* Right side - Content */}
-            <div className="relative flex w-full items-center justify-center bg-white px-[62px] py-[60px] lg:w-1/2 dark:bg-slate-900">
+            {/* Right side - Content - z-10 so phone country dropdown appears above the left image */}
+            <div className="relative z-10 flex w-full items-center justify-center bg-white px-[62px] py-[60px] lg:w-1/2 dark:bg-slate-900">
                 <div
                     className={`w-full max-w-[720px] transition-all duration-700 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
                 >

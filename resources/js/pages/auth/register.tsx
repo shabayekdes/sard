@@ -68,8 +68,6 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
             onFinish: () => reset('password', 'password_confirmation'),
         });
     };
-    const currentCountryCode = String(defaultPhoneCountry?.code || defaultCountry || 'sa').toLowerCase();
-
     return (
         <AuthLayout title={t('Create account')} leftImageSrc="/images/sign-in.jpeg">
             <form className="space-y-4" onSubmit={submit}>
@@ -118,26 +116,28 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
                         <Label htmlFor="phone" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                             {t('Phone Number')}
                         </Label>
-                        <PhoneInput
-                            defaultCountry={currentCountryCode || undefined}
-                            value={data.phone || ''}
-                            countries={allowedPhoneCountries}
-                            inputProps={{ id: 'phone', name: 'phone', required: true }}
-                            className="w-full"
-                            inputClassName="w-full !h-10 !border !border-input !bg-background !text-sm !text-foreground"
-                            countrySelectorStyleProps={{
-                                buttonClassName: '!h-10 !border !border-input !bg-background',
-                                dropdownStyleProps: {
-                                    className: '!bg-background !text-foreground',
-                                },
-                            }}
-                            onChange={(value, meta) => setData('phone', value || '')}
-                        />
+                        <div className="phone-left-selector">
+                            <PhoneInput
+                                defaultCountry={(defaultPhoneCountry?.code || '').toLowerCase() || undefined}
+                                value={data.phone || ''}
+                                countries={allowedPhoneCountries}
+                                inputProps={{ id: 'phone', name: 'phone', required: true }}
+                                className="w-full"
+                                inputClassName="w-full !h-10 !border !border-input !bg-background !text-sm !text-foreground"
+                                countrySelectorStyleProps={{
+                                    buttonClassName: '!h-10 !border !border-input !bg-background',
+                                    dropdownStyleProps: {
+                                        className: '!bg-background !text-foreground phone-country-dropdown',
+                                    },
+                                }}
+                                onChange={(value) => setData('phone', value || '')}
+                            />
+                        </div>
                         <InputError message={errors.phone} />
                     </div>
 
                     <div className="relative">
-                        <Label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <Label htmlFor="email" className="mb-3 block text-sm font-medium text-gray-700 dark:text-gray-300">
                             {t('Email Address')}
                         </Label>
                         <Input

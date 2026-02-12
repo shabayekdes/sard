@@ -227,12 +227,12 @@ export default function CreateClient() {
                                     inputProps={{ name: 'phone', required: true }}
                                     className="w-full"
                                     inputClassName="w-full !h-10 !border !border-input !bg-background !text-sm !text-foreground"
-                                countrySelectorStyleProps={{
-                                    buttonClassName: '!h-10 !border !border-input !bg-background',
-                                    dropdownStyleProps: {
-                                        className: '!bg-background !text-foreground phone-country-dropdown',
-                                    },
-                                }}
+                                    countrySelectorStyleProps={{
+                                        buttonClassName: '!h-10 !border !border-input !bg-background',
+                                        dropdownStyleProps: {
+                                            className: '!bg-background !text-foreground phone-country-dropdown',
+                                        },
+                                    }}
                                     onChange={(value, meta) => {
                                         updateField('phone', value || '');
                                         const code = String(meta?.country?.iso2 || '').toLowerCase();
