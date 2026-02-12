@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FileText, Calendar, User, Building2, Clock, Shield, Banknote, CreditCard, IndianRupee, Wallet, Coins } from 'lucide-react';
+import { FileText, Calendar, User, Building2, Clock, Banknote, CreditCard, IndianRupee, Wallet, Coins, Copy, Download, List } from 'lucide-react';
 import { toast } from '@/components/custom-toast';
 import { PaymentGatewaySelection } from '@/components/payment-gateway-selection';
 import { StripePaymentModal } from '@/components/payment-modals/stripe-payment-modal';
@@ -45,7 +45,7 @@ import { SkrillPaymentModal } from '@/components/payment-modals/skrill-payment-m
 import { LanguageSwitcher } from '@/components/language-switcher';
 
 export default function InvoicePayment() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { invoice, enabledGateways, remainingAmount, clientBillingInfo, currencies, paypalClientId, flutterwavePublicKey, tapPublicKey, paystackPublicKey, flash, company, companyProfile, companyLogo, favicon, appName } = usePage().props as any;
     const [selectedGateway, setSelectedGateway] = useState<string | null>(null);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -108,6 +108,23 @@ export default function InvoicePayment() {
         ...gateway,
         icon: getPaymentMethodIcon(gateway.id)
     })) || [];
+
+    // Default to Arabic (RTL) on payment page when no language preference is stored
+    useEffect(() => {
+        const hasStoredLang = document.cookie.includes('app_language=') || localStorage.getItem('i18nextLng');
+        if (!hasStoredLang && i18n.language !== 'ar') {
+            i18n.changeLanguage('ar');
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
+    }, []);
+
+    // Keep document direction and lang in sync for RTL
+    useEffect(() => {
+        const lng = i18n.language || 'ar';
+        const isRtl = ['ar', 'he'].includes(lng);
+        document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
+        document.documentElement.setAttribute('lang', lng === 'he' ? 'he' : lng === 'ar' ? 'ar' : (lng || 'en'));
+    }, [i18n.language]);
 
     useEffect(() => {
         // Add a small delay to ensure DOM is ready
@@ -285,390 +302,332 @@ export default function InvoicePayment() {
 
     return (
         <>
-            <Head title={`${t('Invoice')} - ${company?.name || appName || 'Advocate Saas'}`}>
-                {favicon && (
-                    <link rel="icon" type="image/x-icon" href={favicon} />
-                )}
-            </Head >
-            <div className="min-h-screen bg-gray-50">
-                {/* Modern Header */}
-                <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-10">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-4">
-                                <div className="theme-bg p-3 rounded-xl shadow-lg">
-                                    <FileText className="h-7 w-7 text-white" />
-                                </div>
-                                <div>
-                                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                                        {t('Invoice')} #{invoice.invoice_number}
-                                    </h1>
-                                    <p className="text-gray-600 text-sm sm:text-base flex items-center mt-1">
-                                        <Shield className="h-4 w-4 mr-1" />
-                                        {t('Secure Payment Portal')}
-                                    </p>
-                                </div>
+            <Head title={`${t('Invoice')} - ${company?.name || appName || 'Sard App'}`}>
+                {favicon && <link rel="icon" type="image/x-icon" href={favicon} />}
+            </Head>
+            <div
+                className="min-h-screen bg-gray-50"
+                dir={i18n.language === 'ar' || i18n.language === 'he' ? 'rtl' : 'ltr'}
+                lang={i18n.language === 'ar' ? 'ar' : i18n.language === 'he' ? 'he' : 'en'}
+            >
+                {/* Header: light gray bar - Invoice Details + Secure gateway | Language + Due pill */}
+                <header className="sticky top-0 z-10 border-b border-gray-200 bg-gray-100">
+                    <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+                        <div className="flex flex-wrap items-center justify-between gap-4">
+                            <div className="text-start">
+                                <span className="text-lg font-bold text-gray-900 sm:text-xl">{t('Invoice Details')}</span>
+                                <span className="ms-1 mt-0.5 text-sm text-gray-600">{t('Secure Payment Portal')}</span>
                             </div>
                             <div className="flex items-center gap-3">
-                                <Badge variant={isOverdue ? 'destructive' : 'secondary'} className="text-xs sm:text-sm px-3 py-1.5 font-medium">
-                                    {isOverdue ? t('Overdue') : t('Due')} {new Date(invoice.due_date).toLocaleDateString()}
-                                </Badge>
+                                <span
+                                    className={`inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium ${isOverdue ? 'bg-red-100 text-red-800' : 'bg-gray-200 text-gray-800'}`}
+                                >
+                                    {isOverdue ? t('Overdue') : t('Due')}{' '}
+                                    {(() => {
+                                        const d = new Date(invoice.due_date);
+                                        return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+                                    })()}
+                                </span>
                                 <LanguageSwitcher />
                             </div>
                         </div>
                     </div>
-                </div>
+                </header>
 
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    {/* Header with Title and Buttons */}
-                    <div className="flex justify-between items-start mb-8">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">{t('Invoice Details')}</h1>
-                            <p className="text-gray-600 mt-1">{t('View and manage your invoice')}</p>
-                        </div>
-                        <div className="flex gap-3">
-                            <Button
-                                variant="outline"
-                                className="h-10 px-4 text-sm font-medium relative"
-                                onClick={async () => {
-                                    try {
-                                        await navigator.clipboard.writeText(window.location.href);
-                                        setShowCopiedMessage(true);
-                                        setTimeout(() => setShowCopiedMessage(false), 2000);
-                                        toast.success(t('Link copied to clipboard!'));
-                                    } catch (error) {
-                                        console.error('Error copying link:', error);
-                                        toast.error(t('Failed to copy link. Please try again.'));
-                                    }
-                                }}
-                            >
-                                {showCopiedMessage ? (
-                                    <span className="flex items-center theme-color">
-                                        ✓ {t('Copied!')}
+                <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                    {/* White card: status badge, invoice# + case title, then 3 action buttons */}
+                    <Card className="mb-8 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                        <CardContent className="p-6">
+                            <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+                                <div className="min-w-0 flex-1 text-start">
+                                    <h2 className="text-xl font-bold text-gray-900">
+                                        {t('Invoice #')} {invoice.invoice_number}
+                                    </h2>
+                                    <p className="mt-1 text-sm text-gray-600">
+                                        {t('Case Title')}: {invoice.case?.title ?? '—'}
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span
+                                        className={`inline-flex items-center rounded-lg px-3 py-1.5 text-sm font-medium text-white ${invoice.status === 'paid' ? 'bg-green-500' : invoice.status === 'partial_paid' ? 'bg-amber-500' : 'bg-gray-400'}`}
+                                    >
+                                        {invoice.status === 'paid' ? t('Paid') : invoice.status === 'partial_paid' ? t('Partial Paid') : t('Unpaid')}
                                     </span>
-                                ) : (
-                                    `📋 ${t('Copy Link')}`
+                                </div>
+                            </div>
+                            <div className="flex flex-wrap gap-3">
+                                {(invoice.status === 'partial_paid' || (invoice.status !== 'paid' && remainingAmount > 0)) && (
+                                    <Button
+                                        className="h-10 rounded-lg bg-primary px-4 text-sm font-medium text-white hover:bg-green-700"
+                                        onClick={() => {
+                                            try {
+                                                setShowGatewayModal(true);
+                                            } catch (error) {
+                                                console.error('Error opening payment modal:', error);
+                                                toast.error(t('Failed to open payment options. Please try again.'));
+                                            }
+                                        }}
+                                    >
+                                        <CreditCard className="me-2 h-4 w-4" />
+                                        {t('Pay Invoice Now')}
+                                    </Button>
                                 )}
-                            </Button>
-
-                            {(invoice.status === 'partial_paid' || (invoice.status !== 'paid' && remainingAmount > 0)) && (
                                 <Button
-                                    className="h-10 px-4 text-sm font-medium theme-bg text-white hover:opacity-90"
-                                    onClick={() => {
+                                    variant="outline"
+                                    className="h-10 rounded-lg border-gray-300 px-4 text-sm font-medium"
+                                    onClick={async () => {
                                         try {
-                                            setShowGatewayModal(true);
+                                            await navigator.clipboard.writeText(window.location.href);
+                                            setShowCopiedMessage(true);
+                                            setTimeout(() => setShowCopiedMessage(false), 2000);
+                                            toast.success(t('Link copied to clipboard!'));
                                         } catch (error) {
-                                            console.error('Error opening payment modal:', error);
-                                            toast.error(t('Failed to open payment options. Please try again.'));
+                                            console.error('Error copying link:', error);
+                                            toast.error(t('Failed to copy link. Please try again.'));
                                         }
                                     }}
                                 >
-                                    💳 {t('Pay Invoice')}
+                                    {showCopiedMessage ? (
+                                        <span className="flex items-center text-green-600">✓ {t('Copied!')}</span>
+                                    ) : (
+                                        <>
+                                            <Copy className="me-2 h-4 w-4" />
+                                            {t('Copy Link')}
+                                        </>
+                                    )}
                                 </Button>
-                            )}
-
-                            <Button
-                                variant="outline"
-                                className="h-10 px-4 text-sm font-medium"
-                                onClick={() => {
-                                    const pdfType = invoice.client?.business_type === 'b2b' ? 'tax' : 'simplified';
-                                    window.open(route('invoices.pdf', invoice.id) + `?type=${pdfType}`, '_blank');
-                                }}
-                            >
-                                ⬇️ {invoice.client?.business_type === 'b2b' ? t('Download Tax Invoice') : t('Download Simplified Tax Invoice')}
-                            </Button>
-                        </div>
-                    </div>
-
-                    {/* Invoice Header Card */}
-                    <Card className="mb-8 border-0 shadow-sm">
-                        <CardContent className="p-6">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h2 className="text-xl font-bold text-gray-900">{invoice.invoice_number} {invoice.client?.name}</h2>
-                                    <p className="text-gray-600 mt-1">{t('Invoice for professional services and software licenses.')}</p>
-                                </div>
-                                <div className="text-right">
-                                    <Badge
-                                        variant={invoice.status === 'paid' ? 'default' : 'outline'}
-                                        className={`mb-2 ${invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
-                                            invoice.status === 'partial_paid' ? 'bg-yellow-100 text-yellow-800' :
-                                                'bg-red-100 text-red-800'
-                                            }`}
-                                    >
-                                        {invoice.status === 'paid' ? t('Paid') :
-                                            invoice.status === 'partial_paid' ? t('Partial Paid') : t('Unpaid')}
-                                    </Badge>
-                                    <p className="text-sm text-gray-600">{invoice.invoice_number}</p>
-                                </div>
+                                <Button
+                                    variant="outline"
+                                    className="h-10 rounded-lg border-gray-300 px-4 text-sm font-medium"
+                                    onClick={() => {
+                                        const pdfType = invoice.client?.business_type === 'b2b' ? 'tax' : 'simplified';
+                                        window.open(route('invoices.pdf', invoice.id) + `?type=${pdfType}`, '_blank');
+                                    }}
+                                >
+                                    <Download className="me-2 h-4 w-4" />
+                                    {invoice.client?.business_type === 'b2b' ? t('Download Tax Invoice') : t('Download Simplified Tax Invoice')}
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>
 
-                    {/* Stats Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <Card className="border-l-4 theme-border shadow-sm">
+                    {/* State cards: 2 rows × 3 cols — Total, Paid, Due | Due Date, Invoice Date, Products */}
+                    <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+                        <Card className="border border-[#F1F1F4] bg-white shadow-sm">
                             <CardContent className="p-6">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">{t('Total Amount')}</p>
-                                        <p className="text-2xl font-bold theme-color mt-1">{formatAmount(invoice.total_amount)}</p>
+                                <div className="flex items-center gap-3">
+                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-100">
+                                        <Wallet className="h-5 w-5 text-gray-400" strokeWidth={1.5} />
                                     </div>
-                                    <div className="bg-gray-100 p-3 rounded-full">
-                                        <span className="theme-color text-xl">💰</span>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-medium text-gray-500">{t('Total Amount')}</p>
+                                        <p className="mt-1 text-xl font-bold text-gray-900">{formatAmount(invoice.total_amount)}</p>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card className="border-l-4 theme-border shadow-sm">
+                        <Card className="border border-[#F1F1F4] bg-white shadow-sm">
                             <CardContent className="p-6">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">{t('Paid Amount')}</p>
-                                        <p className="text-2xl font-bold theme-color mt-1">{formatAmount((invoice.total_amount - remainingAmount) || 0)}</p>
+                                <div className="flex items-center gap-3">
+                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-100">
+                                        <Wallet className="h-5 w-5 text-gray-400" strokeWidth={1.5} />
                                     </div>
-                                    <div className="bg-gray-100 p-3 rounded-full">
-                                        <span className="theme-color text-xl">💳</span>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-medium text-gray-500">{t('Paid Amount')}</p>
+                                        <p className="mt-1 text-xl font-bold text-gray-900">{formatAmount((invoice.total_amount ?? 0) - (remainingAmount ?? 0))}</p>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card className="border-l-4 theme-border shadow-sm">
+                        <Card className="border border-[#F1F1F4] bg-white shadow-sm">
                             <CardContent className="p-6">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">{t('Due Amount')}</p>
-                                        <p className="text-2xl font-bold theme-color mt-1">{formatAmount(remainingAmount)}</p>
+                                <div className="flex items-center gap-3">
+                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-100">
+                                        <Wallet className="h-5 w-5 text-gray-400" strokeWidth={1.5} />
                                     </div>
-                                    <div className="bg-gray-100 p-3 rounded-full">
-                                        <span className="theme-color text-xl">⏰</span>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-medium text-gray-500">{t('Due Amount')}</p>
+                                        <p className="mt-1 text-xl font-bold text-gray-900">{formatAmount(remainingAmount)}</p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="border border-[#F1F1F4] bg-white shadow-sm">
+                            <CardContent className="p-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-100">
+                                        <Calendar className="h-5 w-5 text-gray-400" strokeWidth={1.5} />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-medium text-gray-500">{t('Due Date')}:</p>
+                                        <p className="mt-1 text-xl font-bold text-gray-900">{new Date(invoice.due_date).toLocaleDateString('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="border border-[#F1F1F4] bg-white shadow-sm">
+                            <CardContent className="p-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-100">
+                                        <Calendar className="h-5 w-5 text-gray-400" strokeWidth={1.5} />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-medium text-gray-500">{t('Invoice Date')}:</p>
+                                        <p className="mt-1 text-xl font-bold text-gray-900">{new Date(invoice.invoice_date).toLocaleDateString('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="border border-[#F1F1F4] bg-white shadow-sm">
+                            <CardContent className="p-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-100">
+                                        <List className="h-5 w-5 text-gray-400" strokeWidth={1.5} />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-medium text-gray-500">{t('Products')}</p>
+                                        <p className="mt-1 text-xl font-bold text-gray-900">{invoice.line_items?.length ?? 0}</p>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <Card className="border-l-4 theme-border shadow-sm">
-                            <CardContent className="p-6">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">{t('Products')}</p>
-                                        <p className="text-2xl font-bold theme-color mt-1">{invoice.line_items?.length || 1}</p>
-                                    </div>
-                                    <div className="bg-gray-100 p-3 rounded-full">
-                                        <span className="theme-color text-xl">📦</span>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="border-l-4 theme-border shadow-sm">
-                            <CardContent className="p-6">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">{t('Invoice Date')}</p>
-                                        <p className="text-lg font-bold theme-color mt-1">{new Date(invoice.invoice_date).toLocaleDateString()}</p>
-                                    </div>
-                                    <div className="bg-gray-100 p-3 rounded-full">
-                                        <span className="theme-color text-xl">📅</span>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="border-l-4 theme-border shadow-sm">
-                            <CardContent className="p-6">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">{t('Due Date')}</p>
-                                        <p className="text-lg font-bold theme-color mt-1">{new Date(invoice.due_date).toLocaleDateString()}</p>
-                                    </div>
-                                    <div className="bg-gray-100 p-3 rounded-full">
-                                        <span className="theme-color text-xl">📋</span>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    <div className="grid grid-cols-1 xl:grid-cols-1 gap-8">
+                    <div className="grid grid-cols-1 gap-8 xl:grid-cols-1">
                         {/* Invoice Details - Left Side */}
-                        <div className="xl:col-span-3 space-y-6">
-                            {/* Client & Invoice Info */}
-                            <Card className="shadow-xl border-0 overflow-hidden">
-                                <CardHeader className="theme-bg text-white">
-                                    <CardTitle className="flex items-center space-x-2 text-lg">
-                                        <Building2 className="h-5 w-5" />
-                                        <span>{t('Invoice Information')}</span>
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="p-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div className="space-y-6">
-                                            <div className="flex items-start space-x-4">
-                                                <div className="bg-gray-100 p-2 rounded-lg">
-                                                    <Building2 className="h-5 w-5 theme-color" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{t('Bill From')}</p>
-                                                    <div className="mt-1 flex items-center space-x-3">
-                                                        {companyLogo ? (
-                                                            <img
-                                                                src={getLogoUrl(companyLogo)}
-                                                                alt={companyProfile?.name || company?.name || appName}
-                                                                className="h-10 w-10 rounded-full object-cover"
-                                                            />
-                                                        ) : null}
-                                                        <p className="text-xl font-bold text-gray-900">
-                                                            {companyProfile?.name || company?.name || appName}
-                                                        </p>
+                        <div className="space-y-6 xl:col-span-3">
+                            {/* Company (Bill From) and Client (Bill To) — two white cards */}
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                <Card className="overflow-hidden rounded-xl border border-[#F1F1F4] bg-white shadow-sm">
+                                    <CardContent className="p-6">
+                                        <div className="flex items-center gap-2">
+                                            <Building2 className="h-5 w-5 text-gray-500" />
+                                            <p className="text-sm font-medium text-gray-500">{t('Bill From')}</p>
+                                        </div>
+                                        <p className="mt-2 text-lg font-bold text-gray-900">
+                                            {companyProfile?.name || company?.name || appName}
+                                        </p>
+                                        <dl className="mt-4 space-y-2 text-sm">
+                                            <div className="flex flex-wrap gap-x-2">
+                                                <dt className="font-semibold text-gray-700">{t('CR Number')}:</dt>
+                                                <dd className="text-gray-600">{companyProfile?.cr || companyProfile?.registration_number || '-'}</dd>
+                                            </div>
+                                            <div className="flex flex-wrap gap-x-2">
+                                                <dt className="font-semibold text-gray-700">{t('Tax ID')}:</dt>
+                                                <dd className="text-gray-600">{companyProfile?.tax_id || companyProfile?.tax_number || '-'}</dd>
+                                            </div>
+                                            <div className="flex flex-wrap gap-x-2">
+                                                <dt className="font-semibold text-gray-700">{t('Address')}:</dt>
+                                                <dd className="text-gray-600">{companyProfile?.address || '-'}</dd>
+                                            </div>
+                                            <div className="flex flex-wrap gap-x-2">
+                                                <dt className="font-semibold text-gray-700">{t('Phone')}:</dt>
+                                                <dd className="text-gray-600">{companyProfile?.phone || '-'}</dd>
+                                            </div>
+                                            <div className="flex flex-wrap gap-x-2">
+                                                <dt className="font-semibold text-gray-700">{t('Email')}:</dt>
+                                                <dd className="text-gray-600">{companyProfile?.email || '-'}</dd>
+                                            </div>
+                                        </dl>
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="overflow-hidden rounded-xl border border-[#F1F1F4] bg-white shadow-sm">
+                                    <CardContent className="p-6">
+                                        <div className="flex items-center gap-2">
+                                            <User className="h-5 w-5 text-gray-500" />
+                                            <p className="text-sm font-medium text-gray-500">{t('Bill To')}</p>
+                                        </div>
+                                        <p className="mt-2 text-lg font-bold text-gray-900">{invoice.client?.name || '-'}</p>
+                                        <dl className="mt-4 space-y-2 text-sm">
+                                            {invoice.client?.business_type === 'b2b' && (
+                                                <>
+                                                    <div className="flex flex-wrap gap-x-2">
+                                                        <dt className="font-semibold text-gray-700">{t('CR Number')}:</dt>
+                                                        <dd className="text-gray-600">{invoice.client?.cr_number || '-'}</dd>
                                                     </div>
-                                                    <p className="text-sm text-gray-600 mt-1">
-                                                        <span className="font-semibold text-gray-700">{t('CR Number')}:</span>{' '}
-                                                        {companyProfile?.cr || companyProfile?.registration_number || '-'}
-                                                    </p>
-                                                    <p className="text-sm text-gray-600">
-                                                        <span className="font-semibold text-gray-700">{t('Tax ID')}:</span>{' '}
-                                                        {companyProfile?.tax_id || companyProfile?.tax_number || '-'}
-                                                    </p>
-                                                    <p className="text-sm text-gray-600">
-                                                        <span className="font-semibold text-gray-700">{t('Address')}:</span>{' '}
-                                                        {companyProfile?.address || '-'}
-                                                    </p>
-                                                    <p className="text-sm text-gray-600">
-                                                        <span className="font-semibold text-gray-700">{t('Phone')}:</span>{' '}
-                                                        {companyProfile?.phone || '-'}
-                                                    </p>
-                                                    <p className="text-sm text-gray-600">
-                                                        <span className="font-semibold text-gray-700">{t('Email')}:</span>{' '}
-                                                        {companyProfile?.email || '-'}
-                                                    </p>
-                                                </div>
+                                                    <div className="flex flex-wrap gap-x-2">
+                                                        <dt className="font-semibold text-gray-700">{t('Tax ID')}:</dt>
+                                                        <dd className="text-gray-600">{invoice.client?.tax_id || '-'}</dd>
+                                                    </div>
+                                                </>
+                                            )}
+                                            <div className="flex flex-wrap gap-x-2">
+                                                <dt className="font-semibold text-gray-700">{t('Address')}:</dt>
+                                                <dd className="text-gray-600">{invoice.client?.address || '-'}</dd>
+                                            </div>
+                                            <div className="flex flex-wrap gap-x-2">
+                                                <dt className="font-semibold text-gray-700">{t('Phone')}:</dt>
+                                                <dd className="text-gray-600">{invoice.client?.phone || '-'}</dd>
+                                            </div>
+                                            <div className="flex flex-wrap gap-x-2">
+                                                <dt className="font-semibold text-gray-700">{t('Email')}:</dt>
+                                                <dd className="text-gray-600">{invoice.client?.email || '-'}</dd>
                                             </div>
                                             {invoice.case && (
-                                                <div className="flex items-start space-x-4">
-                                                    <div className="bg-gray-100 p-2 rounded-lg">
-                                                        <FileText className="h-5 w-5 theme-color" />
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{t('Case')}</p>
-                                                        <p className="text-lg font-semibold text-gray-900 mt-1">{invoice.case.title}</p>
-                                                    </div>
+                                                <div className="flex flex-wrap gap-x-2">
+                                                    <dt className="font-semibold text-gray-700">{t('Case Title')}:</dt>
+                                                    <dd className="text-gray-600">{invoice.case.title}</dd>
                                                 </div>
                                             )}
-                                        </div>
-                                        <div className="space-y-6">
-                                            <div className="flex items-start space-x-4">
-                                                <div className="bg-gray-100 p-2 rounded-lg">
-                                                    <User className="h-5 w-5 theme-color" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{t('Bill To')}</p>
-                                                    <p className="text-xl font-bold text-gray-900 mt-1">{invoice.client?.name || '-'}</p>
-                                                    {invoice.client?.business_type === 'b2b' && (
-                                                        <>
-                                                            <p className="text-sm text-gray-600 mt-1">
-                                                                <span className="font-semibold text-gray-700">{t('CR Number')}:</span>{' '}
-                                                                {invoice.client?.cr_number || '-'}
-                                                            </p>
-                                                            <p className="text-sm text-gray-600">
-                                                                <span className="font-semibold text-gray-700">{t('Tax ID')}:</span>{' '}
-                                                                {invoice.client?.tax_id || '-'}
-                                                            </p>
-                                                        </>
-                                                    )}
-                                                    <p className="text-sm text-gray-600 mt-1">
-                                                        <span className="font-semibold text-gray-700">{t('Address')}:</span>{' '}
-                                                        {invoice.client?.address || '-'}
-                                                    </p>
-                                                    <p className="text-sm text-gray-600">
-                                                        <span className="font-semibold text-gray-700">{t('Phone')}:</span>{' '}
-                                                        {invoice.client?.phone || '-'}
-                                                    </p>
-                                                    <p className="text-sm text-gray-600">
-                                                        <span className="font-semibold text-gray-700">{t('Email')}:</span>{' '}
-                                                        {invoice.client?.email || '-'}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-start space-x-4">
-                                                <div className="bg-gray-100 p-2 rounded-lg">
-                                                    <Calendar className="h-5 w-5 theme-color" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{t('Invoice Date')}</p>
-                                                    <p className="text-lg font-semibold text-gray-900 mt-1">{new Date(invoice.invoice_date).toLocaleDateString()}</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-start space-x-4">
-                                                <div className={`p-2 rounded-lg ${isOverdue ? 'bg-red-100' : 'bg-gray-100'}`}>
-                                                    <Clock className={`h-5 w-5 ${isOverdue ? 'text-red-600' : 'theme-color'}`} />
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{t('Due Date')}</p>
-                                                    <p className={`text-lg font-semibold mt-1 ${isOverdue ? 'text-red-600' : 'text-gray-900'}`}>
-                                                        {new Date(invoice.due_date).toLocaleDateString()}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                        </dl>
+                                    </CardContent>
+                                </Card>
+                            </div>
 
-                            {/* Products */}
+                            {/* Products table and summary */}
                             {invoice.line_items && invoice.line_items.length > 0 && (
-                                <Card className="shadow-sm border-0 overflow-hidden">
-                                    <CardHeader className="bg-gray-50 border-b">
-                                        <CardTitle className="flex items-center space-x-2 text-lg text-gray-900">
-                                            <span>📦</span>
-                                        <span>{t('Products')}</span>
-                                        </CardTitle>
-                                    </CardHeader>
+                                <Card className="overflow-hidden rounded-xl border border-[#F1F1F4] bg-white shadow-sm">
                                     <CardContent className="p-0">
+                                        <p className="border-b border-gray-200 bg-gray-50 px-6 py-4 text-start text-lg font-semibold text-gray-900">
+                                            {t('Products')}
+                                        </p>
                                         <div className="overflow-x-auto">
-                                            <table className="w-full">
+                                            <table className="w-full" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
                                                 <thead className="bg-gray-100">
                                                     <tr>
-                                                    <th className="px-6 py-4 text-start text-sm font-bold text-gray-700">{t('Product')}</th>
-                                                    <th className="px-6 py-4 text-center text-sm font-bold text-gray-700">{t('Quantity')}</th>
-                                                    <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">{t('Unit Price')}</th>
-                                                    <th className="px-6 py-4 text-center text-sm font-bold text-gray-700">{t('Tax')}</th>
-                                                    <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">{t('Total')}</th>
+                                                        <th className="px-6 py-3 text-start text-sm font-bold text-gray-700">{t('Description')}</th>
+                                                        <th className="px-6 py-3 text-center text-sm font-bold text-gray-700">{t('Quantity')}</th>
+                                                        <th className="px-6 py-3 text-end text-sm font-bold text-gray-700">{t('Unit Price')}</th>
+                                                        <th className="px-6 py-3 text-end text-sm font-bold text-gray-700">{t('Tax')}</th>
+                                                        <th className="px-6 py-3 text-end text-sm font-bold text-gray-700">{t('Total')}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-gray-200">
                                                     {invoice.line_items.map((item: any, index: number) => (
-                                                        <tr key={index} className="hover:bg-gray-50 transition-colors">
-                                                            <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.description}</td>
-                                                            <td className="px-6 py-4 text-sm text-gray-700 text-center font-medium">{item.quantity}</td>
-                                                            <td className="px-6 py-4 text-sm text-gray-700 text-right font-medium">{formatAmount(item.rate)}</td>
-                                                        <td className="px-6 py-4 text-sm text-gray-700 text-center font-medium">{t('Tax')}</td>
-                                                            <td className="px-6 py-4 text-sm font-bold text-green-600 text-right">{formatAmount(item.amount)}</td>
+                                                        <tr key={index} className="hover:bg-gray-50/50">
+                                                            <td className="px-6 py-3 text-start text-sm font-medium text-gray-900">{item.description}</td>
+                                                            <td className="px-6 py-3 text-center text-sm text-gray-700">{item.quantity}</td>
+                                                            <td className="px-6 py-3 text-end text-sm text-gray-700">{formatAmount(item.rate)}</td>
+                                                            <td className="px-6 py-3 text-end text-sm text-gray-700">
+                                                                {item.tax != null ? formatAmount(item.tax) : '—'}
+                                                            </td>
+                                                            <td className="px-6 py-3 text-end text-sm font-semibold text-gray-900">{formatAmount(item.amount)}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
                                             </table>
                                         </div>
-                                        <div className="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-6 border-t">
-                                            <div className="space-y-3">
-                                                <div className="flex justify-between text-sm">
-                                                <span className="text-gray-600 font-medium">{t('Subtotal')}</span>
+                                        <div className="border-t border-gray-200 bg-gray-50/50 px-6 py-4">
+                                            <div className="flex flex-col items-end gap-2 text-sm">
+                                                <div className="flex items-baseline gap-2">
+                                                    <span className="font-medium text-gray-600">{t('Subtotal')}:</span>
                                                     <span className="font-semibold text-gray-900">{formatAmount(invoice.subtotal)}</span>
                                                 </div>
-                                                {invoice.tax_amount > 0 && (
-                                                    <div className="flex justify-between text-sm">
-                                                    <span className="text-gray-600 font-medium">{t('Tax')}</span>
+                                                {(invoice.tax_amount ?? 0) > 0 && (
+                                                    <div className="flex items-baseline gap-2">
+                                                        <span className="font-medium text-gray-600">{t('Tax Amount')}:</span>
                                                         <span className="font-semibold text-gray-900">{formatAmount(invoice.tax_amount)}</span>
                                                     </div>
                                                 )}
-                                                <Separator className="my-3" />
-                                                <div className="flex justify-between text-xl font-bold">
-                                                <span className="text-gray-900">{t('Total')}</span>
-                                                    <span className="text-blue-600">{formatAmount(invoice.total_amount)}</span>
+                                                <div className="flex items-baseline gap-2 border-t border-gray-200 pt-2 text-base font-bold">
+                                                    <span className="text-gray-900">{t('Total')}</span>
+                                                    <span className="text-gray-900">{formatAmount(invoice.total_amount)}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -677,52 +636,71 @@ export default function InvoicePayment() {
                             )}
 
                             {/* Additional Information */}
-                            <Card className="shadow-sm border-0">
-                                <CardHeader className="bg-gray-50 border-b">
-                                    <CardTitle className="text-lg text-gray-900">{t('Additional Information')}</CardTitle>
-                                </CardHeader>
+                            <Card className="border-0 shadow-sm">
                                 <CardContent className="p-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                                         <div>
-                                            <h4 className="text-sm font-semibold text-gray-700 mb-2">{t('Notes')}</h4>
+                                            <h4 className="mb-2 text-sm font-semibold text-gray-700">{t('Notes')}</h4>
                                             <p className="text-sm text-gray-600">
                                                 {invoice.notes || t('Thank you for your business. Please remit payment by due date.')}
                                             </p>
                                         </div>
                                         <div>
-                                            <h4 className="text-sm font-semibold text-gray-700 mb-2">{t('Terms')}</h4>
+                                            <h4 className="mb-2 text-sm font-semibold text-gray-700">{t('Terms')}</h4>
                                             <p className="text-sm text-gray-600">
-                                                {t('Net 30 days. Late payment fee of 1.5% per month applies.')}
+                                                {(() => {
+                                                    const billingInfo = clientBillingInfo?.[invoice.client_id];
+                                                    if (billingInfo?.custom_payment_terms) {
+                                                        return billingInfo.custom_payment_terms;
+                                                    }
+                                                    if (billingInfo?.payment_terms) {
+                                                        const termsMap: Record<string, string> = {
+                                                            net_15: t('Net 15 days'),
+                                                            net_30: t('Net 30 days'),
+                                                            net_45: t('Net 45 days'),
+                                                            net_60: t('Net 60 days'),
+                                                            due_on_receipt: t('Due on receipt'),
+                                                            custom: billingInfo.custom_payment_terms || t('Custom terms'),
+                                                        };
+                                                        const termText = termsMap[billingInfo.payment_terms] || billingInfo.payment_terms;
+                                                        return `${termText}. ${t('Late payment fee of 1.5% per month applies.')}`;
+                                                    }
+                                                    return t('Net 30 days. Late payment fee of 1.5% per month applies.');
+                                                })()}
                                             </p>
                                         </div>
                                     </div>
                                 </CardContent>
                             </Card>
                         </div>
-
-
                     </div>
                 </div>
 
                 {/* Payment Gateway Selection Modal */}
                 <Dialog open={showGatewayModal} onOpenChange={setShowGatewayModal}>
-                    <DialogContent className="max-w-md max-h-[80vh]">
+                    <DialogContent className="max-h-[80vh] max-w-md">
                         <DialogHeader>
-                            <DialogTitle className="text-center">{t('Pay Invoice')} #{invoice.invoice_number}</DialogTitle>
+                            <DialogTitle className="text-center">
+                                {t('Pay Invoice')} #{invoice.invoice_number}
+                            </DialogTitle>
                         </DialogHeader>
 
                         <div className="space-y-4">
-                            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm text-blue-700">{t('Invoice')} #{invoice.invoice_number}</span>
+                            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm text-blue-700">
+                                        {t('Invoice')} #{invoice.invoice_number}
+                                    </span>
                                     <span className="font-bold text-blue-900">{formatAmount(invoice.total_amount)}</span>
                                 </div>
-                                <div className="text-xs text-blue-600 mt-1">{invoice.client?.name}</div>
-                                <div className="text-xs text-blue-600 mt-1">{t('Remaining')}: {formatAmount(remainingAmount)}</div>
+                                <div className="mt-1 text-xs text-blue-600">{invoice.client?.name}</div>
+                                <div className="mt-1 text-xs text-blue-600">
+                                    {t('Remaining')}: {formatAmount(remainingAmount)}
+                                </div>
                             </div>
 
                             <div>
-                                <label className="text-sm font-medium text-gray-700 mb-2 block">{t('Payment Amount')}</label>
+                                <label className="mb-2 block text-sm font-medium text-gray-700">{t('Payment Amount')}</label>
                                 <Input
                                     type="number"
                                     step="0.01"
@@ -733,36 +711,27 @@ export default function InvoicePayment() {
                                     placeholder={t('Enter amount to pay')}
                                     className="w-full"
                                 />
-                                <div className="flex gap-2 mt-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setPaymentAmount(remainingAmount / 2)}
-                                    >
+                                <div className="mt-2 flex gap-2">
+                                    <Button variant="outline" size="sm" onClick={() => setPaymentAmount(remainingAmount / 2)}>
                                         50%
                                     </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setPaymentAmount(remainingAmount)}
-                                    >
+                                    <Button variant="outline" size="sm" onClick={() => setPaymentAmount(remainingAmount)}>
                                         {t('Full Amount')}
                                     </Button>
                                 </div>
                             </div>
 
-
-
                             <div>
-                                <label className="text-sm font-medium text-gray-700 mb-3 block">{t('Select Payment Method')}</label>
-                                <div className="space-y-3 max-h-64 overflow-y-auto">
+                                <label className="mb-3 block text-sm font-medium text-gray-700">{t('Select Payment Method')}</label>
+                                <div className="max-h-64 space-y-3 overflow-y-auto">
                                     {gatewaysWithIcons.map((gateway) => (
                                         <div
                                             key={gateway.id}
-                                            className={`flex items-center p-4 border rounded-lg cursor-pointer transition-all ${selectedGateway === gateway.id
-                                                ? 'border-blue-500 bg-blue-50'
-                                                : 'border-gray-200 hover:border-gray-300'
-                                                }`}
+                                            className={`flex cursor-pointer items-center rounded-lg border p-4 transition-all ${
+                                                selectedGateway === gateway.id
+                                                    ? 'border-blue-500 bg-blue-50'
+                                                    : 'border-gray-200 hover:border-gray-300'
+                                            }`}
                                             onClick={() => {
                                                 try {
                                                     setSelectedGateway(gateway.id);
@@ -772,9 +741,7 @@ export default function InvoicePayment() {
                                                 }
                                             }}
                                         >
-                                            <div className="text-primary mr-3">
-                                                {gateway.icon}
-                                            </div>
+                                            <div className="text-primary mr-3">{gateway.icon}</div>
                                             <span className="text-sm font-medium text-gray-900">{gateway.name}</span>
                                         </div>
                                     ))}
@@ -784,7 +751,7 @@ export default function InvoicePayment() {
                             <div className="flex gap-3 pt-4">
                                 <Button
                                     variant="outline"
-                                    className="flex-1 h-12 bg-gray-800 text-white border-gray-800 hover:bg-gray-700"
+                                    className="h-12 flex-1 border-gray-800 bg-gray-800 text-white hover:bg-gray-700"
                                     onClick={() => {
                                         try {
                                             setShowGatewayModal(false);
@@ -797,7 +764,7 @@ export default function InvoicePayment() {
                                     {t('Cancel')}
                                 </Button>
                                 <Button
-                                    className="flex-1 h-12 bg-blue-600 hover:bg-blue-700"
+                                    className="h-12 flex-1 bg-blue-600 hover:bg-blue-700"
                                     onClick={() => {
                                         try {
                                             if (!selectedGateway) {

@@ -97,10 +97,10 @@ class TranslationController extends BaseController
         $cookieLang = Cookie::get('app_language');
         if ($cookieLang) {
             $locale = $cookieLang;
-        } else if (auth()->check()) {
+        } elseif (auth()->check()) {
             // For authenticated users, get from user preferences
             $locale = auth()->user()->lang ?? 'en';
-        } else if (request()->is('login', 'register', 'password/*', 'email/*')) {
+        } elseif (request()->is('login', 'register', 'password/*', 'email/*')) {
             // For auth pages, get from superadmin
             $superAdmin = User::where('type', 'superadmin')->first();
             $locale = $superAdmin->lang ?? 'en';
@@ -119,6 +119,15 @@ class TranslationController extends BaseController
         }
 
         return $locale;
+    }
+
+    /**
+     * Whether the current request is for the invoice payment (public) page.
+     */
+    private function isInvoicePaymentPage(): bool
+    {
+        $path = request()->query('path', request()->header('Referer', ''));
+        return preg_match('#/invoice/pay/#', $path) === 1;
     }
 
     public function refreshAllLanguages()

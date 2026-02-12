@@ -73,7 +73,7 @@ class InvoicePaymentController extends Controller
             ->toArray();
             
         $favicon = $settings['favicon'] ?? null;
-        $appName = $settings['app_name'] ?? 'Advocate Saas';
+        $appName = $settings['app_name'] ?? 'Sard App';
 
         $brandSettings = \App\Models\Setting::where('user_id', $invoice->created_by)
             ->whereIn('key', ['logoLight', 'logoDark'])
@@ -95,7 +95,7 @@ class InvoicePaymentController extends Controller
         $enabledGateways = $this->getEnabledPaymentGateways($invoice->created_by);
 
         // Load client billing info and currencies (no permission check for public payment page)
-        $clientBillingInfo = \App\Models\ClientBillingInfo::select('client_id', 'currency')
+        $clientBillingInfo = \App\Models\ClientBillingInfo::select('client_id', 'currency', 'payment_terms', 'custom_payment_terms')
             ->get()
             ->keyBy('client_id');
 
