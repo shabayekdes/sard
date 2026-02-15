@@ -9,21 +9,26 @@ import { getImagePath } from '@/utils/helpers';
 import { Link, usePage } from '@inertiajs/react';
 import {
     Briefcase,
-    CalendarDays,
-    CheckSquare,
+    BriefcaseBusiness,
+    CalendarClock,
+    CalendarFold,
     CreditCard,
     DollarSign,
+    FileChartColumnIncreasing,
+    FileSearch,
     FileText,
     Gift,
     Globe,
     Image,
+    LayoutDashboard,
     LayoutGrid,
     Mail,
     MessageSquare,
     Palette,
     Percent,
     Settings,
-    Users,
+    SquareCheckBig,
+    UsersRound,
     Wrench,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -151,7 +156,7 @@ export function AppSidebar() {
             items.push({
                 title: t('Dashboard'),
                 href: route('dashboard'),
-                icon: LayoutGrid,
+                icon: LayoutDashboard,
             });
         }
 
@@ -162,21 +167,23 @@ export function AppSidebar() {
             hasPermission(permissions, 'manage-own-clients')
         ) {
             items.push({
-                title: t('Client'),
-                icon: Users,
+                title: t('Clients'),
+                icon: UsersRound,
                 href: route('clients.index'),
             });
         }
         // 3. Cases
-        const caseChildren = [];
         if (
             hasPermission(permissions, 'manage-cases') ||
             hasPermission(permissions, 'manage-any-cases') ||
             hasPermission(permissions, 'manage-own-cases')
         ) {
-            caseChildren.push({
+            items.push({ type: 'label', title: t('Case Management') });
+
+            items.push({
                 title: t('Cases'),
                 href: route('cases.index'),
+                icon: BriefcaseBusiness,
             });
         }
         if (
@@ -184,19 +191,32 @@ export function AppSidebar() {
             hasPermission(permissions, 'manage-any-hearings') ||
             hasPermission(permissions, 'manage-own-hearings')
         ) {
-            caseChildren.push({
+            items.push({
                 title: t('Sessions'),
                 href: route('hearings.index'),
+                icon: CalendarClock,
             });
         }
+        // if (
+        //     hasPermission(permissions, 'manage-courts') ||
+        //     hasPermission(permissions, 'manage-any-courts') ||
+        //     hasPermission(permissions, 'manage-own-courts')
+        // ) {
+        //   items.push({
+        //       title: t('Courts'),
+        //       href: route('courts.index'),
+        //       icon: CalendarClock,
+        //   });
+        // }
         if (
-            hasPermission(permissions, 'manage-courts') ||
-            hasPermission(permissions, 'manage-any-courts') ||
-            hasPermission(permissions, 'manage-own-courts')
+            hasPermission(permissions, 'manage-tasks') ||
+            hasPermission(permissions, 'manage-any-tasks') ||
+            hasPermission(permissions, 'manage-own-tasks')
         ) {
-            caseChildren.push({
-                title: t('Courts'),
-                href: route('courts.index'),
+            items.push({
+                title: t('Tasks & Workflow'),
+                href: route('tasks.index'),
+                icon: SquareCheckBig,
             });
         }
         if (
@@ -204,17 +224,10 @@ export function AppSidebar() {
             hasPermission(permissions, 'manage-any-research-projects') ||
             hasPermission(permissions, 'manage-own-research-projects')
         ) {
-            caseChildren.push({
+            items.push({
                 title: t('Legal Research'),
                 href: route('legal-research.projects.index'),
-            });
-        }
-        if (caseChildren.length > 0) {
-            items.push({ type: 'label', title: t('Case Management') });
-            items.push({
-                title: t('Cases'),
-                icon: Briefcase,
-                children: caseChildren,
+                icon: FileSearch,
             });
         }
 
@@ -227,7 +240,7 @@ export function AppSidebar() {
             items.push({
                 title: t('Calendar'),
                 href: route('calendar.index'),
-                icon: CalendarDays,
+                icon: CalendarFold,
             });
         }
 
@@ -245,34 +258,24 @@ export function AppSidebar() {
         }
 
         // 6. Tasks & Workflow
-        const taskChildren = [];
-        if (
-            hasPermission(permissions, 'manage-tasks') ||
-            hasPermission(permissions, 'manage-any-tasks') ||
-            hasPermission(permissions, 'manage-own-tasks')
-        ) {
-            taskChildren.push({
-                title: t('Tasks'),
-                href: route('tasks.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-task-comments') ||
-            hasPermission(permissions, 'manage-any-task-comments') ||
-            hasPermission(permissions, 'manage-own-task-comments')
-        ) {
-            taskChildren.push({
-                title: t('Comments'),
-                href: route('tasks.task-comments.index'),
-            });
-        }
-        if (taskChildren.length > 0) {
-            items.push({
-                title: t('Tasks & Workflow'),
-                icon: CheckSquare,
-                children: taskChildren,
-            });
-        }
+        // const taskChildren = [];
+        // if (
+        //     hasPermission(permissions, 'manage-task-comments') ||
+        //     hasPermission(permissions, 'manage-any-task-comments') ||
+        //     hasPermission(permissions, 'manage-own-task-comments')
+        // ) {
+        //     taskChildren.push({
+        //         title: t('Comments'),
+        //         href: route('tasks.task-comments.index'),
+        //     });
+        // }
+        // if (taskChildren.length > 0) {
+        //     items.push({
+        //         title: t('Tasks & Workflow'),
+        //         icon: CheckSquare,
+        //         children: taskChildren,
+        //     });
+        // }
 
         // 7. Billing
         const billingChildren = [];
@@ -327,9 +330,11 @@ export function AppSidebar() {
             });
         }
         if (billingChildren.length > 0) {
+            items.push({ type: 'label', title: t('Invoices & Documents') });
+
             items.push({
                 title: t('Billing'),
-                icon: DollarSign,
+                icon: FileChartColumnIncreasing,
                 children: billingChildren,
             });
         }
