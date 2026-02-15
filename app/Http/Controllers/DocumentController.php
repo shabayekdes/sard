@@ -215,11 +215,8 @@ class DocumentController extends Controller
         // Handle full URLs (like DemoMedia files)
         if (str_starts_with($originalPath, 'http')) {
             $parsedUrl = parse_url($originalPath);
-            if (isset($parsedUrl['path'])) {
-                $publicPath = public_path(ltrim($parsedUrl['path'], '/'));
-                if (file_exists($publicPath)) {
-                    return response()->download($publicPath, $document->name);
-                }
+            if (isset($parsedUrl['path']) && Storage::exists($parsedUrl['path'])) {
+                return Storage::download($parsedUrl['path'], $document->name);
             }
         }
         
