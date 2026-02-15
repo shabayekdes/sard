@@ -62,7 +62,7 @@ export default function Login({ canResetPassword, isNonProduction }: LoginProps)
     };
 
     return (
-        <AuthLayout title={t('Welcome back to Advocate')} leftImageSrc="/images/sign-in.jpeg">
+        <AuthLayout title={t('Welcome back to Sard App')} leftImageSrc="/images/sign-in.jpeg">
             <form className="space-y-5" onSubmit={submit}>
                 <div className="flex items-center justify-between">
                     {currentLogo && <img src={currentLogo} alt={t('SARD')} className="h-8 object-contain" />}
