@@ -17,6 +17,7 @@ return [
         'appointments',
         'businesses',
         'settings',
+        'setup',
         'contact-us'
     ],
 
@@ -82,6 +83,7 @@ return [
         'document_categories',
         'hearings',
         'media',
+        'setup',
         'tasks',
         'task_types',
         'task_statuses',

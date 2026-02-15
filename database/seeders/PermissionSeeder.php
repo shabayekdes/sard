@@ -118,6 +118,9 @@ class PermissionSeeder extends Seeder
             ['name' => 'manage-cache-settings', 'module' => 'settings', 'label' => 'Manage Cache Settings', 'description' => 'Can manage cache settings'],
             ['name' => 'manage-account-settings', 'module' => 'settings', 'label' => 'Manage Account Settings', 'description' => 'Can manage account settings'],
 
+            // Setup (configuration) permissions
+            ['name' => 'view-setup', 'module' => 'setup', 'label' => 'View Setup', 'description' => 'Can view setup and configuration pages'],
+
             // Contact Us management
             ['name' => 'manage-contact-us', 'module' => 'contact-us', 'label' => 'Manage Contact Us', 'description' => 'Can manage contact us messages'],
             ['name' => 'view-contact-us', 'module' => 'contact-us', 'label' => 'View Contact Us', 'description' => 'View Contact Us messages'],

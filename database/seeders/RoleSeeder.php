@@ -94,6 +94,7 @@ class RoleSeeder extends Seeder
             'manage-brand-settings',
             'manage-webhook-settings',
             'manage-settings',
+            'view-setup',
             'manage-media',
             'manage-any-media',
             'manage-own-media',

@@ -150,8 +150,8 @@ export function AppSidebar() {
         // 1. Dashboard
         if (
             hasPermission(permissions, 'manage-dashboard') ||
-            permissions.some((p) => p.startsWith('manage-own-')) ||
-            permissions.some((p) => p.startsWith('manage-any-'))
+            permissions.some((p: string) => p.startsWith('manage-own-')) ||
+            permissions.some((p: string) => p.startsWith('manage-any-'))
         ) {
             items.push({
                 title: t('Dashboard'),
@@ -401,6 +401,10 @@ export function AppSidebar() {
 
         // 9. Setup (Configurations)
         const setupChildren = [];
+        setupChildren.push({
+            title: t('Setup'),
+            href: route('setup.index'),
+        });
 
         // Client configurations
         const clientConfigChildren = [];
@@ -635,7 +639,7 @@ export function AppSidebar() {
             });
         }
 
-        if (setupChildren.length > 0) {
+        if (setupChildren.length > 0 && hasPermission(permissions, 'view-setup')) {
             items.push({ type: 'label', title: t('General settings') });
             items.push({
                 title: t('Setup'),
