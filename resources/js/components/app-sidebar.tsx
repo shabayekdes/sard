@@ -1,3 +1,4 @@
+import { QuickActionsButton } from '@/components/FloatingQuickActions';
 import { NavMain } from '@/components/nav-main';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from '@/components/ui/sidebar';
 import { useBrand } from '@/contexts/BrandContext';
@@ -741,8 +742,13 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                {/* <NavFooter items={footerNavItems} className="mt-auto" position={position} /> */}
-                {/* Profile menu moved to header */}
+                <div className="sticky bottom-0 mt-auto border-t border-sidebar-border pt-2 bg-sidebar">
+                    <QuickActionsButton
+                        className="w-full justify-center group-data-[collapsible=icon]:justify-center"
+                        buttonClassName="h-12 w-12 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10"
+                        side="top"
+                    />
+                </div>
             </SidebarFooter>
         </Sidebar>
     );

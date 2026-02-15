@@ -3,6 +3,7 @@ import { Plus, Scale, Users, Gavel, MessageSquare, ClipboardList } from 'lucide-
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 
 interface QuickActionItem {
   label: string;
@@ -12,29 +13,40 @@ interface QuickActionItem {
   modalKey?: 'cases' | 'clients' | 'tasks' | 'hearings';
 }
 
-export function FloatingQuickActions() {
-  const { t } = useTranslation();
+const getQuickActions = (t: (key: string) => string): QuickActionItem[] => [
+  { label: t('New Case'), icon: <Scale className="h-4 w-4" />, routeName: 'cases.index', openModal: true, modalKey: 'cases' },
+  { label: t('New Client'), icon: <Users className="h-4 w-4" />, routeName: 'clients.index', openModal: true, modalKey: 'clients' },
+  { label: t('Messages'), icon: <MessageSquare className="h-4 w-4" />, routeName: 'communication.messages.index' },
+  { label: t('Schedule Session'), icon: <Gavel className="h-4 w-4" />, routeName: 'hearings.index', openModal: true, modalKey: 'hearings' },
+  { label: t('New Task'), icon: <ClipboardList className="h-4 w-4" />, routeName: 'tasks.index', openModal: true, modalKey: 'tasks' },
+];
 
-  const actions: QuickActionItem[] = useMemo(
-    () => [
-      { label: t('New Case'), icon: <Scale className="h-4 w-4" />, routeName: 'cases.index', openModal: true, modalKey: 'cases' },
-      { label: t('New Client'), icon: <Users className="h-4 w-4" />, routeName: 'clients.index', openModal: true, modalKey: 'clients' },
-      { label: t('Messages'), icon: <MessageSquare className="h-4 w-4" />, routeName: 'communication.messages.index' },
-      { label: t('Schedule Session'), icon: <Gavel className="h-4 w-4" />, routeName: 'hearings.index', openModal: true, modalKey: 'hearings' },
-      { label: t('New Task'), icon: <ClipboardList className="h-4 w-4" />, routeName: 'tasks.index', openModal: true, modalKey: 'tasks' },
-    ],
-    [t]
-  );
+/** Reusable quick actions dropdown; use in sidebar or floating. */
+export function QuickActionsButton({
+  className,
+  buttonClassName,
+  side = 'top',
+}: {
+  className?: string;
+  buttonClassName?: string;
+  side?: 'top' | 'bottom' | 'left' | 'right';
+}) {
+  const { t } = useTranslation();
+  const actions = useMemo(() => getQuickActions(t), [t]);
 
   return (
-    <div className="fixed bottom-10 rtl:left-6 ltr:right-6 z-[9999] hidden md:block">
+    <div className={cn('flex', className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow" size="lg">
+          <Button
+            className={cn('h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow', buttonClassName)}
+            size="lg"
+            aria-label={t('Quick Actions')}
+          >
             <Plus className="h-6 w-6" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" side="top" className="w-52">
+        <DropdownMenuContent align="end" side={side} className="w-52">
           <DropdownMenuLabel>{t('Quick Actions')}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           {actions.map((action) => (
@@ -55,6 +67,14 @@ export function FloatingQuickActions() {
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
+    </div>
+  );
+}
+
+export function FloatingQuickActions() {
+  return (
+    <div className="fixed bottom-10 rtl:left-6 ltr:right-6 z-[9999] hidden md:block">
+      <QuickActionsButton />
     </div>
   );
 }

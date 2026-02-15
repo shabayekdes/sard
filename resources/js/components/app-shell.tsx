@@ -47,7 +47,6 @@ export function AppShell({ children, variant = 'header' }: AppShellProps) {
         <SidebarProvider defaultOpen={isOpen} open={isOpen} onOpenChange={handleSidebarChange}>
             <div className="flex min-h-[100dvh] w-full flex-row overflow-x-hidden">
                 {children}
-                <FloatingQuickActions />
                 <FloatingChatGpt />
                 <GlobalQuickActionModals />
                 {isAuthenticated && !isAuthPage && <MobileFooterNav />}
