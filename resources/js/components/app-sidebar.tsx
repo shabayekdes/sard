@@ -12,6 +12,7 @@ import {
     BriefcaseBusiness,
     CalendarClock,
     CalendarFold,
+    ContactRound,
     CreditCard,
     DollarSign,
     FileChartColumnIncreasing,
@@ -28,8 +29,8 @@ import {
     Percent,
     Settings,
     SquareCheckBig,
+    UserRoundCog,
     UsersRound,
-    Wrench,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -329,17 +330,7 @@ export function AppSidebar() {
                 href: route('billing.expenses.index'),
             });
         }
-        if (billingChildren.length > 0) {
-            items.push({ type: 'label', title: t('Invoices & Documents') });
-
-            items.push({
-                title: t('Billing'),
-                icon: FileChartColumnIncreasing,
-                children: billingChildren,
-            });
-        }
-
-        // 8. Document Management
+        // 8. Document Management (build children for label logic)
         const documentChildren = [];
         if (
             hasPermission(permissions, 'manage-media') ||
@@ -391,283 +382,25 @@ export function AppSidebar() {
                 href: route('document-management.permissions.index'),
             });
         }
-        if (documentChildren.length > 0) {
-            items.push({
-                title: t('Document Management'),
-                icon: FileText,
-                children: documentChildren,
-            });
-        }
 
-        // 9. Setup (Configurations)
-        const setupChildren = [];
-        setupChildren.push({
-            title: t('Setup'),
-            href: route('setup.index'),
-        });
-
-        // Client configurations
-        const clientConfigChildren = [];
-        if (
-            hasPermission(permissions, 'manage-client-types') ||
-            hasPermission(permissions, 'manage-any-client-types') ||
-            hasPermission(permissions, 'manage-own-client-types')
-        ) {
-            clientConfigChildren.push({
-                title: t('Client Type'),
-                href: route('clients.client-types.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-document-types') ||
-            hasPermission(permissions, 'manage-any-document-types') ||
-            hasPermission(permissions, 'manage-own-document-types')
-        ) {
-            clientConfigChildren.push({
-                title: t('Document Type'),
-                href: route('advocate.document-types.index'),
-            });
-        }
-        if (clientConfigChildren.length > 0) {
-            setupChildren.push({
-                title: t('Client'),
-                children: clientConfigChildren,
-            });
-        }
-
-        // Case configurations
-        const caseConfigChildren = [];
-        if (
-            hasPermission(permissions, 'manage-case-categories') ||
-            hasPermission(permissions, 'manage-any-case-categories') ||
-            hasPermission(permissions, 'manage-own-case-categories')
-        ) {
-            caseConfigChildren.push({
-                title: t('Case Categories'),
-                href: route('cases.case-categories.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-case-types') ||
-            hasPermission(permissions, 'manage-any-case-types') ||
-            hasPermission(permissions, 'manage-own-case-types')
-        ) {
-            caseConfigChildren.push({
-                title: t('Case Types'),
-                href: route('cases.case-types.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-case-statuses') ||
-            hasPermission(permissions, 'manage-any-case-statuses') ||
-            hasPermission(permissions, 'manage-own-case-statuses')
-        ) {
-            caseConfigChildren.push({
-                title: t('Case Statuses'),
-                href: route('cases.case-statuses.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-event-types') ||
-            hasPermission(permissions, 'manage-any-event-types') ||
-            hasPermission(permissions, 'manage-own-event-types')
-        ) {
-            caseConfigChildren.push({
-                title: t('Event Types'),
-                href: route('advocate.event-types.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-hearing-types') ||
-            hasPermission(permissions, 'manage-any-hearing-types') ||
-            hasPermission(permissions, 'manage-own-hearing-types')
-        ) {
-            caseConfigChildren.push({
-                title: t('Session Types'),
-                href: route('hearing-types.index'),
-            });
-        }
-        if (caseConfigChildren.length > 0) {
-            setupChildren.push({
-                title: t('Case'),
-                children: caseConfigChildren,
-            });
-        }
-
-        // Courts & Judiciary configurations
-        const courtsJudiciaryChildren = [];
-        if (
-            hasPermission(permissions, 'manage-court-types') ||
-            hasPermission(permissions, 'manage-any-court-types') ||
-            hasPermission(permissions, 'manage-own-court-types')
-        ) {
-            courtsJudiciaryChildren.push({
-                title: t('Court Types'),
-                href: route('advocate.court-types.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-circle-types') ||
-            hasPermission(permissions, 'manage-any-circle-types') ||
-            hasPermission(permissions, 'manage-own-circle-types')
-        ) {
-            courtsJudiciaryChildren.push({
-                title: t('Circle Types'),
-                href: route('advocate.circle-types.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-judges') ||
-            hasPermission(permissions, 'manage-any-judges') ||
-            hasPermission(permissions, 'manage-own-judges')
-        ) {
-            courtsJudiciaryChildren.push({
-                title: t('Judges'),
-                href: route('judges.index'),
-            });
-        }
-        if (courtsJudiciaryChildren.length > 0) {
-            setupChildren.push({
-                title: t('Courts & Judiciary'),
-                children: courtsJudiciaryChildren,
-            });
-        }
-
-        // Research configurations
-        const researchConfigChildren = [];
-        if (
-            hasPermission(permissions, 'manage-research-types') ||
-            hasPermission(permissions, 'manage-any-research-types') ||
-            hasPermission(permissions, 'manage-own-research-types')
-        ) {
-            researchConfigChildren.push({
-                title: t('Research Type'),
-                href: route('legal-research.research-types.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-practice-areas') ||
-            hasPermission(permissions, 'manage-any-practice-areas') ||
-            hasPermission(permissions, 'manage-own-practice-areas')
-        ) {
-            researchConfigChildren.push({
-                title: t('Practice Area'),
-                href: route('advocate.practice-areas.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-research-sources') ||
-            hasPermission(permissions, 'manage-any-research-sources') ||
-            hasPermission(permissions, 'manage-own-research-sources')
-        ) {
-            researchConfigChildren.push({
-                title: t('Research Source'),
-                href: route('legal-research.sources.index'),
-            });
-        }
-        if (researchConfigChildren.length > 0) {
-            setupChildren.push({
-                title: t('Research'),
-                children: researchConfigChildren,
-            });
-        }
-
-        // Task configurations
-        const taskConfigChildren = [];
-        if (
-            hasPermission(permissions, 'manage-task-types') ||
-            hasPermission(permissions, 'manage-any-task-types') ||
-            hasPermission(permissions, 'manage-own-task-types')
-        ) {
-            taskConfigChildren.push({
-                title: t('Task Types'),
-                href: route('tasks.task-types.index'),
-            });
-        }
-        if (
-            hasPermission(permissions, 'manage-task-statuses') ||
-            hasPermission(permissions, 'manage-any-task-statuses') ||
-            hasPermission(permissions, 'manage-own-task-statuses')
-        ) {
-            taskConfigChildren.push({
-                title: t('Task Statuses'),
-                href: route('tasks.task-statuses.index'),
-            });
-        }
-        if (taskConfigChildren.length > 0) {
-            setupChildren.push({
-                title: t('Task'),
-                children: taskConfigChildren,
-            });
-        }
-
-        // Billing configurations
-        const billingConfigChildren = [];
-        if (
-            hasPermission(permissions, 'manage-expense-categories') ||
-            hasPermission(permissions, 'manage-any-expense-categories') ||
-            hasPermission(permissions, 'manage-own-expense-categories')
-        ) {
-            billingConfigChildren.push({
-                title: t('Expense Category'),
-                href: route('billing.expense-categories.index'),
-            });
-        }
-        if (billingConfigChildren.length > 0) {
-            setupChildren.push({
-                title: t('Billing'),
-                children: billingConfigChildren,
-            });
-        }
-
-        // Documents configurations
-        if (
-            hasPermission(permissions, 'manage-document-categories') ||
-            hasPermission(permissions, 'manage-any-document-categories') ||
-            hasPermission(permissions, 'manage-own-document-categories')
-        ) {
-            setupChildren.push({
-                title: t('Document Categories'),
-                href: route('document-management.categories.index'),
-            });
-        }
-        // Notifications
-        if (userRole === 'company') {
-            setupChildren.push({
-                title: t('Notification Template'),
-                href: route('notification-templates.index'),
-            });
-        }
-
-        if (setupChildren.length > 0 && hasPermission(permissions, 'view-setup')) {
-            items.push({ type: 'label', title: t('General settings') });
-            items.push({
-                title: t('Setup'),
-                icon: Wrench,
-                children: setupChildren,
-            });
-        }
-
-        // 10. Settings
-        const settingsChildren = [];
-
-        // Company & System
-        const companySystemChildren = [];
-        if (
-            hasPermission(permissions, 'manage-company-profiles') ||
-            hasPermission(permissions, 'manage-any-company-profiles') ||
-            hasPermission(permissions, 'manage-own-company-profiles')
-        ) {
-            settingsChildren.push({
-                title: t('Company Profile'),
-                href: route('advocate.company-profiles.index'),
-            });
-        }
-        if (hasPermission(permissions, 'manage-settings')) {
-            settingsChildren.push({
-                title: t('System Settings'),
-                href: route('settings'),
-            });
+        // Invoices & Documents: label only if at least one of Billing or Document Management
+        const hasInvoicesSection = billingChildren.length > 0 || documentChildren.length > 0;
+        if (hasInvoicesSection) {
+            items.push({ type: 'label', title: t('Invoices & Documents') });
+            if (billingChildren.length > 0) {
+                items.push({
+                    title: t('Billing'),
+                    icon: FileChartColumnIncreasing,
+                    children: billingChildren,
+                });
+            }
+            if (documentChildren.length > 0) {
+                items.push({
+                    title: t('Document Management'),
+                    icon: FileText,
+                    children: documentChildren,
+                });
+            }
         }
 
         // User Management
@@ -693,10 +426,16 @@ export function AppSidebar() {
             });
         }
 
-        if (userManagementChildren.length > 0) {
-            settingsChildren.push({
-                title: t('User Management'),
-                children: userManagementChildren,
+        // 9. Settings (build children first for label logic)
+        const companyProfilesChildren = [];
+        if (
+            hasPermission(permissions, 'manage-company-profiles') ||
+            hasPermission(permissions, 'manage-any-company-profiles') ||
+            hasPermission(permissions, 'manage-own-company-profiles')
+        ) {
+            companyProfilesChildren.push({
+                title: t('Company Profile'),
+                href: route('advocate.company-profiles.index'),
             });
         }
         if (
@@ -704,17 +443,47 @@ export function AppSidebar() {
             hasPermission(permissions, 'manage-any-plans') ||
             hasPermission(permissions, 'manage-own-plans')
         ) {
-            settingsChildren.push({
+            companyProfilesChildren.push({
                 title: t('Plans'),
                 href: route('plans.index'),
             });
         }
-        if (settingsChildren.length > 0) {
-            items.push({
-                title: t('Settings'),
-                icon: Settings,
-                children: settingsChildren,
-            });
+
+        // General settings: label only if at least one of Setup, User Management, or Settings
+        const hasSetup = hasPermission(permissions, 'view-setup');
+        const hasSettings = hasPermission(permissions, 'manage-settings');
+
+        const hasGeneralSection = userManagementChildren.length > 0 || hasSetup || companyProfilesChildren.length > 0;
+        if (hasGeneralSection) {
+            items.push({ type: 'label', title: t('General settings') });
+            if (userManagementChildren.length > 0) {
+                items.push({
+                    title: t('User Management'),
+                    icon: UserRoundCog,
+                    children: userManagementChildren,
+                });
+            }
+            if (companyProfilesChildren.length > 0) {
+                items.push({
+                    title: t('Company Profile'),
+                    icon: ContactRound,
+                    children: companyProfilesChildren,
+                });
+            }
+            if (hasSetup) {
+                items.push({
+                    title: t('Setup'),
+                    href: route('setup.index'),
+                    icon: Settings,
+                });
+            }
+            if (hasSettings) {
+                items.push({
+                    title: t('System Settings'),
+                    href: route('settings'),
+                    icon: Settings,
+                });
+            }
         }
 
         // 11. Compliance & Regulatory Module - HIDDEN
