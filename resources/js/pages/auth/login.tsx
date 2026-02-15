@@ -1,6 +1,6 @@
-import { router, useForm, usePage } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import { Lock, Mail } from 'lucide-react';
-import { FormEventHandler, useEffect, useState } from 'react';
+import { FormEventHandler, useState } from 'react';
 
 import AuthButton from '@/components/auth/auth-button';
 import InputError from '@/components/input-error';
@@ -12,10 +12,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useBrand } from '@/contexts/BrandContext';
+import { useLayout } from '@/contexts/LayoutContext';
 import { THEME_COLORS, useAppearance } from '@/hooks/use-appearance';
 import AuthLayout from '@/layouts/auth-layout';
 import { useTranslation } from 'react-i18next';
-import { useLayout } from '@/contexts/LayoutContext';
 
 type LoginForm = {
     email: string;
@@ -34,10 +34,10 @@ interface Business {
 interface LoginProps {
     status?: string;
     canResetPassword: boolean;
-    demoBusinesses?: Business[];
+    isNonProduction: boolean;
 }
 
-export default function Login({ status, canResetPassword, demoBusinesses = [] }: LoginProps) {
+export default function Login({ canResetPassword, isNonProduction }: LoginProps) {
     const { t } = useTranslation();
     const { position } = useLayout();
 
@@ -46,12 +46,7 @@ export default function Login({ status, canResetPassword, demoBusinesses = [] }:
     const { appearance } = useAppearance();
     const primaryColor = themeColor === 'custom' ? customColor : THEME_COLORS[themeColor as keyof typeof THEME_COLORS];
     const currentLogo = appearance === 'light' ? logoDark : logoLight;
-    const [isDemo, setIsDemo] = useState<boolean>(false);
     // Always show business buttons by default
-    const [showBusinessButtons, setShowBusinessButtons] = useState<boolean>(true);
-    const { props } = usePage();
-    const isNonProduction = import.meta.env.MODE !== 'production';
-
     const { data, setData, post, processing, errors, reset } = useForm<LoginForm>({
         email: '',
         password: '',
