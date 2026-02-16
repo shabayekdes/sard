@@ -176,6 +176,18 @@ export default function InvoicePayment() {
         return `$${parseFloat(amount).toFixed(2)}`;
     };
 
+    const subtotal = Number(invoice?.subtotal ?? 0);
+    const taxAmount = Number(invoice?.tax_amount ?? 0);
+    const totalAmount = Number(invoice?.total_amount ?? 0);
+    const getLineAmounts = (itemAmount: number) => {
+        const amt = Number(itemAmount) || 0;
+        if (totalAmount <= 0) return { subtotalWithoutTax: amt, tax: 0, total: amt };
+        const ratio = amt / totalAmount;
+        const subtotalWithoutTax = subtotal * ratio;
+        const tax = taxAmount * ratio;
+        return { subtotalWithoutTax, tax, total: amt };
+    };
+
     const isOverdue = new Date(invoice.due_date) < new Date();
 
     const handleGatewaySelect = (gatewayId: string) => {
@@ -580,60 +592,77 @@ export default function InvoicePayment() {
                                 </Card>
                             </div>
 
-                            {/* Products table and summary */}
+                            {/* Products table and summary (same structure as billing/invoices/show) */}
                             {invoice.line_items && invoice.line_items.length > 0 && (
-                                <Card className="overflow-hidden rounded-xl border border-[#F1F1F4] bg-white shadow-sm">
+                                <Card className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+                                    <CardHeader className="px-6 pb-0">
+                                        <h3 className="text-lg font-semibold">{t('Products')}</h3>
+                                    </CardHeader>
                                     <CardContent className="p-0">
-                                        <p className="border-b border-gray-200 bg-gray-50 px-6 py-4 text-start text-lg font-semibold text-gray-900">
-                                            {t('Products')}
-                                        </p>
                                         <div className="overflow-x-auto">
-                                            <table className="w-full" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
-                                                <thead className="bg-gray-100">
+                                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
+                                                <thead className="bg-gray-50 dark:bg-gray-800/50">
                                                     <tr>
-                                                        <th className="px-6 py-3 text-start text-sm font-bold text-gray-700">{t('Description')}</th>
-                                                        <th className="px-6 py-3 text-center text-sm font-bold text-gray-700">{t('Quantity')}</th>
-                                                        <th className="px-6 py-3 text-end text-sm font-bold text-gray-700">{t('Unit Price')}</th>
-                                                        <th className="px-6 py-3 text-end text-sm font-bold text-gray-700">{t('Tax')}</th>
-                                                        <th className="px-6 py-3 text-end text-sm font-bold text-gray-700">{t('Total')}</th>
+                                                        <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{t('Description')}</th>
+                                                        <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{t('Type')}</th>
+                                                        <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{t('Quantity')}</th>
+                                                        <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{t('Unit Price')}</th>
+                                                        <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{t('Subtotal without Tax')}</th>
+                                                        <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{t('Tax')}</th>
+                                                        <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{t('Total including Tax')}</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody className="divide-y divide-gray-200">
-                                                    {invoice.line_items.map((item: any, index: number) => (
-                                                        <tr key={index} className="hover:bg-gray-50/50">
-                                                            <td className="px-6 py-3 text-start text-sm font-medium text-gray-900">{item.description}</td>
-                                                            <td className="px-6 py-3 text-center text-sm text-gray-700">{item.quantity}</td>
-                                                            <td className="px-6 py-3 text-end text-sm text-gray-700">{formatAmount(item.rate)}</td>
-                                                            <td className="px-6 py-3 text-end text-sm text-gray-700">
-                                                                {item.tax != null ? formatAmount(item.tax) : '—'}
-                                                            </td>
-                                                            <td className="px-6 py-3 text-end text-sm font-semibold text-gray-900">{formatAmount(item.amount)}</td>
-                                                        </tr>
-                                                    ))}
+                                                <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900/50">
+                                                    {invoice.line_items.map((item: any, index: number) => {
+                                                        const { subtotalWithoutTax, tax, total } = getLineAmounts(parseFloat(item.amount || 0));
+                                                        const isExpense = item.type === 'expense';
+                                                        const isTime = item.type === 'time';
+                                                        const typeLabel = isExpense ? t('Expense') : isTime ? t('Time Entry') : t('Item');
+                                                        const typeClass = isExpense ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' : isTime ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
+                                                        return (
+                                                            <tr key={index}>
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{item.description}</td>
+                                                                <td className="whitespace-nowrap px-6 py-4">
+                                                                    <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${typeClass}`}>
+                                                                        {typeLabel}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{item.quantity}</td>
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{formatAmount(parseFloat(item.rate || 0))}</td>
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{formatAmount(subtotalWithoutTax)}</td>
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{formatAmount(tax)}</td>
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{formatAmount(total)}</td>
+                                                            </tr>
+                                                        );
+                                                    })}
                                                 </tbody>
                                             </table>
-                                        </div>
-                                        <div className="border-t border-gray-200 bg-gray-50/50 px-6 py-4">
-                                            <div className="flex flex-col items-end gap-2 text-sm">
-                                                <div className="flex items-baseline gap-2">
-                                                    <span className="font-medium text-gray-600">{t('Subtotal')}:</span>
-                                                    <span className="font-semibold text-gray-900">{formatAmount(invoice.subtotal)}</span>
-                                                </div>
-                                                {(invoice.tax_amount ?? 0) > 0 && (
-                                                    <div className="flex items-baseline gap-2">
-                                                        <span className="font-medium text-gray-600">{t('Tax Amount')}:</span>
-                                                        <span className="font-semibold text-gray-900">{formatAmount(invoice.tax_amount)}</span>
-                                                    </div>
-                                                )}
-                                                <div className="flex items-baseline gap-2 border-t border-gray-200 pt-2 text-base font-bold">
-                                                    <span className="text-gray-900">{t('Total')}</span>
-                                                    <span className="text-gray-900">{formatAmount(invoice.total_amount)}</span>
-                                                </div>
-                                            </div>
                                         </div>
                                     </CardContent>
                                 </Card>
                             )}
+
+                            {/* Totals (same structure as billing/invoices/show) */}
+                            <Card>
+                                <CardContent className="pt-6">
+                                    <div className="flex justify-end">
+                                        <div className="w-full max-w-sm space-y-2 text-sm">
+                                            <div className="flex justify-between">
+                                                <span className="text-muted-foreground">{t('Subtotal')}:</span>
+                                                <span className="font-medium">{formatAmount(invoice?.subtotal ?? 0)}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-muted-foreground">{t('Tax Value')}:</span>
+                                                <span className="font-medium">{formatAmount(invoice?.tax_amount ?? 0)}</span>
+                                            </div>
+                                            <div className="flex justify-between border-t pt-3 text-lg font-bold">
+                                                <span>{t('Total')}:</span>
+                                                <span>{formatAmount(invoice?.total_amount ?? 0)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
 
                             {/* Additional Information */}
                             <Card className="border-0 shadow-sm">

@@ -1,7 +1,14 @@
 import { PageTemplate, PageAction } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Edit, FileText, Send, DollarSign, Link, Download } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { ArrowLeft, Edit, Send, DollarSign, Link, Download, MoreHorizontal, Wallet, Calendar, List, User, FileText } from 'lucide-react';
 import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { hasPermission } from '@/utils/authorization';
@@ -11,41 +18,40 @@ import { useState } from 'react';
 
 export default function ShowInvoice() {
     const { t } = useTranslation();
-    const { invoice, auth, timeEntries, invoiceItems, clientBillingInfo, currencies } = usePage().props as any;
+    const { invoice, auth, invoiceItems, clientBillingInfo, companyProfile, amountPaid: amountPaidProp, remainingAmount: remainingAmountProp } = usePage().props as any;
     const permissions = auth?.permissions || [];
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
-    // Get formatted currency using company settings
-    const formatAmount = (amount: number) => {
-        return formatCurrencyForCompany(amount);
-    };
-    console.log(formatAmount);
+    const formatAmount = (amount: number) => formatCurrencyForCompany(amount);
+    const formatDate = (date: string | null) =>
+        date ? (window.appSettings?.formatDate?.(date) || new Date(date).toLocaleDateString()) : '-';
+
+    const amountPaid = Number(amountPaidProp ?? invoice?.amount_paid ?? 0);
+    const subtotal = Number(invoice?.subtotal ?? 0);
+    const taxAmount = Number(invoice?.tax_amount ?? 0);
+    const totalAmount = Number(invoice?.total_amount ?? 0);
 
     const handleSend = () => {
         toast.loading(t('Sending invoice...'));
-
         router.put(route('billing.invoices.send', invoice.id), {}, {
             onSuccess: (page: any) => {
                 toast.dismiss();
-                if (page.props.flash?.success) {
-                    toast.success(page.props.flash.success);
-                }
+                if (page.props.flash?.success) toast.success(page.props.flash.success);
             },
             onError: (errors) => {
                 toast.dismiss();
                 toast.error(`Failed to send invoice: ${Object.values(errors).join(', ')}`);
-            }
+            },
         });
     };
 
     const handleCopyLink = () => {
         if (invoice.payment_token) {
             const paymentUrl = route('invoice.payment', invoice.payment_token);
-            navigator.clipboard.writeText(paymentUrl).then(() => {
-                toast.success(t('Payment link copied to clipboard'));
-            }).catch(() => {
-                toast.error(t('Failed to copy payment link'));
-            });
+            navigator.clipboard.writeText(paymentUrl).then(
+                () => toast.success(t('Payment link copied to clipboard')),
+                () => toast.error(t('Failed to copy payment link'))
+            );
         } else {
             toast.error(t('Payment link not available'));
         }
@@ -53,316 +59,475 @@ export default function ShowInvoice() {
 
     const handlePaymentSubmit = (formData: any) => {
         toast.loading(t('Recording payment...'));
-
         router.post(route('billing.payments.store'), formData, {
             onSuccess: (page: any) => {
                 toast.dismiss();
-                if (page.props.flash?.success) {
-                    toast.success(page.props.flash.success);
-                }
+                if (page.props.flash?.success) toast.success(page.props.flash.success);
                 setIsPaymentModalOpen(false);
                 router.reload();
             },
             onError: (errors) => {
                 toast.dismiss();
                 toast.error(`Failed to record payment: ${Object.values(errors).join(', ')}`);
-            }
+            },
         });
     };
 
     const getStatusColor = (status: string) => {
-        const statusColors = {
-            draft: 'bg-gray-50 text-gray-700 ring-gray-600/20',
-            sent: 'bg-blue-50 text-blue-700 ring-blue-600/20',
-            paid: 'bg-green-50 text-green-700 ring-green-600/20',
-            overdue: 'bg-red-50 text-red-700 ring-red-600/20',
-            cancelled: 'bg-gray-50 text-gray-700 ring-gray-600/20'
+        const map: Record<string, string> = {
+            draft: 'bg-gray-500 text-white',
+            sent: 'bg-blue-500 text-white',
+            paid: 'bg-green-500 text-white',
+            partial_paid: 'bg-amber-500 text-white',
+            overdue: 'bg-red-500 text-white',
+            cancelled: 'bg-gray-500 text-white',
         };
-        return statusColors[status as keyof typeof statusColors] || statusColors.draft;
+        return map[status] ?? map.draft;
+    };
+
+    const getStatusLabel = (status: string) => {
+        const map: Record<string, string> = {
+            draft: t('Draft'),
+            sent: t('Sent'),
+            paid: t('Paid'),
+            partial_paid: t('Partial Paid'),
+            overdue: t('Overdue'),
+            cancelled: t('Cancelled'),
+        };
+        return map[status] ?? (status ? t(status.charAt(0).toUpperCase() + status.slice(1)) : '');
+    };
+
+    const formatInvoiceNumber = (value: string | number) => {
+        const s = String(value ?? '').replace(/\s/g, '');
+        if (!s) return '-';
+        return s.replace(/\D/g, '').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1 ');
+    };
+
+    // Per-line tax: distribute invoice subtotal/tax across lines by amount
+    const getLineAmounts = (itemAmount: number) => {
+        const amt = Number(itemAmount) || 0;
+        if (totalAmount <= 0) return { subtotalWithoutTax: amt, tax: 0, total: amt };
+        const ratio = amt / totalAmount;
+        const subtotalWithoutTax = subtotal * ratio;
+        const tax = taxAmount * ratio;
+        return { subtotalWithoutTax, tax, total: amt };
     };
 
     const breadcrumbs = [
         { title: t('Dashboard'), href: route('dashboard') },
         { title: t('Billing & Invoicing'), href: route('billing.invoices.index') },
         { title: t('Invoices'), href: route('billing.invoices.index') },
-        { title: t('View Invoice') }
+        { title: t('Invoice Details') },
     ];
 
     const pageActions: PageAction[] = [
         {
             label: t('Back to Invoices'),
-            icon: <ArrowLeft className="h-4 w-4 mr-2" />,
-            variant: 'outline' as const,
-            onClick: () => router.get(route('billing.invoices.index'))
-        }
+            icon: <ArrowLeft className="h-4 w-4 sm:mr-2" />,
+            variant: 'outline',
+            onClick: () => router.get(route('billing.invoices.index')),
+        },
     ];
-
-    if (hasPermission(permissions, 'edit-invoices')) {
-        pageActions.push({
-            label: t('Edit Invoice'),
-            icon: <Edit className="h-4 w-4 mr-2" />,
-            variant: 'default' as const,
-            onClick: () => router.get(route('billing.invoices.edit', invoice.id))
-        });
-    }
 
     if (hasPermission(permissions, 'create-payments')) {
         pageActions.push({
             label: t('Add Payment'),
-            icon: <DollarSign className="h-4 w-4 mr-2" />,
-            variant: 'default' as const,
-            onClick: () => setIsPaymentModalOpen(true)
+            icon: <DollarSign className="h-4 w-4 sm:mr-2" />,
+            variant: 'default',
+            onClick: () => setIsPaymentModalOpen(true),
         });
     }
 
+    const moreOptions: PageAction[] = [];
+    if (hasPermission(permissions, 'edit-invoices')) {
+        moreOptions.push({
+            label: t('Edit Invoice'),
+            icon: <Edit className="h-4 w-4" />,
+            variant: 'outline',
+            onClick: () => router.get(route('billing.invoices.edit', invoice.id)),
+        });
+    }
     if (hasPermission(permissions, 'view-invoices')) {
         const pdfLabel = invoice.client?.business_type === 'b2b' ? t('Tax Invoice') : t('Simplified Tax Invoice');
         const pdfType = invoice.client?.business_type === 'b2b' ? 'tax' : 'simplified';
-        pageActions.push({
+        moreOptions.push({
             label: pdfLabel,
-            icon: <Download className="h-4 w-4 mr-2" />,
-            variant: 'outline' as const,
-            onClick: () => window.open(route('invoices.pdf', invoice.id) + `?type=${pdfType}`, '_blank')
+            icon: <Download className="h-4 w-4" />,
+            variant: 'outline',
+            onClick: () => window.open(route('invoices.pdf', invoice.id) + `?type=${pdfType}`, '_blank'),
         });
     }
-
     if (invoice.payment_token) {
-        pageActions.push({
+        moreOptions.push({
             label: t('Copy Link'),
-            icon: <Link className="h-4 w-4 mr-2" />,
-            variant: 'outline' as const,
-            onClick: handleCopyLink
+            icon: <Link className="h-4 w-4" />,
+            variant: 'outline',
+            onClick: handleCopyLink,
         });
     }
-
     if (hasPermission(permissions, 'send-invoices') && invoice.status === 'draft') {
-        pageActions.push({
+        moreOptions.push({
             label: t('Send'),
-            icon: <Send className="h-4 w-4 mr-2" />,
-            variant: 'default' as const,
-            onClick: handleSend
+            icon: <Send className="h-4 w-4" />,
+            variant: 'outline',
+            onClick: handleSend,
         });
     }
 
-
-
+    const termsText = (() => {
+        const billingInfo = clientBillingInfo?.[invoice.client_id];
+        if (billingInfo?.custom_payment_terms) return billingInfo.custom_payment_terms;
+        if (billingInfo?.payment_terms) {
+            const termsMap: Record<string, string> = {
+                net_15: t('Net 15 days'),
+                net_30: t('Net 30 days'),
+                net_45: t('Net 45 days'),
+                net_60: t('Net 60 days'),
+                due_on_receipt: t('Due on receipt'),
+                custom: billingInfo.custom_payment_terms || t('Custom terms'),
+            };
+            const termText = termsMap[billingInfo.payment_terms] ?? billingInfo.payment_terms;
+            return `${termText}. ${t('Late payment fee of 1.5% per month applies.')}`;
+        }
+        return t('Net 30 days. Late payment fee of 1.5% per month applies.');
+    })();
 
     return (
         <PageTemplate
-            title={`${t('Invoice')} #${invoice.invoice_number || invoice.id}`}
+            title={t('Invoice Details')}
+            titleForHead={`${t('Invoice')} #${invoice?.invoice_number || invoice?.id}`}
             url={route('billing.invoices.show', invoice.id)}
             breadcrumbs={breadcrumbs}
-            actions={pageActions}
+            actions={
+                <div className="flex items-center gap-2">
+                    {pageActions.map((action, index) => (
+                        <Button
+                            key={index}
+                            variant={action.variant as any}
+                            size="sm"
+                            onClick={action.onClick}
+                            className={action.label === t('Add Payment') ? 'bg-primary' : ''}
+                        >
+                            {action.icon}
+                            <span className="sr-only sm:not-sr-only">{action.label}</span>
+                        </Button>
+                    ))}
+                    {moreOptions.length > 0 && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                    <MoreHorizontal className="h-4 w-4 sm:mr-1" />
+                                    <span className="sr-only sm:not-sr-only">{t('More Options')}</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                {moreOptions.map((opt, i) => (
+                                    <DropdownMenuItem key={i} onClick={opt.onClick}>
+                                        {opt.icon}
+                                        {opt.label}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+                </div>
+            }
             noPadding
         >
             <div className="space-y-6">
-                {/* Invoice Header */}
-                <div className="rounded-lg bg-white p-6 shadow">
-                    <div className="mb-6 flex items-start justify-between">
-                        <div>
-                            <h2 className="text-2xl font-bold text-gray-900">
-                                {t('Invoice')} #{invoice.invoice_number || invoice.id}
-                            </h2>
-                            <p className="mt-1 text-gray-600">
-                                {t('Created on')}{' '}
-                                {window.appSettings?.formatDate(invoice.created_at) || new Date(invoice.created_at).toLocaleDateString()}
-                            </p>
-                        </div>
-                        <div className="text-right">
-                            <span
-                                className={`inline-flex items-center rounded-md px-3 py-1 text-sm font-medium ring-1 ring-inset ${getStatusColor(invoice.status)}`}
-                            >
-                                {t(invoice.status?.charAt(0).toUpperCase() + invoice.status?.slice(1))}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <div>
-                            <h3 className="mb-3 text-lg font-semibold">{t('Client Information')}</h3>
-                            <div className="space-y-2">
-                                <p>
-                                    <strong>{t('Name')}:</strong> {invoice.client?.name || '-'}
-                                    {invoice.client && (
-                                        <span className="ml-2 inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-200">
-                                            {invoice.client.business_type === 'b2b' ? t('Business') : t('Individual')}
-                                        </span>
-                                    )}
+                {/* Invoice number card (same structure as invoice/payment page) */}
+                <Card className="mb-8 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+                    <CardContent className="p-6">
+                        <div className="flex flex-wrap items-start justify-between gap-4">
+                            <div className="min-w-0 flex-1 text-start">
+                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                                    {invoice?.client?.business_type === 'b2b' ? t('Tax Invoice') : t('Invoice')} #
+                                    {formatInvoiceNumber(invoice?.invoice_number || invoice?.id)}
+                                </h2>
+                                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                    {t('Invoice Number')}: {formatInvoiceNumber(invoice?.invoice_number || invoice?.id)}
                                 </p>
-                                <p>
-                                    <strong>{t('Email')}:</strong> {invoice.client?.email || '-'}
-                                </p>
-                                <p>
-                                    <strong>{t('Phone')}:</strong> {invoice.client?.phone || '-'}
-                                </p>
-                                {invoice.client?.business_type === 'b2b' && (
-                                    <>
-                                        <p>
-                                            <strong>{t('CR')}:</strong> {invoice.client?.cr_number || '-'}
-                                        </p>
-                                        <p>
-                                            <strong>{t('Tax Number')}:</strong> {invoice.client?.tax_id || '-'}
-                                        </p>
-                                        <p>
-                                            <strong>{t('Address')}:</strong> {invoice.client?.address || '-'}
-                                        </p>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-
-                        <div>
-                            <h3 className="mb-3 text-lg font-semibold">{t('Invoice Details')}</h3>
-                            <div className="space-y-2">
-                                <p>
-                                    <strong>{t('Invoice Date')}:</strong>{' '}
-                                    {window.appSettings?.formatDate(invoice.invoice_date) || new Date(invoice.invoice_date).toLocaleDateString()}
-                                </p>
-                                <p>
-                                    <strong>{t('Due Date')}:</strong>{' '}
-                                    {window.appSettings?.formatDate(invoice.due_date) || new Date(invoice.due_date).toLocaleDateString()}
-                                </p>
-                                {invoice.case && (
-                                    <p>
-                                        <strong>{t('Case')}:</strong>{' '}
+                                {invoice?.case && (
+                                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                        {t('Case Title')}:{' '}
                                         {invoice.case.case_id ? `${invoice.case.case_id} - ${invoice.case.title}` : invoice.case.title}
                                     </p>
                                 )}
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Line Items */}
-                <div className="rounded-lg bg-white p-6 shadow">
-                    <h3 className="mb-4 text-lg font-semibold">{t('Invoice Items')}</h3>
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                        {t('Description')}
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">{t('Quantity')}</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">{t('Rate')}</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">{t('Amount')}</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200 bg-white">
-                                {invoiceItems?.map((item: any, index: number) => (
-                                    <tr key={index} className={item.type === 'expense' ? 'bg-orange-50' : ''}>
-                                        <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-                                            <div className="space-y-1">
-                                                <div>{item.description}</div>
-                                                {item.type === 'expense' && (
-                                                    <div className="flex items-center text-xs text-orange-600">
-                                                        <span className="rounded bg-orange-100 px-2 py-1 font-medium text-orange-700">
-                                                            {t('Expense')}
-                                                        </span>
-                                                        {item.expense_date && (
-                                                            <span className="ml-2">
-                                                                {window.appSettings?.formatDate(item.expense_date) ||
-                                                                    new Date(item.expense_date).toLocaleDateString()}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                )}
-                                                {item.type === 'time' && (
-                                                    <div className="flex items-center text-xs text-blue-600">
-                                                        <span className="rounded bg-blue-100 px-2 py-1 font-medium text-blue-700">
-                                                            {t('Time Entry')}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">{item.quantity}</td>
-                                        <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-                                            {formatAmount(parseFloat(item.rate || 0))}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-                                            {formatAmount(parseFloat(item.amount || 0))}
-                                        </td>
-                                    </tr>
-                                ))}
-
-                                {(!invoiceItems || invoiceItems.length === 0) && (
-                                    <tr>
-                                        <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
-                                            {t('No items found')}
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                {/* Invoice Summary */}
-                <div className="rounded-lg bg-white p-6 shadow">
-                    <div className="flex justify-end">
-                        <div className="w-full max-w-sm space-y-3">
-                            <div className="flex justify-between">
-                                <span className="text-gray-600">{t('Subtotal')}:</span>
-                                <span className="font-medium">{formatAmount(parseFloat((invoice.subtotal || 0).toString()))}</span>
+                            <div className="flex items-center gap-3">
+                                <span
+                                    className={`inline-flex items-center rounded-lg px-3 py-1.5 text-sm font-medium ${getStatusColor(invoice?.status)}`}
+                                >
+                                    {getStatusLabel(invoice?.status)}
+                                </span>
                             </div>
+                        </div>
+                    </CardContent>
+                </Card>
 
-                            {invoice.tax_amount > 0 && (
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600">{t('Tax')}:</span>
-                                    <span className="font-medium">{formatAmount(parseFloat((invoice.tax_amount || 0).toString()))}</span>
+                {/* Summary cards */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                    <Card>
+                        <CardContent className="pt-6">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-muted rounded-lg p-2">
+                                    <Wallet className="text-muted-foreground h-5 w-5" />
                                 </div>
+                                <div>
+                                    <p className="text-muted-foreground text-sm font-medium">{t('Total Amount')}</p>
+                                    <p className="text-lg font-semibold">{formatAmount(totalAmount)}</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent className="pt-6">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-muted rounded-lg p-2">
+                                    <Wallet className="text-muted-foreground h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-muted-foreground text-sm font-medium">{t('Amount Paid')}</p>
+                                    <p className="text-lg font-semibold">{formatAmount(amountPaid)}</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent className="pt-6">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-muted rounded-lg p-2">
+                                    <Calendar className="text-muted-foreground h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-muted-foreground text-sm font-medium">{t('Due Date')}</p>
+                                    <p className="text-lg font-semibold">{formatDate(invoice?.due_date)}</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent className="pt-6">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-muted rounded-lg p-2">
+                                    <Calendar className="text-muted-foreground h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-muted-foreground text-sm font-medium">{t('Invoice Date')}</p>
+                                    <p className="text-lg font-semibold">{formatDate(invoice?.invoice_date)}</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent className="pt-6">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-muted rounded-lg p-2">
+                                    <List className="text-muted-foreground h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-muted-foreground text-sm font-medium">{t('Products')}</p>
+                                    <p className="text-lg font-semibold">{invoiceItems?.length ?? 0}</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Invoice To & Invoice From */}
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <div className="flex items-center gap-2">
+                                <FileText className="text-muted-foreground h-5 w-5" />
+                                <h3 className="text-base font-semibold">{t('Bill From')}</h3>
+                            </div>
+                            <p className="font-medium">{companyProfile?.name || invoice?.creator?.name || '-'}</p>
+                        </CardHeader>
+                        <CardContent className="space-y-2 text-sm">
+                            <p>
+                                <span className="text-muted-foreground font-medium">{t('Address')}:</span> {companyProfile?.address || '-'}
+                            </p>
+                            <p>
+                                <span className="text-muted-foreground font-medium">{t('Tax Number')}:</span> {companyProfile?.tax_number || '-'}
+                            </p>
+                            <p>
+                                <span className="text-muted-foreground font-medium">{t('Commercial Registration No.')}:</span>{' '}
+                                {companyProfile?.cr || companyProfile?.registration_number || '-'}
+                            </p>
+                            <p>
+                                <span className="text-muted-foreground font-medium">{t('Phone Number')}:</span> {companyProfile?.phone || '-'}
+                            </p>
+                            <p>
+                                <span className="text-muted-foreground font-medium">{t('Email')}:</span> {companyProfile?.email || '-'}
+                            </p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <div className="flex items-center gap-2">
+                                <User className="text-muted-foreground h-5 w-5" />
+                                <h3 className="text-base font-semibold">{t('Bill To')}</h3>
+                            </div>
+                            <p className="font-medium">{invoice?.client?.name || '-'}</p>
+                        </CardHeader>
+                        <CardContent className="space-y-2 text-sm">
+                            <p>
+                                <span className="text-muted-foreground font-medium">{t('Address')}:</span> {invoice?.client?.address || '-'}
+                            </p>
+                            <p>
+                                <span className="text-muted-foreground font-medium">{t('Tax Number')}:</span> {invoice?.client?.tax_id || '-'}
+                            </p>
+                            <p>
+                                <span className="text-muted-foreground font-medium">{t('Commercial Registration No.')}:</span>{' '}
+                                {invoice?.client?.cr_number || '-'}
+                            </p>
+                            <p>
+                                <span className="text-muted-foreground font-medium">{t('Phone Number')}:</span> {invoice?.client?.phone || '-'}
+                            </p>
+                            <p>
+                                <span className="text-muted-foreground font-medium">{t('Email')}:</span> {invoice?.client?.email || '-'}
+                            </p>
+                            {invoice?.case && (
+                                <p>
+                                    <span className="text-muted-foreground font-medium">{t('Case Title')}:</span>{' '}
+                                    {invoice.case.case_id ? `${invoice.case.case_id} - ${invoice.case.title}` : invoice.case.title}
+                                </p>
                             )}
+                        </CardContent>
+                    </Card>
+                </div>
 
-                            <div className="border-t pt-3">
-                                <div className="flex justify-between text-lg font-bold">
+                {/* Products table */}
+                <Card>
+                    <CardHeader>
+                        <h3 className="text-lg font-semibold">{t('Products')}</h3>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead className="bg-gray-50 dark:bg-gray-800/50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-start text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                            {t('Description')}
+                                        </th>
+                                        <th className="px-6 py-3 text-start text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                            {t('Type')}
+                                        </th>
+                                        <th className="px-6 py-3 text-start text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                            {t('Quantity')}
+                                        </th>
+                                        <th className="px-6 py-3 text-start text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                            {t('Unit Price')}
+                                        </th>
+                                        <th className="px-6 py-3 text-start text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                            {t('Subtotal without Tax')}
+                                        </th>
+                                        <th className="px-6 py-3 text-start text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                            {t('Tax')}
+                                        </th>
+                                        <th className="px-6 py-3 text-start text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                            {t('Total including Tax')}
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900/50">
+                                    {invoiceItems?.map((item: any, index: number) => {
+                                        const { subtotalWithoutTax, tax, total } = getLineAmounts(parseFloat(item.amount || 0));
+                                        const isExpense = item.type === 'expense';
+                                        const isTime = item.type === 'time';
+                                        const typeLabel = isExpense ? t('Expense') : isTime ? t('Time Entry') : t('Item');
+                                        const typeClass = isExpense
+                                            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                                            : isTime
+                                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                                              : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
+                                        return (
+                                            <tr key={index}>
+                                                <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100">
+                                                    {item.description}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${typeClass}`}>
+                                                        {typeLabel}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100">
+                                                    {item.quantity}
+                                                </td>
+                                                <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100">
+                                                    {formatAmount(parseFloat(item.rate || 0))}
+                                                </td>
+                                                <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100">
+                                                    {formatAmount(subtotalWithoutTax)}
+                                                </td>
+                                                <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100">
+                                                    {formatAmount(tax)}
+                                                </td>
+                                                <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100">
+                                                    {formatAmount(total)}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                    {(!invoiceItems || invoiceItems.length === 0) && (
+                                        <tr>
+                                            <td colSpan={7} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                                                {t('No items found')}
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Totals */}
+                <Card>
+                    <CardContent className="pt-6">
+                        <div className="flex justify-end">
+                            <div className="w-full max-w-sm space-y-2 text-sm">
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">{t('Subtotal')}:</span>
+                                    <span className="font-medium">{formatAmount(subtotal)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">{t('Tax Value')}:</span>
+                                    <span className="font-medium">{formatAmount(taxAmount)}</span>
+                                </div>
+                                <div className="flex justify-between border-t pt-3 text-lg font-bold">
                                     <span>{t('Total')}:</span>
-                                    <span>{formatAmount(parseFloat((invoice.total_amount || 0).toString()))}</span>
+                                    <span>{formatAmount(totalAmount)}</span>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
 
-                {/* Additional Info */}
-                <div className="rounded-lg bg-white p-6 shadow">
-                    <h3 className="mb-4 text-lg font-semibold text-gray-900">{t('Additional Info')}</h3>
-                    <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                        <div>
-                            <h4 className="mb-2 text-sm font-semibold text-gray-700">{t('NOTES')}</h4>
-                            <p className="text-sm text-gray-600">
-                                {invoice.notes || t('Thank you for your business. Please remit payment by due date.')}
+                {/* Terms & Notes */}
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <h4 className="text-sm font-semibold">{t('Terms')}</h4>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-muted-foreground text-sm">{termsText}</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <h4 className="text-sm font-semibold">{t('Notes')}</h4>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-muted-foreground text-sm">
+                                {invoice?.notes || t('Thank you for your business. Please remit payment by due date.')}
                             </p>
-                        </div>
-                        <div>
-                            <h4 className="mb-2 text-sm font-semibold text-gray-700">{t('TERMS')}</h4>
-                            <p className="text-sm text-gray-600">
-                                {(() => {
-                                    const billingInfo = clientBillingInfo?.[invoice.client_id];
-                                    if (billingInfo?.custom_payment_terms) {
-                                        return billingInfo.custom_payment_terms;
-                                    }
-                                    if (billingInfo?.payment_terms) {
-                                        const termsMap: Record<string, string> = {
-                                            net_15: t('Net 15 days'),
-                                            net_30: t('Net 30 days'),
-                                            net_45: t('Net 45 days'),
-                                            net_60: t('Net 60 days'),
-                                            due_on_receipt: t('Due on receipt'),
-                                            custom: billingInfo.custom_payment_terms || t('Custom terms'),
-                                        };
-                                        const termText = termsMap[billingInfo.payment_terms] || billingInfo.payment_terms;
-                                        return `${termText}. ${t('Late payment fee of 1.5% per month applies.')}`;
-                                    }
-                                    return t('Net 30 days. Late payment fee of 1.5% per month applies.');
-                                })()}
-                            </p>
-                        </div>
-                    </div>
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
 
-            {/* Payment Modal */}
             <CrudFormModal
                 isOpen={isPaymentModalOpen}
                 onClose={() => setIsPaymentModalOpen(false)}
@@ -376,10 +541,7 @@ export default function ShowInvoice() {
                             required: true,
                             disabled: true,
                             options: [
-                                {
-                                    value: invoice.id.toString(),
-                                    label: `${invoice.invoice_number || invoice.id} - ${invoice.client?.name || '-'}`,
-                                },
+                                { value: String(invoice.id), label: `${invoice.invoice_number || invoice.id} - ${invoice.client?.name || '-'}` },
                             ],
                         },
                         {
@@ -398,19 +560,13 @@ export default function ShowInvoice() {
                         { name: 'amount', label: t('Amount'), type: 'number', step: '0.01', required: true, min: '0' },
                         { name: 'payment_date', label: t('Payment Date'), type: 'date', required: true },
                         { name: 'notes', label: t('Notes'), type: 'textarea' },
-                        {
-                            name: 'attachment',
-                            label: t('Attachment'),
-                            type: 'media-picker',
-                            multiple: true,
-                            placeholder: t('Select files...'),
-                        },
+                        { name: 'attachment', label: t('Attachment'), type: 'media-picker', multiple: true, placeholder: t('Select files...') },
                     ],
                     modalSize: 'lg',
                 }}
                 initialData={{
-                    invoice_id: invoice.id.toString(),
-                    amount: invoice.remaining_amount || invoice.total_amount,
+                    invoice_id: String(invoice.id),
+                    amount: remainingAmountProp ?? invoice?.remaining_amount ?? invoice?.total_amount,
                     payment_date: new Date().toISOString().split('T')[0],
                     payment_method: 'cash',
                 }}

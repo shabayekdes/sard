@@ -2,8 +2,14 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { type BreadcrumbItem as BreadcrumbItemType } from '@/types';
 import { Link } from '@inertiajs/react';
 import { Fragment } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export function Breadcrumbs({ items }: { items: Array<{ label: string; href?: string }> }) {
+    const { i18n } = useTranslation();
+    const isRtl = i18n.dir?.() === 'rtl' || i18n.language === 'ar';
+    const SeparatorIcon = isRtl ? ChevronLeft : ChevronRight;
+
     return (
         <>
             {items && items.length > 0 && (
@@ -22,7 +28,11 @@ export function Breadcrumbs({ items }: { items: Array<{ label: string; href?: st
                                             </BreadcrumbLink>
                                         )}
                                     </BreadcrumbItem>
-                                    {!isLast && <BreadcrumbSeparator />}
+                                    {!isLast && (
+                                        <BreadcrumbSeparator>
+                                            <SeparatorIcon className="size-3.5" />
+                                        </BreadcrumbSeparator>
+                                    )}
                                 </Fragment>
                             );
                         })}

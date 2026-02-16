@@ -20,7 +20,8 @@ export interface PageTemplateProps {
   titleForHead?: string;
   // description: string; //TODO:: NOT USED
   url: string;
-  actions?: PageAction[];
+  /** Action buttons, or custom React node (e.g. buttons + dropdown) */
+  actions?: PageAction[] | ReactNode;
   children: ReactNode;
   noPadding?: boolean;
   breadcrumbs?: BreadcrumbItem[];
@@ -61,20 +62,24 @@ export function PageTemplate({
               </div>
             )}
           </div>
-          {actions && actions.length > 0 && (
+          {actions && (
             <div className="flex items-center gap-2">
-              {actions.map((action, index) => (
-                <Button
-                  key={index}
-                  variant={action.variant || 'outline'}
-                  size="sm"
-                  onClick={action.onClick}
-                  className="cursor-pointer"
-                >
-                  {action.icon && <span className="sm:mr-1">{action.icon}</span>}
-                  <span className="sr-only sm:not-sr-only">{action.label}</span>
-                </Button>
-              ))}
+              {Array.isArray(actions) ? (
+                actions.map((action, index) => (
+                  <Button
+                    key={index}
+                    variant={action.variant || 'outline'}
+                    size="sm"
+                    onClick={action.onClick}
+                    className="cursor-pointer"
+                  >
+                    {action.icon && <span className="sm:mr-1">{action.icon}</span>}
+                    <span className="sr-only sm:not-sr-only">{action.label}</span>
+                  </Button>
+                ))
+              ) : (
+                actions
+              )}
             </div>
           )}
         </div>

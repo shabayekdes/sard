@@ -106,7 +106,12 @@ class InvoiceController extends BaseController
 
     public function show(Invoice $invoice)
     {
-        $invoice->load(['client', 'case']);
+        $invoice->load(['client', 'case', 'payments']);
+
+        $amountPaid = (float) $invoice->payments()->where('approval_status', 'approved')->sum('amount');
+        $remainingAmount = max(0, (float) $invoice->total_amount - $amountPaid);
+
+        $companyProfile = \App\Models\CompanyProfile::where('created_by', $invoice->created_by)->first();
 
         // Get all invoice items: line_items from JSON + linked time entries/expenses
         $invoiceItems = [];
@@ -142,6 +147,9 @@ class InvoiceController extends BaseController
 
         return Inertia::render('billing/invoices/show', [
             'invoice' => $invoice,
+            'amountPaid' => $amountPaid,
+            'remainingAmount' => $remainingAmount,
+            'companyProfile' => $companyProfile,
             'invoiceItems' => $invoiceItems,
             'clientBillingInfo' => $clientBillingInfo,
             'currencies' => $currencies
