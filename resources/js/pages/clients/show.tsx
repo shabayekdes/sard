@@ -21,6 +21,7 @@ export default function ClientShow() {
     const { t, i18n } = useTranslation();
     const {
         client,
+        currencies = [],
         documents,
         documentTypes,
         cases,
@@ -58,6 +59,9 @@ export default function ClientShow() {
     const [isDocumentDeleteOpen, setIsDocumentDeleteOpen] = useState(false);
     const [currentDocument, setCurrentDocument] = useState<any>(null);
     const [documentFormMode, setDocumentFormMode] = useState<'create' | 'edit' | 'view'>('create');
+    // Billing tab
+    const [isBillingEditOpen, setIsBillingEditOpen] = useState(false);
+    const [isBillingDeleteOpen, setIsBillingDeleteOpen] = useState(false);
 
     // Helper function to get translated value from translation object
     const getTranslatedValue = (value: any): string => {
@@ -1041,65 +1045,115 @@ export default function ClientShow() {
 
                         {activeTab === 'billing' && (
                             <div>
-                                <div className="mb-6 flex items-center justify-between">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('Billing Information')}</h3>
-                                </div>
                                 {client.billing_info ? (
-                                    <Card className="p-4">
-                                        <div className="mb-4 flex items-start justify-between">
-                                            <h4 className="font-medium">{t('Client Billing Details')}</h4>
-                                            {client.billing_info.status && (
-                                                <Badge variant={client.billing_info.status === 'active' ? 'default' : 'secondary'}>
-                                                    {client.billing_info.status}
-                                                </Badge>
-                                            )}
+                                    <Card className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-gray-800">
+                                        {/* Card header: title + Edit/Delete */}
+                                        <div className={`flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-gray-800`}>
+                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('Billing Information')}</h3>
+                                            <div className={`flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                                                {hasPermission(permissions, 'delete-client-billing') && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-9 w-9 shrink-0 rounded-md text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30 dark:hover:text-red-400"
+                                                        onClick={() => setIsBillingDeleteOpen(true)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                                {hasPermission(permissions, 'edit-client-billing') && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-9 w-9 shrink-0 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                                                        onClick={() => setIsBillingEditOpen(true)}
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
-                                            {client.billing_info.billing_address && (
-                                                <div>
-                                                    <strong>{t('Billing Address')}:</strong> {client.billing_info.billing_address}
-                                                </div>
-                                            )}
-                                            {client.billing_info.billing_contact_name && (
-                                                <div>
-                                                    <strong>{t('Contact Name')}:</strong> {client.billing_info.billing_contact_name}
-                                                </div>
-                                            )}
-                                            {client.billing_info.billing_contact_email && (
-                                                <div>
-                                                    <strong>{t('Contact Email')}:</strong> {client.billing_info.billing_contact_email}
-                                                </div>
-                                            )}
-                                            {client.billing_info.billing_contact_phone && (
-                                                <div>
-                                                    <strong>{t('Contact Phone')}:</strong> {client.billing_info.billing_contact_phone}
-                                                </div>
-                                            )}
-                                            {client.billing_info.payment_terms && (
-                                                <div>
-                                                    <strong>{t('Payment Terms')}:</strong>{' '}
-                                                    {client.billing_info.formatted_payment_terms || client.billing_info.payment_terms}
-                                                </div>
-                                            )}
-                                            {client.billing_info.custom_payment_terms && (
-                                                <div>
-                                                    <strong>{t('Custom Payment Terms')}:</strong> {client.billing_info.custom_payment_terms}
-                                                </div>
-                                            )}
-
-                                            {(client.billing_info.currency_name || client.billing_info.currency) && (
-                                                <div>
-                                                    <strong>{t('Currency')}:</strong>{' '}
-                                                    {client.billing_info.currency_name || client.billing_info.currency}{' '}
-                                                    {client.billing_info.currency_code && `(${client.billing_info.currency_code})`}
-                                                </div>
-                                            )}
-                                            {client.billing_info.billing_notes && (
-                                                <div className="col-span-2">
-                                                    <strong>{t('Billing Notes')}:</strong> {client.billing_info.billing_notes}
-                                                </div>
-                                            )}
+                                        {/* Three-column layout: Col1 = Contact Name, Status, Payment Terms | Col2 = Contact Phone, Billing Address, Currency | Col3 = Contact Email, Creation Date, Custom Payment Terms */}
+                                        <div className="grid grid-cols-1 gap-6 p-6 text-sm md:grid-cols-3">
+                                            <div className={`flex flex-col gap-4 ${isRtl ? 'text-right' : ''}`}>
+                                                {client.billing_info.billing_contact_name != null && client.billing_info.billing_contact_name !== '' && (
+                                                    <div>
+                                                        <strong className="text-gray-600 dark:text-gray-400">{t('Contact Name')}:</strong>
+                                                        <p className="mt-0.5 text-gray-900 dark:text-gray-100">{client.billing_info.billing_contact_name}</p>
+                                                    </div>
+                                                )}
+                                                {client.billing_info.status && (
+                                                    <div>
+                                                        <strong className="text-gray-600 dark:text-gray-400">{t('Status')}:</strong>
+                                                        <p className="mt-0.5">
+                                                            <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                                                {client.billing_info.status === 'active' ? t('Active') : client.billing_info.status}
+                                                            </Badge>
+                                                        </p>
+                                                    </div>
+                                                )}
+                                                {client.billing_info.payment_terms && (
+                                                    <div>
+                                                        <strong className="text-gray-600 dark:text-gray-400">{t('Payment Terms')}:</strong>
+                                                        <p className="mt-0.5 text-gray-900 dark:text-gray-100">
+                                                            {client.billing_info.formatted_payment_terms || client.billing_info.payment_terms}
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className={`flex flex-col gap-4 ${isRtl ? 'text-right' : ''}`}>
+                                                {client.billing_info.billing_contact_phone != null && client.billing_info.billing_contact_phone !== '' && (
+                                                    <div>
+                                                        <strong className="text-gray-600 dark:text-gray-400">{t('Contact Phone')}:</strong>
+                                                        <p className="mt-0.5 text-gray-900 dark:text-gray-100">{client.billing_info.billing_contact_phone}</p>
+                                                    </div>
+                                                )}
+                                                {client.billing_info.billing_address != null && client.billing_info.billing_address !== '' && (
+                                                    <div>
+                                                        <strong className="text-gray-600 dark:text-gray-400">{t('Billing Address')}:</strong>
+                                                        <p className="mt-0.5 text-gray-900 dark:text-gray-100">{client.billing_info.billing_address}</p>
+                                                    </div>
+                                                )}
+                                                {(client.billing_info.currency_name || client.billing_info.currency) && (
+                                                    <div>
+                                                        <strong className="text-gray-600 dark:text-gray-400">{t('Currency')}:</strong>
+                                                        <p className="mt-0.5 text-gray-900 dark:text-gray-100">
+                                                            {client.billing_info.currency_name || client.billing_info.currency}
+                                                            {client.billing_info.currency_code ? ` (${client.billing_info.currency_code})` : ''}
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className={`flex flex-col gap-4 ${isRtl ? 'text-right' : ''}`}>
+                                                {client.billing_info.billing_contact_email != null && client.billing_info.billing_contact_email !== '' && (
+                                                    <div>
+                                                        <strong className="text-gray-600 dark:text-gray-400">{t('Contact Email')}:</strong>
+                                                        <p className="mt-0.5 text-gray-900 dark:text-gray-100">{client.billing_info.billing_contact_email}</p>
+                                                    </div>
+                                                )}
+                                                {client.billing_info.created_at && (
+                                                    <div>
+                                                        <strong className="text-gray-600 dark:text-gray-400">{t('Creation Date')}:</strong>
+                                                        <p className="mt-0.5 text-gray-900 dark:text-gray-100">
+                                                            {window.appSettings?.formatDate(client.billing_info.created_at) ||
+                                                                new Date(client.billing_info.created_at).toLocaleDateString()}
+                                                        </p>
+                                                    </div>
+                                                )}
+                                                {client.billing_info.custom_payment_terms != null && client.billing_info.custom_payment_terms !== '' && (
+                                                    <div>
+                                                        <strong className="text-gray-600 dark:text-gray-400">{t('Custom Payment Terms')}:</strong>
+                                                        <p className="mt-0.5 text-gray-900 dark:text-gray-100">{client.billing_info.custom_payment_terms}</p>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
+                                        {client.billing_info.billing_notes != null && client.billing_info.billing_notes !== '' && (
+                                            <div className={`border-t border-slate-200 px-6 py-4 dark:border-gray-800 ${isRtl ? 'text-right' : ''}`}>
+                                                <strong className="block text-gray-600 dark:text-gray-400">{t('Notes')}:</strong>
+                                                <p className="mt-2 whitespace-pre-wrap text-gray-900 dark:text-gray-100">{client.billing_info.billing_notes}</p>
+                                            </div>
+                                        )}
                                     </Card>
                                 ) : (
                                     <div className="py-8 text-center text-gray-500">{t('No billing information found for this client')}</div>
@@ -1143,7 +1197,6 @@ export default function ClientShow() {
                                 { value: 'active', label: t('Active') },
                                 { value: 'archived', label: t('Archived') },
                             ],
-                            defaultValue: 'active',
                         },
                     ],
                     modalSize: 'lg',
@@ -1151,6 +1204,7 @@ export default function ClientShow() {
                 initialData={{
                     ...currentDocument,
                     file: currentDocument?.file_path,
+                    status: currentDocument?.status || 'active',
                     document_type_id: currentDocument?.document_type_id?.toString() || currentDocument?.document_type_id,
                 }}
                 title={documentFormMode === 'create' ? t('Add New Document') : t('Edit Document')}
@@ -1195,6 +1249,101 @@ export default function ClientShow() {
                 onConfirm={handleDocumentDeleteConfirm}
                 itemName={currentDocument?.document_name || ''}
                 entityName="document"
+            />
+
+            {/* Billing Edit Modal */}
+            <CrudFormModal
+                isOpen={isBillingEditOpen}
+                onClose={() => setIsBillingEditOpen(false)}
+                onSubmit={(formData) => {
+                    if (!client.billing_info?.id) return;
+                    toast.loading(t('Updating billing information...'));
+                    router.put(route('clients.billing.update', client.billing_info.id), { ...formData, client_id: client.id }, {
+                        onSuccess: (page) => {
+                            setIsBillingEditOpen(false);
+                            toast.dismiss();
+                            const flash = (page?.props?.flash as any);
+                            if (flash?.success) toast.success(flash.success);
+                            if (flash?.error) toast.error(flash.error);
+                        },
+                        onError: (err) => {
+                            toast.dismiss();
+                            toast.error(typeof err === 'string' ? err : Object.values(err).join(', '));
+                        },
+                    });
+                }}
+                formConfig={{
+                    fields: [
+                        { name: 'billing_contact_name', label: t('Contact Name'), type: 'text' },
+                        { name: 'billing_contact_email', label: t('Contact Email'), type: 'email' },
+                        { name: 'billing_contact_phone', label: t('Contact Phone'), type: 'text' },
+                        { name: 'billing_address', label: t('Billing Address'), type: 'text' },
+                        {
+                            name: 'payment_terms',
+                            label: t('Payment Terms'),
+                            type: 'select',
+                            required: true,
+                            options: [
+                                { value: 'net_15', label: t('Net 15 days') },
+                                { value: 'net_30', label: t('Net 30 days') },
+                                { value: 'net_45', label: t('Net 45 days') },
+                                { value: 'net_60', label: t('Net 60 days') },
+                                { value: 'due_on_receipt', label: t('Due on receipt') },
+                                { value: 'custom', label: t('Custom') },
+                            ],
+                        },
+                        { name: 'custom_payment_terms', label: t('Custom Payment Terms'), type: 'text' },
+                        {
+                            name: 'currency',
+                            label: t('Currency'),
+                            type: 'select',
+                            options: currencies,
+                        },
+                        {
+                            name: 'status',
+                            label: t('Status'),
+                            type: 'select',
+                            options: [
+                                { value: 'active', label: t('Active') },
+                                { value: 'suspended', label: t('Suspended') },
+                                { value: 'closed', label: t('Closed') },
+                            ],
+                        },
+                        { name: 'billing_notes', label: t('Notes'), type: 'textarea' },
+                    ],
+                    modalSize: 'lg',
+                }}
+                initialData={{
+                    ...client.billing_info,
+                    client_id: client.id,
+                }}
+                title={t('Edit Billing Information')}
+                mode="edit"
+            />
+
+            {/* Billing Delete Modal */}
+            <CrudDeleteModal
+                isOpen={isBillingDeleteOpen}
+                onClose={() => setIsBillingDeleteOpen(false)}
+                onConfirm={() => {
+                    if (!client.billing_info?.id) return;
+                    toast.loading(t('Deleting billing information...'));
+                    router.delete(route('clients.billing.destroy', client.billing_info.id), {
+                        onSuccess: (page) => {
+                            setIsBillingDeleteOpen(false);
+                            toast.dismiss();
+                            const flash = (page?.props?.flash as any);
+                            if (flash?.success) toast.success(flash.success);
+                            if (flash?.error) toast.error(flash.error);
+                        },
+                        onError: () => {
+                            toast.dismiss();
+                            toast.error(t('Failed to delete billing information'));
+                        },
+                    });
+                }}
+                itemName={t('Billing Information')}
+                entityName="billing"
             />
 
             {/* Payment Modal */}

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Repeater, type RepeaterField } from '@/components/ui/repeater';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useLayout } from '@/contexts/LayoutContext';
@@ -14,7 +15,7 @@ import { PhoneInput, defaultCountries } from 'react-international-phone';
 
 export default function EditClient() {
     const { t, i18n } = useTranslation();
-    const { client, clientTypes, countries, phoneCountries, defaultCountry = '', defaultTaxRate = '', errors = {} } = usePage().props as any;
+    const { client, clientTypes, countries, documentTypes, phoneCountries, defaultCountry = '', defaultTaxRate = '', errors = {} } = usePage().props as any;
     const currentLocale = i18n.language || 'en';
     const { isRtl } = useLayout();
 
@@ -62,6 +63,11 @@ export default function EditClient() {
         tax_rate: client?.tax_rate ?? (defaultTaxRate ? Number(defaultTaxRate) : 0),
         notes: client?.notes || '',
         status: client?.status || 'active',
+        documents: (client?.documents || []).map((doc: any) => ({
+            document_name: doc.document_name || '',
+            document_type_id: doc.document_type_id ? String(doc.document_type_id) : '',
+            file: doc.file || doc.file_path || '',
+        })),
     }));
 
     const normalizedErrors = useMemo(() => {
@@ -89,7 +95,13 @@ export default function EditClient() {
 
         toast.loading(t('Updating client...'));
 
-        router.put(route('clients.update', client.id), formData, {
+        const filteredDocuments = (formData.documents || []).filter((document: any) => {
+            return document?.document_name || document?.document_type_id || document?.file;
+        });
+
+        const payload = { ...formData, documents: filteredDocuments };
+
+        router.put(route('clients.update', client.id), payload, {
             onSuccess: (page) => {
                 toast.dismiss();
                 const flash = (page as any)?.props?.flash;
@@ -118,6 +130,29 @@ export default function EditClient() {
     ];
 
     const renderError = (field: string) => (normalizedErrors[field] ? <p className="text-xs text-red-500">{normalizedErrors[field]}</p> : null);
+
+    const documentTypeOptions = (documentTypes || []).map((type: any) => {
+        let displayName = type.name;
+        if (typeof type.name === 'object' && type.name !== null) {
+            displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+        } else if (type.name_translations && typeof type.name_translations === 'object') {
+            displayName = type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
+        }
+        return { value: type.id.toString(), label: displayName };
+    });
+
+    const documentFields: RepeaterField[] = [
+        { name: 'document_name', label: t('Document Name'), type: 'text', required: true },
+        {
+            name: 'document_type_id',
+            label: t('Document Type'),
+            type: 'select',
+            required: true,
+            options: documentTypeOptions,
+            placeholder: t('Select Document Type'),
+        },
+        { name: 'file', label: t('File'), type: 'media-picker', required: true },
+    ];
 
     return (
         <PageTemplate title={t('Edit Client')} url="/clients" breadcrumbs={breadcrumbs} noPadding>
@@ -348,6 +383,29 @@ export default function EditClient() {
                             {renderError('notes')}
                         </div>
                     </div>
+
+                <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
+                    <h2 className="text-lg font-semibold">{t('Client Documents')}</h2>
+
+                    <div className="space-y-4 rounded-lg border border-slate-200 bg-slate-50/50 p-4">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-semibold text-slate-700">{t('Client Documents')}</h3>
+                        </div>
+                        <Repeater
+                            fields={documentFields}
+                            value={formData.documents}
+                            onChange={(value) => updateField('documents', value)}
+                            minItems={0}
+                            maxItems={-1}
+                            addButtonText={t('Add Document')}
+                            removeButtonText={t('Remove')}
+                            showItemNumbers={false}
+                            className="space-y-3"
+                            itemClassName="bg-white border-slate-200"
+                        />
+                        {renderError('documents')}
+                    </div>
+                </div>
 
                     <div className="flex justify-end gap-2">
                         <Button type="button" variant="outline" onClick={() => router.get(route('clients.index'))}>

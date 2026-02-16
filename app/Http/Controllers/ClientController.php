@@ -115,7 +115,7 @@ class ClientController extends Controller
     public function edit($clientId)
     {
         $client = Client::withPermissionCheck()
-            ->with(['clientType', 'creator'])
+            ->with(['clientType', 'creator', 'documents'])
             ->where('id', $clientId)
             ->first();
 
@@ -126,6 +126,17 @@ class ClientController extends Controller
         if ($client->clientType) {
             $client->clientType->name_translations = $client->clientType->getTranslations('name');
             $client->clientType->description_translations = $client->clientType->getTranslations('description');
+        }
+
+        // Map documents for repeater: document_name, document_type_id, file (file_path)
+        if ($client->relationLoaded('documents')) {
+            $client->documents = $client->documents->map(function ($doc) {
+                return [
+                    'document_name' => $doc->document_name,
+                    'document_type_id' => $doc->document_type_id ? (string) $doc->document_type_id : '',
+                    'file' => $doc->file_path,
+                ];
+            })->values()->all();
         }
 
         return Inertia::render(
@@ -424,6 +435,12 @@ class ClientController extends Controller
                     'tax_rate' => 'nullable|numeric|min:0|max:100',
                     'date_of_birth' => 'nullable|date',
                     'notes' => 'nullable|string',
+                    'documents' => 'nullable|array',
+                    'documents.*.document_name' => 'required_with:documents|string|max:255',
+                    'documents.*.document_type_id' => 'required_with:documents|exists:document_types,id',
+                    'documents.*.file' => 'required_with:documents|string',
+                    'documents.*.description' => 'nullable|string',
+                    'documents.*.status' => 'nullable|in:active,archived',
                 ]);
 
                 $phoneCountry = Country::where('id', $validated['country_id'])
@@ -466,7 +483,27 @@ class ClientController extends Controller
                     }
                 }
 
+                $documents = $validated['documents'] ?? [];
+                unset($validated['documents']);
+
                 $client->update($validated);
+
+                // Replace client documents with repeater payload
+                ClientDocument::where('client_id', $clientId)->delete();
+                if (! empty($documents)) {
+                    foreach ($documents as $document) {
+                        $filePath = $this->convertToRelativePath($document['file'] ?? '');
+                        ClientDocument::create([
+                            'client_id' => $clientId,
+                            'document_name' => $document['document_name'] ?? '',
+                            'document_type_id' => $document['document_type_id'] ?? null,
+                            'description' => $document['description'] ?? null,
+                            'status' => $document['status'] ?? 'active',
+                            'file_path' => $filePath,
+                            'created_by' => createdBy(),
+                        ]);
+                    }
+                }
 
                 return redirect()->back()->with('success', 'Client updated successfully');
             } catch (\Exception $e) {
@@ -686,8 +723,15 @@ class ClientController extends Controller
             ->select('id', 'invoice_number', 'client_id')
             ->get();
 
+        // Currencies for billing info edit modal
+        $currencies = \App\Models\Currency::where('status', true)
+            ->orderBy('code')
+            ->get(['id', 'name', 'code', 'symbol'])
+            ->map(fn ($c) => ['value' => $c->code, 'label' => $c->name.' ('.$c->code.')']);
+
         return Inertia::render('clients/show', [
             'client' => $client,
+            'currencies' => $currencies,
             'documents' => $documents,
             'documentTypes' => $documentTypes,
             'cases' => $cases,

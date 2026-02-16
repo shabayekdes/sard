@@ -92,6 +92,11 @@ class Client extends BaseModel
         return $this->hasOne(ClientBillingInfo::class);
     }
 
+    public function documents()
+    {
+        return $this->hasMany(ClientDocument::class);
+    }
+
     /**
      * Get the nationality (country) that owns the client.
      */
