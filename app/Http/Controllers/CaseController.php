@@ -816,10 +816,10 @@ class CaseController extends BaseController
 
         if (!empty($errors)) {
             $message = __('Case created successfully, but ') . implode(', ', $errors);
-            return redirect()->back()->with('warning', $message);
+            return redirect()->route('cases.index')->with('warning', $message);
         }
 
-        return redirect()->back()->with('success', 'Case created successfully.');
+        return redirect()->route('cases.index')->with('success', 'Case created successfully.');
     }
 
     public function update(Request $request, $caseId)
