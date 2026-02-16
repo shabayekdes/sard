@@ -742,13 +742,15 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <div className="sticky bottom-0 mt-auto border-t border-sidebar-border pt-2 bg-sidebar">
-                    <QuickActionsButton
-                        className="w-full justify-center group-data-[collapsible=icon]:justify-center"
-                        buttonClassName="h-12 w-12 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10"
-                        side="top"
-                    />
-                </div>
+                {userRole !== 'superadmin' && userRole !== 'client' && (
+                    <div className="sticky bottom-0 mt-auto border-t border-sidebar-border pt-2 bg-sidebar">
+                        <QuickActionsButton
+                            className="w-full justify-center group-data-[collapsible=icon]:justify-center"
+                            buttonClassName="h-12 w-12 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10"
+                            side="top"
+                        />
+                    </div>
+                )}
             </SidebarFooter>
         </Sidebar>
     );
