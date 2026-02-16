@@ -344,13 +344,6 @@ export default function Clients() {
             requiredPermission: 'edit-clients',
         },
         {
-            label: t('Toggle Status'),
-            icon: 'Lock',
-            action: 'toggle-status',
-            className: 'text-amber-500',
-            requiredPermission: 'edit-clients',
-        },
-        {
             label: t('Reset Password'),
             icon: 'Key',
             action: 'reset-password',

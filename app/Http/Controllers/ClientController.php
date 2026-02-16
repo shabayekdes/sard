@@ -498,10 +498,37 @@ class ClientController extends Controller
             $client->billingInfo->currency_symbol = $currency?->symbol;
         }
 
-        $documents = \App\Models\ClientDocument::withPermissionCheck()
-            ->where('client_id', $clientId)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Documents with pagination and filters
+        $documentsQuery = ClientDocument::withPermissionCheck()
+            ->with(['documentType'])
+            ->where('client_id', $clientId);
+
+        if ($documentSearch = $request->get('document_search')) {
+            $documentsQuery->where(function ($q) use ($documentSearch) {
+                $q->where('document_name', 'like', "%{$documentSearch}%")
+                    ->orWhere('description', 'like', "%{$documentSearch}%");
+            });
+        }
+        if ($request->has('document_type_id') && $request->document_type_id !== '' && $request->document_type_id !== 'all') {
+            $documentsQuery->where('document_type_id', $request->document_type_id);
+        }
+        if ($request->has('document_status') && $request->document_status !== '' && $request->document_status !== 'all') {
+            $documentsQuery->where('status', $request->document_status);
+        }
+        $documentsQuery->orderBy('created_at', 'desc');
+        $documents = $documentsQuery->paginate($request->get('document_per_page', 10), ['*'], 'document_page');
+
+        $documentTypes = DocumentType::withPermissionCheck()
+            ->where('status', 'active')
+            ->get(['id', 'name', 'color'])
+            ->map(function (DocumentType $dt) {
+                return [
+                    'id' => $dt->id,
+                    'name' => $dt->name,
+                    'name_translations' => $dt->getTranslations('name'),
+                    'color' => $dt->color,
+                ];
+            });
 
         // Handle cases with pagination and search
         $casesQuery = \App\Models\CaseModel::withPermissionCheck()
@@ -662,6 +689,7 @@ class ClientController extends Controller
         return Inertia::render('clients/show', [
             'client' => $client,
             'documents' => $documents,
+            'documentTypes' => $documentTypes,
             'cases' => $cases,
             'caseTypes' => $caseTypes,
             'caseStatuses' => $caseStatuses,
@@ -687,6 +715,11 @@ class ClientController extends Controller
                 'payment_sort_field',
                 'payment_sort_direction',
                 'payment_per_page',
+                'document_search',
+                'document_type_id',
+                'document_status',
+                'document_page',
+                'document_per_page',
             ]),
         ]);
     }

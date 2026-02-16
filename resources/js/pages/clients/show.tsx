@@ -1,22 +1,28 @@
 import { CrudFormModal } from '@/components/CrudFormModal';
 import { CrudTable } from '@/components/CrudTable';
+import { CrudDeleteModal } from '@/components/CrudDeleteModal';
 import { PageTemplate } from '@/components/page-template';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
+import { Switch } from '@/components/ui/switch';
 import { useLayout } from '@/contexts/LayoutContext';
 import { formatCurrency } from '@/utils/helpers';
+import { hasPermission } from '@/utils/authorization';
 import { router, usePage } from '@inertiajs/react';
-import { ArrowLeft, Briefcase, CreditCard, FileText, Receipt } from 'lucide-react';
+import { ArrowLeft, Briefcase, CreditCard, Edit, Eye, FileText, Plus, Receipt, Trash2 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from '@/components/custom-toast';
 
 export default function ClientShow() {
     const { t, i18n } = useTranslation();
     const {
         client,
         documents,
+        documentTypes,
         cases,
         caseTypes,
         caseStatuses,
@@ -24,8 +30,10 @@ export default function ClientShow() {
         invoices,
         payments,
         allInvoices,
+        auth,
         filters = {},
     } = usePage().props as any;
+    const permissions = auth?.permissions || [];
     const { isRtl } = useLayout();
     const [activeTab, setActiveTab] = useState('cases');
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
@@ -40,6 +48,16 @@ export default function ClientShow() {
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [currentPayment, setCurrentPayment] = useState<any>(null);
     const [paymentFormMode, setPaymentFormMode] = useState<'create' | 'edit' | 'view'>('view');
+    // Documents tab
+    const [documentSearchTerm, setDocumentSearchTerm] = useState(filters.document_search || '');
+    const [selectedDocumentType, setSelectedDocumentType] = useState(filters.document_type_id || 'all');
+    const [selectedDocumentStatus, setSelectedDocumentStatus] = useState(filters.document_status || 'all');
+    const [showDocumentFilters, setShowDocumentFilters] = useState(false);
+    const [isDocumentFormOpen, setIsDocumentFormOpen] = useState(false);
+    const [isDocumentViewOpen, setIsDocumentViewOpen] = useState(false);
+    const [isDocumentDeleteOpen, setIsDocumentDeleteOpen] = useState(false);
+    const [currentDocument, setCurrentDocument] = useState<any>(null);
+    const [documentFormMode, setDocumentFormMode] = useState<'create' | 'edit' | 'view'>('create');
 
     // Helper function to get translated value from translation object
     const getTranslatedValue = (value: any): string => {
@@ -338,6 +356,194 @@ export default function ClientShow() {
         },
     ];
 
+    const documentsPaginated = documents?.data !== undefined;
+    const documentsData = documentsPaginated ? documents.data : (documents || []);
+    const documentsTotal = documents?.total ?? documentsData.length;
+    const currentLocale = i18n.language || document.documentElement.lang || 'en';
+    const getDocTypeName = (docType: any) => {
+        if (!docType) return '-';
+        if (typeof docType.name === 'string') return docType.name;
+        return docType.name_translations?.[currentLocale] || docType.name?.en || docType.name?.ar || '-';
+    };
+
+    const handleDocumentSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        router.get(route('clients.show', client.id), {
+            ...filters,
+            document_page: 1,
+            document_search: documentSearchTerm || undefined,
+            document_type_id: selectedDocumentType !== 'all' ? selectedDocumentType : undefined,
+            document_status: selectedDocumentStatus !== 'all' ? selectedDocumentStatus : undefined,
+            document_per_page: filters.document_per_page || 10,
+        }, { preserveState: true, preserveScroll: true });
+    };
+    const handleDocumentResetFilters = () => {
+        setDocumentSearchTerm('');
+        setSelectedDocumentType('all');
+        setSelectedDocumentStatus('all');
+        router.get(route('clients.show', client.id), {
+            ...filters,
+            document_page: 1,
+            document_per_page: filters.document_per_page || 10,
+        }, { preserveState: true, preserveScroll: true });
+    };
+    const applyDocumentFilters = () => {
+        router.get(route('clients.show', client.id), {
+            ...filters,
+            document_page: 1,
+            document_search: documentSearchTerm || undefined,
+            document_type_id: selectedDocumentType !== 'all' ? selectedDocumentType : undefined,
+            document_status: selectedDocumentStatus !== 'all' ? selectedDocumentStatus : undefined,
+            document_per_page: filters.document_per_page || 10,
+        }, { preserveState: true, preserveScroll: true });
+    };
+    const hasDocumentFilters = () =>
+        documentSearchTerm !== '' || selectedDocumentType !== 'all' || selectedDocumentStatus !== 'all';
+    const documentFilterCount = () =>
+        (documentSearchTerm ? 1 : 0) + (selectedDocumentType !== 'all' ? 1 : 0) + (selectedDocumentStatus !== 'all' ? 1 : 0);
+
+    const handleDocumentAction = (action: string, row: any) => {
+        setCurrentDocument(row);
+        switch (action) {
+            case 'view':
+                if (row.file_path) window.open(row.file_path.startsWith('http') ? row.file_path : `${window.appSettings?.imageUrl || window.location.origin}${row.file_path}`, '_blank');
+                else setIsDocumentViewOpen(true);
+                break;
+            case 'edit':
+                setDocumentFormMode('edit');
+                setIsDocumentFormOpen(true);
+                break;
+            case 'delete':
+                setIsDocumentDeleteOpen(true);
+                break;
+            case 'download':
+                const link = document.createElement('a');
+                link.href = route('clients.documents.download', row.id);
+                link.download = row.document_name || 'document';
+                link.click();
+                break;
+        }
+    };
+    const handleDocumentStatusToggle = (row: any, checked: boolean) => {
+        const newStatus = checked ? 'active' : 'archived';
+        router.put(route('clients.documents.update', row.id), { status: newStatus, document_name: row.document_name, document_type_id: row.document_type_id, description: row.description }, {
+            preserveScroll: true,
+            onSuccess: () => toast.success(t('Status updated')),
+            onError: () => toast.error(t('Failed to update status')),
+        });
+    };
+    const handleDocumentFormSubmit = (formData: any) => {
+        const payload = { ...formData, client_id: client.id };
+        if (documentFormMode === 'create') {
+            toast.loading(t('Uploading document...'));
+            router.post(route('clients.documents.store'), payload, {
+                onSuccess: (page) => {
+                    setIsDocumentFormOpen(false);
+                    toast.dismiss();
+                    if ((page?.props?.flash as any)?.success) toast.success((page.props.flash as any).success);
+                },
+                onError: (errors) => {
+                    toast.dismiss();
+                    toast.error(typeof errors === 'string' ? errors : Object.values(errors).join(', '));
+                },
+            });
+        } else {
+            toast.loading(t('Updating document...'));
+            const updatePayload = { ...payload, file: payload.file || currentDocument?.file_path, _method: 'PUT' };
+            router.post(route('clients.documents.update', currentDocument.id), updatePayload, {
+                onSuccess: (page) => {
+                    setIsDocumentFormOpen(false);
+                    toast.dismiss();
+                    if ((page?.props?.flash as any)?.success) toast.success((page.props.flash as any).success);
+                },
+                onError: (errors) => {
+                    toast.dismiss();
+                    toast.error(typeof errors === 'string' ? errors : Object.values(errors).join(', '));
+                },
+            });
+        }
+    };
+    const handleDocumentDeleteConfirm = () => {
+        if (!currentDocument) return;
+        toast.loading(t('Deleting document...'));
+        router.delete(route('clients.documents.destroy', currentDocument.id), {
+            onSuccess: (page) => {
+                setIsDocumentDeleteOpen(false);
+                setCurrentDocument(null);
+                toast.dismiss();
+                if ((page?.props?.flash as any)?.success) toast.success((page.props.flash as any).success);
+            },
+            onError: () => {
+                toast.dismiss();
+                toast.error(t('Failed to delete document'));
+            },
+        });
+    };
+
+    const documentColumns = [
+        {
+            key: 'document_name',
+            label: t('Document Name'),
+            sortable: false,
+        },
+        {
+            key: 'document_type',
+            label: t('Type'),
+            render: (_: any, row: any) => {
+                const docType = row.document_type;
+                const name = getDocTypeName(docType);
+                const color = docType?.color;
+                return (
+                    <span
+                        className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
+                        style={color ? { backgroundColor: `${color}20`, color } : undefined}
+                    >
+                        {name}
+                    </span>
+                );
+            },
+        },
+        {
+            key: 'status',
+            label: t('Status'),
+            render: (_: any, row: any) => (
+                <Switch
+                    checked={row.status === 'active'}
+                    onCheckedChange={(checked) => handleDocumentStatusToggle(row, checked)}
+                />
+            ),
+        },
+        {
+            key: 'created_at',
+            label: t('Upload Date'),
+            render: (value: string) => (value ? window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString() : '-'),
+        },
+    ];
+
+    const documentActions = [
+        {
+            label: t('View'),
+            icon: 'Eye',
+            action: 'view',
+            className: 'text-primary',
+            requiredPermission: 'view-client-documents',
+        },
+        {
+            label: t('Edit'),
+            icon: 'Edit',
+            action: 'edit',
+            className: 'text-amber-500',
+            requiredPermission: 'edit-client-documents',
+        },
+        {
+            label: t('Delete'),
+            icon: 'Trash2',
+            action: 'delete',
+            className: 'text-red-500',
+            requiredPermission: 'delete-client-documents',
+        },
+    ];
+
     const formatDate = (value?: string | null) => {
         if (!value) return '-';
         return window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString();
@@ -467,7 +673,7 @@ export default function ClientShow() {
                                 <div className="flex items-center space-x-2">
                                     <FileText className="h-4 w-4" />
                                     <span>
-                                        {t('Documents')} ({documents?.length || 0})
+                                        {t('Documents')} ({documentsTotal})
                                     </span>
                                 </div>
                             </button>
@@ -744,61 +950,92 @@ export default function ClientShow() {
                             <div>
                                 <div className="mb-6 flex items-center justify-between">
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('Client Documents')}</h3>
+                                    {hasPermission(permissions, 'create-client-documents') && (
+                                        <button
+                                            onClick={() => { setCurrentDocument(null); setDocumentFormMode('create'); setIsDocumentFormOpen(true); }}
+                                            className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90"
+                                        >
+                                            <Plus className="h-4 w-4" />
+                                            {t('Add New Document')}
+                                        </button>
+                                    )}
                                 </div>
-                                {documents && documents.length > 0 ? (
-                                    <div className="grid gap-4">
-                                        {documents.map((doc: any, index: number) => (
-                                            <Card
-                                                key={index}
-                                                className="cursor-pointer p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
-                                                onClick={() => window.open(doc.file_path, '_blank')}
-                                            >
-                                                <div className="flex gap-4">
-                                                    <div className="flex-shrink-0">
-                                                        {doc.file_path ? (
-                                                            <img
-                                                                src={doc.file_path}
-                                                                alt={doc.document_name}
-                                                                className="h-16 w-16 rounded border object-cover"
-                                                                onError={(e) => {
-                                                                    e.currentTarget.style.display = 'none';
-                                                                    const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
-                                                                    if (nextSibling) {
-                                                                        nextSibling.style.display = 'flex';
-                                                                    }
-                                                                }}
-                                                            />
-                                                        ) : null}
-                                                        <div
-                                                            className="flex h-16 w-16 items-center justify-center rounded border bg-gray-100 dark:bg-gray-800"
-                                                            style={{ display: doc.file_path ? 'none' : 'flex' }}
-                                                        >
-                                                            <FileText className="h-6 w-6 text-gray-500" />
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <div className="mb-2 flex items-start justify-between">
-                                                            <h4 className="font-medium">{doc.document_name}</h4>
-                                                            <Badge variant="outline">{doc.document_type}</Badge>
-                                                        </div>
-                                                        <div className="grid grid-cols-2 gap-4 text-sm">
-                                                            <div>
-                                                                <strong>{t('Uploaded')}:</strong>{' '}
-                                                                {window.appSettings?.formatDate(doc.created_at) ||
-                                                                    new Date(doc.created_at).toLocaleDateString()}
-                                                            </div>
-                                                            <div className="col-span-2">
-                                                                <strong>{t('Description')}:</strong> {doc.description || '-'}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </Card>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="py-8 text-center text-gray-500">{t('No documents found for this client')}</div>
-                                )}
+
+                                <div className="mb-4">
+                                    <SearchAndFilterBar
+                                        searchTerm={documentSearchTerm}
+                                        onSearchChange={setDocumentSearchTerm}
+                                        onSearch={handleDocumentSearch}
+                                        filters={[
+                                            {
+                                                name: 'document_type_id',
+                                                label: t('Type'),
+                                                type: 'select',
+                                                value: selectedDocumentType,
+                                                onChange: setSelectedDocumentType,
+                                                options: [
+                                                    { value: 'all', label: t('All Types') },
+                                                    ...(documentTypes || []).map((type: any) => ({
+                                                        value: type.id.toString(),
+                                                        label: getDocTypeName(type),
+                                                    })),
+                                                ],
+                                            },
+                                            {
+                                                name: 'document_status',
+                                                label: t('Status'),
+                                                type: 'select',
+                                                value: selectedDocumentStatus,
+                                                onChange: setSelectedDocumentStatus,
+                                                options: [
+                                                    { value: 'all', label: t('All Statuses') },
+                                                    { value: 'active', label: t('Active') },
+                                                    { value: 'archived', label: t('Archived') },
+                                                ],
+                                            },
+                                        ]}
+                                        showFilters={showDocumentFilters}
+                                        setShowFilters={setShowDocumentFilters}
+                                        hasActiveFilters={hasDocumentFilters}
+                                        activeFilterCount={documentFilterCount}
+                                        onResetFilters={handleDocumentResetFilters}
+                                        onApplyFilters={applyDocumentFilters}
+                                        currentPerPage={filters.document_per_page?.toString() || '10'}
+                                        onPerPageChange={(value) => {
+                                            router.get(route('clients.show', client.id), {
+                                                ...filters,
+                                                document_page: 1,
+                                                document_per_page: parseInt(value, 10),
+                                                document_search: documentSearchTerm || undefined,
+                                                document_type_id: selectedDocumentType !== 'all' ? selectedDocumentType : undefined,
+                                                document_status: selectedDocumentStatus !== 'all' ? selectedDocumentStatus : undefined,
+                                            }, { preserveState: true, preserveScroll: true });
+                                        }}
+                                    />
+                                </div>
+
+                                <CrudTable
+                                    columns={documentColumns}
+                                    actions={documentActions}
+                                    data={documentsData}
+                                    from={documents?.from ?? 1}
+                                    onAction={handleDocumentAction}
+                                    permissions={permissions}
+                                    entityPermissions={{
+                                        view: 'view-client-documents',
+                                        edit: 'edit-client-documents',
+                                        delete: 'delete-client-documents',
+                                    }}
+                                />
+
+                                <Pagination
+                                    from={documents?.from || 0}
+                                    to={documents?.to || 0}
+                                    total={documents?.total || 0}
+                                    links={documents?.links}
+                                    entityName={t('documents')}
+                                    onPageChange={(url) => router.get(url)}
+                                />
                             </div>
                         )}
 
@@ -872,6 +1109,93 @@ export default function ClientShow() {
                     </div>
                 </div>
             </div>
+
+            {/* Document Create/Edit Modal */}
+            <CrudFormModal
+                isOpen={isDocumentFormOpen}
+                onClose={() => { setIsDocumentFormOpen(false); setCurrentDocument(null); }}
+                onSubmit={handleDocumentFormSubmit}
+                formConfig={{
+                    fields: [
+                        { name: 'document_name', label: t('Document Name'), type: 'text', required: true },
+                        {
+                            name: 'document_type_id',
+                            label: t('Document Type'),
+                            type: 'select',
+                            required: true,
+                            options: (documentTypes || []).map((type: any) => ({
+                                value: type.id.toString(),
+                                label: getDocTypeName(type),
+                            })),
+                        },
+                        {
+                            name: 'file',
+                            label: t('File'),
+                            type: 'media-picker',
+                            required: documentFormMode === 'create',
+                        },
+                        { name: 'description', label: t('Description'), type: 'textarea' },
+                        {
+                            name: 'status',
+                            label: t('Status'),
+                            type: 'select',
+                            options: [
+                                { value: 'active', label: t('Active') },
+                                { value: 'archived', label: t('Archived') },
+                            ],
+                            defaultValue: 'active',
+                        },
+                    ],
+                    modalSize: 'lg',
+                }}
+                initialData={{
+                    ...currentDocument,
+                    file: currentDocument?.file_path,
+                    document_type_id: currentDocument?.document_type_id?.toString() || currentDocument?.document_type_id,
+                }}
+                title={documentFormMode === 'create' ? t('Add New Document') : t('Edit Document')}
+                mode={documentFormMode}
+            />
+
+            {/* Document View Modal */}
+            <CrudFormModal
+                isOpen={isDocumentViewOpen}
+                onClose={() => { setIsDocumentViewOpen(false); setCurrentDocument(null); }}
+                onSubmit={() => setIsDocumentViewOpen(false)}
+                formConfig={{
+                    fields: [
+                        { name: 'document_name', label: t('Document Name'), type: 'text', disabled: true },
+                        {
+                            name: 'document_type_display',
+                            label: t('Type'),
+                            type: 'text',
+                            disabled: true,
+                        },
+                        { name: 'description', label: t('Description'), type: 'textarea', disabled: true },
+                        { name: 'status', label: t('Status'), type: 'text', disabled: true },
+                        { name: 'created_at', label: t('Upload Date'), type: 'text', disabled: true },
+                    ],
+                    modalSize: 'md',
+                }}
+                initialData={{
+                    ...currentDocument,
+                    document_type_display: getDocTypeName(currentDocument?.document_type),
+                    created_at: currentDocument?.created_at
+                        ? (window.appSettings?.formatDate(currentDocument.created_at) || new Date(currentDocument.created_at).toLocaleDateString())
+                        : '',
+                }}
+                title={t('View Document')}
+                mode="view"
+            />
+
+            {/* Document Delete Modal */}
+            <CrudDeleteModal
+                isOpen={isDocumentDeleteOpen}
+                onClose={() => { setIsDocumentDeleteOpen(false); setCurrentDocument(null); }}
+                onConfirm={handleDocumentDeleteConfirm}
+                itemName={currentDocument?.document_name || ''}
+                entityName="document"
+            />
 
             {/* Payment Modal */}
             <CrudFormModal

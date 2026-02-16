@@ -341,13 +341,6 @@ export default function Cases() {
       requiredPermission: 'edit-cases'
     },
     {
-      label: t('Toggle Status'),
-      icon: 'Lock',
-      action: 'toggle-status',
-      className: 'text-amber-500',
-      requiredPermission: 'edit-cases'
-    },
-    {
       label: t('Delete'),
       icon: 'Trash2',
       action: 'delete',
