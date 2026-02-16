@@ -41,7 +41,7 @@ class InvoiceController extends BaseController
         if ($request->has('sort_field') && !empty($request->sort_field)) {
             $query->orderBy($request->sort_field, $request->sort_direction ?? 'asc');
         } else {
-            $query->orderBy('invoice_date', 'desc');
+            $query->latest('id');
         }
 
         $invoices = $query->paginate($request->per_page ?? 10);
