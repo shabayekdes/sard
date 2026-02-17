@@ -1,41 +1,32 @@
-import { PageTemplate, PageAction } from '@/components/page-template';
-import { usePage, router } from '@inertiajs/react';
+import { CrudFormModal } from '@/components/CrudFormModal';
+import { toast } from '@/components/custom-toast';
+import { PageAction, PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-    ArrowLeft,
-    Edit,
-    Send,
-    DollarSign,
-    Link,
-    Download,
-    MoreHorizontal,
-    User,
-    FileText,
-    MoreVerticalIcon,
-} from 'lucide-react';
-import { toast } from '@/components/custom-toast';
-import { useTranslation } from 'react-i18next';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { hasPermission } from '@/utils/authorization';
 import { formatCurrencyForCompany } from '@/utils/helpers';
-import { CrudFormModal } from '@/components/CrudFormModal';
+import { router, usePage } from '@inertiajs/react';
+import { ArrowLeft, DollarSign, Download, Edit, FileText, Link, MoreVerticalIcon, Send, User } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function ShowInvoice() {
     const { t } = useTranslation();
-    const { invoice, auth, invoiceItems, clientBillingInfo, companyProfile, amountPaid: amountPaidProp, remainingAmount: remainingAmountProp } = usePage().props as any;
+    const {
+        invoice,
+        auth,
+        invoiceItems,
+        clientBillingInfo,
+        companyProfile,
+        amountPaid: amountPaidProp,
+        remainingAmount: remainingAmountProp,
+    } = usePage().props as any;
     const permissions = auth?.permissions || [];
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
     const formatAmount = (amount: number) => formatCurrencyForCompany(amount);
-    const formatDate = (date: string | null) =>
-        date ? (window.appSettings?.formatDate?.(date) || new Date(date).toLocaleDateString()) : '-';
+    const formatDate = (date: string | null) => (date ? window.appSettings?.formatDate?.(date) || new Date(date).toLocaleDateString() : '-');
 
     const amountPaid = Number(amountPaidProp ?? invoice?.amount_paid ?? 0);
     const subtotal = Number(invoice?.subtotal ?? 0);
@@ -46,16 +37,20 @@ export default function ShowInvoice() {
 
     const handleSend = () => {
         toast.loading(t('Sending invoice...'));
-        router.put(route('billing.invoices.send', invoice.id), {}, {
-            onSuccess: (page: any) => {
-                toast.dismiss();
-                if (page.props.flash?.success) toast.success(page.props.flash.success);
+        router.put(
+            route('billing.invoices.send', invoice.id),
+            {},
+            {
+                onSuccess: (page: any) => {
+                    toast.dismiss();
+                    if (page.props.flash?.success) toast.success(page.props.flash.success);
+                },
+                onError: (errors) => {
+                    toast.dismiss();
+                    toast.error(`Failed to send invoice: ${Object.values(errors).join(', ')}`);
+                },
             },
-            onError: (errors) => {
-                toast.dismiss();
-                toast.error(`Failed to send invoice: ${Object.values(errors).join(', ')}`);
-            },
-        });
+        );
     };
 
     const handleCopyLink = () => {
@@ -63,7 +58,7 @@ export default function ShowInvoice() {
             const paymentUrl = route('invoice.payment', invoice.payment_token);
             navigator.clipboard.writeText(paymentUrl).then(
                 () => toast.success(t('Payment link copied to clipboard')),
-                () => toast.error(t('Failed to copy payment link'))
+                () => toast.error(t('Failed to copy payment link')),
             );
         } else {
             toast.error(t('Payment link not available'));
@@ -265,8 +260,12 @@ export default function ShowInvoice() {
                                     </p>
                                 )}
                                 <p className="mt-3 flex flex-wrap gap-x-8 text-sm text-gray-600 dark:text-gray-400">
-                                    <span>{t('Invoice Date')}: {formatDate(invoice?.invoice_date)}</span>
-                                    <span>{t('Due Date')}: {formatDate(invoice?.due_date)}</span>
+                                    <span>
+                                        {t('Invoice Date')}: {formatDate(invoice?.invoice_date)}
+                                    </span>
+                                    <span>
+                                        {t('Due Date')}: {formatDate(invoice?.due_date)}
+                                    </span>
                                 </p>
                             </div>
                             <div className="flex items-center gap-3">
@@ -295,17 +294,17 @@ export default function ShowInvoice() {
                                 <span className="text-muted-foreground font-medium">{t('Address')}:</span> {companyProfile?.address || '-'}
                             </p>
                             <p>
-                                <span className="text-muted-foreground font-medium">{t('Tax Number')}:</span> {companyProfile?.tax_number || '-'}
-                            </p>
-                            <p>
-                                <span className="text-muted-foreground font-medium">{t('Commercial Registration No.')}:</span>{' '}
-                                {companyProfile?.cr || companyProfile?.registration_number || '-'}
-                            </p>
-                            <p>
                                 <span className="text-muted-foreground font-medium">{t('Phone Number')}:</span> {companyProfile?.phone || '-'}
                             </p>
                             <p>
                                 <span className="text-muted-foreground font-medium">{t('Email')}:</span> {companyProfile?.email || '-'}
+                            </p>
+                            <p>
+                                <span className="text-muted-foreground font-medium">{t('Tax Number')}:</span> {companyProfile?.tax_number || '-'}
+                            </p>
+                            <p>
+                                <span className="text-muted-foreground font-medium">{t('Commercial Register')}:</span>
+                                {companyProfile?.cr || '-'}
                             </p>
                         </CardContent>
                     </Card>
@@ -322,22 +321,18 @@ export default function ShowInvoice() {
                                 <span className="text-muted-foreground font-medium">{t('Address')}:</span> {invoice?.client?.address || '-'}
                             </p>
                             <p>
-                                <span className="text-muted-foreground font-medium">{t('Tax Number')}:</span> {invoice?.client?.tax_id || '-'}
-                            </p>
-                            <p>
-                                <span className="text-muted-foreground font-medium">{t('Commercial Registration No.')}:</span>{' '}
-                                {invoice?.client?.cr_number || '-'}
-                            </p>
-                            <p>
                                 <span className="text-muted-foreground font-medium">{t('Phone Number')}:</span> {invoice?.client?.phone || '-'}
                             </p>
                             <p>
                                 <span className="text-muted-foreground font-medium">{t('Email')}:</span> {invoice?.client?.email || '-'}
                             </p>
-                            {invoice?.case && (
+                            <p>
+                                <span className="text-muted-foreground font-medium">{t('Tax Number')}:</span> {invoice?.client?.tax_id || '-'}
+                            </p>
+                            {invoice?.client?.business_type === 'b2b' && (
                                 <p>
-                                    <span className="text-muted-foreground font-medium">{t('Case Title')}:</span>{' '}
-                                    {invoice.case.case_id ? `${invoice.case.case_id} - ${invoice.case.title}` : invoice.case.title}
+                                    <span className="text-muted-foreground font-medium">{t('Commercial Register')}:</span>{' '}
+                                    {invoice?.client?.cr_number || '-'}
                                 </p>
                             )}
                         </CardContent>
@@ -439,9 +434,7 @@ export default function ShowInvoice() {
                                     <span className="font-medium">{formatAmount(subtotal)}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                        {taxRate ? t('Tax Value') + ` (${taxRate}%)` : t('Tax Value')}
-                                    </span>
+                                    <span className="text-muted-foreground">{taxRate ? t('Tax Value') + ` (${taxRate}%)` : t('Tax Value')}</span>
                                     <span className="font-medium">{formatAmount(taxAmount)}</span>
                                 </div>
                                 <div className="border-t border-gray-200 dark:border-gray-700" />
