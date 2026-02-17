@@ -411,14 +411,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::middleware('permission:view-setup')->group(function () {
             Route::get('setup', fn () => Inertia::render('setup/index'))->name('setup.index');
-            Route::get('setup/clients', fn () => Inertia::render('setup/clients'))->name('setup.clients');
-            Route::get('setup/cases', fn () => Inertia::render('setup/cases'))->name('setup.cases');
-            Route::get('setup/courts', fn () => Inertia::render('setup/courts'))->name('setup.courts');
-            Route::get('setup/documents', fn () => Inertia::render('setup/documents'))->name('setup.documents');
-            Route::get('setup/research', fn () => Inertia::render('setup/research'))->name('setup.research');
-            Route::get('setup/tasks', fn () => Inertia::render('setup/tasks'))->name('setup.tasks');
-            Route::get('setup/billing', fn () => Inertia::render('setup/billing'))->name('setup.billing');
-            Route::get('setup/notifications', fn () => Inertia::render('setup/notifications'))->name('setup.notifications');
         });
 
         // Media Library API routes
