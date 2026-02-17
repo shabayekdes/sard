@@ -44,10 +44,18 @@ class BankPaymentController extends Controller
         try {
             $request->validate([
                 'invoice_token' => 'required|string',
-                'amount' => 'required|numeric|min:0'
+                'amount' => 'required|numeric|min:0',
+                'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png,gif,doc,docx|max:10240',
             ]);
             
             $invoice = Invoice::where('payment_token', $request->invoice_token)->firstOrFail();
+            
+            $attachmentPaths = null;
+            if ($request->hasFile('attachment')) {
+                $file = $request->file('attachment');
+                $path = $file->store('payment-attachments/' . $invoice->id, 'public');
+                $attachmentPaths = [$path];
+            }
             
             Payment::create([
                 'invoice_id' => $invoice->id,
@@ -56,6 +64,7 @@ class BankPaymentController extends Controller
                 'payment_date' => now(),
                 'created_by' => $invoice->created_by,
                 'approval_status' => 'pending',
+                'attachment' => $attachmentPaths,
             ]);
             
             return redirect()->route('invoice.payment', $invoice->payment_token)

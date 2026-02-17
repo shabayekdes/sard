@@ -553,7 +553,8 @@ export default function Invoices() {
               label: t('Attachment'),
               type: 'media-picker',
               multiple: true,
-              placeholder: t('Select files...')
+              placeholder: t('Select files...'),
+              conditional: (_mode, formData) => String(formData?.payment_method || '') === 'bank_transfer'
             }
           ],
           modalSize: 'lg'

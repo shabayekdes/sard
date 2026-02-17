@@ -8,7 +8,21 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ArrowLeft, Edit, Send, DollarSign, Link, Download, MoreHorizontal, Wallet, Calendar, List, User, FileText } from 'lucide-react';
+import {
+    ArrowLeft,
+    Edit,
+    Send,
+    DollarSign,
+    Link,
+    Download,
+    MoreHorizontal,
+    Wallet,
+    Calendar,
+    List,
+    User,
+    FileText,
+    MoreVerticalIcon,
+} from 'lucide-react';
 import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { hasPermission } from '@/utils/authorization';
@@ -131,7 +145,7 @@ export default function ShowInvoice() {
 
     if (hasPermission(permissions, 'create-payments')) {
         pageActions.push({
-            label: t('Add Payment'),
+            label: t('Record New Payment'),
             icon: <DollarSign className="h-4 w-4 sm:mr-2" />,
             variant: 'default',
             onClick: () => setIsPaymentModalOpen(true),
@@ -216,8 +230,7 @@ export default function ShowInvoice() {
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" size="sm">
-                                    <MoreHorizontal className="h-4 w-4 sm:mr-1" />
-                                    <span className="sr-only sm:not-sr-only">{t('More Options')}</span>
+                                    <MoreVerticalIcon className="h-4 w-4 sm:mr-1" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
@@ -560,7 +573,14 @@ export default function ShowInvoice() {
                         { name: 'amount', label: t('Amount'), type: 'number', step: '0.01', required: true, min: '0' },
                         { name: 'payment_date', label: t('Payment Date'), type: 'date', required: true },
                         { name: 'notes', label: t('Notes'), type: 'textarea' },
-                        { name: 'attachment', label: t('Attachment'), type: 'media-picker', multiple: true, placeholder: t('Select files...') },
+                        {
+                            name: 'attachment',
+                            label: t('Attachment'),
+                            type: 'media-picker',
+                            multiple: true,
+                            placeholder: t('Select files...'),
+                            conditional: (_mode: string, formData: any) => String(formData?.payment_method || '') === 'bank_transfer',
+                        },
                     ],
                     modalSize: 'lg',
                 }}
