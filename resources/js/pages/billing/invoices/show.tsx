@@ -16,9 +16,6 @@ import {
     Link,
     Download,
     MoreHorizontal,
-    Wallet,
-    Calendar,
-    List,
     User,
     FileText,
     MoreVerticalIcon,
@@ -44,6 +41,8 @@ export default function ShowInvoice() {
     const subtotal = Number(invoice?.subtotal ?? 0);
     const taxAmount = Number(invoice?.tax_amount ?? 0);
     const totalAmount = Number(invoice?.total_amount ?? 0);
+    const remainingAmount = Number(remainingAmountProp ?? invoice?.remaining_amount ?? totalAmount - amountPaid);
+    const taxRate = invoice?.tax_rate ?? invoice?.client?.tax_rate ?? 0;
 
     const handleSend = () => {
         toast.loading(t('Sending invoice...'));
@@ -254,8 +253,7 @@ export default function ShowInvoice() {
                         <div className="flex flex-wrap items-start justify-between gap-4">
                             <div className="min-w-0 flex-1 text-start">
                                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                                    {invoice?.client?.business_type === 'b2b' ? t('Tax Invoice') : t('Invoice')} #
-                                    {formatInvoiceNumber(invoice?.invoice_number || invoice?.id)}
+                                    {invoice?.client?.business_type === 'b2b' ? t('Simplified Tax Invoice') : t('Tax Invoice')}
                                 </h2>
                                 <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                                     {t('Invoice Number')}: {formatInvoiceNumber(invoice?.invoice_number || invoice?.id)}
@@ -266,10 +264,14 @@ export default function ShowInvoice() {
                                         {invoice.case.case_id ? `${invoice.case.case_id} - ${invoice.case.title}` : invoice.case.title}
                                     </p>
                                 )}
+                                <p className="mt-3 flex flex-wrap gap-x-8 text-sm text-gray-600 dark:text-gray-400">
+                                    <span>{t('Invoice Date')}: {formatDate(invoice?.invoice_date)}</span>
+                                    <span>{t('Due Date')}: {formatDate(invoice?.due_date)}</span>
+                                </p>
                             </div>
                             <div className="flex items-center gap-3">
                                 <span
-                                    className={`inline-flex items-center rounded-lg px-3 py-1.5 text-sm font-medium ${getStatusColor(invoice?.status)}`}
+                                    className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${getStatusColor(invoice?.status)}`}
                                 >
                                     {getStatusLabel(invoice?.status)}
                                 </span>
@@ -277,75 +279,6 @@ export default function ShowInvoice() {
                         </div>
                     </CardContent>
                 </Card>
-
-                {/* Summary cards */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-3">
-                                <div className="bg-muted rounded-lg p-2">
-                                    <Wallet className="text-muted-foreground h-5 w-5" />
-                                </div>
-                                <div>
-                                    <p className="text-muted-foreground text-sm font-medium">{t('Total Amount')}</p>
-                                    <p className="text-lg font-semibold">{formatAmount(totalAmount)}</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-3">
-                                <div className="bg-muted rounded-lg p-2">
-                                    <Wallet className="text-muted-foreground h-5 w-5" />
-                                </div>
-                                <div>
-                                    <p className="text-muted-foreground text-sm font-medium">{t('Amount Paid')}</p>
-                                    <p className="text-lg font-semibold">{formatAmount(amountPaid)}</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-3">
-                                <div className="bg-muted rounded-lg p-2">
-                                    <Calendar className="text-muted-foreground h-5 w-5" />
-                                </div>
-                                <div>
-                                    <p className="text-muted-foreground text-sm font-medium">{t('Due Date')}</p>
-                                    <p className="text-lg font-semibold">{formatDate(invoice?.due_date)}</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-3">
-                                <div className="bg-muted rounded-lg p-2">
-                                    <Calendar className="text-muted-foreground h-5 w-5" />
-                                </div>
-                                <div>
-                                    <p className="text-muted-foreground text-sm font-medium">{t('Invoice Date')}</p>
-                                    <p className="text-lg font-semibold">{formatDate(invoice?.invoice_date)}</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-3">
-                                <div className="bg-muted rounded-lg p-2">
-                                    <List className="text-muted-foreground h-5 w-5" />
-                                </div>
-                                <div>
-                                    <p className="text-muted-foreground text-sm font-medium">{t('Products')}</p>
-                                    <p className="text-lg font-semibold">{invoiceItems?.length ?? 0}</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
 
                 {/* Invoice To & Invoice From */}
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -497,21 +430,33 @@ export default function ShowInvoice() {
                 </Card>
 
                 {/* Totals */}
-                <Card>
+                <Card className="overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900/50">
                     <CardContent className="pt-6">
                         <div className="flex justify-end">
                             <div className="w-full max-w-sm space-y-2 text-sm">
                                 <div className="flex justify-between">
-                                    <span className="text-muted-foreground">{t('Subtotal')}:</span>
+                                    <span className="text-muted-foreground">{t('Subtotal')}</span>
                                     <span className="font-medium">{formatAmount(subtotal)}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-muted-foreground">{t('Tax Value')}:</span>
+                                    <span className="text-muted-foreground">
+                                        {taxRate ? t('Tax Value') + ` (${taxRate}%)` : t('Tax Value')}
+                                    </span>
                                     <span className="font-medium">{formatAmount(taxAmount)}</span>
                                 </div>
-                                <div className="flex justify-between border-t pt-3 text-lg font-bold">
-                                    <span>{t('Total')}:</span>
+                                <div className="border-t border-gray-200 dark:border-gray-700" />
+                                <div className="flex justify-between pt-1 text-base font-bold">
+                                    <span>{t('Total Invoice (VAT inclusive)')}</span>
                                     <span>{formatAmount(totalAmount)}</span>
+                                </div>
+                                <div className="border-t border-gray-200 dark:border-gray-700" />
+                                <div className="flex justify-between pt-2">
+                                    <span className="text-muted-foreground">{t('Amount Paid')}</span>
+                                    <span className="font-medium">{formatAmount(amountPaid)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">{t('Remaining Amount')}</span>
+                                    <span className="font-medium">{formatAmount(remainingAmount)}</span>
                                 </div>
                             </div>
                         </div>

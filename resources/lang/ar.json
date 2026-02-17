@@ -3222,5 +3222,11 @@
   "Tax Value": "قيمة الضريبة",
   "Select Court": "اختر المحكمة",
   "Select Main Category": "اختر التصنيف الرئيسي",
-  "Select Main Category First": "اختر التصنيف الرئيسي أولاً"
+  "Select Main Category First": "اختر التصنيف الرئيسي أولاً",
+  "Simplified Tax Invoice": "فاتورة ضريبية مبسطة",
+  "Tax Invoice": "فاتورة ضريبية",
+  "Invoice Number": "رقم الفاتورة",
+  "Total Invoice (VAT inclusive)": "اجمالي الفاتورة (شامل الضريبة)",
+  "Amount Paid": "المبلغ المدفوع",
+  "Remaining Amount": "المبلغ المتبقي"
 }
