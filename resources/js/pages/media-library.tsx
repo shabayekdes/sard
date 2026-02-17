@@ -1,3 +1,4 @@
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { PageTemplate } from '@/components/page-template';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -42,6 +43,8 @@ export default function MediaLibraryDemo() {
 
     const [infoModalOpen, setInfoModalOpen] = useState(false);
     const [selectedMediaInfo, setSelectedMediaInfo] = useState<MediaItem | null>(null);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [mediaToDelete, setMediaToDelete] = useState<MediaItem | null>(null);
     const itemsPerPage = 12;
 
     const fetchMedia = useCallback(async () => {
@@ -186,6 +189,19 @@ export default function MediaLibraryDemo() {
             }
         } catch (error) {
             toast.error('Error deleting media');
+        }
+    };
+
+    const handleDeleteClick = (item: MediaItem) => {
+        setMediaToDelete(item);
+        setDeleteConfirmOpen(true);
+    };
+
+    const handleDeleteConfirm = () => {
+        if (mediaToDelete) {
+            deleteMedia(mediaToDelete.id);
+            setDeleteConfirmOpen(false);
+            setMediaToDelete(null);
         }
     };
 
@@ -458,7 +474,7 @@ export default function MediaLibraryDemo() {
                                                             </DropdownMenuItem>
                                                             <DropdownMenuSeparator />
                                                             <DropdownMenuItem
-                                                                onClick={() => deleteMedia(item.id)}
+                                                                onClick={() => handleDeleteClick(item)}
                                                                 className="text-destructive focus:text-destructive"
                                                             >
                                                                 <X className="mr-2 h-4 w-4" />
@@ -745,6 +761,25 @@ export default function MediaLibraryDemo() {
                         )}
                     </DialogContent>
                 </Dialog>
+
+                {/* Delete confirmation */}
+                <ConfirmDialog
+                    open={deleteConfirmOpen}
+                    onOpenChange={(open) => {
+                        setDeleteConfirmOpen(open);
+                        if (!open) setMediaToDelete(null);
+                    }}
+                    title={t('Delete media')}
+                    description={
+                        mediaToDelete
+                            ? t('Are you sure you want to delete "{{name}}"? This action cannot be undone.', { name: mediaToDelete.name })
+                            : ''
+                    }
+                    onConfirm={handleDeleteConfirm}
+                    confirmText={t('Delete')}
+                    cancelText={t('Cancel')}
+                    variant="destructive"
+                />
             </div>
         </PageTemplate>
     );

@@ -437,6 +437,7 @@
     "All Status": "جميع الحالات",
     "API Token": "رمز API",
     "Are you sure you want to delete your account? Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.": "هل أنت متأكد من رغبتك في حذف حسابك؟ عند الحذف سيتم إزالة جميع البيانات والموارد بشكل نهائي. يرجى إدخال كلمة المرور للتأكيد.",
+    "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.": "هل أنت متأكد من رغبتك في حذف \"{{name}}\"؟ لا يمكن التراجع عن هذا الإجراء.",
     "Bank Transfer Details": "تفاصيل التحويل البنكي",
     "Currency Code": "رمز العملة",
     "Delete Account": "حذف الحساب",

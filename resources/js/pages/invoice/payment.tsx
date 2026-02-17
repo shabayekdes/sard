@@ -770,7 +770,7 @@ export default function InvoicePayment() {
                                                 }
                                             }}
                                         >
-                                            <div className="text-primary mr-3">{gateway.icon}</div>
+                                            <div className="text-primary mx-3">{gateway.icon}</div>
                                             <span className="text-sm font-medium text-gray-900">{gateway.name}</span>
                                         </div>
                                     ))}
@@ -793,7 +793,7 @@ export default function InvoicePayment() {
                                     {t('Cancel')}
                                 </Button>
                                 <Button
-                                    className="h-12 flex-1 bg-blue-600 hover:bg-blue-700"
+                                    className="h-12 flex-1 bg-primary text-white hover:bg-primary/90"
                                     onClick={() => {
                                         try {
                                             if (!selectedGateway) {
