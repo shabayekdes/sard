@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\NewInvoiceCreated;
 use App\Events\InvoiceSent;
 use App\Models\Invoice;
+use App\Models\InvoiceLineItem;
 use App\Models\Client;
 use App\Models\ClientBillingInfo;
 use App\Models\Currency;
@@ -106,35 +107,14 @@ class InvoiceController extends BaseController
 
     public function show(Invoice $invoice)
     {
-        $invoice->load(['client', 'case', 'payments']);
+        $invoice->load(['client', 'case', 'payments', 'lineItems']);
 
         $amountPaid = (float) $invoice->payments()->where('approval_status', 'approved')->sum('amount');
         $remainingAmount = max(0, (float) $invoice->total_amount - $amountPaid);
 
         $companyProfile = \App\Models\CompanyProfile::where('created_by', $invoice->created_by)->first();
 
-        // Get all invoice items: line_items from JSON + linked time entries/expenses
-        $invoiceItems = [];
-
-        // Add line_items from JSON field (manually added items)
-        if ($invoice->line_items) {
-            foreach ($invoice->line_items as $item) {
-                $invoiceItems[] = [
-                    'id' => $item['id'] ?? null,
-                    'type' => $item['type'] ?? 'manual',
-                    'description' => $item['description'],
-                    'quantity' => $item['quantity'],
-                    'rate' => $item['rate'],
-                    'amount' => $item['amount'],
-                    'expense_date' => $item['expense_date'] ?? null
-                ];
-            }
-        }
-
-        // Add linked time entries and expenses
-        $linkedItemsResponse = $this->getCaseTimeEntries($invoice->case_id);
-        $linkedItems = $linkedItemsResponse->original->toArray();
-        // $invoiceItems = array_merge($invoiceItems, $linkedItems);
+        $invoiceItems = $this->mapLineItemsToArray($invoice->lineItems);
 
         // Load client billing info and currencies
         $clientBillingInfo = ClientBillingInfo::withPermissionCheck()
@@ -158,7 +138,8 @@ class InvoiceController extends BaseController
 
     public function edit(Invoice $invoice)
     {
-        $invoice->load(['client', 'case', 'emailTemplate', 'currency']);
+        $invoice->load(['client', 'case', 'emailTemplate', 'currency', 'lineItems']);
+        $invoice->setAttribute('line_items', $this->mapLineItemsToArray($invoice->lineItems));
 
         $clients = Client::select('id', 'name', 'tax_rate')->get();
         $cases = \App\Models\CaseModel::with('client:id,name')
@@ -228,8 +209,23 @@ class InvoiceController extends BaseController
             'invoice_date' => $request->invoice_date,
             'due_date' => $request->due_date,
             'notes' => $request->notes,
-            'line_items' => $request->line_items,
         ]);
+
+        if (!empty($request->line_items)) {
+            foreach ($request->line_items as $index => $item) {
+                $invoice->lineItems()->create([
+                    'type' => $item['type'] ?? 'manual',
+                    'description' => $item['description'],
+                    'quantity' => $item['quantity'],
+                    'rate' => $item['rate'],
+                    'amount' => $item['amount'],
+                    'sort_order' => $index,
+                    'vat_rate' => $item['vat_rate'] ?? null,
+                    'vat_amount' => $item['vat_amount'] ?? null,
+                    'expense_date' => $item['expense_date'] ?? null,
+                ]);
+            }
+        }
 
         // Trigger notifications
         event(new \App\Events\NewInvoiceCreated($invoice, $request->all()));
@@ -277,7 +273,7 @@ class InvoiceController extends BaseController
         ]);
 
         $taxAmount = $request->tax_amount ?? 0;
-        $subtotal = $request->subtotal ?? collect($request->line_items)->sum('amount');
+        $subtotal = $request->subtotal ?? collect($request->line_items ?? [])->sum('amount');
         $totalAmount = $subtotal + $taxAmount;
 
         $invoice->update([
@@ -289,8 +285,24 @@ class InvoiceController extends BaseController
             'invoice_date' => $request->invoice_date,
             'due_date' => $request->due_date,
             'notes' => $request->notes,
-            'line_items' => $request->line_items,
         ]);
+
+        $invoice->lineItems()->delete();
+        if (!empty($request->line_items)) {
+            foreach ($request->line_items as $index => $item) {
+                $invoice->lineItems()->create([
+                    'type' => $item['type'] ?? 'manual',
+                    'description' => $item['description'],
+                    'quantity' => $item['quantity'],
+                    'rate' => $item['rate'],
+                    'amount' => $item['amount'],
+                    'sort_order' => $index,
+                    'vat_rate' => $item['vat_rate'] ?? null,
+                    'vat_amount' => $item['vat_amount'] ?? null,
+                    'expense_date' => $item['expense_date'] ?? null,
+                ]);
+            }
+        }
 
         return redirect()->back()->with('success', 'Invoice updated successfully.');
     }
@@ -332,32 +344,11 @@ class InvoiceController extends BaseController
 
     public function generate(Invoice $invoice)
     {
-        $invoice->load(['client', 'case', 'creator']);
+        $invoice->load(['client', 'case', 'creator', 'lineItems']);
 
         $companyProfile = \App\Models\CompanyProfile::where('created_by', createdBy())->first();
 
-        // Get all invoice items: line_items from JSON + linked time entries/expenses
-        $invoiceItems = [];
-
-        // Add line_items from JSON field (manually added items)
-        if ($invoice->line_items) {
-            foreach ($invoice->line_items as $item) {
-                $invoiceItems[] = [
-                    'id' => $item['id'] ?? null,
-                    'type' => $item['type'] ?? 'manual',
-                    'description' => $item['description'],
-                    'quantity' => $item['quantity'],
-                    'rate' => $item['rate'],
-                    'amount' => $item['amount'],
-                    'expense_date' => $item['expense_date'] ?? null
-                ];
-            }
-        }
-
-        // Add linked time entries and expenses
-        $linkedItemsResponse = $this->getCaseTimeEntries($invoice->case_id);
-        $linkedItems = $linkedItemsResponse->original->toArray();
-        // $invoiceItems = array_merge($invoiceItems, $linkedItems);
+        $invoiceItems = $this->mapLineItemsToArray($invoice->lineItems);
 
         // Load client billing info and currencies
         $clientBillingInfo = ClientBillingInfo::withPermissionCheck()
@@ -396,15 +387,6 @@ class InvoiceController extends BaseController
             return redirect()->back()->with('error', 'No unbilled time entries found.');
         }
 
-        $lineItems = $timeEntries->map(function ($entry) {
-            return [
-                'description' => $entry->description,
-                'quantity' => $entry->hours,
-                'rate' => $entry->billable_rate,
-                'amount' => $entry->total_amount
-            ];
-        })->toArray();
-
         $subtotal = $timeEntries->sum('total_amount');
 
         $invoice = Invoice::create([
@@ -417,10 +399,20 @@ class InvoiceController extends BaseController
             'status' => 'draft',
             'invoice_date' => $request->invoice_date,
             'due_date' => $request->due_date,
-            'line_items' => $lineItems,
         ]);
 
-        // Mark time entries as billed
+        foreach ($timeEntries as $index => $entry) {
+            $invoice->lineItems()->create([
+                'type' => 'time',
+                'description' => $entry->description,
+                'quantity' => $entry->hours,
+                'rate' => $entry->billable_rate,
+                'amount' => $entry->total_amount,
+                'sort_order' => $index,
+                'time_entry_id' => $entry->id,
+            ]);
+        }
+
         $timeEntries->each(function ($entry) use ($invoice) {
             $entry->update(['invoice_id' => $invoice->id]);
         });
@@ -442,49 +434,24 @@ class InvoiceController extends BaseController
             'due_date' => 'required|date|after:invoice_date',
         ]);
 
-        $lineItems = [];
-        $subtotal = 0;
+        $timeEntries = collect();
+        $expenses = collect();
 
-        // Add time entries
         if ($request->time_entry_ids) {
             $timeEntries = \App\Models\TimeEntry::withPermissionCheck()
                 ->whereIn('id', $request->time_entry_ids)
                 ->unbilled()
                 ->get();
-
-            foreach ($timeEntries as $entry) {
-                $lineItems[] = [
-                    'type' => 'time',
-                    'billing_type' => $entry->billing_rate_type,
-                    'description' => $entry->description . ' (' . $entry->billing_display . ')',
-                    'quantity' => $entry->billing_rate_type === 'fixed' ? 1 : $entry->hours,
-                    'rate' => $entry->billing_rate_type === 'fixed' ? $entry->total_amount : $entry->billable_rate,
-                    'amount' => $entry->total_amount
-                ];
-                $subtotal += $entry->total_amount;
-            }
         }
-
-        // Add expenses
         if ($request->expense_ids) {
             $expenses = \App\Models\Expense::withPermissionCheck()
                 ->whereIn('id', $request->expense_ids)
                 ->unbilled()
                 ->get();
-
-            foreach ($expenses as $expense) {
-                $lineItems[] = [
-                    'type' => 'expense',
-                    'description' => $expense->description,
-                    'quantity' => 1,
-                    'rate' => $expense->amount,
-                    'amount' => $expense->amount
-                ];
-                $subtotal += $expense->amount;
-            }
         }
 
-        if (empty($lineItems)) {
+        $subtotal = $timeEntries->sum('total_amount') + $expenses->sum('amount');
+        if ($timeEntries->isEmpty() && $expenses->isEmpty()) {
             return redirect()->back()->with('error', 'No billable items selected.');
         }
 
@@ -498,21 +465,39 @@ class InvoiceController extends BaseController
             'status' => 'draft',
             'invoice_date' => $request->invoice_date,
             'due_date' => $request->due_date,
-            'line_items' => $lineItems,
         ]);
 
-        // Mark items as billed
-        if (isset($timeEntries) && $timeEntries->count() > 0) {
-            foreach ($timeEntries as $entry) {
-                $entry->invoice_id = $invoice->id;
-                $entry->save();
-            }
+        $sortOrder = 0;
+        foreach ($timeEntries as $entry) {
+            $invoice->lineItems()->create([
+                'type' => 'time',
+                'description' => $entry->description . ' (' . $entry->billing_display . ')',
+                'quantity' => $entry->billing_rate_type === 'fixed' ? 1 : $entry->hours,
+                'rate' => $entry->billing_rate_type === 'fixed' ? $entry->total_amount : $entry->billable_rate,
+                'amount' => $entry->total_amount,
+                'sort_order' => $sortOrder++,
+                'time_entry_id' => $entry->id,
+            ]);
         }
-        if (isset($expenses)) {
-            $expenses->each(function ($expense) use ($invoice) {
-                $expense->update(['invoice_id' => $invoice->id]);
-            });
+        foreach ($expenses as $expense) {
+            $invoice->lineItems()->create([
+                'type' => 'expense',
+                'description' => $expense->description,
+                'quantity' => 1,
+                'rate' => $expense->amount,
+                'amount' => $expense->amount,
+                'sort_order' => $sortOrder++,
+                'expense_date' => $expense->expense_date,
+                'expense_id' => $expense->id,
+            ]);
         }
+
+        $timeEntries->each(function ($entry) use ($invoice) {
+            $entry->update(['invoice_id' => $invoice->id]);
+        });
+        $expenses->each(function ($expense) use ($invoice) {
+            $expense->update(['invoice_id' => $invoice->id]);
+        });
 
         return redirect()->route('billing.invoices.index')
             ->with('success', 'Invoice generated successfully.');
@@ -643,6 +628,24 @@ class InvoiceController extends BaseController
             });
 
         return $timeEntries->concat($expenses)->toArray();
+    }
+
+    /**
+     * Map line items relation to array shape expected by frontend (id, type, description, quantity, rate, amount, expense_date).
+     */
+    private function mapLineItemsToArray($lineItems): array
+    {
+        return $lineItems->map(function ($row) {
+            return [
+                'id' => $row->id,
+                'type' => $row->type ?? 'manual',
+                'description' => $row->description,
+                'quantity' => (float) $row->quantity,
+                'rate' => (float) $row->rate,
+                'amount' => (float) $row->amount,
+                'expense_date' => $row->expense_date?->format('Y-m-d'),
+            ];
+        })->values()->all();
     }
 
     /**

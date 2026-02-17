@@ -54,8 +54,19 @@ class InvoicePaymentController extends Controller
     private function showPaymentPage($token, Request $request)
     {
         $invoice = Invoice::where('payment_token', $token)
-            ->with(['client', 'case', 'creator'])
+            ->with(['client', 'case', 'creator', 'lineItems'])
             ->firstOrFail();
+
+        $invoice->setAttribute('line_items', $invoice->lineItems->map(function ($row) {
+            return [
+                'id' => $row->id,
+                'type' => $row->type ?? 'manual',
+                'description' => $row->description,
+                'quantity' => (float) $row->quantity,
+                'rate' => (float) $row->rate,
+                'amount' => (float) $row->amount,
+            ];
+        })->values()->all());
 
         // Get company information
         $company = \App\Models\User::where('id', $invoice->created_by)

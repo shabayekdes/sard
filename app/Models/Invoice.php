@@ -26,7 +26,6 @@ class Invoice extends BaseModel
         'invoice_date',
         'due_date',
         'notes',
-        'line_items',
         'payment_token',
     ];
 
@@ -36,7 +35,6 @@ class Invoice extends BaseModel
         'total_amount' => 'decimal:2',
         'invoice_date' => 'date',
         'due_date' => 'date',
-        'line_items' => 'array',
     ];
 
     protected static function booted()
@@ -99,6 +97,11 @@ class Invoice extends BaseModel
         return $this->hasMany(TimeEntry::class);
     }
 
+    public function lineItems(): HasMany
+    {
+        return $this->hasMany(InvoiceLineItem::class)->orderBy('sort_order');
+    }
+
     public function getStatusDisplayAttribute(): string
     {
         return match($this->status) {
@@ -127,16 +130,8 @@ class Invoice extends BaseModel
 
     public function calculateTotals()
     {
-        if (!$this->line_items) {
-            $this->update([
-                'subtotal' => 0,
-                'total_amount' => $this->tax_amount ?? 0
-            ]);
-            return;
-        }
-
-        $subtotal = collect($this->line_items)->sum('amount');
-        $total = $subtotal + ($this->tax_amount ?? 0);
+        $subtotal = (float) $this->lineItems()->sum('amount');
+        $total = $subtotal + ((float) ($this->tax_amount ?? 0));
 
         $this->update([
             'subtotal' => $subtotal,
@@ -147,17 +142,16 @@ class Invoice extends BaseModel
     public function addLineItem($description, $quantity = 1, $rate = 0, $amount = null)
     {
         $amount = $amount ?? ($quantity * $rate);
+        $maxSort = (int) $this->lineItems()->max('sort_order');
 
-        $lineItems = $this->line_items ?? [];
-        $lineItems[] = [
+        $this->lineItems()->create([
+            'type' => 'manual',
             'description' => $description,
             'quantity' => $quantity,
             'rate' => $rate,
-            'amount' => $amount
-        ];
-
-        $this->line_items = $lineItems;
-        $this->save();
+            'amount' => $amount,
+            'sort_order' => $maxSort + 1,
+        ]);
         $this->calculateTotals();
     }
 

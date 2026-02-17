@@ -20,7 +20,7 @@ function createInvoiceFor(User $user): Invoice
         'created_by' => $user->id,
     ]);
 
-    return Invoice::create([
+    $invoice = Invoice::create([
         'created_by' => $user->id,
         'client_id' => $client->id,
         'subtotal' => 100,
@@ -29,17 +29,20 @@ function createInvoiceFor(User $user): Invoice
         'status' => 'draft',
         'invoice_date' => now()->toDateString(),
         'due_date' => now()->addDays(7)->toDateString(),
-        'line_items' => [
-            [
-                'description' => 'Consulting',
-                'quantity' => 1,
-                'rate' => 100,
-                'amount' => 100,
-                'vat_rate' => 15,
-                'vat_amount' => 15,
-            ],
-        ],
     ]);
+
+    $invoice->lineItems()->create([
+        'type' => 'manual',
+        'description' => 'Consulting',
+        'quantity' => 1,
+        'rate' => 100,
+        'amount' => 100,
+        'sort_order' => 0,
+        'vat_rate' => 15,
+        'vat_amount' => 15,
+    ]);
+
+    return $invoice;
 }
 
 test('tax invoice pdf uses tax template and attachment disposition', function () {

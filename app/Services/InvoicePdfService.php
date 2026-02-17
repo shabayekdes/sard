@@ -21,7 +21,6 @@ class InvoicePdfService
 
         $filename = sprintf('%s-%s.pdf', $type, $invoice->invoice_number);
 
-        // return view('invoices.pdf.tax', $data);
         $pdf = Pdf::view('invoices.pdf.tax', $data)
             ->format('a4')
             ->name($filename);
@@ -43,20 +42,22 @@ class InvoicePdfService
         $defaultVatRate = (float) config('invoice_pdf.default_vat_rate', 15);
         $currencyCode = $invoice->currency?->code ?? config('invoice_pdf.currency_code', 'SAR');
 
-        $items = collect($invoice->line_items ?? [])->map(function (array $item) use ($defaultVatRate) {
-            $quantity = (float) ($item['quantity'] ?? 1);
-            $unitPrice = (float) ($item['rate'] ?? 0);
-            $taxableAmount = (float) ($item['amount'] ?? ($quantity * $unitPrice));
-            $vatRate = isset($item['vat_rate']) ? (float) $item['vat_rate'] : $defaultVatRate;
-            $vatAmount = isset($item['vat_amount'])
-                ? (float) $item['vat_amount']
+        $invoice->loadMissing('lineItems');
+
+        $items = $invoice->lineItems->map(function ($item) use ($defaultVatRate) {
+            $quantity = (float) $item->quantity;
+            $unitPrice = (float) $item->rate;
+            $taxableAmount = (float) $item->amount;
+            $vatRate = $item->vat_rate !== null ? (float) $item->vat_rate : $defaultVatRate;
+            $vatAmount = $item->vat_amount !== null
+                ? (float) $item->vat_amount
                 : round($taxableAmount * $vatRate / 100, 2);
 
             return [
-                'description' => $item['description'] ?? '',
+                'description' => $item->description ?? '',
                 'quantity' => $quantity,
                 'unit_price' => $unitPrice,
-                'type' => $item['type'] ?? 'manual',
+                'type' => $item->type ?? 'manual',
                 'taxable_amount' => $taxableAmount,
                 'vat_rate' => $vatRate,
                 'vat_amount' => $vatAmount,

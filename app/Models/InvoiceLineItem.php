@@ -1,0 +1,48 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class InvoiceLineItem extends Model
+{
+    protected $fillable = [
+        'invoice_id',
+        'type',
+        'description',
+        'quantity',
+        'rate',
+        'amount',
+        'sort_order',
+        'vat_rate',
+        'vat_amount',
+        'expense_date',
+        'time_entry_id',
+        'expense_id',
+    ];
+
+    protected $casts = [
+        'quantity' => 'decimal:2',
+        'rate' => 'decimal:2',
+        'amount' => 'decimal:2',
+        'vat_rate' => 'decimal:2',
+        'vat_amount' => 'decimal:2',
+        'expense_date' => 'date',
+    ];
+
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class);
+    }
+
+    public function timeEntry(): BelongsTo
+    {
+        return $this->belongsTo(TimeEntry::class, 'time_entry_id');
+    }
+
+    public function expense(): BelongsTo
+    {
+        return $this->belongsTo(Expense::class);
+    }
+}

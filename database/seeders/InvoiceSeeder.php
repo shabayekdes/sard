@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Invoice;
+use App\Models\InvoiceLineItem;
 use App\Models\Client;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -141,9 +142,19 @@ class InvoiceSeeder extends Seeder
             'invoice_date' => $invoiceDate,
             'due_date' => $invoiceDate->copy()->addDays(30),
             'notes' => 'Legal services for ' . $client->name,
-            'line_items' => $lineItems,
         ]);
-        
+
+        foreach ($lineItems as $index => $item) {
+            $invoice->lineItems()->create([
+                'type' => $item['type'],
+                'description' => $item['description'],
+                'quantity' => $item['quantity'],
+                'rate' => $item['rate'],
+                'amount' => $item['amount'],
+                'sort_order' => $index,
+            ]);
+        }
+
         // Link time entries and expenses to invoice
         $timeEntries->each(fn($entry) => $entry->update(['invoice_id' => $invoice->id]));
         $expenses->each(fn($expense) => $expense->update(['invoice_id' => $invoice->id]));
