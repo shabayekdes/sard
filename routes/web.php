@@ -700,7 +700,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('hearings', [\App\Http\Controllers\HearingController::class, 'store'])->middleware('permission:create-hearings')->name('hearings.store');
             Route::put('hearings/{hearing}', [\App\Http\Controllers\HearingController::class, 'update'])->middleware('permission:edit-hearings')->name('hearings.update');
             Route::delete('hearings/{hearing}', [\App\Http\Controllers\HearingController::class, 'destroy'])->middleware('permission:delete-hearings')->name('hearings.destroy');
-            Route::get('api/hearings/court-judges/{court}', [\App\Http\Controllers\HearingController::class, 'getCourtJudges'])->name('api.hearings.court-judges');
         });
 
         // Calendar route
@@ -720,16 +719,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('courts/{court}', [\App\Http\Controllers\CourtController::class, 'update'])->middleware('permission:edit-courts')->name('courts.update');
             Route::delete('courts/{court}', [\App\Http\Controllers\CourtController::class, 'destroy'])->middleware('permission:delete-courts')->name('courts.destroy');
             Route::put('courts/{court}/toggle-status', [\App\Http\Controllers\CourtController::class, 'toggleStatus'])->middleware('permission:edit-courts')->name('courts.toggle-status');
-        });
-
-        // Judge Management routes
-        Route::middleware('permission:manage-judges')->group(function () {
-            Route::get('judges', [\App\Http\Controllers\JudgeController::class, 'index'])->name('judges.index');
-            Route::get('judges/{judge}', [\App\Http\Controllers\JudgeController::class, 'show'])->middleware('permission:view-judges')->name('judges.show');
-            Route::post('judges', [\App\Http\Controllers\JudgeController::class, 'store'])->middleware('permission:create-judges')->name('judges.store');
-            Route::put('judges/{judge}', [\App\Http\Controllers\JudgeController::class, 'update'])->middleware('permission:edit-judges')->name('judges.update');
-            Route::delete('judges/{judge}', [\App\Http\Controllers\JudgeController::class, 'destroy'])->middleware('permission:delete-judges')->name('judges.destroy');
-            Route::put('judges/{judge}/toggle-status', [\App\Http\Controllers\JudgeController::class, 'toggleStatus'])->middleware('permission:edit-judges')->name('judges.toggle-status');
         });
 
         // Hearing Type Management routes

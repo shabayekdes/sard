@@ -47,7 +47,6 @@ return [
         'invoices',
         'payments',
         'courts',
-        'judges',
         'hearing_types',
         'research_types',
         'research_projects',

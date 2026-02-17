@@ -354,16 +354,6 @@ class RoleSeeder extends Seeder
             'delete-courts',
             'toggle-status-courts',
 
-            // Judge Management permissions
-            'manage-judges',
-            'manage-any-judges',
-            'manage-own-judges',
-            'view-judges',
-            'create-judges',
-            'edit-judges',
-            'delete-judges',
-            'toggle-status-judges',
-
             // Hearing Type Management permissions
             'manage-hearing-types',
             'manage-any-hearing-types',

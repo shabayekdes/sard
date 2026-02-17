@@ -45,7 +45,6 @@ interface HearingFormData {
     court_type?: { name: string | Record<string, string> };
     circle_type?: { name: string | Record<string, string> };
   }>;
-  judges: Array<{ id: number; name: string }>;
   hearingTypes: Array<{ id: number; name: string | Record<string, string> }>;
   googleCalendarEnabled?: boolean;
 }
@@ -663,17 +662,6 @@ export function GlobalQuickActionModals() {
             : [],
         },
         { name: 'circle_number', label: t('Circle Number'), type: 'text' },
-        {
-          name: 'judge_id',
-          label: t('Judge'),
-          type: 'select',
-          options: [{ value: 'none', label: t('Select Judge') }, ...(hearingData.judges
-            ? hearingData.judges.map((j) => ({
-              value: j.id.toString(),
-              label: j.name,
-            }))
-            : [])],
-        },
         {
           name: 'hearing_type_id',
           label: t('Session Type'),

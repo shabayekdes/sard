@@ -73,14 +73,6 @@ class Court extends BaseModel
     }
 
     /**
-     * Get the judges associated with this court.
-     */
-    public function judges()
-    {
-        return $this->hasMany(Judge::class);
-    }
-
-    /**
      * Get the hearings scheduled at this court.
      */
     public function hearings()

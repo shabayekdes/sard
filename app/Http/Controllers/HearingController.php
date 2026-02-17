@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Hearing;
 use App\Models\CaseModel;
 use App\Models\Court;
-use App\Models\Judge;
 use App\Models\HearingType;
 use App\Models\Setting;
 use App\Models\CaseTimeline;
@@ -82,7 +81,6 @@ class HearingController extends BaseController
         $circleTypes = \App\Models\CircleType::withPermissionCheck()
             ->where('status', 'active')
             ->get(['id', 'name']);
-        $judges = Judge::withPermissionCheck()->where('status', 'active')->get(['id', 'name']);
         $hearingTypes = HearingType::withPermissionCheck()
             ->where('status', 'active')
             ->get(['id', 'name']);
@@ -97,7 +95,6 @@ class HearingController extends BaseController
             'courts' => $courts,
             'courtTypes' => $courtTypes,
             'circleTypes' => $circleTypes,
-            'judges' => $judges,
             'hearingTypes' => $hearingTypes,
             'googleCalendarEnabled' => $googleCalendarEnabled,
             'filters' => $request->all(['search', 'status', 'court_id', 'court_type_id', 'circle_type_id', 'sort_field', 'sort_direction', 'per_page']),
@@ -110,7 +107,6 @@ class HearingController extends BaseController
             'case_id' => 'required|exists:cases,id,created_by,' . createdBy(),
             'court_id' => 'required|exists:courts,id,created_by,' . createdBy(),
             'circle_number' => 'nullable|string|max:255',
-            'judge_id' => 'nullable|exists:judges,id,created_by,' . createdBy(),
             'hearing_type_id' => 'required|exists:hearing_types,id,created_by,' . createdBy(),
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -126,11 +122,6 @@ class HearingController extends BaseController
         $validated['created_by'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'scheduled';
         $validated['duration_minutes'] = $validated['duration_minutes'] ?? 60;
-
-        // Handle 'none' values for optional fields
-        if (isset($validated['judge_id']) && $validated['judge_id'] === 'none') {
-            $validated['judge_id'] = null;
-        }
 
         $hearing = Hearing::create($validated);
 
@@ -187,7 +178,6 @@ class HearingController extends BaseController
             'case_id' => 'required|exists:cases,id,created_by,' . createdBy(),
             'court_id' => 'required|exists:courts,id,created_by,' . createdBy(),
             'circle_number' => 'nullable|string|max:255',
-            'judge_id' => 'nullable|exists:judges,id,created_by,' . createdBy(),
             'hearing_type_id' => 'required|exists:hearing_types,id,created_by,' . createdBy(),
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -200,11 +190,6 @@ class HearingController extends BaseController
             'outcome' => 'nullable|string',
             'sync_with_google_calendar' => 'nullable|boolean',
         ]);
-
-        // Handle 'none' values for optional fields
-        if (isset($validated['judge_id']) && $validated['judge_id'] === 'none') {
-            $validated['judge_id'] = null;
-        }
 
         $hearing->update($validated);
 
@@ -270,22 +255,6 @@ class HearingController extends BaseController
                 'status' => 'pending'
             ]);
         }
-    }
-
-    public function getCourtJudges($courtId)
-    {
-        $judges = Judge::withPermissionCheck()
-            ->where('court_id', $courtId)
-            ->where('status', 'active')
-            ->get(['id', 'name'])
-            ->map(function($judge) {
-                return [
-                    'value' => $judge->id,
-                    'label' => $judge->name
-                ];
-            });
-
-        return response()->json($judges);
     }
 
     private function updateNotifications($hearing)

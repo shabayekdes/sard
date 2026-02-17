@@ -401,16 +401,6 @@ class PermissionSeeder extends Seeder
             ['name' => 'delete-courts', 'module' => 'courts', 'label' => 'Delete Courts', 'description' => 'Can delete courts'],
             ['name' => 'toggle-status-courts', 'module' => 'courts', 'label' => 'Toggle Status Courts', 'description' => 'Can toggle status of courts'],
 
-            // Judge Management
-            ['name' => 'manage-judges', 'module' => 'judges', 'label' => 'Manage Judges', 'description' => 'Can manage judges'],
-            ['name' => 'manage-any-judges', 'module' => 'judges', 'label' => 'Manage All Judges', 'description' => 'Manage Any Judges'],
-            ['name' => 'manage-own-judges', 'module' => 'judges', 'label' => 'Manage Own Judges', 'description' => 'Manage Limited Judges that is created by own'],
-            ['name' => 'view-judges', 'module' => 'judges', 'label' => 'View Judges', 'description' => 'View Judges'],
-            ['name' => 'create-judges', 'module' => 'judges', 'label' => 'Create Judges', 'description' => 'Can create judges'],
-            ['name' => 'edit-judges', 'module' => 'judges', 'label' => 'Edit Judges', 'description' => 'Can edit judges'],
-            ['name' => 'delete-judges', 'module' => 'judges', 'label' => 'Delete Judges', 'description' => 'Can delete judges'],
-            ['name' => 'toggle-status-judges', 'module' => 'judges', 'label' => 'Toggle Status Judges', 'description' => 'Can toggle status of judges'],
-
             // Hearing Type Management
             ['name' => 'manage-hearing-types', 'module' => 'hearing_types', 'label' => 'Manage Hearing Types', 'description' => 'Can manage hearing types'],
             ['name' => 'manage-any-hearing-types', 'module' => 'hearing_types', 'label' => 'Manage All Hearing Types', 'description' => 'Manage Any Hearing Types'],

@@ -47,8 +47,6 @@ class DatabaseSeeder extends Seeder
 
                 // Court Schedule module seeders
                 CourtSeeder::class,
-                JudgeSeeder::class,
-
                 CaseSeeder::class,
                 CaseTimelineSeeder::class,
                 CaseTeamMemberSeeder::class,

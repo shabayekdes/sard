@@ -125,8 +125,7 @@ class NotificationTemplateController extends Controller
             EmailTemplateName::HEARING_CREATED => [
                 '{case_number}' => 'Case Number',
                 '{hearing_date}' => 'Hearing Date',
-                '{court}' => 'Court Name',
-                '{judge}' => 'Judge Name'
+                '{court}' => 'Court Name'
             ],
             EmailTemplateName::INVOICE_CREATED => [
                 '{invoice_number}' => 'Invoice Number',
@@ -145,11 +144,6 @@ class NotificationTemplateController extends Controller
                 '{court_type}' => 'Court Type',
                 '{circle_type}' => 'Circle Type',
                 '{location}' => 'Court Location'
-            ],
-            EmailTemplateName::JUDGE_CREATED => [
-                '{judge_name}' => 'Judge Name',
-                '{court}' => 'Court Name',
-                '{specialization}' => 'Judge Specialization'
             ],
             EmailTemplateName::LICENSE_CREATED => [
                 '{license_number}' => 'License Number',

@@ -105,12 +105,6 @@ export default function SetupIndex() {
             href: route('advocate.circle-types.index'),
             permissions: ['manage-circle-types', 'manage-any-circle-types', 'manage-own-circle-types'],
           },
-          {
-            title: t('Judges'),
-            description: t('Manage judge data and records'),
-            href: route('judges.index'),
-            permissions: ['manage-judges', 'manage-any-judges', 'manage-own-judges'],
-          },
         ],
       },
       {

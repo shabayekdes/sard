@@ -78,7 +78,6 @@ interface CompanyDashboardData {
       file_number?: string;
     } | null;
     court: { name?: string; court_type?: string | null; circle_type?: string | null } | string | null;
-    judge?: { name?: string } | null;
     hearing_type?: { name?: string; name_translations?: Record<string, string> } | null;
     description?: string | null;
     hearing_date?: string | null;
@@ -798,7 +797,6 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
             { name: 'title', label: t('Title'), type: 'text' },
             { name: 'case', label: t('Case'), type: 'text' },
             { name: 'court', label: t('Court'), type: 'text' },
-            { name: 'judge', label: t('Judge'), type: 'text' },
             { name: 'hearing_type', label: t('Type'), type: 'text' },
             { name: 'description', label: t('Description'), type: 'textarea' },
             { name: 'hearing_date', label: t('Date'), type: 'text' },
@@ -813,7 +811,6 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
           ...currentSession,
           case: formatCaseLabel(currentSession?.case),
           court: formatCourtLabel(currentSession?.court),
-          judge: currentSession?.judge?.name || '-',
           hearing_type: getTranslatedLabel(
             currentSession?.hearing_type?.name_translations || currentSession?.type_translations,
             currentSession?.hearing_type?.name || currentSession?.type

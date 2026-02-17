@@ -14,7 +14,6 @@ class Hearing extends BaseModel
         'case_id',
         'court_id',
         'circle_number',
-        'judge_id',
         'hearing_type_id',
         'title',
         'description',
@@ -60,11 +59,6 @@ class Hearing extends BaseModel
     public function court()
     {
         return $this->belongsTo(Court::class);
-    }
-
-    public function judge()
-    {
-        return $this->belongsTo(Judge::class);
     }
 
     public function hearingType()

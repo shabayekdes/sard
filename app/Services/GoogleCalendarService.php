@@ -604,7 +604,7 @@ class GoogleCalendarService
     
     private function getHearingData($id, $cleanDescription)
     {
-        $hearing = \App\Models\Hearing::with(['case.client', 'court', 'judge'])->find($id);
+        $hearing = \App\Models\Hearing::with(['case.client', 'court'])->find($id);
         if (!$hearing) return null;
         
         return [
@@ -613,7 +613,7 @@ class GoogleCalendarService
             'case_title' => $hearing->case->title ?? 'No Case',
             'client_name' => $hearing->case->client->name ?? 'No Client',
             'court_name' => $hearing->court->name ?? '',
-            'judge_name' => $hearing->judge->name ?? '',
+            'judge_name' => '',
             'location' => $hearing->court->address ?? '',
             'status' => $hearing->status,
             'clean_description' => $cleanDescription,

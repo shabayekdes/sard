@@ -169,9 +169,6 @@ class CaseController extends BaseController
                 'caseCategory',
                 'caseSubcategory',
                 'caseStatus',
-                'court.judges' => function($query) {
-                    $query->where('status', 'active');
-                },
                 'court.courtType',
                 'court.circleType',
                 'oppositeParties.nationality'
@@ -366,8 +363,7 @@ class CaseController extends BaseController
             ->with([
                 'court.courtType',
                 'court.circleType',
-                'hearingType',
-                'judge'
+                'hearingType'
             ])
             ->where('case_id', $caseId);
 
@@ -417,9 +413,6 @@ class CaseController extends BaseController
         $circleTypes = \App\Models\CircleType::withPermissionCheck()
             ->where('status', 'active')
             ->get(['id', 'name']);
-        $judges = \App\Models\Judge::withPermissionCheck()
-            ->where('status', 'active')
-            ->get(['id', 'name']);
         $hearingTypes = \App\Models\HearingType::withPermissionCheck()
             ->where('status', 'active')
             ->get(['id', 'name']);
@@ -443,7 +436,6 @@ class CaseController extends BaseController
             'courts' => $courts,
             'courtTypes' => $courtTypes,
             'circleTypes' => $circleTypes,
-            'judges' => $judges,
             'hearingTypes' => $hearingTypes,
             'googleCalendarEnabled' => $googleCalendarEnabled,
             'filters' => $request->all([

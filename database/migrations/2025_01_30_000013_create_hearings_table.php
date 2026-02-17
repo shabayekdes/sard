@@ -14,7 +14,6 @@ return new class extends Migration
             $table->foreignId('case_id')->constrained('cases')->onDelete('cascade');
             $table->foreignId('court_id')->constrained('courts')->onDelete('cascade');
             $table->string('circle_number')->nullable();
-            $table->foreignId('judge_id')->nullable()->constrained('judges')->onDelete('set null');
             $table->foreignId('hearing_type_id')->nullable()->constrained('hearing_types')->onDelete('set null');
             $table->string('title');
             $table->text('description')->nullable();

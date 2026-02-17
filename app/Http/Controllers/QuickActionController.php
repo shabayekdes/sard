@@ -11,7 +11,6 @@ use App\Models\ClientType;
 use App\Models\Country;
 use App\Models\Court;
 use App\Models\HearingType;
-use App\Models\Judge;
 use App\Models\Setting;
 use App\Models\TaskStatus;
 use App\Models\TaskType;
@@ -187,10 +186,6 @@ class QuickActionController extends Controller
             ->where('status', 'active')
             ->get(['id', 'name', 'court_type_id', 'circle_type_id']);
 
-        $judges = Judge::withPermissionCheck()
-            ->where('status', 'active')
-            ->get(['id', 'name']);
-
         $hearingTypes = HearingType::withPermissionCheck()
             ->where('status', 'active')
             ->get(['id', 'name']);
@@ -202,7 +197,6 @@ class QuickActionController extends Controller
         return response()->json([
             'cases' => $cases,
             'courts' => $courts,
-            'judges' => $judges,
             'hearingTypes' => $hearingTypes,
             'googleCalendarEnabled' => $googleCalendarEnabled,
         ]);

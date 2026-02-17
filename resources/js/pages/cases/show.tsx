@@ -35,7 +35,6 @@ export default function CaseShow() {
         courts,
         courtTypes,
         circleTypes,
-        judges,
         hearingTypes,
         googleCalendarEnabled,
         filters = {},
@@ -676,9 +675,6 @@ export default function CaseShow() {
         const data = { ...formData, case_id: caseData.id };
 
         // Handle 'none' values for optional fields
-        if (data.judge_id === 'none') {
-            data.judge_id = null;
-        }
         if (data.hearing_type_id === 'none') {
             data.hearing_type_id = null;
         }
@@ -3319,15 +3315,6 @@ export default function CaseShow() {
                                     type: 'text'
                                 },
                                 {
-                                    name: 'judge_id',
-                                    label: t('Judge'),
-                                    type: 'select',
-                                    options: [{ value: 'none', label: t('Select Judge') }, ...(judges ? judges.map((j: any) => ({
-                                        value: j.id.toString(),
-                                        label: j.name
-                                    })) : [])]
-                                },
-                                {
                                     name: 'hearing_type_id',
                                     label: t('Session Type'),
                                     type: 'select',
@@ -3385,7 +3372,6 @@ export default function CaseShow() {
                                 { name: 'title', label: t('Title'), type: 'text', readOnly: true },
                                 { name: 'description', label: t('Description'), type: 'textarea', readOnly: true },
                                 { name: 'court', label: t('Court'), type: 'text', readOnly: true },
-                                { name: 'judge', label: t('Judge'), type: 'text', readOnly: true },
                                 { name: 'hearing_type', label: t('Type'), type: 'text', readOnly: true },
                                 { name: 'hearing_date', label: t('Date'), type: 'text', readOnly: true },
                                 { name: 'hearing_time', label: t('Time'), type: 'text', readOnly: true },
@@ -3403,7 +3389,6 @@ export default function CaseShow() {
                                 const courtType = currentHearing.court.court_type ? getTranslatedValue(currentHearing.court.court_type.name) : '';
                                 return courtType ? `${courtName} + ${courtType}` : courtName;
                             })() : '-',
-                            judge: currentHearing?.judge?.name || '-',
                             hearing_type: getTranslatedValue(currentHearing?.hearing_type?.name) || '-',
                             hearing_date: currentHearing?.hearing_date ? (window.appSettings?.formatDate(currentHearing.hearing_date) || new Date(currentHearing.hearing_date).toLocaleDateString()) : '-',
                             hearing_time: currentHearing?.hearing_time || '-',

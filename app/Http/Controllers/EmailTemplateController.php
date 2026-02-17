@@ -118,15 +118,6 @@ class EmailTemplateController extends Controller
                 '{client_name}' => 'Client Name',
                 '{app_name}' => 'App Name'
             ];
-        } elseif ($templateType === EmailTemplateName::JUDGE_CREATED->value) {
-            $variables = [
-                '{user_name}' => 'User Name',
-                '{judge_name}' => 'Judge Name',
-                '{court_name}' => 'Court Name',
-                '{email}' => 'Email',
-                '{contact_no}' => 'Contact Number',
-                '{app_name}' => 'App Name'
-            ];
         } elseif ($templateType === EmailTemplateName::COURT_CREATED->value) {
             $variables = [
                 '{user_name}' => 'User Name',

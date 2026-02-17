@@ -325,7 +325,7 @@ class DashboardController extends Controller
         $locale = app()->getLocale();
         $upcomingHearingsList = Hearing::where('created_by', $companyId)
             ->where('hearing_date', '>=', now())
-            ->with(['case', 'court.courtType', 'court.circleType', 'judge', 'hearingType'])
+            ->with(['case', 'court.courtType', 'court.circleType', 'hearingType'])
             ->orderBy('hearing_date')
             ->take(4)
             ->get()
@@ -346,9 +346,6 @@ class DashboardController extends Controller
                         'name' => $hearing->court->name,
                         'court_type' => $hearing->court->courtType?->name,
                         'circle_type' => $hearing->court->circleType?->name,
-                    ] : null,
-                    'judge' => $hearing->judge ? [
-                        'name' => $hearing->judge->name,
                     ] : null,
                     'hearing_type' => $hearing->hearingType ? [
                         'name' => $hearingTypeName,

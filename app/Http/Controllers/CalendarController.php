@@ -44,7 +44,7 @@ class CalendarController extends BaseController
 
         // Get hearings for the date range
         $hearingsQuery = Hearing::withPermissionCheck()
-            ->with(['case', 'court', 'judge', 'hearingType'])
+            ->with(['case', 'court', 'hearingType'])
             ->whereBetween('hearing_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
             
         // Filter for team members
@@ -66,7 +66,7 @@ class CalendarController extends BaseController
                     'status' => $hearing->status,
                     'case_title' => $hearing->case->title ?? '',
                     'court_name' => $hearing->court->name ?? '',
-                    'judge_name' => $hearing->judge->name ?? '',
+                    'judge_name' => '',
                     'color' => $this->getStatusColor($hearing->status),
                     'google_synced' => !empty($hearing->google_calendar_event_id),
                     'details' => [

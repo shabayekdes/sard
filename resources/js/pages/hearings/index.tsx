@@ -14,7 +14,7 @@ import { capitalize } from '@/utils/helpers';
 
 export default function Hearings() {
   const { t, i18n } = useTranslation();
-  const { auth, hearings, cases, courts, courtTypes, circleTypes, judges, hearingTypes, googleCalendarEnabled, filters: pageFilters = {} } = usePage().props as any;
+  const { auth, hearings, cases, courts, courtTypes, circleTypes, hearingTypes, googleCalendarEnabled, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
   const currentLocale = i18n.language || 'en';
 
@@ -454,20 +454,6 @@ export default function Hearings() {
                           type: 'text',
                       },
                       {
-                          name: 'judge_id',
-                          label: t('Judge'),
-                          type: 'select',
-                          options: [
-                              { value: 'none', label: t('Select Judge') },
-                              ...(judges
-                                  ? judges.map((j: any) => ({
-                                        value: j.id.toString(),
-                                        label: j.name,
-                                    }))
-                                  : []),
-                          ],
-                      },
-                      {
                           name: 'hearing_type_id',
                           label: t('Session Type'),
                           type: 'select',
@@ -526,7 +512,6 @@ export default function Hearings() {
                       { name: 'title', label: t('Title'), type: 'text', readOnly: true },
                       { name: 'case', label: t('Case'), type: 'text', readOnly: true },
                       { name: 'court', label: t('Court'), type: 'text', readOnly: true },
-                      { name: 'judge', label: t('Judge'), type: 'text', readOnly: true },
                       { name: 'hearing_type', label: t('Type'), type: 'text', readOnly: true },
                       { name: 'description', label: t('Description'), type: 'textarea', readOnly: true },
                       { name: 'hearing_date', label: t('Date'), type: 'text', readOnly: true },
@@ -562,7 +547,6 @@ export default function Hearings() {
                         })()
                       : '-',
                   circle_number: currentItem?.circle_number || '-',
-                  judge: currentItem?.judge?.name || '-',
                   hearing_type: getTranslatedValue(currentItem?.hearing_type?.name) || '-',
                   hearing_date: currentItem?.hearing_date
                       ? window.appSettings?.formatDate(currentItem.hearing_date) || new Date(currentItem.hearing_date).toLocaleDateString()

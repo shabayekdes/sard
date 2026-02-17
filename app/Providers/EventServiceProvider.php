@@ -8,7 +8,6 @@ use App\Events\CaseCreated;
 use App\Events\SendEmailEvent;
 use App\Events\NewHearingCreated;
 use App\Events\NewLicenseCreated;
-use App\Events\NewJudgeCreated;
 use App\Events\NewCourtCreated;
 use App\Events\NewTaskCreated;
 use App\Events\NewCleRecordCreated;
@@ -23,7 +22,6 @@ use App\Listeners\CaseCreateListener;
 use App\Listeners\SendEmailListener;
 use App\Listeners\NewHearingListener;
 use App\Listeners\NewLicenseListener;
-use App\Listeners\NewJudgeListener;
 use App\Listeners\NewCourtListener;
 use App\Listeners\NewTaskListener;
 use App\Listeners\NewCleRecordListener;
@@ -40,7 +38,6 @@ use App\Listeners\SendNewHearingSlackNotification;
 use App\Listeners\SendNewInvoiceSlackNotification;
 use App\Listeners\SendInvoiceSentSlackNotification;
 use App\Listeners\SendNewCourtSlackNotification;
-use App\Listeners\SendNewJudgeSlackNotification;
 use App\Listeners\SendNewLicenseSlackNotification;
 use App\Listeners\SendNewRegulatoryBodySlackNotification;
 use App\Listeners\SendNewCleRecordSlackNotification;
@@ -53,7 +50,6 @@ use App\Listeners\SendNewHearingTwilioNotification;
 use App\Listeners\SendNewInvoiceTwilioNotification;
 use App\Listeners\SendInvoiceSentTwilioNotification;
 use App\Listeners\SendNewCourtTwilioNotification;
-use App\Listeners\SendNewJudgeTwilioNotification;
 use App\Listeners\SendNewLicenseTwilioNotification;
 use App\Listeners\SendNewRegulatoryBodyTwilioNotification;
 use App\Listeners\SendNewCleRecordTwilioNotification;
@@ -89,11 +85,6 @@ class EventServiceProvider extends ServiceProvider
         NewLicenseCreated::class => [
             NewLicenseListener::class,
             SendNewLicenseSlackNotification::class,
-        ],
-        NewJudgeCreated::class => [
-            NewJudgeListener::class,
-            SendNewJudgeSlackNotification::class,
-            SendNewJudgeTwilioNotification::class,
         ],
         NewCourtCreated::class => [
             NewCourtListener::class,

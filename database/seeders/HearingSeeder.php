@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Hearing;
 use App\Models\CaseModel;
 use App\Models\Court;
-use App\Models\Judge;
 use App\Models\HearingType;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -21,7 +20,6 @@ class HearingSeeder extends Seeder
             // Get company-specific data
             $cases = CaseModel::where('created_by', $companyUser->id)->get();
             $courts = Court::where('created_by', $companyUser->id)->get();
-            $judges = Judge::where('created_by', $companyUser->id)->get();
             $hearingTypes = HearingType::where('created_by', $companyUser->id)->get();
 
             if ($cases->count() > 0 && $courts->count() > 0) {
@@ -47,7 +45,6 @@ class HearingSeeder extends Seeder
                     $hearingData = [
                         'case_id' => $cases->random()->id,
                         'court_id' => $courts->random()->id,
-                        'judge_id' => $judges->count() > 0 ? $judges->random()->id : null,
                         'hearing_type_id' => $hearingTypes->count() > 0 ? $hearingTypes->random()->id : null,
                         'title' => $hearingTitles[($companyUser->id + $i - 1) % count($hearingTitles)],
                         'description' => 'Hearing #' . $i . ' for ' . $companyUser->name . '. Important legal proceeding requiring attendance.',
