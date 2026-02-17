@@ -500,7 +500,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                         value={formData[field.name] || ''}
                         onChange={(e) => handleChange(field.name, e.target.value)}
                         required={field.required}
-                        className={errors[field.name] ? 'border-red-500' : ''}
+                        className={errors[field.name] ? 'border-red-500' : position === 'right' ? 'text-end' : ''}
                         disabled={mode === 'view' || field.disabled}
                     />
                 );
@@ -540,8 +540,8 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                 return (
                     <Select value={currentValue} onValueChange={handleSelectChange} disabled={mode === 'view' || field.disabled}>
                         <SelectTrigger className={errors[field.name] ? 'border-red-500' : ''}>
-                            <SelectValue placeholder={field.placeholder || `Select ${field.label}`}>
-                                {displayText || field.placeholder || `Select ${field.label}`}
+                            <SelectValue placeholder={field.placeholder || t('Select {{label}}', { label: field.label })}>
+                                {displayText || field.placeholder || t('Select {{label}}', { label: field.label })}
                             </SelectValue>
                         </SelectTrigger>
                         <SelectContent className="z-[60000]">
@@ -709,7 +709,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                     <MediaPicker
                         value={currentImageUrl}
                         onChange={(value) => handleChange(field.name, value)}
-                        placeholder={field.placeholder || `Select ${field.label}`}
+                        placeholder={field.placeholder || t('Select {{label}}', { label: field.label })}
                         showPreview={true}
                         multiple={field.multiple || false}
                     />
