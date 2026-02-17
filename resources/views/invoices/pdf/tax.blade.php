@@ -1,282 +1,165 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tax Invoice - فاتورة ضريبية</title>
+    <title>فاتورة ضريبية مبسطة</title>
     <style>
         {!! file_get_contents(public_path('css/pdf-invoice.css')) !!}
     </style>
 </head>
 <body>
 @php
-    $format = fn ($value) => number_format((float) $value, 2);
+    $formatNum = fn ($value) => number_format((float) $value, 2);
+    $formatMoney = fn ($value) => formatCurrencyForCompany((float) $value, $invoice->created_by);
     $paymentsTotal = $invoice->payments?->sum('amount') ?? 0;
-    $lastPayment = $invoice->payments?->sortByDesc('payment_date')->first();
-    $paymentLabel = $lastPayment
-        ? 'Payment on ' . \Carbon\Carbon::parse($lastPayment->payment_date)->format('Y-m-d H:i')
-            . ' using ' . ($lastPayment->payment_method ?? '-')
-        : null;
+    $amountDue = ($totals['grand_total'] ?? 0) - $paymentsTotal;
+    $dueDateFormatted = $invoice->due_date ? $invoice->due_date->format('Y-m-d') : $issued_at->format('Y-m-d');
+    $invoiceDateFormatted = $issued_at->format('Y-m-d');
+    $taxRate = (float) config('invoice_pdf.default_vat_rate', 15);
 @endphp
 <div class="pag-container">
-    <!-- header -->
-    <header class="invoice-header flex justify-content-between align-items-center gap-3">
-        @if (!empty($branding['logo_url']))
-            <img class="logo-img" src="{{ $branding['logo_url'] }}" alt="logo image" />
-        @else
-            <img class="logo-img" src="/images/logo.svg" alt="logo image" />
-        @endif
-        <h1 class="invoice-title flex flex-wrap text-right justify-content-end column-gap-1 m-0">
-            <span>Simplified Tax Invoice</span>
-            -
-            <span>فاتورة ضريبية مبسطة</span>
-        </h1>
-    </header>
-    <!-- end header -->
-
-    <!-- invoice info -->
-    <div class="invoice-info flex gap-3">
-        <table class="w-6">
-            <tbody>
-            <tr>
-                <td>CR NO</td>
-                <td class="text-center break-word px-2">{{ $seller['registration_number'] ?: '-' }}</td>
-                <td class="text-right">رقم السجل التجاري</td>
-            </tr>
-            <tr>
-                <td>Tax No</td>
-                <td class="text-center break-word px-2">{{ $seller['vat_number'] ?: '-' }}</td>
-                <td class="text-right">الرقم الضريبي</td>
-            </tr>
-            <tr>
-                <td>Invoice No</td>
-                <td class="text-center break-word px-2">{{ $invoice->invoice_number }}</td>
-                <td class="text-right">رقم الفاتورة</td>
-            </tr>
-            <tr>
-                <td>Date</td>
-                <td class="text-center break-word px-2">{{ $issued_at->format('Y-m-d') }}</td>
-                <td class="text-right">تاريخ إصدار الفاتورة</td>
-            </tr>
-            </tbody>
-        </table>
-        <div class="invoice-info-divider"></div>
-        <table class="w-6">
-            <tbody>
-            <tr>
-                <td>Center</td>
-                <td class="text-center break-word px-2">{{ $seller['name'] }}</td>
-                <td class="text-right">مركز</td>
-            </tr>
-            <tr>
-                <td>Branch</td>
-                <td class="text-center break-word px-2">Main</td>
-                <td class="text-right">فرع</td>
-            </tr>
-            <tr>
-                <td>Address</td>
-                <td class="text-center break-word px-2">{{ $seller['address'] ?: '-' }}</td>
-                <td class="text-right">العنوان</td>
-            </tr>
-            <tr>
-                <td>Mobile</td>
-                <td class="text-center break-word px-2">{{ $seller['phone'] ?: '-' }}</td>
-                <td class="text-right">موبايل</td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-    <!-- end invoice info -->
-
-    <!-- customer info -->
-    <div class="customer-info flex gap-2 align-items-start">
-        <div class="w-6 table-container">
-            <table class="app-table">
-                <thead>
-                <tr>
-                    <th colspan="3">
-                        <div class="flex gap-2 align-items-center justify-content-between table-header">
-                            <span>Case Information</span>
-                            <span class="text-right">بيانات القضية</span>
-                        </div>
-                    </th>
-                </tr>
-                </thead>
-
-                <tbody>
-                <tr>
-                    <td>Case ID</td>
-                    <td class="text-center break-word px-2">{{ $invoice->case?->case_id ?: '-' }}</td>
-                    <td class="text-right">رقم القضية</td>
-                </tr>
-                <tr>
-                    <td>Case No.</td>
-                    <td class="text-center break-word px-2">{{ $invoice->case?->case_number ?: '-' }}</td>
-                    <td class="text-right">رقم الدعوى</td>
-                </tr>
-                <tr>
-                    <td>Title</td>
-                    <td class="text-center break-word px-2">{{ $invoice->case?->title ?: '-' }}</td>
-                    <td class="text-right">عنوان القضية</td>
-                </tr>
-                <tr>
-                    <td>File No.</td>
-                    <td class="text-center break-word px-2">{{ $invoice->case?->file_number ?: '-' }}</td>
-                    <td class="text-right">رقم الملف</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="w-6 table-container">
-            <table class="app-table">
-                <thead>
-                <tr>
-                    <th colspan="3" class="table-header">
-                        <div class="flex gap-2 align-items-center justify-content-between">
-                            <span>Customer Information</span>
-                            <span class="text-right">بيانات العميل</span>
-                        </div>
-                    </th>
-                </tr>
-                </thead>
-
-                <tbody>
-                <tr>
-                    <td>Name</td>
-                    <td class="text-center break-word px-2">{{ $customer['name'] ?: '-' }}</td>
-                    <td class="text-right">الأسم</td>
-                </tr>
-                <tr>
-                    <td>Phone</td>
-                    <td class="text-center break-word px-2">{{ $customer['phone'] ?: '-' }}</td>
-                    <td class="text-right">رقم الهاتف</td>
-                </tr>
-                <tr>
-                    <td>Address</td>
-                    <td class="text-center break-word px-2">{{ $customer['address'] ?: '-' }}</td>
-                    <td class="text-right">العنوان</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <!-- end customer info -->
-
-    <!-- line items -->
-    <div class="mb-8">
-        <table class="w-full border border-gray-200 items-table-rtl">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-4 py-3 desc-right text-sm font-semibold text-gray-900 border-b">Description</th>
-                    <th class="px-4 py-3 text-center text-sm font-semibold text-gray-900 border-b">Qty</th>
-                    <th class="px-4 py-3 text-right text-sm font-semibold text-gray-900 border-b">Rate</th>
-                    <th class="px-4 py-3 text-right text-sm font-semibold text-gray-900 border-b">Amount</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if ($items && $items->count() > 0)
-                    @foreach ($items as $item)
-                        <tr class="border-b {{ ($item['type'] ?? '') === 'expense' ? 'bg-orange-50' : '' }}">
-                            <td class="px-4 py-4 text-sm text-gray-900 desc-right">
-                                <div class="space-y-1">
-                                    <div>{{ $item['description'] }}</div>
-                                    @if (($item['type'] ?? '') === 'expense')
-                                        <div class="text-xs text-orange-600 flex items-center">
-                                            <span class="bg-orange-100 px-2 py-1 rounded text-orange-700 font-medium">Expense</span>
-                                            @if (!empty($item['expense_date']))
-                                                <span class="ml-2">{{ \Carbon\Carbon::parse($item['expense_date'])->format('Y-m-d') }}</span>
-                                            @endif
-                                        </div>
-                                    @endif
-                                    @if (($item['type'] ?? '') === 'time')
-                                        <div class="text-xs text-blue-600 flex items-center">
-                                            <span class="bg-blue-100 px-2 py-1 rounded text-blue-700 font-medium">Time Entry</span>
-                                        </div>
-                                    @endif
-                                </div>
-                            </td>
-                            <td class="px-4 py-4 text-sm text-gray-900 text-center">{{ $format($item['quantity']) }}</td>
-                            <td class="px-4 py-4 text-sm text-gray-900 text-right">{{ $format($item['unit_price']) }} {{ $currency_code }}</td>
-                            <td class="px-4 py-4 text-sm text-gray-900 text-right">{{ $format($item['line_total']) }} {{ $currency_code }}</td>
-                        </tr>
-                    @endforeach
-                @else
-                    <tr>
-                        <td colspan="4" class="px-4 py-4 text-center text-gray-500">No items found</td>
-                    </tr>
-                @endif
-            </tbody>
-        </table>
-    </div>
-    <!-- end line items -->
-
-    <!-- products summary -->
-    <div class="summary-info flex gap-2">
-        <div class="qr-container table-container flex align-items-center justify-content-center p-2">
-            <img src="{{ $qr_code }}" alt="qr code image" class="w-full" />
-        </div>
-
-        <div class="flex-grow-1">
-            <div class="table-container">
-                <table class="app-table">
-                    <tbody>
-                    <tr>
-                        <td class="text-right"><span class="sar-symbol">{{ $format($totals['subtotal']) }}</span></td>
-                        <th class="text-right">
-                            (Amount excl. VAT) الاجمالي غير شامل ضريبة القيمة المضافة
-                        </th>
-                    </tr>
-                    <tr>
-                        <td class="text-right"><span class="sar-symbol">0</span></td>
-                        <th class="text-right">(Discount) الخصم</th>
-                    </tr>
-                    <tr>
-                        <td class="text-right"><span class="sar-symbol">{{ $format($totals['vat_total']) }}</span></td>
-                        <th class="text-right">(VAT) ضريبة القمية المضافة</th>
-                    </tr>
-                    <tr>
-                        <td class="text-right"><span class="sar-symbol">{{ $format($totals['grand_total']) }}</span></td>
-                        <th class="text-right">
-                            (Amount including VAT) الإجمالي شامل الضريبة
-                        </th>
-                    </tr>
-                    <tr>
-                        <td class="text-right"><span class="sar-symbol">{{ $format($paymentsTotal) }}</span></td>
-                        <th class="text-right">(Payments) المدفوعات</th>
-                    </tr>
-                    @if ($paymentLabel)
-                        <tr>
-                            <th colspan="2" class="text-right font-semibold">
-                                {{ $paymentLabel }}
-                            </th>
-                        </tr>
+    <!-- Top card: title + invoice number, case, dates (same as show.tsx first card) -->
+    <div class="pdf-card pdf-card-header-block">
+        <div class="pdf-card-content">
+            <div class="flex justify-content-between align-items-start gap-3">
+                <div class="pdf-header-left">
+                    <h1 class="pdf-main-title">فاتورة ضريبية مبسطة</h1>
+                    <p class="pdf-meta-line"><strong>رقم الفاتورة:</strong> {{ $invoice->invoice_number }}</p>
+                    @if ($invoice->case)
+                        <p class="pdf-meta-line"><strong>عنوان القضية:</strong> {{ $invoice->case->case_id ? $invoice->case->case_id . ' - ' . $invoice->case->title : $invoice->case->title }}</p>
                     @endif
-                    <tr>
-                        <td class="text-right">{{ $paymentLabel ?: '-' }}</td>
-                        <td class="text-right">
-                            شروط الدفع (Payment Terms)
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+                    <p class="pdf-meta-line pdf-dates">
+                        <span><strong>تاريخ الفاتورة:</strong> {{ $invoiceDateFormatted }}</span>
+                        <span><strong>تاريخ الاستحقاق:</strong> {{ $dueDateFormatted }}</span>
+                    </p>
+                </div>
+                @if (!empty($branding['logo_url']))
+                    <img class="logo-img logo-top-right" src="{{ $branding['logo_url'] }}" alt="الشعار" />
+                @else
+                    <img class="logo-img logo-top-right" src="/images/logo.svg" alt="الشعار" />
+                @endif
             </div>
         </div>
     </div>
-    <!-- end products summary -->
 
-    <!-- thanks -->
-    <div class="terms-conditions-header flex gap-2 text-center">
-        <div class="thanks-message w-6 flex flex-column align-items-center justify-content-center">
-            <p class="m-0">شكرا لزيارتكم</p>
-            <p class="m-0">Thank you for your visit</p>
+    <!-- فاتورة من / فاتورة الى -->
+    <div class="pdf-two-cards flex gap-3 mb-6">
+        <div class="pdf-card flex-grow-1">
+            <div class="pdf-card-content">
+                <h3 class="pdf-card-title">فاتورة من</h3>
+                <p class="pdf-card-name">{{ $seller['name'] ?: '-' }}</p>
+                <p class="pdf-card-row"><span class="pdf-label">العنوان:</span> {{ $seller['address'] ?: '-' }}</p>
+                <p class="pdf-card-row"><span class="pdf-label">رقم الهاتف:</span> {{ $seller['phone'] ?: '-' }}</p>
+                <p class="pdf-card-row"><span class="pdf-label">البريد الإلكتروني:</span> {{ $seller['email'] ?: '-' }}</p>
+                <p class="pdf-card-row"><span class="pdf-label">الرقم الضريبي:</span> {{ $seller['tax_number'] ?: '-' }}</p>
+                <p class="pdf-card-row"><span class="pdf-label">السجل التجاري:</span> {{ $seller['cr'] ?: '-' }}</p>
+            </div>
         </div>
-        <div class="w-6 flex flex-column align-items-center justify-content-center">
-            <p class="m-0">ملاحظات الفاتورة (Invoice Notes)</p>
-            <p class="m-0">{{ $invoice->notes ?: '-' }}</p>
+        <div class="pdf-card flex-grow-1">
+            <div class="pdf-card-content">
+                <h3 class="pdf-card-title">فاتورة الى</h3>
+                <p class="pdf-card-name">{{ $customer['name'] ?: '-' }}</p>
+                <p class="pdf-card-row"><span class="pdf-label">العنوان:</span> {{ $customer['address'] ?: '-' }}</p>
+                <p class="pdf-card-row"><span class="pdf-label">رقم الهاتف:</span> {{ $customer['phone'] ?: '-' }}</p>
+                <p class="pdf-card-row"><span class="pdf-label">البريد الإلكتروني:</span> {{ $customer['email'] ?: '-' }}</p>
+                <p class="pdf-card-row"><span class="pdf-label">الرقم الضريبي:</span> {{ $customer['vat_number'] ?: '-' }}</p>
+                @if (($customer['business_type'] ?? '') === 'b2b')
+                    <p class="pdf-card-row"><span class="pdf-label">السجل التجاري:</span> {{ $customer['cr_number'] ?: '-' }}</p>
+                @endif
+            </div>
         </div>
     </div>
-    <!-- end thanks -->
+
+    <!-- جدول البنود -->
+    <div class="mb-6">
+        <table class="pdf-table pdf-table-rtl">
+            <thead>
+            <tr>
+                <th class="pdf-th pdf-th-desc">البيان</th>
+                <th class="pdf-th pdf-th-num">الكمية</th>
+                <th class="pdf-th pdf-th-num">سعر الوحدة</th>
+                <th class="pdf-th pdf-th-num">الإجمالي الفرعي بدون الضريبة</th>
+                <th class="pdf-th pdf-th-num">الضريبة</th>
+                <th class="pdf-th pdf-th-num">الإجمالي شامل الضريبة</th>
+            </tr>
+            </thead>
+            <tbody>
+            @if ($items && $items->count() > 0)
+                @foreach ($items as $item)
+                    @php
+                        $itemType = $item['type'] ?? 'manual';
+                    @endphp
+                    <tr class="pdf-tr {{ $itemType === 'expense' ? 'pdf-tr-expense' : '' }}">
+                        <td class="pdf-td pdf-td-desc">{{ $item['description'] }}</td>
+                        <td class="pdf-td pdf-td-num">{{ $formatNum($item['quantity']) }}</td>
+                        <td class="pdf-td pdf-td-num">{{ $formatMoney($item['unit_price']) }}</td>
+                        <td class="pdf-td pdf-td-num">{{ $formatMoney($item['taxable_amount']) }}</td>
+                        <td class="pdf-td pdf-td-num">{{ $formatMoney($item['vat_amount']) }}</td>
+                        <td class="pdf-td pdf-td-num">{{ $formatMoney($item['line_total']) }}</td>
+                    </tr>
+                @endforeach
+            @else
+                <tr>
+                    <td colspan="7" class="pdf-td text-center text-gray-500">لا توجد بنود</td>
+                </tr>
+            @endif
+            </tbody>
+        </table>
+    </div>
+
+    <!-- الإجماليات + رمز QR -->
+    <div class="pdf-card pdf-totals-card">
+        <div class="pdf-card-content pdf-totals-qr-row flex justify-content-between align-items-end gap-4">
+            <div class="pdf-qr-wrap pdf-qr-next-to-totals">
+                <img class="pdf-qr-img" src="{{ $qr_code }}" alt="رمز QR" />
+            </div>
+            <div class="pdf-totals-wrap pdf-totals-rtl">
+                <div class="pdf-totals-row">
+                    <span class="pdf-totals-label">المجموع الفرعي</span>
+                    <span class="pdf-totals-value">{{ $formatMoney($totals['subtotal']) }}</span>
+                </div>
+                <div class="pdf-totals-row">
+                    <span class="pdf-totals-label">قيمة الضريبة ({{ (int) $taxRate }}%)</span>
+                    <span class="pdf-totals-value">{{ $formatMoney($totals['vat_total']) }}</span>
+                </div>
+                <div class="pdf-totals-divider"></div>
+                <div class="pdf-totals-row pdf-totals-row-main">
+                    <span class="pdf-totals-label">إجمالي الفاتورة (شامل الضريبة)</span>
+                    <span class="pdf-totals-value">{{ $formatMoney($totals['grand_total']) }}</span>
+                </div>
+                <div class="pdf-totals-divider"></div>
+                <div class="pdf-totals-row">
+                    <span class="pdf-totals-label">المبلغ المدفوع</span>
+                    <span class="pdf-totals-value">{{ $formatMoney($paymentsTotal) }}</span>
+                </div>
+                <div class="pdf-totals-row">
+                    <span class="pdf-totals-label">المبلغ المتبقي</span>
+                    <span class="pdf-totals-value">{{ $formatMoney($amountDue) }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الشروط والملاحظات -->
+    <div class="pdf-two-cards flex gap-3 mb-6">
+        <div class="pdf-card flex-grow-1">
+            <div class="pdf-card-header pdf-card-header-small">
+                <h4 class="pdf-card-title-small">الشروط</h4>
+            </div>
+            <div class="pdf-card-content">
+                <p class="pdf-muted-text">{{ $terms ?? 'صافي 30 يوماً. تطبق رسوم تأخير بنسبة 1.5% شهرياً.' }}</p>
+            </div>
+        </div>
+        <div class="pdf-card flex-grow-1">
+            <div class="pdf-card-header pdf-card-header-small">
+                <h4 class="pdf-card-title-small">ملاحظات</h4>
+            </div>
+            <div class="pdf-card-content">
+                <p class="pdf-muted-text">{{ $invoice->notes ?: 'نشكركم على تعاملكم. يرجى السداد في الموعد المحدد.' }}</p>
+            </div>
+        </div>
+    </div>
 </div>
 </body>
 </html>

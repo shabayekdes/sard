@@ -1322,35 +1322,49 @@ if (! function_exists('formatCurrencyForPlansAndReferrals')) {
 
 if (! function_exists('formatCurrencyForCompany')) {
     /**
-     * Format currency using company settings
+     * Format currency using company settings (same logic as frontend formatCurrency).
      *
-     * @param float $amount
+     * @param float|string $amount
+     * @param int|null $userId Optional: use this user's settings (e.g. invoice created_by for PDF).
      * @return string
      */
-    function formatCurrencyForCompany($amount)
+    function formatCurrencyForCompany($amount, $userId = null)
     {
-        if (!auth()->check()) {
+        $amount = (float) $amount;
+
+        if ($userId === null && ! auth()->check()) {
             return '$' . number_format($amount, 2);
         }
 
-        $userId = auth()->user()->type === 'company' ? auth()->id() : auth()->user()->created_by;
+        if ($userId === null) {
+            $userId = auth()->user()->type === 'company' ? auth()->id() : auth()->user()->created_by;
+        }
 
-        // Get currency from company_settings table
-        $companySetting = \App\Models\CompanySetting::where('created_by', $userId)
-            ->where('setting_key', 'currency')
-            ->first();
-        $currencyCode = $companySetting ? $companySetting->setting_value : 'USD';
+        // Same source as frontend (HandleInertiaRequests): Setting.defaultCurrency + formatting
+        $userSettings = settings($userId);
+        $userSettings = is_array($userSettings) ? $userSettings : [];
 
-        // Get currency symbol from database
+        $currencyCode = $userSettings['defaultCurrency'] ?? null;
+        if (empty($currencyCode)) {
+            $companySetting = \App\Models\CompanySetting::where('created_by', $userId)
+                ->where('setting_key', 'currency')
+                ->first();
+            $currencyCode = $companySetting ? $companySetting->setting_value : 'USD';
+        }
+
         $currency = \App\Models\Currency::where('code', $currencyCode)->first();
         $symbol = $currency ? $currency->symbol : '$';
 
-        // Get other formatting settings
-        $userSettings = settings($userId);
+        // Formatting (match globalSettings.formatCurrency)
         $decimalPlaces = (int)($userSettings['decimalFormat'] ?? 2);
         $thousandsSeparator = $userSettings['thousandsSeparator'] ?? ',';
         $symbolSpace = ($userSettings['currencySymbolSpace'] ?? false) === '1';
         $symbolPosition = $userSettings['currencySymbolPosition'] ?? 'before';
+        $floatNumber = ($userSettings['floatNumber'] ?? '1') !== '0';
+
+        if (! $floatNumber) {
+            $amount = floor($amount);
+        }
 
         $formattedAmount = number_format($amount, $decimalPlaces, '.', $thousandsSeparator);
         $space = $symbolSpace ? ' ' : '';

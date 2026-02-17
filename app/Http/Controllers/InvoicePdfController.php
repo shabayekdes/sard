@@ -16,7 +16,7 @@ class InvoicePdfController extends Controller
         ]);
 
         $invoice = Invoice::withPermissionCheck()
-            ->with(['client.billingInfo', 'payments', 'currency', 'creator'])
+            ->with(['client.billingInfo', 'payments', 'currency', 'creator', 'case'])
             ->findOrFail($invoice->id);
 
         $type = $validated['type'];

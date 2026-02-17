@@ -1,4 +1,36 @@
-/* Simplified invoice styles (PDF-safe, no external assets) */
+/* Simplified invoice styles (PDF-safe) */
+@font-face {
+  font-family: 'Graphik Arabic';
+  src: url('/fonts/graphik-arabic/GraphikArabic-Regular.woff2') format('woff2'),
+       url('/fonts/graphik-arabic/GraphikArabic-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Graphik Arabic';
+  src: url('/fonts/graphik-arabic/GraphikArabic-Medium.woff2') format('woff2'),
+       url('/fonts/graphik-arabic/GraphikArabic-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Graphik Arabic';
+  src: url('/fonts/graphik-arabic/GraphikArabic-Semibold.woff2') format('woff2'),
+       url('/fonts/graphik-arabic/GraphikArabic-Semibold.woff') format('woff');
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Graphik Arabic';
+  src: url('/fonts/graphik-arabic/GraphikArabic-Bold.woff2') format('woff2'),
+       url('/fonts/graphik-arabic/GraphikArabic-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+}
+
 :root {
   --border-color: #e8e8e8;
   --white-color: #ffffff;
@@ -15,7 +47,7 @@
 
 body {
   margin: 0;
-  font-family: "Tajawal", "Cairo", Arial, sans-serif;
+  font-family: "Graphik Arabic", "Tajawal", "Cairo", Arial, sans-serif;
   font-size: 11px;
   font-weight: 500;
   color: var(--black-color);
@@ -69,6 +101,10 @@ table {
   align-items: flex-start;
 }
 
+.align-items-end {
+  align-items: flex-end;
+}
+
 .gap-1 {
   gap: 4px;
 }
@@ -79,6 +115,10 @@ table {
 
 .gap-3 {
   gap: 12px;
+}
+
+.gap-4 {
+  gap: 16px;
 }
 
 .column-gap-1 {
@@ -142,18 +182,216 @@ table {
 
 /* Header */
 .invoice-header {
-  margin-bottom: 10px;
+  margin-bottom: 16px;
+}
+
+.invoice-header-right {
+  flex: 1;
 }
 
 .invoice-title {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.invoice-meta {
+  font-size: 11px;
+  color: #4b5563;
+}
+
+.invoice-meta-row {
+  margin-bottom: 2px;
 }
 
 .logo-img {
   min-width: 90px;
   width: 90px;
   max-width: 90px;
+}
+
+/* Party cards (فاتورة من / فاتورة الى) */
+.party-cards {
+  margin-bottom: 18px;
+}
+
+.party-card {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--white-color);
+}
+
+.party-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 10px 12px;
+  background: #f9fafb;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.party-card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.party-card-icon {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.party-card-body {
+  padding: 10px 12px;
+}
+
+.party-field {
+  font-size: 10px;
+  color: #374151;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.party-label {
+  color: #6b7280;
+  margin-left: 4px;
+}
+
+/* Line items table (6 columns) */
+.mb-6 { margin-bottom: 18px; }
+
+.items-table {
+  border-collapse: collapse;
+  width: 100%;
+  border: 1px solid var(--border-color);
+  font-size: 11px;
+}
+
+.items-table thead {
+  background: #f9fafb;
+}
+
+.items-th {
+  padding: 10px 12px;
+  text-align: right;
+  font-weight: 600;
+  color: #111827;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.items-th-desc { min-width: 140px; }
+.items-th-num { white-space: nowrap; }
+
+.items-tr {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.items-tr-expense {
+  background: #fff7ed;
+}
+
+.items-td {
+  padding: 10px 12px;
+  text-align: right;
+  color: #374151;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.items-td-desc { text-align: right; }
+.items-td-num { white-space: nowrap; }
+
+.items-desc {
+  margin-bottom: 2px;
+}
+
+.items-badge {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 2px;
+}
+
+.items-badge-expense {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.items-badge-time {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+/* Summary block */
+.summary-footer-row {
+  margin-top: 20px;
+  break-inside: avoid;
+}
+
+.summary-block {
+  min-width: 280px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 11px;
+}
+
+.summary-label {
+  color: #4b5563;
+  margin-left: 12px;
+}
+
+.summary-value {
+  font-weight: 500;
+  color: #111827;
+}
+
+.summary-row-total {
+  font-weight: 700;
+  font-size: 12px;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Footer: terms, notes, QR */
+.footer-right {
+  text-align: right;
+}
+
+.terms-block,
+.notes-block {
+  font-size: 10px;
+  color: #4b5563;
+}
+
+.terms-title,
+.notes-title {
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.terms-text,
+.notes-text {
+  line-height: 1.4;
+}
+
+.qr-wrapper {
+  margin-top: 8px;
+}
+
+.qr-img {
+  width: 100px;
+  height: 100px;
+  display: block;
 }
 
 /* Info tables */
@@ -339,4 +577,299 @@ table {
 .items-table-rtl th,
 .items-table-rtl td {
   text-align: right;
+}
+
+/* ========== Simplified PDF (match invoice show screen) ========== */
+
+.pdf-card {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--white-color);
+  margin-bottom: 0;
+}
+
+.pdf-card-header-block {
+  margin-bottom: 18px;
+}
+
+.pdf-card-content {
+  padding: 14px 18px;
+}
+
+.pdf-header-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.pdf-main-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 6px 0;
+}
+
+.pdf-meta-line {
+  font-size: 12px;
+  color: #4b5563;
+  margin: 0 0 4px 0;
+}
+
+.pdf-meta-line.pdf-dates {
+  margin-top: 10px;
+}
+
+.pdf-meta-line.pdf-dates span {
+  margin-left: 24px;
+}
+
+.logo-top-right {
+  flex-shrink: 0;
+}
+
+.pdf-two-cards {
+  margin-bottom: 18px;
+}
+
+.pdf-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--white-color);
+}
+
+.pdf-card-header-icon {
+  font-size: 18px;
+  opacity: 0.8;
+}
+
+.pdf-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.pdf-card-name {
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 8px 0;
+  font-size: 12px;
+}
+
+.pdf-card-row {
+  font-size: 11px;
+  color: #374151;
+  margin: 0 0 6px 0;
+}
+
+.pdf-label {
+  font-weight: 500;
+  color: #6b7280;
+  margin-right: 4px;
+}
+
+.pdf-card-header-small {
+  padding: 10px 24px;
+}
+
+.pdf-card-title-small {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.pdf-muted-text {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.pdf-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 12px;
+}
+
+/* Products table (7 columns like show.tsx) */
+.pdf-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.pdf-table thead {
+  background: #f9fafb;
+}
+
+.pdf-th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.pdf-th-desc { min-width: 120px; }
+.pdf-th-type { width: 90px; }
+.pdf-th-num { white-space: nowrap; }
+
+.pdf-tr {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.pdf-tr-expense {
+  background: #fef2f2;
+}
+
+.pdf-td {
+  padding: 12px 16px;
+  text-align: left;
+  color: #111827;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.pdf-td-desc { }
+.pdf-td-type { }
+.pdf-td-num { white-space: nowrap; }
+
+.pdf-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.pdf-badge-expense {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.pdf-badge-time {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.pdf-badge-item {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+/* Totals card (right-aligned block like show.tsx) */
+.pdf-totals-card {
+  background: #f9fafb;
+  margin-bottom: 24px;
+}
+
+.pdf-totals-wrap {
+  min-width: 280px;
+  /*width: 320px;*/
+  max-width: 100%;
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pdf-totals-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.pdf-totals-label {
+  color: #6b7280;
+}
+
+.pdf-totals-value {
+  font-weight: 500;
+  color: #111827;
+}
+
+.pdf-totals-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 4px 0;
+}
+
+.pdf-totals-row-main {
+  font-size: 14px;
+  font-weight: 700;
+  padding-top: 4px;
+}
+
+.pdf-totals-row-main .pdf-totals-value {
+  font-weight: 700;
+}
+
+/* QR at bottom */
+.pdf-qr-wrap {
+  text-align: right;
+  margin-top: 16px;
+  break-inside: avoid;
+}
+
+.pdf-qr-img {
+  width: 100px;
+  height: 100px;
+  display: inline-block;
+}
+
+/* RTL: simplified PDF always RTL + Arabic */
+[dir="rtl"] .pdf-table-rtl,
+.pdf-table-rtl {
+  direction: rtl;
+}
+
+[dir="rtl"] .pdf-table-rtl th,
+[dir="rtl"] .pdf-table-rtl td,
+.pdf-table-rtl th,
+.pdf-table-rtl td {
+  text-align: right;
+}
+
+[dir="rtl"] .pdf-totals-rtl {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+[dir="rtl"] .pdf-qr-rtl {
+  text-align: left;
+}
+
+/* Totals card with QR on the right (in RTL: first child = right side) */
+.pdf-totals-qr-row {
+  flex-wrap: nowrap;
+  align-items: stretch;
+}
+
+.pdf-qr-next-to-totals {
+  flex-shrink: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.pdf-qr-next-to-totals .pdf-qr-img {
+  height: 100%;
+  width: auto;
+  aspect-ratio: 1;
+  max-width: 80%;
+  object-fit: contain;
 }

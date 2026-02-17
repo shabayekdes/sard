@@ -17,15 +17,12 @@ class InvoicePdfService
 {
     public function makeResponse(Invoice $invoice, string $type, string $disposition)
     {
-        $view = $type === 'simplified'
-            ? 'invoices.pdf.simplified'
-            : 'invoices.pdf.tax';
-
         $data = $this->buildViewData($invoice, $type);
 
         $filename = sprintf('%s-%s.pdf', $type, $invoice->invoice_number);
 
-        $pdf = Pdf::view($view, $data)
+        // return view('invoices.pdf.tax', $data);
+        $pdf = Pdf::view('invoices.pdf.tax', $data)
             ->format('a4')
             ->name($filename);
 
@@ -88,6 +85,8 @@ class InvoicePdfService
             $vatTotal
         );
 
+        $terms = $this->buildTermsText($billingInfo);
+
         return [
             'type' => $type,
             'invoice' => $invoice,
@@ -101,13 +100,19 @@ class InvoicePdfService
                 'address' => $companyProfile?->address ?? '',
                 'vat_number' => $sellerVatNumber,
                 'registration_number' => $companyProfile?->registration_number ?? '',
+                'tax_number' => $companyProfile?->tax_number ?? $sellerVatNumber,
                 'phone' => $companyProfile?->phone ?? '',
+                'email' => $companyProfile?->email ?? '',
+                'cr' => $companyProfile?->cr ?? '',
             ],
             'customer' => [
                 'name' => $client?->name ?? '',
                 'address' => $billingInfo?->billing_address ?? $client?->address ?? '',
                 'vat_number' => $client?->vat_number ?? $client?->tax_id ?? '',
                 'phone' => $client?->phone ?? '',
+                'email' => $client?->email ?? '',
+                'cr_number' => $client?->cr_number ?? '',
+                'business_type' => $client?->business_type ?? null,
             ],
             'items' => $items,
             'totals' => [
@@ -116,7 +121,28 @@ class InvoicePdfService
                 'grand_total' => $grandTotal,
             ],
             'qr_code' => $qrCode,
+            'terms' => $terms,
         ];
+    }
+
+    private function buildTermsText($billingInfo): string
+    {
+        if ($billingInfo?->custom_payment_terms) {
+            return $billingInfo->custom_payment_terms;
+        }
+        if ($billingInfo?->payment_terms) {
+            $labels = [
+                'net_15' => 'Net 15 days',
+                'net_30' => 'Net 30 days',
+                'net_45' => 'Net 45 days',
+                'net_60' => 'Net 60 days',
+                'due_on_receipt' => 'Due on receipt',
+                'custom' => $billingInfo->custom_payment_terms ?? 'Custom terms',
+            ];
+            $term = $labels[$billingInfo->payment_terms] ?? $billingInfo->payment_terms;
+            return $term . '. Late payment fee of 1.5% per month applies.';
+        }
+        return 'Net 30 days. Late payment fee of 1.5% per month applies.';
     }
 
     private function resolveIssuedAt(Invoice $invoice): Carbon

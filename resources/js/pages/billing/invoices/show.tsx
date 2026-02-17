@@ -248,7 +248,7 @@ export default function ShowInvoice() {
                         <div className="flex flex-wrap items-start justify-between gap-4">
                             <div className="min-w-0 flex-1 text-start">
                                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                                    {invoice?.client?.business_type === 'b2b' ? t('Simplified Tax Invoice') : t('Tax Invoice')}
+                                    {invoice?.client?.business_type === 'b2b' ? t('Tax Invoice') : t('Simplified Tax Invoice')}
                                 </h2>
                                 <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                                     {t('Invoice Number')}: {formatInvoiceNumber(invoice?.invoice_number || invoice?.id)}

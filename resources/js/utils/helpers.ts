@@ -8,19 +8,22 @@ export function getBaseUrl(baseUrl?: string) {
     return '';
 }
 
-// Currency formatting function
-export const formatCurrency = (amount: string | number, useSuperAdminSettings = false) => {
+// Currency formatting: uses globalSettings.formatCurrency (decimal/thousands/symbol from app settings)
+export const formatCurrency = (
+  amount: string | number,
+  optionsOrUseSuperAdmin?: boolean | { showSymbol?: boolean; showCode?: boolean }
+) => {
   if (typeof window !== 'undefined' && window.appSettings?.formatCurrency) {
-    const numericAmount =
-      typeof amount === 'number' ? amount : parseFloat(amount);
-
-    if (useSuperAdminSettings && window.appSettings?.formatCurrencyWithSuperAdminSettings) {
+    const numericAmount = typeof amount === 'number' ? amount : parseFloat(String(amount));
+    if (typeof optionsOrUseSuperAdmin === 'boolean' && optionsOrUseSuperAdmin && window.appSettings?.formatCurrencyWithSuperAdminSettings) {
       return window.appSettings.formatCurrencyWithSuperAdminSettings(numericAmount, { showSymbol: true });
     }
-
-    return window.appSettings.formatCurrency(numericAmount, { showSymbol: true });
+    const opts = typeof optionsOrUseSuperAdmin === 'object' && optionsOrUseSuperAdmin != null
+      ? { showSymbol: true, showCode: false, ...optionsOrUseSuperAdmin }
+      : { showSymbol: true, showCode: false };
+    return window.appSettings.formatCurrency(numericAmount, opts);
   }
-  return amount;
+  return String(amount);
 };
 
 // Get full image path helper - consistent with reference project
@@ -111,11 +114,14 @@ export const formatCurrencyForPlansAndReferrals = (amount: string | number) => {
 };
 
 
-// Format currency using company settings
-export const formatCurrencyForCompany = (amount: string | number) => {
+// Format currency using company settings (globalSettings.formatCurrency: decimal/thousands/symbol)
+export const formatCurrencyForCompany = (
+  amount: string | number,
+  options: { showSymbol?: boolean; showCode?: boolean } = { showSymbol: true, showCode: false }
+) => {
   if (typeof window !== 'undefined' && window.appSettings?.formatCurrency) {
-    const numericAmount = typeof amount === 'number' ? amount : parseFloat(amount);
-    return window.appSettings.formatCurrency(numericAmount, { showSymbol: true });
+    const numericAmount = typeof amount === 'number' ? amount : parseFloat(String(amount));
+    return window.appSettings.formatCurrency(numericAmount, { showSymbol: true, showCode: false, ...options });
   }
   return formatCurrency(amount);
 };
