@@ -76,7 +76,7 @@ class GoogleCalendarController extends Controller
         }
     }
 
-    public function authorize(Request $request)
+    public function authorizeGoogleCalendar(Request $request)
     {
         try {
             $client = new Google_Client();

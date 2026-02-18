@@ -160,26 +160,24 @@ class CaseController extends BaseController
         ]);
     }
 
-    public function show(Request $request, $caseId)
+    public function show(Request $request, CaseModel $case)
     {
-        $case = CaseModel::withPermissionCheck()
-            ->with([
-                'client.clientType',
-                'caseType',
-                'caseCategory',
-                'caseSubcategory',
-                'caseStatus',
-                'court.courtType',
-                'court.circleType',
-                'oppositeParties.nationality'
-            ])
-            ->where('id', $caseId)
-            ->first();
+        $this->authorize('view', $case);
+        $case->load([
+            'client.clientType',
+            'caseType',
+            'caseCategory',
+            'caseSubcategory',
+            'caseStatus',
+            'court.courtType',
+            'court.circleType',
+            'oppositeParties.nationality'
+        ]);
 
         // Timeline query with filters
         $timelineQuery = CaseTimeline::withPermissionCheck()
             ->with('eventType')
-            ->where('case_id', $caseId);
+            ->where('case_id', $case->id);
 
         if ($request->has('timeline_search') && !empty($request->timeline_search)) {
             $timelineQuery->where(function ($q) use ($request) {
@@ -210,7 +208,7 @@ class CaseController extends BaseController
 
         // Team members query with filters
         $teamQuery = CaseTeamMember::with('user')
-            ->where('case_id', $caseId)
+            ->where('case_id', $case->id)
             ->where('created_by', createdBy());
 
         if ($request->has('team_search') && !empty($request->team_search)) {
@@ -236,7 +234,7 @@ class CaseController extends BaseController
         $teamMembers = $teamQuery->paginate($request->team_per_page ?? 10, ['*'], 'team_page');
 
         // Case documents query with filters
-        $documentsQuery = CaseDocument::withPermissionCheck()->where('case_id', $caseId);
+        $documentsQuery = CaseDocument::withPermissionCheck()->where('case_id', $case->id);
 
         if ($request->has('doc_search') && !empty($request->doc_search)) {
             $documentsQuery->where(function ($q) use ($request) {
@@ -284,21 +282,21 @@ class CaseController extends BaseController
         // Get case notes for this case
         $caseNotesQuery = \App\Models\CaseNote::withPermissionCheck()
             ->with('creator')
-            ->whereJsonContains('case_ids', (string)$caseId)
+            ->whereJsonContains('case_ids', (string)$case->id)
             ->orderBy('created_at', 'desc');
         $caseNotes = $caseNotesQuery->paginate(10, ['*'], 'notes_page');
 
         // Get research projects for this case with their notes and citations
         $researchProjects = ResearchProject::withPermissionCheck()
             ->with(['researchType', 'notes', 'citations.source'])
-            ->where('case_id', $caseId)
+            ->where('case_id', $case->id)
             ->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'research_page');
 
         // Tasks query with filters
         $tasksQuery = Task::withPermissionCheck()
             ->with(['taskType', 'taskStatus', 'assignedUser'])
-            ->where('case_id', $caseId);
+            ->where('case_id', $case->id);
 
         if ($request->has('task_search') && !empty($request->task_search)) {
             $tasksQuery->where(function ($q) use ($request) {
@@ -352,7 +350,7 @@ class CaseController extends BaseController
                 'court.circleType',
                 'hearingType'
             ])
-            ->where('case_id', $caseId)
+            ->where('case_id', $case->id)
             ->orderByRaw('CASE WHEN hearing_date >= CURDATE() THEN 0 ELSE 1 END')
             ->orderBy('hearing_date', 'desc')
             ->orderBy('hearing_time', 'desc')
@@ -365,7 +363,7 @@ class CaseController extends BaseController
                 'court.circleType',
                 'hearingType'
             ])
-            ->where('case_id', $caseId);
+            ->where('case_id', $case->id);
 
         if ($request->has('hearing_search') && !empty($request->hearing_search)) {
             $hearingsQuery->where(function ($q) use ($request) {
@@ -566,16 +564,10 @@ class CaseController extends BaseController
         ]);
     }
 
-    public function edit($caseId)
+    public function edit(CaseModel $case)
     {
-        $case = CaseModel::withPermissionCheck()
-            ->with(['oppositeParties'])
-            ->where('id', $caseId)
-            ->first();
-
-        if (!$case) {
-            return redirect()->route('cases.index')->with('error', __('Case not found.'));
-        }
+        $this->authorize('update', $case);
+        $case->load(['oppositeParties']);
 
         $clients = Client::where('created_by', createdBy())
             ->where('status', 'active')
@@ -814,10 +806,9 @@ class CaseController extends BaseController
         return redirect()->route('cases.index')->with('success', 'Case created successfully.');
     }
 
-    public function update(Request $request, $caseId)
+    public function update(Request $request, CaseModel $case)
     {
-        $case = CaseModel::where('id', $caseId)->where('created_by', createdBy())->first();
-
+        $this->authorize('update', $case);
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -879,19 +870,17 @@ class CaseController extends BaseController
         return redirect()->route('cases.show', $case->id)->with('success', __('Case updated successfully.'));
     }
 
-    public function destroy($caseId)
+    public function destroy(CaseModel $case)
     {
-        $case = CaseModel::where('id', $caseId)->where('created_by', createdBy())->first();
-
+        $this->authorize('delete', $case);
         $case->delete();
 
         return redirect()->back()->with('success', 'Case deleted successfully.');
     }
 
-    public function toggleStatus($caseId)
+    public function toggleStatus(CaseModel $case)
     {
-        $case = CaseModel::where('id', $caseId)->where('created_by', createdBy())->first();
-
+        $this->authorize('update', $case);
         $case->status = $case->status === 'active' ? 'inactive' : 'active';
         $case->save();
 

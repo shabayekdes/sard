@@ -708,7 +708,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Google Calendar API routes
         Route::get('api/google-calendar/events', [\App\Http\Controllers\GoogleCalendarController::class, 'getEvents'])->name('google-calendar.events');
         Route::post('api/google-calendar/sync', [\App\Http\Controllers\GoogleCalendarController::class, 'syncEvents'])->name('google-calendar.sync');
-        Route::get('google-calendar/auth', [\App\Http\Controllers\GoogleCalendarController::class, 'authorize'])->name('google-calendar.auth');
+        Route::get('google-calendar/auth', [\App\Http\Controllers\GoogleCalendarController::class, 'authorizeGoogleCalendar'])->name('google-calendar.auth');
         Route::get('google-calendar/callback', [\App\Http\Controllers\GoogleCalendarController::class, 'callback'])->name('google-calendar.callback');
 
         // Court Management routes

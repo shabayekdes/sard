@@ -17,6 +17,11 @@ use Inertia\Inertia;
 
 class InvoiceController extends BaseController
 {
+    public function __construct()
+    {
+        $this->authorizeResource(Invoice::class, 'invoice');
+    }
+
     public function index(Request $request)
     {
         $query = Invoice::withPermissionCheck()->with(['client', 'creator', 'payments']);
@@ -315,6 +320,7 @@ class InvoiceController extends BaseController
 
     public function send(Invoice $invoice)
     {
+        $this->authorize('send', $invoice);
         $invoice->load(['client', 'case']);
 
         $invoice->update(['status' => 'sent']);
@@ -344,6 +350,7 @@ class InvoiceController extends BaseController
 
     public function generate(Invoice $invoice)
     {
+        $this->authorize('view', $invoice);
         $invoice->load(['client', 'case', 'creator', 'lineItems']);
 
         $companyProfile = \App\Models\CompanyProfile::where('created_by', createdBy())->first();

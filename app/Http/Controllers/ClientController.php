@@ -17,6 +17,11 @@ use Inertia\Inertia;
 
 class ClientController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(Client::class, 'client');
+    }
+
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -112,16 +117,9 @@ class ClientController extends Controller
         return Inertia::render('clients/create', $this->getClientFormProps());
     }
 
-    public function edit($clientId)
+    public function edit(Client $client)
     {
-        $client = Client::withPermissionCheck()
-            ->with(['clientType', 'creator', 'documents'])
-            ->where('id', $clientId)
-            ->first();
-
-        if (! $client) {
-            return redirect()->back()->with('error', 'Client not found.');
-        }
+        $client->load(['clientType', 'creator', 'documents']);
 
         if ($client->clientType) {
             $client->clientType->name_translations = $client->clientType->getTranslations('name');
@@ -407,15 +405,10 @@ class ClientController extends Controller
         return $url;
     }
 
-    public function update(Request $request, $clientId)
+    public function update(Request $request, Client $client)
     {
-        $client = Client::withPermissionCheck()
-            ->where('id', $clientId)
-            ->first();
-
-        if ($client) {
-            try {
-                $validated = $request->validate([
+        try {
+            $validated = $request->validate([
                     'name' => 'required|string|max:255',
                     'email' => 'required|email|max:255',
                     'country_id' => 'required|exists:countries,id',
@@ -475,7 +468,7 @@ class ClientController extends Controller
                 if (! empty($validated['email'])) {
                     $exists = Client::where('email', $validated['email'])
                         ->where('created_by', createdBy())
-                        ->where('id', '!=', $clientId)
+                        ->where('id', '!=', $client->id)
                         ->exists();
 
                     if ($exists) {
@@ -489,12 +482,12 @@ class ClientController extends Controller
                 $client->update($validated);
 
                 // Replace client documents with repeater payload
-                ClientDocument::where('client_id', $clientId)->delete();
+                ClientDocument::where('client_id', $client->id)->delete();
                 if (! empty($documents)) {
                     foreach ($documents as $document) {
                         $filePath = $this->convertToRelativePath($document['file'] ?? '');
                         ClientDocument::create([
-                            'client_id' => $clientId,
+                            'client_id' => $client->id,
                             'document_name' => $document['document_name'] ?? '',
                             'document_type_id' => $document['document_type_id'] ?? null,
                             'description' => $document['description'] ?? null,
@@ -506,29 +499,23 @@ class ClientController extends Controller
                 }
 
                 return redirect()->back()->with('success', 'Client updated successfully');
-            } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to update client');
-            }
-        } else {
-            return redirect()->back()->with('error', 'Client not found.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to update client');
         }
     }
 
-    public function show(Request $request, $clientId)
+    public function show(Request $request, Client $client)
     {
-        $client = Client::withPermissionCheck()
-            ->with(['clientType', 'creator', 'billingInfo', 'nationality'])
-            ->where('id', $clientId)
-            ->first();
+        $client->load(['clientType', 'creator', 'billingInfo', 'nationality']);
 
         // Add translations for client_type if it exists
-        if ($client && $client->clientType) {
+        if ($client->clientType) {
             $client->clientType->name_translations = $client->clientType->getTranslations('name');
             $client->clientType->description_translations = $client->clientType->getTranslations('description');
         }
 
         // Load currency name if billing info exists
-        if ($client && $client->billingInfo && $client->billingInfo->currency) {
+        if ($client->billingInfo && $client->billingInfo->currency) {
             $currency = \App\Models\Currency::where('code', $client->billingInfo->currency)->first();
             $client->billingInfo->currency_name = $currency?->name;
             $client->billingInfo->currency_code = $currency?->code;
@@ -538,7 +525,7 @@ class ClientController extends Controller
         // Documents with pagination and filters
         $documentsQuery = ClientDocument::withPermissionCheck()
             ->with(['documentType'])
-            ->where('client_id', $clientId);
+            ->where('client_id', $client->id);
 
         if ($documentSearch = $request->get('document_search')) {
             $documentsQuery->where(function ($q) use ($documentSearch) {
@@ -570,7 +557,7 @@ class ClientController extends Controller
         // Handle cases with pagination and search
         $casesQuery = \App\Models\CaseModel::withPermissionCheck()
             ->with(['caseType', 'caseStatus', 'client'])
-            ->where('client_id', $clientId);
+            ->where('client_id', $client->id);
 
         // Apply search filter
         if ($caseSearch = $request->get('search')) {
@@ -635,7 +622,7 @@ class ClientController extends Controller
         // Load invoices for this client
         $invoicesQuery = \App\Models\Invoice::withPermissionCheck()
             ->with(['client', 'case', 'currency', 'payments'])
-            ->where('client_id', $clientId);
+            ->where('client_id', $client->id);
 
         // Apply search filter for invoices
         if ($invoiceSearch = $request->get('invoice_search')) {
@@ -664,8 +651,8 @@ class ClientController extends Controller
         // Load payments for this client (through invoices)
         $paymentsQuery = \App\Models\Payment::withPermissionCheck()
             ->with(['invoice.client', 'creator'])
-            ->whereHas('invoice', function ($q) use ($clientId) {
-                $q->where('client_id', $clientId);
+            ->whereHas('invoice', function ($q) use ($client) {
+                $q->where('client_id', $client->id);
             });
 
         // Apply search filter for payments
@@ -768,48 +755,32 @@ class ClientController extends Controller
         ]);
     }
 
-    public function destroy($clientId)
+    public function destroy(Client $client)
     {
-        $client = Client::withPermissionCheck()
-            ->where('id', $clientId)
-            ->first();
-
-        if ($client) {
-            try {
-                $client->delete();
-
-                return redirect()->back()->with('success', 'Client deleted successfully');
-            } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to delete client');
-            }
-        } else {
-            return redirect()->back()->with('error', 'Client not found.');
+        try {
+            $client->delete();
+            return redirect()->back()->with('success', 'Client deleted successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to delete client');
         }
     }
 
-    public function toggleStatus($clientId)
+    public function toggleStatus(Client $client)
     {
-        $client = Client::withPermissionCheck()
-            ->where('id', $clientId)
-            ->first();
-
-        if ($client) {
-            try {
-                $client->status = $client->status === 'active' ? 'inactive' : 'active';
-                $client->save();
-
-                return redirect()->back()->with('success', 'Client status updated successfully');
-            } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to update client status');
-            }
-        } else {
-            return redirect()->back()->with('error', 'Client not found.');
+        $this->authorize('update', $client);
+        try {
+            $client->status = $client->status === 'active' ? 'inactive' : 'active';
+            $client->save();
+            return redirect()->back()->with('success', 'Client status updated successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to update client status');
         }
     }
 
-    public function resetPassword(Request $request, $clientId)
+    public function resetPassword(Request $request, Client $client)
     {
-        // Check permission
+        $this->authorize('update', $client);
+
         if (! auth()->user()->can('reset-client-password')) {
             return redirect()->back()->with('error', 'You do not have permission to reset client passwords.');
         }
@@ -817,14 +788,6 @@ class ClientController extends Controller
         $request->validate([
             'password' => 'required|min:6|confirmed',
         ]);
-
-        $client = Client::withPermissionCheck()
-            ->where('id', $clientId)
-            ->first();
-
-        if (! $client) {
-            return redirect()->back()->with('error', 'Client not found.');
-        }
 
         if (empty($client->email)) {
             return redirect()->back()->with('error', 'Client does not have an email address.');

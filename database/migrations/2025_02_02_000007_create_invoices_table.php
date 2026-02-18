@@ -15,6 +15,7 @@ return new class extends Migration
             $table->unsignedBigInteger('case_id')->nullable();
             $table->foreignId('currency_id')->nullable()->constrained()->nullOnDelete();
             $table->string('invoice_number')->unique();
+            $table->enum('status', ['draft', 'sent', 'paid', 'partial_paid', 'overdue', 'cancelled'])->default('draft');
             $table->decimal('subtotal', 10, 2)->default(0);
             $table->decimal('tax_amount', 10, 2)->default(0);
             $table->decimal('total_amount', 10, 2);

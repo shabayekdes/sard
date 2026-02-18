@@ -10,14 +10,14 @@ class InvoicePdfController extends Controller
 {
     public function show(Request $request, Invoice $invoice, InvoicePdfService $pdfService)
     {
+        $this->authorize('view', $invoice);
+
         $validated = $request->validate([
             'type' => 'required|in:tax,simplified',
             'disposition' => 'nullable|in:inline,attachment',
         ]);
 
-        $invoice = Invoice::withPermissionCheck()
-            ->with(['client.billingInfo', 'payments', 'currency', 'creator', 'case'])
-            ->findOrFail($invoice->id);
+        $invoice->load(['client.billingInfo', 'payments', 'currency', 'creator', 'case']);
 
         $type = $validated['type'];
         $disposition = $validated['disposition'] ?? 'attachment';
