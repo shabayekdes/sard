@@ -186,7 +186,7 @@ export default function ViewResearchProject() {
 
   const breadcrumbs = [
     { title: t('Dashboard'), href: route('dashboard') },
-    { title: t('Cases Management'), href: route('cases.index') },
+    { title: t('Case Management'), href: route('cases.index') },
     { title: t('Research Projects'), href: route('legal-research.projects.index') },
     { title: project?.title || t('View Project') }
   ];

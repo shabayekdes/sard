@@ -159,7 +159,7 @@ export default function ResearchProjects() {
 
   const breadcrumbs = [
     { title: t('Dashboard'), href: route('dashboard') },
-    { title: t('Cases Management'), href: route('cases.index') },
+    { title: t('Case Management'), href: route('cases.index') },
     { title: t('Research Projects') }
   ];
 
