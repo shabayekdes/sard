@@ -139,12 +139,6 @@ export default function SetupIndex() {
             href: route('legal-research.sources.index'),
             permissions: ['manage-research-sources', 'manage-any-research-sources', 'manage-own-research-sources'],
           },
-          {
-            title: t('Practice Area'),
-            description: t('Categorize search by area'),
-            href: route('advocate.practice-areas.index'),
-            permissions: ['manage-practice-areas', 'manage-any-practice-areas', 'manage-own-practice-areas'],
-          },
         ],
       },
       {

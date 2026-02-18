@@ -57,7 +57,7 @@ class CasePolicy
         }
 
         if ($user->hasRole(['company'])) {
-            return (int) $case->created_by === (int) $user->id;
+            return in_array((int) $case->created_by, getCompanyAndUsersId(), true);
         }
 
         if ($user->hasRole(['team_member']) || $user->type === 'team_member') {
@@ -68,6 +68,11 @@ class CasePolicy
             $client = \App\Models\Client::where('email', $user->email)->first();
 
             return $client && (int) $case->client_id === (int) $client->id;
+        }
+
+        // Users with view-cases permission (e.g. custom roles) can view cases in their company
+        if ($user->can('view-cases')) {
+            return in_array((int) $case->created_by, getCompanyAndUsersId(), true);
         }
 
         return false;
