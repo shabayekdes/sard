@@ -24,8 +24,8 @@ export function AppContent({ variant = 'header', children, className, ...props }
     const loaderOverlay = (
         <div
             className={cn(
-                'absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm transition-opacity duration-200',
-                isNavigating ? 'opacity-100' : 'pointer-events-none opacity-0'
+                'fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm transition-opacity duration-200',
+                isNavigating ? 'opacity-100' : 'pointer-events-none opacity-0',
             )}
             aria-hidden={!isNavigating}
         >
