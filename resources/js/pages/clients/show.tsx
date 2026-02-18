@@ -432,14 +432,13 @@ export default function ClientShow() {
         const newStatus = checked ? 'active' : 'archived';
         router.put(route('clients.documents.update', row.id), { status: newStatus, document_name: row.document_name, document_type_id: row.document_type_id, description: row.description }, {
             preserveScroll: true,
-            onSuccess: () => toast.success(t('Status updated')),
+            onSuccess: () => toast.success(t('{{model}} status updated successfully', { model: t('Document') })),
             onError: () => toast.error(t('Failed to update status')),
         });
     };
     const handleDocumentFormSubmit = (formData: any) => {
         const payload = { ...formData, client_id: client.id };
         if (documentFormMode === 'create') {
-            toast.loading(t('Uploading document...'));
             router.post(route('clients.documents.store'), payload, {
                 onSuccess: (page) => {
                     setIsDocumentFormOpen(false);
@@ -452,7 +451,6 @@ export default function ClientShow() {
                 },
             });
         } else {
-            toast.loading(t('Updating document...'));
             const updatePayload = { ...payload, file: payload.file || currentDocument?.file_path, _method: 'PUT' };
             router.post(route('clients.documents.update', currentDocument.id), updatePayload, {
                 onSuccess: (page) => {
@@ -469,7 +467,6 @@ export default function ClientShow() {
     };
     const handleDocumentDeleteConfirm = () => {
         if (!currentDocument) return;
-        toast.loading(t('Deleting document...'));
         router.delete(route('clients.documents.destroy', currentDocument.id), {
             onSuccess: (page) => {
                 setIsDocumentDeleteOpen(false);
@@ -510,12 +507,23 @@ export default function ClientShow() {
         {
             key: 'status',
             label: t('Status'),
-            render: (_: any, row: any) => (
-                <Switch
-                    checked={row.status === 'active'}
-                    onCheckedChange={(checked) => handleDocumentStatusToggle(row, checked)}
-                />
-            ),
+            render: (value: string, row: any) => {
+                const canToggleStatus = hasPermission(permissions, 'edit-client-documents');
+                return (
+                    <div className="flex items-center gap-2">
+                        <Switch
+                            checked={value === 'active'}
+                            disabled={!canToggleStatus}
+                            onCheckedChange={(checked) => {
+                                if (!canToggleStatus) return;
+                                handleDocumentStatusToggle(row, checked);
+                            }}
+                            aria-label={value === 'active' ? t('Deactivate document') : t('Activate document')}
+                        />
+                        <span className="text-muted-foreground text-xs">{value === 'active' ? t('Active') : t('Inactive')}</span>
+                    </div>
+                );
+            },
         },
         {
             key: 'created_at',
@@ -1248,7 +1256,7 @@ export default function ClientShow() {
                 onClose={() => { setIsDocumentDeleteOpen(false); setCurrentDocument(null); }}
                 onConfirm={handleDocumentDeleteConfirm}
                 itemName={currentDocument?.document_name || ''}
-                entityName="document"
+                entityName="Document"
             />
 
             {/* Billing Edit Modal */}
@@ -1257,7 +1265,6 @@ export default function ClientShow() {
                 onClose={() => setIsBillingEditOpen(false)}
                 onSubmit={(formData) => {
                     if (!client.billing_info?.id) return;
-                    toast.loading(t('Updating billing information...'));
                     router.put(route('clients.billing.update', client.billing_info.id), { ...formData, client_id: client.id }, {
                         onSuccess: (page) => {
                             setIsBillingEditOpen(false);
@@ -1327,7 +1334,6 @@ export default function ClientShow() {
                 onClose={() => setIsBillingDeleteOpen(false)}
                 onConfirm={() => {
                     if (!client.billing_info?.id) return;
-                    toast.loading(t('Deleting billing information...'));
                     router.delete(route('clients.billing.destroy', client.billing_info.id), {
                         onSuccess: (page) => {
                             setIsBillingDeleteOpen(false);

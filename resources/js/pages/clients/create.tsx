@@ -92,9 +92,7 @@ export default function CreateClient() {
             );
             return;
         }
-
-        toast.loading(t('Creating client...'));
-
+        
         const filteredDocuments = (formData.documents || []).filter((document: any) => {
             return document?.document_name || document?.document_type_id || document?.file;
         });
@@ -119,7 +117,7 @@ export default function CreateClient() {
                 if (typeof formErrors === 'string') {
                     toast.error(formErrors);
                 } else if (Object.values(formErrors).length > 0) {
-                    toast.error(`Failed to create client: ${Object.values(formErrors).join(', ')}`);
+                    toast.error(t('Failed to create {{model}}: {{errors}}', { model: t('Client'), errors: Object.values(formErrors).join(', ') }));
                 }
             },
         });

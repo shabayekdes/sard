@@ -161,7 +161,7 @@ class HearingController extends BaseController
             return redirect()->back()->with('warning', $message);
         }
 
-        return redirect()->back()->with('success', 'Hearing scheduled successfully.');
+        return redirect()->back()->with('success', __(':model scheduled successfully.', ['model' => __('Hearing')]));
     }
 
     public function update(Request $request, $id)
@@ -171,7 +171,7 @@ class HearingController extends BaseController
             ->first();
 
         if (!$hearing) {
-            return redirect()->back()->with('error', 'Hearing not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Hearing')]));
         }
 
         $validated = $request->validate([
@@ -214,7 +214,7 @@ class HearingController extends BaseController
             $this->updateNotifications($hearing);
         }
 
-        return redirect()->back()->with('success', 'Hearing updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Hearing')]));
     }
 
     public function destroy($id)
@@ -224,7 +224,7 @@ class HearingController extends BaseController
             ->first();
 
         if (!$hearing) {
-            return redirect()->back()->with('error', 'Hearing not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Hearing')]));
         }
 
         // Delete Google Calendar event if exists
@@ -235,7 +235,7 @@ class HearingController extends BaseController
 
         $hearing->delete();
 
-        return redirect()->back()->with('success', 'Hearing deleted successfully.');
+        return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Hearing')]));
     }
 
     private function createDefaultNotifications($hearing)

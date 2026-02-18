@@ -71,7 +71,6 @@ class ClientDocumentController extends BaseController
 
     public function store(Request $request)
     {
-        // dd($request->all());
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'document_name' => 'required|string|max:255',
@@ -96,12 +95,12 @@ class ClientDocumentController extends BaseController
             ->first();
 
         if (!$client) {
-            return redirect()->back()->with('error', 'Invalid client selected.');
+            return redirect()->back()->with('error', __('Invalid client selected.'));
         }
 
         ClientDocument::create($validated);
 
-        return redirect()->back()->with('success', 'Document uploaded successfully.');
+        return redirect()->back()->with('success', __(':model uploaded successfully.', ['model' => __('Document')]));
     }
 
     private function convertToRelativePath(string $url): string
@@ -147,7 +146,7 @@ class ClientDocumentController extends BaseController
                     ->first();
 
                 if (!$client) {
-                    return redirect()->back()->with('error', 'Invalid client selected.');
+                    return redirect()->back()->with('error', __('Invalid client selected.'));
                 }
                 $validated['file_path'] = $validated['file'];
 
@@ -158,12 +157,12 @@ class ClientDocumentController extends BaseController
 
                 $document->update($validated);
 
-                return redirect()->back()->with('success', 'Document updated successfully');
+                return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Document')]));
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to update document');
+                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to update :model', ['model' => __('Document')]));
             }
         } else {
-            return redirect()->back()->with('error', 'Document not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Document')]));
         }
     }
 
@@ -183,12 +182,12 @@ class ClientDocumentController extends BaseController
                 }
 
                 $document->delete();
-                return redirect()->back()->with('success', 'Document deleted successfully');
+                return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Document')]));
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to delete document');
+                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to delete :model', ['model' => __('Document')]));
             }
         } else {
-            return redirect()->back()->with('error', 'Document not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Document')]));
         }
     }
 
@@ -201,7 +200,7 @@ class ClientDocumentController extends BaseController
             ->first();
 
         if (!$document || !$document->file_path) {
-            return redirect()->back()->with('error', 'Document not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Document')]));
         }
 
         $originalPath = $document->file_path;
@@ -230,6 +229,6 @@ class ClientDocumentController extends BaseController
             return response()->download(storage_path('app/public/' . $originalPath), $document->document_name);
         }
 
-        return redirect()->back()->with('error', 'Document not found.');
+        return redirect()->back()->with('error', __(':model not found.', ['model' => __('Document')]));
     }
 }

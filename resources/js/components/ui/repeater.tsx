@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import MediaPicker from '@/components/MediaPicker';
 import { Input } from '@/components/ui/input';
@@ -57,6 +58,7 @@ export function Repeater({
   emptyMessage = 'No items added yet.',
   getFieldError
 }: RepeaterProps) {
+  const { t } = useTranslation();
   const { isRtl } = useLayout();
   const [items, setItems] = useState<any[]>(value.length > 0 ? value : []);
   // Generate a unique ID for this repeater instance to ensure unique keys across multiple repeaters
@@ -167,7 +169,7 @@ export function Repeater({
           <MediaPicker
             value={value || ''}
             onChange={onChange}
-            placeholder={field.placeholder || `Select ${field.label}`}
+            placeholder={field.placeholder ? t(field.placeholder) : t('Select {{label}}', { label: field.label })}
             showPreview={true}
             multiple={false}
           />
@@ -265,7 +267,7 @@ export function Repeater({
       {items.length === 0 ? (
         <div className="space-y-3">
           <div className="text-center py-8 text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
-            {emptyMessage}
+            {t(emptyMessage)}
           </div>
           {(maxItems === -1 || items.length < maxItems) && (
             <div className="flex items-center justify-between">
@@ -278,10 +280,6 @@ export function Repeater({
                 <Plus className="h-4 w-4 mr-2" />
                 {addButtonText}
               </Button>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                {items.length} of {maxItems === -1 ? <span className="text-lg font-medium dark:text-gray-300">∞</span> : maxItems} items
-                {minItems > 0 && ` (minimum ${minItems} required)`}
-              </div>
             </div>
           )}
         </div>
@@ -359,10 +357,6 @@ export function Repeater({
                 <Plus className="h-4 w-4 mr-2" />
                 {addButtonText}
               </Button>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                {items.length} of {maxItems === -1 ? <span className="text-lg font-medium dark:text-gray-300">∞</span> : maxItems} items
-                {minItems > 0 && ` (minimum ${minItems} required)`}
-              </div>
             </div>
           )}
         </div>

@@ -310,7 +310,7 @@ class ClientController extends Controller
                 ->first();
 
             if (! $clientType) {
-                return redirect()->back()->with('error', 'Invalid client type selected.');
+                return redirect()->back()->with('error', __('Invalid client type selected.'));
             }
         }
 
@@ -321,7 +321,7 @@ class ClientController extends Controller
                 ->exists();
 
             if ($exists) {
-                return redirect()->back()->with('error', 'Client with this email already exists.');
+                return redirect()->back()->with('error', __(':model with this email already exists.', ['model' => __('Client')]));
             }
         }
 
@@ -384,7 +384,7 @@ class ClientController extends Controller
             return redirect()->back()->with('warning', $message);
         }
 
-        return redirect()->back()->with('success', 'Client created successfully.');
+        return redirect()->route('clients.index')->with('success', __(':model created successfully.', ['model' => __('Client')]));
     }
 
     private function convertToRelativePath(string $url): string
@@ -460,7 +460,7 @@ class ClientController extends Controller
                         ->first();
 
                     if (! $clientType) {
-                        return redirect()->back()->with('error', 'Invalid client type selected.');
+                        return redirect()->back()->with('error', __('Invalid client type selected.'));
                     }
                 }
 
@@ -472,7 +472,7 @@ class ClientController extends Controller
                         ->exists();
 
                     if ($exists) {
-                        return redirect()->back()->with('error', 'Client with this email already exists.');
+                        return redirect()->back()->with('error', __(':model with this email already exists.', ['model' => __('Client')]));
                     }
                 }
 
@@ -498,9 +498,9 @@ class ClientController extends Controller
                     }
                 }
 
-                return redirect()->back()->with('success', 'Client updated successfully');
+                return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Client')]));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to update client');
+            return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to update :model', ['model' => __('Client')]));
         }
     }
 
@@ -759,9 +759,9 @@ class ClientController extends Controller
     {
         try {
             $client->delete();
-            return redirect()->back()->with('success', 'Client deleted successfully');
+            return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Client')]));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to delete client');
+            return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to delete :model', ['model' => __('Client')]));
         }
     }
 
@@ -771,9 +771,9 @@ class ClientController extends Controller
         try {
             $client->status = $client->status === 'active' ? 'inactive' : 'active';
             $client->save();
-            return redirect()->back()->with('success', 'Client status updated successfully');
+            return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Client')]));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to update client status');
+            return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to update :model status', ['model' => __('Client')]));
         }
     }
 
@@ -782,7 +782,7 @@ class ClientController extends Controller
         $this->authorize('update', $client);
 
         if (! auth()->user()->can('reset-client-password')) {
-            return redirect()->back()->with('error', 'You do not have permission to reset client passwords.');
+            return redirect()->back()->with('error', __('You do not have permission to reset :model passwords.', ['model' => __('Client')]));
         }
 
         $request->validate([
@@ -790,7 +790,7 @@ class ClientController extends Controller
         ]);
 
         if (empty($client->email)) {
-            return redirect()->back()->with('error', 'Client does not have an email address.');
+            return redirect()->back()->with('error', __(':model does not have an email address.', ['model' => __('Client')]));
         }
 
         // Find the user account associated with this client
@@ -800,16 +800,16 @@ class ClientController extends Controller
             ->first();
 
         if (! $user) {
-            return redirect()->back()->with('error', 'No user account found for this client.');
+            return redirect()->back()->with('error', __('No user account found for this :model.', ['model' => __('Client')]));
         }
 
         try {
             $user->password = \Illuminate\Support\Facades\Hash::make($request->password);
             $user->save();
 
-            return redirect()->back()->with('success', 'Client password reset successfully.');
+            return redirect()->back()->with('success', __(':model password reset successfully.', ['model' => __('Client')]));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to reset client password');
+            return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to reset :model password', ['model' => __('Client')]));
         }
     }
 }

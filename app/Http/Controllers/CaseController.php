@@ -728,7 +728,7 @@ class CaseController extends BaseController
         $court = Court::where('id', $validated['court_id'])->where('created_by', createdBy())->first();
 
         if (!$client || !$caseType || !$caseStatus || !$court) {
-            return redirect()->back()->with('error', 'Invalid selection. Please try again.');
+            return redirect()->back()->with('error', __('Invalid selection. Please try again.'));
         }
 
         // Extract opposite parties and documents before creating case
@@ -803,7 +803,7 @@ class CaseController extends BaseController
             return redirect()->route('cases.index')->with('warning', $message);
         }
 
-        return redirect()->route('cases.index')->with('success', 'Case created successfully.');
+        return redirect()->route('cases.index')->with('success', __(':model created successfully.', ['model' => __('Case')]));
     }
 
     public function update(Request $request, CaseModel $case)
@@ -843,7 +843,7 @@ class CaseController extends BaseController
         $court = Court::where('id', $validated['court_id'])->where('created_by', createdBy())->first();
 
         if (!$client || !$caseType || !$caseStatus || !$court) {
-            return redirect()->back()->with('error', 'Invalid selection. Please try again.');
+            return redirect()->back()->with('error', __('Invalid selection. Please try again.'));
         }
 
         // Extract opposite parties before updating case
@@ -875,7 +875,7 @@ class CaseController extends BaseController
         $this->authorize('delete', $case);
         $case->delete();
 
-        return redirect()->back()->with('success', 'Case deleted successfully.');
+        return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Case')]));
     }
 
     public function toggleStatus(CaseModel $case)
@@ -884,7 +884,7 @@ class CaseController extends BaseController
         $case->status = $case->status === 'active' ? 'inactive' : 'active';
         $case->save();
 
-        return redirect()->back()->with('success', 'Case status updated successfully.');
+        return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Case')]));
     }
 
     private function convertToRelativePath(string $url): string

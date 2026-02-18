@@ -3,6 +3,7 @@ import { CrudFormModal } from '@/components/CrudFormModal';
 import { CrudTable } from '@/components/CrudTable';
 import { toast } from '@/components/custom-toast';
 import { PageTemplate } from '@/components/page-template';
+import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { hasPermission } from '@/utils/authorization';
@@ -141,9 +142,6 @@ export default function CaseShow() {
     };
 
     const handleTimelineToggleStatus = (timeline: any) => {
-        const newStatus = timeline.status === 'active' ? 'inactive' : 'active';
-        toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} timeline...`);
-
         router.put(
             route('cases.case-timelines.toggle-status', timeline.id),
             {},
@@ -185,9 +183,6 @@ export default function CaseShow() {
     };
 
     const handleTeamToggleStatus = (member: any) => {
-        const newStatus = member.status === 'active' ? 'inactive' : 'active';
-        toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} team member...`);
-
         router.put(
             route('cases.case-team-members.toggle-status', member.id),
             {},
@@ -255,7 +250,6 @@ export default function CaseShow() {
         const data = { ...formData, case_id: caseData.id };
 
         if (formMode === 'create') {
-            toast.loading(t('Creating timeline event...'));
             router.post(route('cases.case-timelines.store'), data, {
                 onSuccess: () => {
                     setIsFormModalOpen(false);
@@ -268,7 +262,6 @@ export default function CaseShow() {
                 },
             });
         } else if (formMode === 'edit') {
-            toast.loading(t('Updating timeline event...'));
             router.put(route('cases.case-timelines.update', currentItem.id), data, {
                 onSuccess: () => {
                     setIsFormModalOpen(false);
@@ -287,7 +280,6 @@ export default function CaseShow() {
         const data = { ...formData, case_id: caseData.id };
 
         if (formMode === 'create') {
-            toast.loading(t('Assigning team member...'));
             router.post(route('cases.case-team-members.store'), data, {
                 onSuccess: () => {
                     setIsFormModalOpen(false);
@@ -300,7 +292,6 @@ export default function CaseShow() {
                 },
             });
         } else if (formMode === 'edit') {
-            toast.loading(t('Updating team member...'));
             router.put(route('cases.case-team-members.update', currentItem.id), data, {
                 onSuccess: () => {
                     setIsFormModalOpen(false);
@@ -319,7 +310,6 @@ export default function CaseShow() {
         const data = { ...formData, case_id: caseData.id };
 
         if (formMode === 'create') {
-            toast.loading(t('Creating case document...'));
             router.post(route('advocate.case-documents.store'), data, {
                 onSuccess: () => {
                     setIsFormModalOpen(false);
@@ -332,7 +322,6 @@ export default function CaseShow() {
                 },
             });
         } else if (formMode === 'edit') {
-            toast.loading(t('Updating case document...'));
             router.post(
                 route('advocate.case-documents.update', currentItem.id),
                 {
@@ -361,7 +350,6 @@ export default function CaseShow() {
         if (activeTab === 'notes') route_name = 'advocate.case-notes.destroy';
         if (activeTab === 'tasks') route_name = 'tasks.destroy';
 
-        toast.loading(t('Deleting...'));
         router.delete(route(route_name, currentItem.id), {
             onSuccess: () => {
                 setIsDeleteModalOpen(false);
@@ -379,7 +367,6 @@ export default function CaseShow() {
         const data = { ...formData, case_ids: [caseData.id.toString()] };
 
         if (formMode === 'create') {
-            toast.loading(t('Creating case note...'));
             router.post(route('advocate.case-notes.store'), data, {
                 onSuccess: () => {
                     setIsFormModalOpen(false);
@@ -392,7 +379,6 @@ export default function CaseShow() {
                 },
             });
         } else if (formMode === 'edit') {
-            toast.loading(t('Updating case note...'));
             router.put(route('advocate.case-notes.update', currentItem.id), data, {
                 onSuccess: () => {
                     setIsFormModalOpen(false);
@@ -541,7 +527,6 @@ export default function CaseShow() {
     };
 
     const handleTaskStatusChange = (formData: any) => {
-        toast.loading(t('Updating task status...'));
         router.put(route('tasks.update', currentItem.id), {
             ...currentItem,
             status: formData.status,
@@ -566,7 +551,6 @@ export default function CaseShow() {
         const data = { ...formData, case_id: caseData.id };
 
         if (formMode === 'create') {
-            toast.loading(t('Creating task...'));
             router.post(route('tasks.store'), data, {
                 onSuccess: () => {
                     setIsFormModalOpen(false);
@@ -579,7 +563,6 @@ export default function CaseShow() {
                 },
             });
         } else if (formMode === 'edit') {
-            toast.loading(t('Updating task...'));
             router.put(route('tasks.update', currentItem.id), data, {
                 onSuccess: () => {
                     setIsFormModalOpen(false);
@@ -680,7 +663,6 @@ export default function CaseShow() {
         }
 
         if (hearingFormMode === 'create') {
-            toast.loading(t('Scheduling hearing...'));
             router.post(route('hearings.store'), data, {
                 onSuccess: (page) => {
                     setIsHearingFormModalOpen(false);
@@ -695,7 +677,6 @@ export default function CaseShow() {
                 }
             });
         } else if (hearingFormMode === 'edit') {
-            toast.loading(t('Updating hearing...'));
             router.put(route('hearings.update', currentHearing.id), data, {
                 onSuccess: (page) => {
                     setIsHearingFormModalOpen(false);
@@ -713,7 +694,6 @@ export default function CaseShow() {
     };
 
     const handleHearingDeleteConfirm = () => {
-        toast.loading(t('Deleting hearing...'));
         router.delete(route('hearings.destroy', currentHearing.id), {
             onSuccess: (page) => {
                 setIsHearingDeleteModalOpen(false);
@@ -998,7 +978,7 @@ export default function CaseShow() {
                         {latestHearing ? (
                             <div className="grid grid-cols-3 gap-4 text-sm">
                                 <div>
-                                    <span className="font-medium text-gray-500 dark:text-gray-400">{t('Sessions Title')}:</span>
+                                    <span className="font-medium text-gray-500 dark:text-gray-400">{t('Session Title')}:</span>
                                     <p className="text-gray-900 dark:text-white">{latestHearing.title || '-'}</p>
                                 </div>
                                 <div>
@@ -1191,7 +1171,7 @@ export default function CaseShow() {
                             >
                                 <div className="flex items-center space-x-2">
                                     <Search className="h-4 w-4" />
-                                    <span>{t('Case Research')}</span>
+                                    <span>{t('Legal Research')}</span>
                                 </div>
                             </button>
                         )}
@@ -2434,7 +2414,7 @@ export default function CaseShow() {
                             {!selectedProject ? (
                                 <div>
                                     <div className="mb-6 flex items-center justify-between">
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('Case Research')}</h3>
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('Legal Research')}</h3>
                                     </div>
 
                                     <div className="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
@@ -2502,13 +2482,15 @@ export default function CaseShow() {
                                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{selectedProject.title}</h3>
                                             <p className="text-sm text-gray-600 dark:text-gray-400">{selectedProject.research_id}</p>
                                         </div>
-                                        <button
+                                        <Button
+                                            type="button"
+                                            variant="outline"
                                             onClick={() => setSelectedProject(null)}
-                                            className="flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                            className="flex items-center gap-2"
                                         >
                                             <ArrowLeft className="h-4 w-4" />
                                             {t('Back to Projects')}
-                                        </button>
+                                        </Button>
                                     </div>
 
                                     {/* Project Details Card */}
@@ -3232,7 +3214,7 @@ export default function CaseShow() {
                 onConfirm={handleDeleteConfirm}
                 itemName={currentItem?.title || currentItem?.user?.name || currentItem?.document_name || ''}
                 entityName={
-                    activeTab === 'timelines' ? 'timeline event' : activeTab === 'team' ? 'team member' : activeTab === 'tasks' ? 'task' : 'document'
+                    activeTab === 'timelines' ? 'Timeline Event' : activeTab === 'team' ? 'Team Member' : activeTab === 'tasks' ? 'task' : 'Document'
                 }
             />
 
@@ -3404,7 +3386,7 @@ export default function CaseShow() {
                         onClose={() => setIsHearingDeleteModalOpen(false)}
                         onConfirm={handleHearingDeleteConfirm}
                         itemName={currentHearing?.title || ''}
-                        entityName="hearing"
+                        entityName="Hearing"
                     />
                 </>
             )}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -23,6 +24,7 @@ export default function MediaPicker({
   placeholder = 'Select image...',
   showPreview = true
 }: MediaPickerProps) {
+  const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { storageSettings } = usePage().props as any;
 
@@ -73,7 +75,7 @@ export default function MediaPicker({
           onClick={() => setIsModalOpen(true)}
         >
           <ImageIcon className="h-4 w-4 mr-2" />
-          Browse
+          {t('Browse')}
         </Button>
         {value && (
           <Button

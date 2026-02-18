@@ -275,7 +275,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
 
             // For checkbox fields
             if (field.type === 'checkbox') {
-                return <div className="rounded-md border bg-gray-50 p-2">{formData[field.name] ? 'Yes' : 'No'}</div>;
+                return <div className="rounded-md border bg-gray-50 p-2">{formData[field.name] ? t('Yes') : t('No')}</div>;
             }
 
             // For date fields - use appSettings formatting

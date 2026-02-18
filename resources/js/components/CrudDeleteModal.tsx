@@ -23,9 +23,11 @@ export function CrudDeleteModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{t("Delete")} {entityName}</DialogTitle>
+          <DialogTitle>{t('Delete')} {t(entityName)}</DialogTitle>
           <DialogDescription>
-            {t("Are you sure you want to delete")} {itemName || `this ${entityName}`}? {t("This action cannot be undone.")}
+            {t('Are you sure you want to delete "{{name}}"? This action cannot be undone.', {
+              name: itemName || t('this {{entity}}', { entity: t(entityName) })
+            })}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="sm:justify-end">

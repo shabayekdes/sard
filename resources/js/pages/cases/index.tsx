@@ -109,7 +109,6 @@ export default function Cases() {
     }
 
     if (formMode === 'create') {
-      toast.loading(t('Creating case...'));
 
       router.post(route('cases.store'), formData, {
         onSuccess: (page) => {
@@ -131,7 +130,6 @@ export default function Cases() {
         }
       });
     } else if (formMode === 'edit') {
-      toast.loading(t('Updating case...'));
 
       router.put(route('cases.update', currentItem.id), formData, {
         onSuccess: (page) => {
@@ -156,8 +154,6 @@ export default function Cases() {
   };
 
   const handleDeleteConfirm = () => {
-    toast.loading(t('Deleting case...'));
-
     router.delete(route('cases.destroy', currentItem.id), {
       onSuccess: (page) => {
         setIsDeleteModalOpen(false);
@@ -180,9 +176,6 @@ export default function Cases() {
   };
 
   const handleToggleStatus = (caseItem: any) => {
-    const newStatus = caseItem.status === 'active' ? 'inactive' : 'active';
-    toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} case...`);
-
     router.put(route('cases.toggle-status', caseItem.id), {}, {
       onSuccess: (page) => {
         toast.dismiss();
@@ -311,15 +304,22 @@ export default function Cases() {
     },
     {
       key: 'status',
-      label: t('Active Status'),
+      label: t('Status'),
       render: (value: string, row: any) => {
-        const canToggle = hasPermission(permissions, 'edit-cases');
+        const canToggleStatus = hasPermission(permissions, 'edit-cases');
         return (
-          <Switch
-            checked={value === 'active'}
-            disabled={!canToggle}
-            onCheckedChange={() => handleToggleStatus(row)}
-          />
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={value === 'active'}
+              disabled={!canToggleStatus}
+              onCheckedChange={() => {
+                if (!canToggleStatus) return;
+                handleToggleStatus(row);
+              }}
+              aria-label={value === 'active' ? t('Deactivate case') : t('Activate case')}
+            />
+            <span className="text-muted-foreground text-xs">{value === 'active' ? t('Active') : t('Inactive')}</span>
+          </div>
         );
       }
     }
@@ -694,7 +694,7 @@ export default function Cases() {
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
         itemName={currentItem?.title || ''}
-        entityName="case"
+        entityName="Case"
       />
     </PageTemplate>
   );

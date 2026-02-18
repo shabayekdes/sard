@@ -154,9 +154,6 @@ export default function Clients() {
     };
 
     const handleToggleStatus = (client: any) => {
-        const newStatus = client.status === 'active' ? 'inactive' : 'active';
-        toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} client...`);
-
         router.put(
             route('clients.toggle-status', client.id),
             {},
@@ -461,7 +458,7 @@ export default function Clients() {
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={handleDeleteConfirm}
                 itemName={currentItem?.name || ''}
-                entityName="client"
+                entityName="Client"
             />
 
             {/* Reset Password Modal */}

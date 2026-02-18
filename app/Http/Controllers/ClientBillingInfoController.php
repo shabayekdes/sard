@@ -100,12 +100,12 @@ class ClientBillingInfoController extends Controller
             ->first();
 
         if (!$client) {
-            return redirect()->back()->with('error', 'Invalid client selected.');
+            return redirect()->back()->with('error', __('Invalid client selected.'));
         }
 
         ClientBillingInfo::create($validated);
 
-        return redirect()->back()->with('success', 'Billing information created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Billing Information')]));
     }
 
     public function update(Request $request, $billingId)
@@ -141,17 +141,17 @@ class ClientBillingInfoController extends Controller
                     ->first();
 
                 if (!$client) {
-                    return redirect()->back()->with('error', 'Invalid client selected.');
+                    return redirect()->back()->with('error', __('Invalid client selected.'));
                 }
 
                 $billing->update($validated);
 
-                return redirect()->back()->with('success', 'Billing information updated successfully');
+                return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Billing Information')]));
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to update billing information');
+                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to update :model', ['model' => __('Billing Information')]));
             }
         } else {
-            return redirect()->back()->with('error', 'Billing information not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Billing Information')]));
         }
     }
 
@@ -166,12 +166,12 @@ class ClientBillingInfoController extends Controller
         if ($billing) {
             try {
                 $billing->delete();
-                return redirect()->back()->with('success', 'Billing information deleted successfully');
+                return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Billing Information')]));
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to delete billing information');
+                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to delete :model', ['model' => __('Billing Information')]));
             }
         } else {
-            return redirect()->back()->with('error', 'Billing information not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Billing Information')]));
         }
     }
 }

@@ -212,7 +212,7 @@ export default function CreateCase() {
                 { value: 'confidential', label: t('Confidential') },
                 { value: 'privileged', label: t('Privileged') },
             ],
-            placeholder: t('Select Confidentiality Level'),
+            placeholder: t('Select {{label}}', { label: t('Confidentiality Level')}),
         },
         { name: 'file', label: t('Upload New Document'), type: 'media-picker', required: true },
     ];
@@ -386,8 +386,8 @@ export default function CreateCase() {
                                             isSubcategoryLoading
                                                 ? t('Loading...')
                                                 : formData.case_category_id
-                                                  ? t('Select Sub Category')
-                                                  : t('Select Main Category First')
+                                                  ? t('Select {{label}}', { label: t('Sub Category') })
+                                                  : t('Select {{label}} first', { label: t('Main Category') })
                                         }
                                     />
                                 </SelectTrigger>
