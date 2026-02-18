@@ -85,9 +85,6 @@ export default function ResearchProjects() {
   };
 
   const handleToggleStatus = (project: any) => {
-    const newStatus = project.status === 'active' ? 'completed' : 'active';
-    toast.loading(`${newStatus === 'active' ? t('Activating') : t('Completing')} project...`);
-
     router.put(route('legal-research.projects.toggle-status', project.id), {}, {
       onSuccess: (page) => {
         toast.dismiss();
@@ -97,7 +94,7 @@ export default function ResearchProjects() {
       },
       onError: (errors) => {
         toast.dismiss();
-        toast.error(`Failed to update project status: ${Object.values(errors).join(', ')}`);
+        toast.error(t('Failed to update {{model}} status: {{errors}}', { model: t('Project'), errors: Object.values(errors).join(', ') }));
       }
     });
   };
@@ -108,8 +105,6 @@ export default function ResearchProjects() {
       ? 'legal-research.projects.store' 
       : 'legal-research.projects.update';
     
-    toast.loading(t(`${formMode === 'create' ? 'Creating' : 'Updating'} research project...`));
-
     const method = formMode === 'create' ? 'post' : 'put';
     const url = formMode === 'create' 
       ? route(route_name) 
@@ -125,13 +120,15 @@ export default function ResearchProjects() {
       },
       onError: (errors) => {
         toast.dismiss();
-        toast.error(`Failed to ${action} research project: ${Object.values(errors).join(', ')}`);
+        const msg = action === 'store'
+          ? t('Failed to create {{model}}: {{errors}}', { model: t('Research project'), errors: Object.values(errors).join(', ') })
+          : t('Failed to update {{model}}: {{errors}}', { model: t('Research project'), errors: Object.values(errors).join(', ') });
+        toast.error(msg);
       }
     });
   };
 
   const handleDeleteConfirm = () => {
-    toast.loading(t('Deleting research project...'));
     router.delete(route('legal-research.projects.destroy', currentItem.id), {
       onSuccess: (page) => {
         setIsDeleteModalOpen(false);
@@ -142,7 +139,7 @@ export default function ResearchProjects() {
       },
       onError: (errors) => {
         toast.dismiss();
-        toast.error(`Failed to delete research project: ${Object.values(errors).join(', ')}`);
+        toast.error(t('Failed to delete {{model}}: {{errors}}', { model: t('Research project'), errors: Object.values(errors).join(', ') }));
       }
     });
   };
@@ -469,7 +466,7 @@ export default function ResearchProjects() {
               onClose={() => setIsDeleteModalOpen(false)}
               onConfirm={handleDeleteConfirm}
               itemName={currentItem?.title || ''}
-              entityName="research project"
+              entityName="Research Project"
           />
       </PageTemplate>
   );

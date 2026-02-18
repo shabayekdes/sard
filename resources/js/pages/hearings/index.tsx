@@ -98,7 +98,6 @@ export default function Hearings() {
 
   const handleFormSubmit = (formData: any) => {
     if (formMode === 'create') {
-      toast.loading(t('Scheduling hearing...'));
       router.post(route('hearings.store'), formData, {
         preserveState: true,
         preserveScroll: true,
@@ -113,11 +112,10 @@ export default function Hearings() {
         onError: (errors) => {
           toast.dismiss();
           setFormErrors(errors as Record<string, string>);
-          toast.error(`Failed to schedule hearing: ${Object.values(errors).join(', ')}`);
+          toast.error(t('Failed to create {{model}}: {{errors}}', { model: t('Hearing'), errors: Object.values(errors).join(', ') }));
         }
       });
     } else if (formMode === 'edit') {
-      toast.loading(t('Updating hearing...'));
       router.put(route('hearings.update', currentItem.id), formData, {
         preserveState: true,
         preserveScroll: true,
@@ -132,14 +130,13 @@ export default function Hearings() {
         onError: (errors) => {
           toast.dismiss();
           setFormErrors(errors as Record<string, string>);
-          toast.error(`Failed to update hearing: ${Object.values(errors).join(', ')}`);
+          toast.error(t('Failed to update {{model}}: {{errors}}', { model: t('Hearing'), errors: Object.values(errors).join(', ') }));
         }
       });
     }
   };
 
   const handleDeleteConfirm = () => {
-    toast.loading(t('Deleting hearing...'));
     router.delete(route('hearings.destroy', currentItem.id), {
       onSuccess: (page) => {
         setIsDeleteModalOpen(false);
@@ -565,7 +562,7 @@ export default function Hearings() {
               onClose={() => setIsDeleteModalOpen(false)}
               onConfirm={handleDeleteConfirm}
               itemName={currentItem?.title || ''}
-              entityName="hearing"
+              entityName="Hearing"
           />
       </PageTemplate>
   );

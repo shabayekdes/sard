@@ -119,7 +119,7 @@ class TaskController extends BaseController
                 ->where('created_by', createdBy())
                 ->first();
             if (!$case) {
-                return redirect()->back()->with('error', 'Invalid case selected.');
+                return redirect()->back()->with('error', __('Invalid case selected.'));
             }
         }
 
@@ -131,7 +131,7 @@ class TaskController extends BaseController
                 })
                 ->first();
             if (!$user) {
-                return redirect()->back()->with('error', 'Invalid user selected.');
+                return redirect()->back()->with('error', __('Invalid user selected.'));
             }
         }
 
@@ -140,7 +140,7 @@ class TaskController extends BaseController
                 ->where('created_by', createdBy())
                 ->first();
             if (!$taskType) {
-                return redirect()->back()->with('error', 'Invalid task type selected.');
+                return redirect()->back()->with('error', __('Invalid task type selected.'));
             }
         }
 
@@ -149,7 +149,7 @@ class TaskController extends BaseController
                 ->where('created_by', createdBy())
                 ->first();
             if (!$taskStatus) {
-                return redirect()->back()->with('error', 'Invalid task status selected.');
+                return redirect()->back()->with('error', __('Invalid task status selected.'));
             }
         }
 
@@ -184,7 +184,7 @@ class TaskController extends BaseController
             return redirect()->back()->with('warning', $message);
         }
 
-        return redirect()->back()->with('success', 'Task created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Task')]));
     }
 
     public function update(Request $request, $taskId)
@@ -214,7 +214,7 @@ class TaskController extends BaseController
                 ->where('created_by', createdBy())
                 ->first();
             if (!$case) {
-                return redirect()->back()->with('error', 'Invalid case selected.');
+                return redirect()->back()->with('error', __('Invalid case selected.'));
             }
         }
 
@@ -226,7 +226,7 @@ class TaskController extends BaseController
                 })
                 ->first();
             if (!$user) {
-                return redirect()->back()->with('error', 'Invalid user selected.');
+                return redirect()->back()->with('error', __('Invalid user selected.'));
             }
         }
 
@@ -235,7 +235,7 @@ class TaskController extends BaseController
                 ->where('created_by', createdBy())
                 ->first();
             if (!$taskType) {
-                return redirect()->back()->with('error', 'Invalid task type selected.');
+                return redirect()->back()->with('error', __('Invalid task type selected.'));
             }
         }
 
@@ -244,7 +244,7 @@ class TaskController extends BaseController
                 ->where('created_by', createdBy())
                 ->first();
             if (!$taskStatus) {
-                return redirect()->back()->with('error', 'Invalid task status selected.');
+                return redirect()->back()->with('error', __('Invalid task status selected.'));
             }
         }
 
@@ -266,7 +266,7 @@ class TaskController extends BaseController
             $task->update(['google_calendar_event_id' => null]);
         }
 
-        return redirect()->back()->with('success', 'Task updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Task')]));
     }
 
     public function show($taskId)
@@ -294,9 +294,9 @@ class TaskController extends BaseController
             }
             
             $task->delete();
-            return redirect()->back()->with('success', 'Task deleted successfully.');
+            return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Task')]));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to delete task.');
+            return redirect()->back()->with('error', __('Failed to delete :model', ['model' => __('Task')]));
         }
     }
 
@@ -311,9 +311,9 @@ class TaskController extends BaseController
             $task->status = $newStatus;
             $task->save();
 
-            return redirect()->back()->with('success', 'Task status updated successfully.');
+            return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Task')]));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update task status.');
+            return redirect()->back()->with('error', __('Failed to update :model status', ['model' => __('Task')]));
         }
     }
 

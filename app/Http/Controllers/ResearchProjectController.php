@@ -75,13 +75,13 @@ class ResearchProjectController extends Controller
         if ($validated['case_id']) {
             $case = CaseModel::where('id', $validated['case_id'])->where('created_by', createdBy())->first();
             if (!$case) {
-                return redirect()->back()->with('error', 'Invalid case selection.');
+                return redirect()->back()->with('error', __('Invalid case selection.'));
             }
         }
 
         $researchType = ResearchType::where('id', $validated['research_type_id'])->where('created_by', createdBy())->first();
         if (!$researchType) {
-            return redirect()->back()->with('error', 'Invalid research type selection.');
+            return redirect()->back()->with('error', __('Invalid research type selection.'));
         }
 
         $validated['created_by'] = createdBy();
@@ -89,7 +89,7 @@ class ResearchProjectController extends Controller
 
         ResearchProject::create($validated);
 
-        return redirect()->back()->with('success', 'Research project created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Research project')]));
     }
 
     public function update(Request $request, $projectId)
@@ -109,18 +109,18 @@ class ResearchProjectController extends Controller
         if ($validated['case_id']) {
             $case = CaseModel::where('id', $validated['case_id'])->where('created_by', createdBy())->first();
             if (!$case) {
-                return redirect()->back()->with('error', 'Invalid case selection.');
+                return redirect()->back()->with('error', __('Invalid case selection.'));
             }
         }
 
         $researchType = ResearchType::where('id', $validated['research_type_id'])->where('created_by', createdBy())->first();
         if (!$researchType) {
-            return redirect()->back()->with('error', 'Invalid research type selection.');
+            return redirect()->back()->with('error', __('Invalid research type selection.'));
         }
 
         $project->update($validated);
 
-        return redirect()->back()->with('success', 'Research project updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Research project')]));
     }
 
     public function destroy($projectId)
@@ -129,7 +129,7 @@ class ResearchProjectController extends Controller
 
         $project->delete();
 
-        return redirect()->back()->with('success', 'Research project deleted successfully.');
+        return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Research project')]));
     }
 
     public function toggleStatus($projectId)
@@ -139,7 +139,7 @@ class ResearchProjectController extends Controller
         $project->status = $project->status === 'active' ? 'completed' : 'active';
         $project->save();
 
-        return redirect()->back()->with('success', 'Research project status updated successfully.');
+        return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Research project')]));
     }
 
     public function show($projectId)

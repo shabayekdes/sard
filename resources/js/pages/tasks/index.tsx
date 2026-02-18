@@ -97,7 +97,6 @@ export default function Tasks() {
 
   const handleFormSubmit = (formData: any) => {
     if (formMode === 'create') {
-      toast.loading(t('Creating task...'));
       router.post(route('tasks.store'), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
@@ -118,7 +117,6 @@ export default function Tasks() {
         }
       });
     } else if (formMode === 'edit') {
-      toast.loading(t('Updating task...'));
       router.put(route('tasks.update', currentItem.id), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
@@ -142,7 +140,6 @@ export default function Tasks() {
   };
 
   const handleDeleteConfirm = () => {
-    toast.loading(t('Deleting task...'));
     router.delete(route('tasks.destroy', currentItem.id), {
       onSuccess: (page) => {
         setIsDeleteModalOpen(false);
@@ -165,7 +162,6 @@ export default function Tasks() {
   };
 
   const handleStatusChange = (formData: any) => {
-    toast.loading(t('Updating task status...'));
     router.put(route('tasks.update', currentItem.id), {
       ...currentItem,
       status: formData.status,
@@ -599,7 +595,7 @@ export default function Tasks() {
               onClose={() => setIsDeleteModalOpen(false)}
               onConfirm={handleDeleteConfirm}
               itemName={currentItem?.title || ''}
-              entityName="task"
+              entityName="Task"
           />
       </PageTemplate>
   );

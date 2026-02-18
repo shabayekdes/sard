@@ -75,15 +75,15 @@ class ResearchCitationController extends Controller
             ->first();
 
         if (!$project) {
-            return redirect()->back()->with('error', 'Invalid research project selection.');
+            return redirect()->back()->with('error', __('Invalid research project selection.'));
         }
 
-        if ($validated['source_id']) {
+        if ($validated['source_id'] ?? null) {
             $source = ResearchSource::where('id', $validated['source_id'])
                 ->where('created_by', createdBy())
                 ->first();
             if (!$source) {
-                return redirect()->back()->with('error', 'Invalid source selection.');
+                return redirect()->back()->with('error', __('Invalid source selection.'));
             }
         }
 
@@ -91,7 +91,7 @@ class ResearchCitationController extends Controller
 
         ResearchCitation::create($validated);
 
-        return redirect()->back()->with('success', 'Research citation created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Research citation')]));
     }
 
     public function update(Request $request, $citationId)
@@ -101,7 +101,7 @@ class ResearchCitationController extends Controller
             ->first();
 
         if (!$citation) {
-            return redirect()->back()->with('error', 'Research citation not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Research citation')]));
         }
 
         $validated = $request->validate([
@@ -118,7 +118,7 @@ class ResearchCitationController extends Controller
             ->first();
 
         if (!$project) {
-            return redirect()->back()->with('error', 'Invalid research project selection.');
+            return redirect()->back()->with('error', __('Invalid research project selection.'));
         }
 
         if ($validated['source_id']) {
@@ -126,13 +126,13 @@ class ResearchCitationController extends Controller
                 ->where('created_by', createdBy())
                 ->first();
             if (!$source) {
-                return redirect()->back()->with('error', 'Invalid source selection.');
+                return redirect()->back()->with('error', __('Invalid source selection.'));
             }
         }
 
         $citation->update($validated);
 
-        return redirect()->back()->with('success', 'Research citation updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Research citation')]));
     }
 
     public function destroy($citationId)
@@ -142,11 +142,11 @@ class ResearchCitationController extends Controller
             ->first();
 
         if (!$citation) {
-            return redirect()->back()->with('error', 'Research citation not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Research citation')]));
         }
 
         $citation->delete();
 
-        return redirect()->back()->with('success', 'Research citation deleted successfully.');
+        return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Research citation')]));
     }
 }

@@ -126,9 +126,7 @@ export default function CreateCase() {
             );
             return;
         }
-
-        toast.loading(t('Creating case...'));
-
+        
         const filteredDocuments = (formData.documents || []).filter(
             (doc: any) =>
                 doc?.document_name && doc?.document_type_id && doc?.confidentiality && doc?.file
@@ -156,7 +154,7 @@ export default function CreateCase() {
                 if (typeof formErrors === 'string') {
                     toast.error(formErrors);
                 } else if (Object.values(formErrors).length > 0) {
-                    toast.error(`Failed to create case: ${Object.values(formErrors).join(', ')}`);
+                    toast.error(t('Failed to create {{model}}: {{errors}}', { model: t('Case'), errors: Object.values(formErrors).join(', ') }));
                 }
             },
         });

@@ -186,11 +186,11 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                 // Validate all dependent fields are filled
                 field.dependentConfig?.forEach((depField) => {
                     if (!formData[depField.name] || formData[depField.name] === '' || formData[depField.name] === 'none') {
-                        newErrors[depField.name] = `${depField.label} is required`;
+                        newErrors[depField.name] = t('{{label}} is required', { label: depField.label });
                     }
                 });
             } else if (field.required && isConditionallyRequired && !formData[field.name]) {
-                newErrors[field.name] = `${field.label} is required`;
+                newErrors[field.name] = t('{{label}} is required', { label: field.label });
             }
 
             // File validation

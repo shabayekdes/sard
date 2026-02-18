@@ -1,5 +1,9 @@
+import { useLayout } from '@/contexts/LayoutContext';
 import { usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 interface DropdownField {
     name: string;
@@ -18,7 +22,10 @@ interface DependentDropdownProps {
 }
 
 export default function DependentDropdown({ fields, values, onChange, disabled = false, errors = {} }: DependentDropdownProps) {
-    const { base_url } = usePage().props as any
+    const { t } = useTranslation();
+    const { isRtl } = useLayout();
+    const { base_url } = usePage().props as any;
+    const fieldDir = isRtl ? 'rtl' : 'ltr';
 
     const [availableOptions, setAvailableOptions] = useState<Record<string, { value: string; label: string }[]>>(() => {
         const initial: Record<string, { value: string; label: string }[]> = {};
@@ -180,13 +187,14 @@ export default function DependentDropdown({ fields, values, onChange, disabled =
                             value={values[field.name] || ''}
                             onChange={(e) => handleFieldChange(field.name, e.target.value, index)}
                             disabled={isDisabled || isLoading}
+                            dir={fieldDir}
                             className={`flex h-10 w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${errors[field.name] ? 'border-red-500' : 'border-input'}`}
                         >
                             <option 
                                 value=""
                                 className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none text-muted-foreground"
                             >
-                                {isLoading ? 'Loading...' : `Select ${field.label.toLowerCase()}`}
+                                {isLoading ? t('Loading...') : t('Select {{label}}', { label: field.label })}
                             </option>
                             {fieldOptions.map((option) => (
                                 <option 

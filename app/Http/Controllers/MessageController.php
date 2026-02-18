@@ -153,7 +153,7 @@ class MessageController extends Controller
             ->first();
 
         if (!$conversation) {
-            return redirect()->route('messages.index')->with('error', 'Conversation not found.');
+            return redirect()->route('messages.index')->with('error', __(':model not found.', ['model' => __('Conversation')]));
         }
 
         $messages = Message::withPermissionCheck()
@@ -213,10 +213,10 @@ class MessageController extends Controller
 
             Message::create($validated);
 
-            return redirect()->back()->with('success', 'Message sent successfully.');
+            return redirect()->back()->with('success', __('Message sent successfully.'));
         } catch (\Exception $e) {
             \Log::error('Message creation failed: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Failed to send message: ' . $e->getMessage());
+            return redirect()->back()->with('error', __('Failed to send message.'));
         }
     }
 
@@ -281,7 +281,7 @@ class MessageController extends Controller
                 ->first();
 
             if (!$conversation) {
-                return redirect()->back()->with('error', 'Conversation not found.');
+                return redirect()->back()->with('error', __(':model not found.', ['model' => __('Conversation')]));
             }
 
             // Delete all messages in the conversation
@@ -290,10 +290,10 @@ class MessageController extends Controller
             // Delete the conversation
             $conversation->delete();
 
-            return redirect()->back()->with('success', 'Conversation deleted successfully.');
+            return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Conversation')]));
         } catch (\Exception $e) {
             \Log::error('Conversation deletion failed: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Failed to delete conversation.');
+            return redirect()->back()->with('error', __('Failed to delete :model', ['model' => __('Conversation')]));
         }
     }
 }

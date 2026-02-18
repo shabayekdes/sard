@@ -89,7 +89,6 @@ export default function MessagesIndex({ conversations, users, filters }: Props) 
         debouncedSearch(value);
     };
 
-    console.log({selectedConversation})
     useEffect(() => {
         if (messagesContainerRef.current) {
             messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
@@ -173,8 +172,6 @@ export default function MessagesIndex({ conversations, users, filters }: Props) 
     };
 
     const handleFormSubmit = (formData: any) => {
-        toast.loading(t('Creating conversation...'));
-
         router.post(route('communication.messages.store'), formData, {
             onSuccess: (page) => {
                 setIsFormModalOpen(false);
@@ -199,9 +196,7 @@ export default function MessagesIndex({ conversations, users, filters }: Props) 
 
     const confirmDeleteConversation = () => {
         if (!conversationToDelete) return;
-
-        toast.loading(t('Deleting conversation...'));
-
+        
         router.delete(route('communication.messages.destroy', conversationToDelete), {
             onSuccess: () => {
                 toast.dismiss();

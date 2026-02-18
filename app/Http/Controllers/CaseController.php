@@ -867,7 +867,7 @@ class CaseController extends BaseController
             }
         }
 
-        return redirect()->route('cases.show', $case->id)->with('success', __('Case updated successfully.'));
+        return redirect()->route('cases.show', $case->id)->with('success', __(':model updated successfully', ['model' => __('Case')]));
     }
 
     public function destroy(CaseModel $case)

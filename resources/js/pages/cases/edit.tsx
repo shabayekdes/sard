@@ -126,8 +126,6 @@ export default function EditCase() {
 
     const handleFormSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        toast.loading(t('Updating case...'));
-
         const payload = {
             ...formData,
             case_category_id: formData.case_category_id === '' ? null : formData.case_category_id,
@@ -144,7 +142,7 @@ export default function EditCase() {
             onError: (formErrors) => {
                 toast.dismiss();
                 if (typeof formErrors === 'string') toast.error(formErrors);
-                else if (Object.values(formErrors).length > 0) toast.error(`Failed to update case: ${Object.values(formErrors).join(', ')}`);
+                else if (Object.values(formErrors).length > 0) toast.error(t('Failed to update {{model}}: {{errors}}', { model: t('Case'), errors: Object.values(formErrors).join(', ') }));
             },
         });
     };

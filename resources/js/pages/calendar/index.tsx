@@ -4,14 +4,18 @@ import { usePage, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, MapPin, User, FileText, RefreshCw, ChevronDown } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslation } from 'react-i18next';
+import { useLayout } from '@/contexts/LayoutContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export default function Calendar() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { isRtl } = useLayout();
   const { auth, events, upcomingEvents, currentDate, viewType, dateRange, systemSettings, googleCalendarAuthorized, googleCalendarEnabled } = usePage().props as any;
+
+  const dateLocale = i18n.language === 'ar' ? 'ar' : 'en-US';
   
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
@@ -306,7 +310,7 @@ export default function Calendar() {
               <div key={index} className={`p-3 text-center font-medium bg-gray-50 dark:bg-gray-800 ${
                 isToday ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'
               }`}>
-                <div className="text-xs">{day.toLocaleDateString(undefined, { weekday: 'short' })}</div>
+                <div className="text-xs">{day.toLocaleDateString(dateLocale, { weekday: 'short' })}</div>
                 <div className={`text-lg ${isToday ? 'bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto' : ''}`}>
                   {day.getDate()}
                 </div>
@@ -395,7 +399,7 @@ export default function Calendar() {
         <div className="p-4 border-b bg-gray-50 dark:bg-gray-800">
           <div className="text-center">
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              {day.toLocaleDateString(undefined, { weekday: 'long' })}
+              {day.toLocaleDateString(dateLocale, { weekday: 'long' })}
             </div>
             <div className={`text-2xl font-semibold ${
               isToday ? 'text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-gray-100'
@@ -403,7 +407,7 @@ export default function Calendar() {
               {day.getDate()}
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              {day.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+              {day.toLocaleDateString(dateLocale, { month: 'long', year: 'numeric' })}
             </div>
           </div>
         </div>
@@ -607,7 +611,7 @@ console.log({upcomingEvents})
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {t('All events on')} {selectedDate?.toLocaleDateString(undefined, { 
+            {t('All events on')} {selectedDate?.toLocaleDateString(dateLocale, { 
               weekday: 'long', 
               year: 'numeric', 
               month: 'long', 
@@ -678,15 +682,17 @@ console.log({upcomingEvents})
                   variant="outline"
                   size="sm"
                   onClick={() => navigateDate('prev')}
+                  aria-label={t('Previous')}
                 >
-                  <ChevronLeft className="h-4 w-4" />
+                  {isRtl ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => navigateDate('next')}
+                  aria-label={t('Next')}
                 >
-                  <ChevronRight className="h-4 w-4" />
+                  {isRtl ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                 </Button>
                 <Button
                   variant="outline"
@@ -698,7 +704,7 @@ console.log({upcomingEvents})
               </div>
               
               <h2 className="text-xl font-semibold">
-                {currentDateObj.toLocaleDateString(undefined, { 
+                {currentDateObj.toLocaleDateString(dateLocale, { 
                   month: 'long', 
                   year: 'numeric' 
                 })}

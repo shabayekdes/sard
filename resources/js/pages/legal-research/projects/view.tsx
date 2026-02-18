@@ -125,9 +125,7 @@ export default function ViewResearchProject() {
     const url = formMode === 'create' 
       ? route('legal-research.notes.store') 
       : route('legal-research.notes.update', currentItem.id);
-
-    toast.loading(t(`${formMode === 'create' ? 'Creating' : 'Updating'} note...`));
-
+    
     router[method](url, data, {
       onSuccess: (page) => {
         setIsNotesModalOpen(false);
@@ -138,7 +136,7 @@ export default function ViewResearchProject() {
       },
       onError: (errors) => {
         toast.dismiss();
-        toast.error(`Failed to save note: ${Object.values(errors).join(', ')}`);
+        toast.error(t('Failed to save {{model}}: {{errors}}', { model: t('Note'), errors: Object.values(errors).join(', ') }));
       }
     });
   };
@@ -150,8 +148,6 @@ export default function ViewResearchProject() {
       ? route('legal-research.citations.store') 
       : route('legal-research.citations.update', currentItem.id);
 
-    toast.loading(t(`${formMode === 'create' ? 'Creating' : 'Updating'} citation...`));
-
     router[method](url, data, {
       onSuccess: (page) => {
         setIsCitationsModalOpen(false);
@@ -162,7 +158,7 @@ export default function ViewResearchProject() {
       },
       onError: (errors) => {
         toast.dismiss();
-        toast.error(`Failed to save citation: ${Object.values(errors).join(', ')}`);
+        toast.error(t('Failed to save {{model}}: {{errors}}', { model: t('Citation'), errors: Object.values(errors).join(', ') }));
       }
     });
   };
@@ -170,7 +166,6 @@ export default function ViewResearchProject() {
   const handleDeleteConfirm = () => {
     const route_name = modalType === 'notes' ? 'legal-research.notes.destroy' : 'legal-research.citations.destroy';
     
-    toast.loading(t(`Deleting ${modalType.slice(0, -1)}...`));
     router.delete(route(route_name, currentItem.id), {
       onSuccess: () => {
         setIsDeleteModalOpen(false);
@@ -179,7 +174,7 @@ export default function ViewResearchProject() {
       },
       onError: (errors) => {
         toast.dismiss();
-        toast.error(`Failed to delete ${modalType.slice(0, -1)}: ${Object.values(errors).join(', ')}`);
+        toast.error(t('Failed to delete {{model}}: {{errors}}', { model: t(modalType === 'notes' ? 'Note' : 'Citation'), errors: Object.values(errors).join(', ') }));
       }
     });
   };
@@ -495,7 +490,7 @@ export default function ViewResearchProject() {
             { name: 'title', label: t('Title'), type: 'text', required: true },
             { name: 'note_content', label: t('Note Content'), type: 'textarea', required: true, rows: 8 },
             { name: 'source_reference', label: t('Source Reference'), type: 'text' },
-            { name: 'tags', label: t('Tags'), type: 'text', placeholder: 'Enter tags separated by commas (e.g., contract, precedent, analysis)' },
+            { name: 'tags', label: t('Tags'), type: 'text', placeholder: t('Enter tags separated by commas (e.g., contract, precedent, analysis)') },
             {
               name: 'is_private',
               label: t('Make Private'),
@@ -576,7 +571,7 @@ export default function ViewResearchProject() {
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
         itemName={currentItem?.citation_text || currentItem?.title || ''}
-        entityName={modalType.slice(0, -1)}
+        entityName={modalType.slice(0, -1).replace(/^./, (c) => c.toUpperCase())}
       />
     </PageTemplate>
   );

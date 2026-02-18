@@ -116,7 +116,7 @@ export default function EditClient() {
                 if (typeof formErrors === 'string') {
                     toast.error(formErrors);
                 } else if (Object.values(formErrors).length > 0) {
-                    toast.error(`Failed to update client: ${Object.values(formErrors).join(', ')}`);
+                    toast.error(t('Failed to update {{model}}: {{errors}}', { model: t('Client'), errors: Object.values(formErrors).join(', ') }));
                 }
             },
         });
