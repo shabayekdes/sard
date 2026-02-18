@@ -137,7 +137,7 @@ export default function ShowInvoice() {
         },
     ];
 
-    if (hasPermission(permissions, 'create-payments')) {
+    if (hasPermission(permissions, 'create-payments') && invoice?.status !== 'paid') {
         pageActions.push({
             label: t('Record New Payment'),
             icon: <DollarSign className="h-4 w-4 sm:mr-2" />,

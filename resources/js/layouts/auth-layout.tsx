@@ -52,9 +52,9 @@ export default function AuthLayout({
             {/* Right side - Content. On mobile: no overflow so country dropdown isn't clipped; page scrolls. On lg: centered panel. */}
             <div className="relative z-10 flex min-h-svh w-full flex-col items-center justify-center bg-white px-4 py-6 sm:px-6 sm:py-8 lg:min-h-0 lg:w-1/2 lg:flex-1 lg:py-[60px] lg:px-[62px] dark:bg-slate-900">
                 <div
-                    className={`flex w-full max-w-[720px] flex-col transition-all duration-700 lg:flex-1 lg:min-h-0 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
+                    className={`flex w-full max-w-[720px] flex-col transition-all duration-700 lg:flex-1 lg:min-h-0 lg:justify-center ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
                 >
-                    <div className="flex flex-1 flex-col rounded-none border-0 bg-white p-4 shadow-none sm:rounded-2xl sm:border sm:border-slate-200 sm:p-6 sm:shadow-xl lg:rounded-2xl lg:border lg:border-slate-200 lg:p-8 lg:shadow-xl dark:bg-slate-800 dark:sm:border-slate-700 dark:lg:border-slate-700">
+                    <div className="flex flex-col rounded-none border-0 bg-white p-4 shadow-none sm:rounded-2xl sm:border sm:border-slate-200 sm:p-6 sm:shadow-xl lg:rounded-2xl lg:border lg:border-slate-200 lg:p-8 lg:shadow-xl dark:bg-slate-800 dark:sm:border-slate-700 dark:lg:border-slate-700">
                         {status && (
                             <div
                                 className={`mb-6 text-center text-sm font-medium ${
