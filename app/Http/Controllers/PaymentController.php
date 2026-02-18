@@ -110,7 +110,7 @@ class PaymentController extends Controller
             'approved_by' => $isBankTransfer ? null : auth()->id(),
         ]);
 
-        return redirect()->back()->with('success', 'Payment recorded successfully.');
+        return redirect()->back()->with('success', __('Payment recorded successfully.'));
     }
 
     public function update(Request $request, Payment $payment)
@@ -189,19 +189,19 @@ class PaymentController extends Controller
             'attachment' => $attachmentFiles,
         ], $approvalUpdates));
 
-        return redirect()->back()->with('success', 'Payment updated successfully.');
+        return redirect()->back()->with('success', __('Payment updated successfully.'));
     }
 
     public function destroy(Payment $payment)
     {
         $payment->delete();
-        return redirect()->back()->with('success', 'Payment deleted successfully.');
+        return redirect()->back()->with('success', __('Payment deleted successfully.'));
     }
 
     public function approve(Payment $payment)
     {
         if ($payment->payment_method !== 'bank_transfer' || $payment->approval_status !== 'pending') {
-            return redirect()->back()->with('error', 'Only pending bank transfer payments can be approved.');
+            return redirect()->back()->with('error', __('Only pending bank transfer payments can be approved.'));
         }
 
         $payment->update([
@@ -211,13 +211,13 @@ class PaymentController extends Controller
             'rejection_reason' => null,
         ]);
 
-        return redirect()->back()->with('success', 'Payment approved successfully.');
+        return redirect()->back()->with('success', __('Payment approved successfully.'));
     }
 
     public function reject(Request $request, Payment $payment)
     {
         if ($payment->payment_method !== 'bank_transfer' || $payment->approval_status !== 'pending') {
-            return redirect()->back()->with('error', 'Only pending bank transfer payments can be rejected.');
+            return redirect()->back()->with('error', __('Only pending bank transfer payments can be rejected.'));
         }
 
         $request->validate([
@@ -231,7 +231,7 @@ class PaymentController extends Controller
             'rejection_reason' => $request->rejection_reason,
         ]);
 
-        return redirect()->back()->with('success', 'Payment rejected successfully.');
+        return redirect()->back()->with('success', __('Payment rejected successfully.'));
     }
 
     /**

@@ -105,7 +105,6 @@ export default function Payments() {
         setIsDeleteModalOpen(true);
         break;
       case 'approve':
-        toast.loading(t('Approving payment...'));
         router.post(route('billing.payments.approve', item.id), {}, {
           onSuccess: (page) => {
             toast.dismiss();
@@ -115,7 +114,7 @@ export default function Payments() {
           },
           onError: (errors) => {
             toast.dismiss();
-            toast.error(`Failed to approve payment: ${Object.values(errors).join(', ')}`);
+            toast.error(t('Failed to approve payment: {{errors}}', { errors: Object.values(errors).join(', ') }));
           }
         });
         break;
@@ -134,8 +133,6 @@ export default function Payments() {
 
   const handleFormSubmit = (formData: any) => {
     if (formMode === 'create') {
-      toast.loading(t('Recording payment...'));
-
       router.post(route('billing.payments.store'), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
@@ -146,12 +143,10 @@ export default function Payments() {
         },
         onError: (errors) => {
           toast.dismiss();
-          toast.error(`Failed to record payment: ${Object.values(errors).join(', ')}`);
+          toast.error(t('Failed to record payment: {{errors}}', { errors: Object.values(errors).join(', ') }));
         }
       });
     } else if (formMode === 'edit') {
-      toast.loading(t('Updating payment...'));
-
       router.put(route('billing.payments.update', currentItem.id), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
@@ -162,15 +157,13 @@ export default function Payments() {
         },
         onError: (errors) => {
           toast.dismiss();
-          toast.error(`Failed to update payment: ${Object.values(errors).join(', ')}`);
+          toast.error(t('Failed to update payment: {{errors}}', { errors: Object.values(errors).join(', ') }));
         }
       });
     }
   };
 
   const handleDeleteConfirm = () => {
-    toast.loading(t('Deleting payment...'));
-
     router.delete(route('billing.payments.destroy', currentItem.id), {
       onSuccess: (page) => {
         setIsDeleteModalOpen(false);
@@ -181,7 +174,7 @@ export default function Payments() {
       },
       onError: (errors) => {
         toast.dismiss();
-        toast.error(`Failed to delete payment: ${Object.values(errors).join(', ')}`);
+        toast.error(t('Failed to delete payment: {{errors}}', { errors: Object.values(errors).join(', ') }));
       }
     });
   };
@@ -201,8 +194,6 @@ export default function Payments() {
 
   const handleRejectConfirm = () => {
     if (!currentItem) return;
-    toast.loading(t('Rejecting payment...'));
-
     router.post(route('billing.payments.reject', currentItem.id), { rejection_reason: rejectionReason }, {
       onSuccess: (page) => {
         setIsRejectModalOpen(false);
@@ -214,7 +205,7 @@ export default function Payments() {
       },
       onError: (errors) => {
         toast.dismiss();
-        toast.error(`Failed to reject payment: ${Object.values(errors).join(', ')}`);
+        toast.error(t('Failed to reject payment: {{errors}}', { errors: Object.values(errors).join(', ') }));
       }
     });
   };
@@ -563,31 +554,34 @@ export default function Payments() {
                                         };
 
                                         return (
-                                            <div className="space-y-2">
+                                            <div className="space-y-2" dir="auto">
                                                 {fileList.map((file, index) => {
                                                     const displayUrl = getDisplayUrl(file);
                                                     const isImg = isImage(file);
                                                     const fileName = file.split('/').pop() || file;
 
                                                     return (
-                                                        <div key={index} className="flex items-center gap-2 rounded-md border bg-gray-50 p-2">
+                                                        <div
+                                                            key={index}
+                                                            className="flex items-center gap-2 rounded-md border bg-gray-50 p-2 rtl:flex-row-reverse"
+                                                        >
                                                             {isImg ? (
                                                                 <img
                                                                     src={displayUrl}
                                                                     alt={fileName}
-                                                                    className="h-16 w-16 rounded object-cover"
+                                                                    className="h-16 w-16 shrink-0 rounded object-cover"
                                                                     onError={(e) => {
                                                                         (e.target as HTMLImageElement).style.display = 'none';
                                                                     }}
                                                                 />
                                                             ) : (
-                                                                <div className="flex h-16 w-16 items-center justify-center rounded bg-gray-200">
+                                                                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded bg-gray-200">
                                                                     <span className="text-xs text-gray-500">
                                                                         {getFileExtension(file).toUpperCase()}
                                                                     </span>
                                                                 </div>
                                                             )}
-                                                            <div className="min-w-0 flex-1">
+                                                            <div className="min-w-0 flex-1 text-start">
                                                                 <p className="truncate text-sm font-medium text-gray-900">{fileName}</p>
                                                                 <a
                                                                     href={displayUrl}
@@ -620,7 +614,7 @@ export default function Payments() {
               onClose={() => setIsDeleteModalOpen(false)}
               onConfirm={handleDeleteConfirm}
               itemName={`${currentItem?.invoice?.invoice_number} - $${currentItem?.amount ? parseFloat(currentItem.amount).toFixed(2) : '0.00'}`}
-              entityName="payment"
+              entityName="Payment"
           />
 
           <Dialog open={isRejectModalOpen} onOpenChange={setIsRejectModalOpen}>

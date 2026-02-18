@@ -358,7 +358,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                         value={formData[field.name] || ''}
                         onChange={(e) => handleChange(field.name, e.target.value)}
                         required={field.required}
-                        className={errors[field.name] ? 'border-red-500' : position === 'right' ? 'text-end' : ''}
+                        className={errors[field.name] ? 'border-red-500' : 'text-start'}
                         disabled={mode === 'view' || field.disabled}
                     />
                 );
@@ -451,7 +451,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                         value={dateValue}
                         onChange={(e) => handleChange(field.name, e.target.value)}
                         required={field.required}
-                        className={errors[field.name] ? 'border-red-500' : ''}
+                        className={errors[field.name] ? 'border-red-500' : 'text-start'}
                         disabled={mode === 'view' || field.disabled}
                     />
                 );
@@ -466,7 +466,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                         value={formData[field.name] || ''}
                         onChange={(e) => handleChange(field.name, e.target.value ? parseFloat(e.target.value) : '')}
                         required={field.required}
-                        className={errors[field.name] ? 'border-red-500' : ''}
+                        className={errors[field.name] ? 'border-red-500' : 'text-start'}
                         disabled={mode === 'view' || field.disabled}
                         step={field.step}
                         min={field.min}
@@ -484,7 +484,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                         value={formData[field.name] || ''}
                         onChange={(e) => handleChange(field.name, e.target.value ? parseFloat(e.target.value) : '')}
                         required={field.required}
-                        className={errors[field.name] ? 'border-red-500' : ''}
+                        className={errors[field.name] ? 'border-red-500' : 'text-start'}
                         disabled={mode === 'view' || field.disabled}
                         step="0.01"
                         min="0"
@@ -500,7 +500,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                         value={formData[field.name] || ''}
                         onChange={(e) => handleChange(field.name, e.target.value)}
                         required={field.required}
-                        className={errors[field.name] ? 'border-red-500' : position === 'right' ? 'text-end' : ''}
+                        className={errors[field.name] ? 'border-red-500' : 'text-start'}
                         disabled={mode === 'view' || field.disabled}
                     />
                 );
@@ -539,7 +539,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
 
                 return (
                     <Select value={currentValue} onValueChange={handleSelectChange} disabled={mode === 'view' || field.disabled}>
-                        <SelectTrigger className={errors[field.name] ? 'border-red-500' : ''}>
+                        <SelectTrigger className={errors[field.name] ? 'border-red-500' : 'text-start'}>
                             <SelectValue placeholder={field.placeholder || t('Select {{label}}', { label: field.label })}>
                                 {displayText || field.placeholder || t('Select {{label}}', { label: field.label })}
                             </SelectValue>
@@ -616,7 +616,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
 
                 return (
                     <Select value={comboCurrentValue} onValueChange={handleComboChange} disabled={mode === 'view' || field.disabled}>
-                        <SelectTrigger className={errors[field.name] ? 'border-red-500' : ''}>
+                        <SelectTrigger className={errors[field.name] ? 'border-red-500' : 'text-start'}>
                             <SelectValue placeholder={field.placeholder || `Search ${field.label}...`}>
                                 {comboDisplayText || field.placeholder || `Search ${field.label}...`}
                             </SelectValue>
@@ -872,7 +872,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                     <DialogDescription>{description || ' '}</DialogDescription>
                 </DialogHeader>
                 <ScrollArea className="max-h-[70vh] pr-4">
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-4" dir="auto">
                         {/* Price Summary Section */}
                         {formConfig.priceSummary && (
                             <div className="mb-4 rounded-lg bg-gray-50 p-4">
@@ -903,13 +903,13 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                     return (
                                         <div
                                             key={field.name}
-                                            className="space-y-2"
+                                            className="space-y-2 text-start"
                                             style={{
                                                 gridColumn: field.column ? `span ${field.column}` : 'span 1',
                                                 width: '100%',
                                             }}
                                         >
-                                            <Label htmlFor={field.name} className="text-sm font-medium">
+                                            <Label htmlFor={field.name} className="text-sm font-medium block text-start">
                                                 {field.label}{' '}
                                                 {field.required && !(field.type === 'file' && mode === 'edit') && (
                                                     <span className="text-red-500">*</span>
@@ -930,13 +930,13 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                     return (
                                         <div
                                             key={field.name}
-                                            className="space-y-2"
+                                            className="space-y-2 text-start"
                                             style={{
                                                 width: field.width || '100%',
                                                 flexGrow: field.width ? 0 : 1,
                                             }}
                                         >
-                                            <Label htmlFor={field.name} className="text-sm font-medium">
+                                            <Label htmlFor={field.name} className="text-sm font-medium block text-start">
                                                 {field.label}{' '}
                                                 {field.required && !(field.type === 'file' && mode === 'edit') && (
                                                     <span className="text-red-500">*</span>
@@ -959,10 +959,10 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                         return (
                                             <div
                                                 key={field.name}
-                                                className={`space-y-2 ${position === 'right' ? 'text-end' : ''}`}
+                                                className="space-y-2 text-start"
                                                 style={{ width: field.width || '100%' }}
                                             >
-                                                <Label htmlFor={field.name} className="text-sm font-medium">
+                                                <Label htmlFor={field.name} className="text-sm font-medium block text-start">
                                                     {field.label}{' '}
                                                     {field.required && !(field.type === 'file' && mode === 'edit') && (
                                                         <span className="text-red-500">*</span>

@@ -59,22 +59,24 @@ export default function MediaPicker({
   };
 
   return (
-    <div className="space-y-2">
-      {label && <Label>{label}</Label>}
+    <div className="space-y-2" dir="auto">
+      {label && <Label className="block text-start">{label}</Label>}
 
-      <div className="flex gap-2">
+      <div className="flex flex-row gap-2 rtl:flex-row-reverse">
         <Input
           value={getDisplayValue(value)}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           readOnly
+          className="text-start"
         />
         <Button
           type="button"
           variant="outline"
           onClick={() => setIsModalOpen(true)}
+          className="rtl:flex-row-reverse"
         >
-          <ImageIcon className="h-4 w-4 mr-2" />
+          <ImageIcon className="h-4 w-4 mr-2 rtl:ml-2 rtl:mr-0" />
           {t('Browse')}
         </Button>
         {value && (
