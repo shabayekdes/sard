@@ -55,7 +55,6 @@ class DatabaseSeeder extends Seeder
                 HearingSeeder::class,
 
                 // Document Management module seeders
-                DocumentCategorySeeder::class,
                 DocumentSeeder::class,
                 DocumentVersionSeeder::class,
                 DocumentCommentSeeder::class,

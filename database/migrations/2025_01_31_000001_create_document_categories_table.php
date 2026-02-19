@@ -10,14 +10,15 @@ return new class extends Migration
     {
         Schema::create('document_categories', function (Blueprint $table) {
             $table->id();
-            $table->string('category_id')->unique();
-            $table->string('name');
-            $table->text('description')->nullable();
+            $table->string('category_id');
+            $table->json('name');
+            $table->json('description')->nullable();
             $table->string('color', 7)->default('#3b82f6');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();
-            
+
+            $table->unique(['category_id', 'created_by']);
             $table->index(['created_by', 'status']);
         });
     }

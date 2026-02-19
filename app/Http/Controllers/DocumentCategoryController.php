@@ -13,10 +13,16 @@ class DocumentCategoryController extends Controller
         $query = DocumentCategory::withPermissionCheck()
             ->where('created_by', createdBy());
 
-        if ($request->has('search') && !empty($request->search)) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                    ->orWhere('description', 'like', '%' . $request->search . '%');
+        if ($request->has('search') && ! empty($request->search)) {
+            $searchTerm = $request->search;
+            $locale = app()->getLocale();
+            $query->where(function ($q) use ($searchTerm, $locale) {
+                $q->whereRaw("JSON_EXTRACT(name, '$.{$locale}') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(name, '$.en') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(name, '$.ar') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(description, '$.{$locale}') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(description, '$.en') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(description, '$.ar') LIKE ?", ["%{$searchTerm}%"]);
             });
         }
 
@@ -24,13 +30,39 @@ class DocumentCategoryController extends Controller
             $query->where('status', $request->status);
         }
 
-        if ($request->has('sort_field') && !empty($request->sort_field)) {
-            $query->orderBy($request->sort_field, $request->sort_direction ?? 'asc');
+        $sortField = $request->input('sort_field');
+        $sortDirection = $request->input('sort_direction', 'asc');
+        if (! empty($sortField)) {
+            if (! in_array($sortDirection, ['asc', 'desc'])) {
+                $sortDirection = 'asc';
+            }
+            if (in_array($sortField, ['name', 'description'])) {
+                $locale = app()->getLocale();
+                $query->orderByRaw("JSON_EXTRACT({$sortField}, '$.{$locale}') {$sortDirection}");
+            } else {
+                $query->orderBy($sortField, $sortDirection);
+            }
         } else {
             $query->orderBy('created_at', 'desc');
         }
 
         $categories = $query->paginate($request->per_page ?? 10);
+
+        $categories->getCollection()->transform(function ($category) {
+            return [
+                'id' => $category->id,
+                'category_id' => $category->category_id,
+                'name' => $category->name,
+                'name_translations' => $category->getTranslations('name'),
+                'description' => $category->description,
+                'description_translations' => $category->getTranslations('description'),
+                'color' => $category->color,
+                'status' => $category->status,
+                'created_by' => $category->created_by,
+                'created_at' => $category->created_at,
+                'updated_at' => $category->updated_at,
+            ];
+        });
 
         return Inertia::render('document-management/categories/index', [
             'categories' => $categories,
@@ -41,8 +73,12 @@ class DocumentCategoryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'name' => 'required|array',
+            'name.en' => 'required|string|max:255',
+            'name.ar' => 'required|string|max:255',
+            'description' => 'nullable|array',
+            'description.en' => 'nullable|string',
+            'description.ar' => 'nullable|string',
             'color' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
             'status' => 'nullable|in:active,inactive',
         ]);
@@ -64,8 +100,12 @@ class DocumentCategoryController extends Controller
         }
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'name' => 'required|array',
+            'name.en' => 'required|string|max:255',
+            'name.ar' => 'required|string|max:255',
+            'description' => 'nullable|array',
+            'description.en' => 'nullable|string',
+            'description.ar' => 'nullable|string',
             'color' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
             'status' => 'nullable|in:active,inactive',
         ]);

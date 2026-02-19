@@ -11,8 +11,15 @@ import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
+function translatedLabel(obj: string | Record<string, string> | null | undefined, locale: string): string {
+  if (obj == null) return '';
+  if (typeof obj === 'string') return obj;
+  return obj[locale] || obj.en || obj.ar || '';
+}
+
 export default function Documents() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLocale = i18n.language || 'en';
   const { auth, documents, categories, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
 
@@ -212,7 +219,7 @@ export default function Documents() {
     {
       key: 'category',
       label: t('Category'),
-      render: (value: any) => value?.name || '-'
+      render: (value: any) => (value?.name != null ? translatedLabel(value.name, currentLocale) : '-') || '-'
     },
 
     {
@@ -286,7 +293,7 @@ export default function Documents() {
 
   const categoryOptions = [
     { value: 'all', label: t('All Categories') },
-    ...(categories || []).map((cat: any) => ({ value: cat.id.toString(), label: cat.name }))
+    ...(categories || []).map((cat: any) => ({ value: cat.id.toString(), label: translatedLabel(cat.name, currentLocale) }))
   ];
 
   return (
@@ -400,7 +407,7 @@ export default function Documents() {
                           label: t('Category'),
                           type: 'select',
                           required: true,
-                          options: (categories || []).map((cat: any) => ({ value: cat.id, label: cat.name })),
+                          options: (categories || []).map((cat: any) => ({ value: cat.id, label: translatedLabel(cat.name, currentLocale) })),
                       },
                       ...(formMode !== 'view' ? [{ name: 'file', label: t('File'), type: 'media-picker', required: true }] : []),
                       {

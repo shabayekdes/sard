@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
@@ -12,7 +12,8 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 export default function DocumentCategories() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLocale = i18n.language || 'en';
   const { auth, categories, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
 
@@ -23,6 +24,30 @@ export default function DocumentCategories() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<any>(null);
   const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
+
+  // Reload data when language changes so table shows translated name/description
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      const params: any = { page: pageFilters.page || 1 };
+      if (searchTerm) params.search = searchTerm;
+      if (selectedStatus !== 'all') params.status = selectedStatus;
+      if (pageFilters.sort_field) {
+        params.sort_field = pageFilters.sort_field;
+        params.sort_direction = pageFilters.sort_direction || 'asc';
+      }
+      if (pageFilters.per_page) params.per_page = pageFilters.per_page;
+      router.get(route('document-management.categories.index'), params, {
+        preserveState: false,
+        preserveScroll: false
+      });
+    };
+    window.addEventListener('languageChanged', handleLanguageChange);
+    i18n.on('languageChanged', handleLanguageChange);
+    return () => {
+      window.removeEventListener('languageChanged', handleLanguageChange);
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [searchTerm, selectedStatus, pageFilters]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,8 +193,25 @@ export default function DocumentCategories() {
 
   const columns = [
     { key: 'category_id', label: t('Category ID'), sortable: true },
-    { key: 'name', label: t('Name'), sortable: true },
-    { key: 'description', label: t('Description') },
+    {
+      key: 'name',
+      label: t('Name'),
+      sortable: true,
+      render: (value: string | Record<string, string>) =>
+        typeof value === 'object' && value !== null
+          ? (value[currentLocale] || value.en || value.ar || '')
+          : value || ''
+    },
+    {
+      key: 'description',
+      label: t('Description'),
+      render: (value: string | Record<string, string> | null) =>
+        value == null
+          ? ''
+          : typeof value === 'object'
+            ? (value[currentLocale] || value.en || value.ar || '')
+            : value
+    },
     {
       key: 'color',
       label: t('Color'),
@@ -282,23 +324,55 @@ export default function DocumentCategories() {
               onSubmit={handleFormSubmit}
               formConfig={{
                   fields: [
-                      { name: 'name', label: t('Name'), type: 'text', required: true },
-                      { name: 'description', label: t('Description'), type: 'textarea' },
+                      { name: 'name.en', label: t('Name (English)'), type: 'text', required: true },
+                      { name: 'name.ar', label: t('Name (Arabic)'), type: 'text', required: true },
+                      { name: 'description.en', label: t('Description (English)'), type: 'textarea' },
+                      { name: 'description.ar', label: t('Description (Arabic)'), type: 'textarea' },
                       { name: 'color', label: t('Color'), type: 'color', required: true, defaultValue: '#3b82f6' },
                       {
                           name: 'status',
                           label: t('Status'),
                           type: 'select',
                           options: [
-                              { value: 'active', label: 'Active' },
-                              { value: 'inactive', label: 'Inactive' },
+                              { value: 'active', label: t('Active') },
+                              { value: 'inactive', label: t('Inactive') },
                           ],
                           defaultValue: 'active',
                       },
                   ],
                   modalSize: 'lg',
+                  transformData: (data: any) => {
+                      const transformed: any = { ...data };
+                      if (transformed['name.en'] != null || transformed['name.ar'] != null) {
+                          transformed.name = {
+                              en: transformed['name.en'] ?? '',
+                              ar: transformed['name.ar'] ?? ''
+                          };
+                          delete transformed['name.en'];
+                          delete transformed['name.ar'];
+                      }
+                      if (transformed['description.en'] != null || transformed['description.ar'] != null) {
+                          transformed.description = {
+                              en: transformed['description.en'] ?? '',
+                              ar: transformed['description.ar'] ?? ''
+                          };
+                          delete transformed['description.en'];
+                          delete transformed['description.ar'];
+                      }
+                      return transformed;
+                  },
               }}
-              initialData={currentItem}
+              initialData={
+                  currentItem
+                      ? {
+                            ...currentItem,
+                            'name.en': currentItem.name_translations?.en ?? (typeof currentItem.name === 'object' ? currentItem.name?.en : '') ?? '',
+                            'name.ar': currentItem.name_translations?.ar ?? (typeof currentItem.name === 'object' ? currentItem.name?.ar : '') ?? '',
+                            'description.en': currentItem.description_translations?.en ?? (typeof currentItem.description === 'object' ? currentItem.description?.en : '') ?? '',
+                            'description.ar': currentItem.description_translations?.ar ?? (typeof currentItem.description === 'object' ? currentItem.description?.ar : '') ?? '',
+                        }
+                      : {}
+              }
               title={formMode === 'create' ? t('Add New Category') : t('Edit Category')}
               mode={formMode}
           />
@@ -307,7 +381,13 @@ export default function DocumentCategories() {
               isOpen={isDeleteModalOpen}
               onClose={() => setIsDeleteModalOpen(false)}
               onConfirm={handleDeleteConfirm}
-              itemName={currentItem?.name || ''}
+              itemName={
+                  currentItem?.name != null
+                      ? typeof currentItem.name === 'object'
+                          ? currentItem.name[currentLocale] || currentItem.name.en || currentItem.name.ar || ''
+                          : String(currentItem.name)
+                      : ''
+              }
               entityName="category"
           />
       </PageTemplate>
