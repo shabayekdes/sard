@@ -13,14 +13,16 @@ return new class extends Migration
     {
         Schema::create('research_types', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
+            $table->string('code', length: 50)->nullable();
+
+            $table->json('name');
+            $table->json('description')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();
             
             // Unique constraint for research type name within a company
-            $table->unique(['name', 'created_by']);
+            $table->unique(['code', 'created_by']);
         });
     }
 

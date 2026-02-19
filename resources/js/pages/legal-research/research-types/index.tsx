@@ -12,7 +12,8 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 export default function ResearchTypes() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLocale = i18n.language || 'en';
   const { auth, researchTypes, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
 
@@ -91,8 +92,6 @@ export default function ResearchTypes() {
 
   const handleFormSubmit = (formData: any) => {
     if (formMode === 'create') {
-      toast.loading(t('Creating research type...'));
-
       router.post(route('legal-research.research-types.store'), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
@@ -113,8 +112,6 @@ export default function ResearchTypes() {
         }
       });
     } else if (formMode === 'edit') {
-      toast.loading(t('Updating research type...'));
-
       router.put(route('legal-research.research-types.update', currentItem.id), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
@@ -138,8 +135,6 @@ export default function ResearchTypes() {
   };
 
   const handleDeleteConfirm = () => {
-    toast.loading(t('Deleting research type...'));
-
     router.delete(route('legal-research.research-types.destroy', currentItem.id), {
       onSuccess: (page) => {
         setIsDeleteModalOpen(false);
@@ -162,9 +157,6 @@ export default function ResearchTypes() {
   };
 
   const handleToggleStatus = (researchType: any) => {
-    const newStatus = researchType.status === 'active' ? 'inactive' : 'active';
-    toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} research type...`);
-
     router.put(route('legal-research.research-types.toggle-status', researchType.id), {}, {
       onSuccess: (page) => {
         toast.dismiss();
@@ -215,17 +207,33 @@ export default function ResearchTypes() {
     { title: t('Research Types') }
   ];
 
-  // Define table columns
+  // Define table columns (support translatable name/description)
   const columns = [
+    {
+      key: 'code',
+      label: t('Code'),
+      sortable: true,
+    },
     {
       key: 'name',
       label: t('Name'),
-      sortable: true
+      sortable: true,
+      render: (value: string | Record<string, string>, row: any) => {
+        const translations = row.name_translations ?? (typeof value === 'object' && value ? value : null);
+        if (translations && typeof translations === 'object') {
+          return translations[currentLocale] || translations.en || translations.ar || '-';
+        }
+        return value || '-';
+      }
     },
     {
       key: 'description',
       label: t('Description'),
-      render: (value: string) => {
+      render: (value: string | Record<string, string>, row: any) => {
+        const translations = row.description_translations ?? (typeof value === 'object' && value ? value : null);
+        if (translations && typeof translations === 'object') {
+          return translations[currentLocale] || translations.en || translations.ar || '-';
+        }
         return value || '-';
       }
     },
@@ -374,8 +382,11 @@ export default function ResearchTypes() {
               onSubmit={handleFormSubmit}
               formConfig={{
                   fields: [
-                      { name: 'name', label: t('Research Type Name'), type: 'text', required: true },
-                      { name: 'description', label: t('Description'), type: 'textarea' },
+                      { name: 'code', label: t('Code'), type: 'text', required: true },
+                      { name: 'name.en', label: t('Name (English)'), type: 'text', required: true },
+                      { name: 'name.ar', label: t('Name (Arabic)'), type: 'text', required: true },
+                      { name: 'description.en', label: t('Description (English)'), type: 'textarea' },
+                      { name: 'description.ar', label: t('Description (Arabic)'), type: 'textarea' },
                       {
                           name: 'status',
                           label: t('Status'),
@@ -388,8 +399,35 @@ export default function ResearchTypes() {
                       },
                   ],
                   modalSize: 'lg',
+                  transformData: (data: any) => {
+                    const transformed = { ...data };
+                    if (transformed['name.en'] != null || transformed['name.ar'] != null) {
+                      transformed.name = {
+                        en: transformed['name.en'] ?? '',
+                        ar: transformed['name.ar'] ?? ''
+                      };
+                      delete transformed['name.en'];
+                      delete transformed['name.ar'];
+                    }
+                    if (transformed['description.en'] != null || transformed['description.ar'] != null) {
+                      transformed.description = {
+                        en: transformed['description.en'] ?? '',
+                        ar: transformed['description.ar'] ?? ''
+                      };
+                      delete transformed['description.en'];
+                      delete transformed['description.ar'];
+                    }
+                    return transformed;
+                  },
               }}
-              initialData={currentItem}
+              initialData={currentItem ? {
+                ...currentItem,
+                code: currentItem.code ?? '',
+                'name.en': currentItem.name_translations?.en ?? (typeof currentItem.name === 'object' ? currentItem.name?.en : '') ?? '',
+                'name.ar': currentItem.name_translations?.ar ?? (typeof currentItem.name === 'object' ? currentItem.name?.ar : '') ?? '',
+                'description.en': currentItem.description_translations?.en ?? (typeof currentItem.description === 'object' ? currentItem.description?.en : '') ?? '',
+                'description.ar': currentItem.description_translations?.ar ?? (typeof currentItem.description === 'object' ? currentItem.description?.ar : '') ?? '',
+              } : undefined}
               title={formMode === 'create' ? t('Add New Research Type') : formMode === 'edit' ? t('Edit Research Type') : t('View Research Type')}
               mode={formMode}
           />
@@ -399,8 +437,10 @@ export default function ResearchTypes() {
               isOpen={isDeleteModalOpen}
               onClose={() => setIsDeleteModalOpen(false)}
               onConfirm={handleDeleteConfirm}
-              itemName={currentItem?.name || ''}
-              entityName="research type"
+              itemName={currentItem?.name_translations
+                ? (currentItem.name_translations[currentLocale] || currentItem.name_translations.en || currentItem.name_translations.ar || '')
+                : (typeof currentItem?.name === 'object' ? (currentItem.name?.[currentLocale] || currentItem.name?.en || currentItem.name?.ar) : currentItem?.name) || ''}
+              entityName="Research Type"
           />
       </PageTemplate>
   );

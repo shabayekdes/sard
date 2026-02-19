@@ -12,8 +12,13 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 export default function ResearchProjects() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { auth, projects, cases, researchTypes, filters: pageFilters = {} } = usePage().props as any;
+  const locale = i18n.language || 'en';
+  const researchTypeLabel = (type: any) =>
+    typeof type?.name === 'object' && type?.name
+      ? (type.name[locale] || type.name.en || type.name.ar || '')
+      : (type?.name ?? '');
   const permissions = auth?.permissions || [];
 
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
@@ -182,11 +187,12 @@ export default function ResearchProjects() {
     {
       key: 'research_type',
       label: t('Type'),
-      render: (value: any, item: any) => {
+      render: (_value: any, item: any) => {
         const researchType = item.research_type;
+        const label = researchType ? researchTypeLabel(researchType) : '-';
         return (
           <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20">
-            {researchType?.name || '-'}
+            {label}
           </span>
         );
       }
@@ -297,7 +303,7 @@ export default function ResearchProjects() {
                           onChange: setSelectedType,
                           options: [
                               { value: 'all', label: t('All Types') },
-                              ...(researchTypes || []).map((type: any) => ({ value: type.id.toString(), label: type.name })),
+                              ...(researchTypes || []).map((type: any) => ({ value: type.id.toString(), label: researchTypeLabel(type) })),
                           ],
                       },
                       {
@@ -416,8 +422,12 @@ export default function ResearchProjects() {
                           label: t('Research Type'),
                           type: 'select',
                           required: true,
-                          options: (researchTypes || []).map((type: any) => ({ value: type.id, label: type.name })),
-                          displayValue: formMode === 'view' ? currentItem?.research_type?.name : undefined,
+                          options: (researchTypes || []).map((type: any) => ({ value: type.id, label: researchTypeLabel(type) })),
+                          displayValue: formMode === 'view' && currentItem?.research_type
+  ? (typeof currentItem.research_type.name === 'object'
+    ? (currentItem.research_type.name[locale] || currentItem.research_type.name.en || currentItem.research_type.name.ar)
+    : currentItem.research_type.name)
+  : undefined,
                       },
                       {
                           name: 'case_id',

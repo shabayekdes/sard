@@ -4,13 +4,16 @@ namespace App\Models;
 
 use App\Traits\AutoApplyPermissionCheck;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Spatie\Translatable\HasTranslations;
 
 class ResearchType extends BaseModel
 {
-    use HasFactory, AutoApplyPermissionCheck;
+    use HasFactory, HasTranslations, AutoApplyPermissionCheck;
+
+    public array $translatable = ['name', 'description'];
 
     protected $fillable = [
+        'code',
         'name',
         'description',
         'status',
