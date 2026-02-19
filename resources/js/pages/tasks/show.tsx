@@ -4,8 +4,17 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
 
 export default function TaskShow() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLocale = i18n.language || 'en';
   const { task } = usePage().props as any;
+
+  const resolveTaskTypeName = (type: any) => {
+    if (!type) return '-';
+    const name = type.name ?? type.name_translations;
+    if (typeof name === 'string') return name;
+    if (name && typeof name === 'object') return name[currentLocale] || name.en || name.ar || '-';
+    return '-';
+  };
 
   const breadcrumbs = [
     { title: t('Dashboard'), href: route('dashboard') },
@@ -81,7 +90,7 @@ export default function TaskShow() {
 
             <div>
               <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Task Type')}</dt>
-              <dd className="mt-1 text-sm text-gray-900 dark:text-white">{task?.task_type?.name || '-'}</dd>
+              <dd className="mt-1 text-sm text-gray-900 dark:text-white">{resolveTaskTypeName(task?.task_type)}</dd>
             </div>
 
             <div>

@@ -12,8 +12,17 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 export default function Tasks() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLocale = i18n.language || 'en';
   const { auth, tasks, taskTypes, users, cases, taskStatuses, googleCalendarEnabled, filters: pageFilters = {} } = usePage().props as any;
+
+  const resolveTaskTypeName = (type: any) => {
+    if (!type) return '-';
+    const name = type.name ?? type.name_translations;
+    if (typeof name === 'string') return name;
+    if (name && typeof name === 'object') return name[currentLocale] || name.en || name.ar || '-';
+    return '-';
+  };
   const permissions = auth?.permissions || [];
 
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
@@ -297,7 +306,7 @@ export default function Tasks() {
     {
       key: 'task_type',
       label: t('Type'),
-      render: (value: any, row: any) => row.task_type?.name || '-'
+      render: (value: any, row: any) => resolveTaskTypeName(row.task_type)
     }
   ];
 
@@ -337,7 +346,7 @@ export default function Tasks() {
     { value: 'all', label: t('All Types') },
     ...(taskTypes || []).map((type: any) => ({
       value: type.id.toString(),
-      label: type.name
+      label: resolveTaskTypeName(type)
     }))
   ];
 
@@ -528,7 +537,7 @@ export default function Tasks() {
                           options: [
                               ...(taskTypes || []).map((type: any) => ({
                                   value: type.id.toString(),
-                                  label: type.name,
+                                  label: resolveTaskTypeName(type),
                               })),
                           ],
                       },

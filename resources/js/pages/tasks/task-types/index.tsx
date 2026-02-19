@@ -12,7 +12,8 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 export default function TaskTypes() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLocale = i18n.language || 'en';
   const { auth, taskTypes, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
 
@@ -206,12 +207,23 @@ export default function TaskTypes() {
     {
       key: 'name',
       label: t('Name'),
-      sortable: true
+      sortable: true,
+      render: (value: string, row: any) => {
+        const translations = row.name_translations ?? (typeof value === 'object' && value ? value : null);
+        return translations
+          ? (translations[currentLocale] || translations.en || translations.ar || '-')
+          : (value || '-');
+      }
     },
     {
       key: 'description',
       label: t('Description'),
-      render: (value: string) => value || '-'
+      render: (value: string, row: any) => {
+        const translations = row.description_translations ?? (typeof value === 'object' && value ? value : null);
+        return translations
+          ? (translations[currentLocale] || translations.en || translations.ar || '-')
+          : (value || '-');
+      }
     },
     {
       key: 'color',
@@ -355,8 +367,10 @@ export default function TaskTypes() {
               onSubmit={handleFormSubmit}
               formConfig={{
                   fields: [
-                      { name: 'name', label: t('Name'), type: 'text', required: true },
-                      { name: 'description', label: t('Description'), type: 'textarea' },
+                      { name: 'name.en', label: t('Name (English)'), type: 'text', required: true },
+                      { name: 'name.ar', label: t('Name (Arabic)'), type: 'text', required: true },
+                      { name: 'description.en', label: t('Description (English)'), type: 'textarea' },
+                      { name: 'description.ar', label: t('Description (Arabic)'), type: 'textarea' },
                       { name: 'color', label: t('Color'), type: 'color', required: true, defaultValue: '#3B82F6' },
                       { name: 'default_duration', label: t('Default Duration (minutes)'), type: 'number' },
                       {
@@ -371,8 +385,38 @@ export default function TaskTypes() {
                       },
                   ],
                   modalSize: 'lg',
+                  transformData: (data: any) => {
+                    const transformed: any = { ...data };
+                    if (transformed['name.en'] != null || transformed['name.ar'] != null) {
+                      transformed.name = {
+                        en: transformed['name.en'] ?? '',
+                        ar: transformed['name.ar'] ?? ''
+                      };
+                      delete transformed['name.en'];
+                      delete transformed['name.ar'];
+                    }
+                    if (transformed['description.en'] != null || transformed['description.ar'] != null) {
+                      transformed.description = {
+                        en: transformed['description.en'] ?? '',
+                        ar: transformed['description.ar'] ?? ''
+                      };
+                      delete transformed['description.en'];
+                      delete transformed['description.ar'];
+                    }
+                    return transformed;
+                  },
               }}
-              initialData={currentItem}
+              initialData={
+                currentItem
+                  ? {
+                      ...currentItem,
+                      'name.en': currentItem.name_translations?.en ?? (typeof currentItem.name === 'object' ? currentItem.name?.en : '') ?? '',
+                      'name.ar': currentItem.name_translations?.ar ?? (typeof currentItem.name === 'object' ? currentItem.name?.ar : '') ?? '',
+                      'description.en': currentItem.description_translations?.en ?? (typeof currentItem.description === 'object' ? currentItem.description?.en : '') ?? '',
+                      'description.ar': currentItem.description_translations?.ar ?? (typeof currentItem.description === 'object' ? currentItem.description?.ar : '') ?? '',
+                    }
+                  : {}
+              }
               title={formMode === 'create' ? t('Add New Task Type') : formMode === 'edit' ? t('Edit Task Type') : t('View Task Type')}
               mode={formMode}
           />
@@ -381,7 +425,13 @@ export default function TaskTypes() {
               isOpen={isDeleteModalOpen}
               onClose={() => setIsDeleteModalOpen(false)}
               onConfirm={handleDeleteConfirm}
-              itemName={currentItem?.name || ''}
+              itemName={
+                currentItem?.name_translations
+                  ? (currentItem.name_translations[currentLocale] || currentItem.name_translations.en || currentItem.name_translations.ar || '')
+                  : typeof currentItem?.name === 'object'
+                    ? (currentItem.name[currentLocale] || currentItem.name?.en || currentItem.name?.ar || '')
+                    : (currentItem?.name || '')
+              }
               entityName="task type"
           />
       </PageTemplate>

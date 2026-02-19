@@ -14,11 +14,17 @@ class TaskTypeController extends BaseController
             ->with(['creator'])
             ->where('created_by', createdBy());
 
-        // Handle search
+        // Handle search - search in translatable fields
         if ($request->has('search') && !empty($request->search)) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                    ->orWhere('description', 'like', '%' . $request->search . '%');
+            $searchTerm = $request->search;
+            $locale = app()->getLocale();
+            $query->where(function ($q) use ($searchTerm, $locale) {
+                $q->whereRaw("JSON_EXTRACT(name, '$.{$locale}') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(name, '$.en') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(name, '$.ar') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(description, '$.{$locale}') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(description, '$.en') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(description, '$.ar') LIKE ?", ["%{$searchTerm}%"]);
             });
         }
 
@@ -29,12 +35,38 @@ class TaskTypeController extends BaseController
 
         // Handle sorting
         if ($request->has('sort_field') && !empty($request->sort_field)) {
-            $query->orderBy($request->sort_field, $request->sort_direction ?? 'asc');
+            $sortField = $request->sort_field;
+            $sortDir = $request->sort_direction ?? 'asc';
+            if ($sortField === 'name') {
+                $locale = app()->getLocale();
+                $query->orderByRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.{$locale}')) {$sortDir}");
+            } else {
+                $query->orderBy($sortField, $sortDir);
+            }
         } else {
-            $query->orderBy('name', 'asc');
+            $locale = app()->getLocale();
+            $query->orderByRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.{$locale}')) asc");
         }
 
         $taskTypes = $query->paginate($request->per_page ?? 10);
+
+        // Transform the data to include translated values for display and editing
+        $taskTypes->getCollection()->transform(function ($taskType) {
+            return [
+                'id' => $taskType->id,
+                'name' => $taskType->name,
+                'name_translations' => $taskType->getTranslations('name'),
+                'description' => $taskType->description,
+                'description_translations' => $taskType->getTranslations('description'),
+                'color' => $taskType->color,
+                'default_duration' => $taskType->default_duration,
+                'status' => $taskType->status,
+                'created_by' => $taskType->created_by,
+                'creator' => $taskType->creator,
+                'created_at' => $taskType->created_at,
+                'updated_at' => $taskType->updated_at,
+            ];
+        });
 
         return Inertia::render('tasks/task-types/index', [
             'taskTypes' => $taskTypes,
@@ -45,8 +77,12 @@ class TaskTypeController extends BaseController
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'name' => 'required|array',
+            'name.en' => 'required|string|max:255',
+            'name.ar' => 'nullable|string|max:255',
+            'description' => 'nullable|array',
+            'description.en' => 'nullable|string',
+            'description.ar' => 'nullable|string',
             'color' => 'required|string|size:7|regex:/^#[0-9A-Fa-f]{6}$/',
             'default_duration' => 'nullable|integer|min:1',
             'status' => 'nullable|in:active,inactive',
@@ -55,9 +91,15 @@ class TaskTypeController extends BaseController
         $validated['created_by'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
+        $nameEn = $validated['name']['en'] ?? '';
+        $nameAr = $validated['name']['ar'] ?? '';
+
         // Check if task type with same name already exists for this company
-        $exists = TaskType::where('name', $validated['name'])
-            ->where('created_by', createdBy())
+        $exists = TaskType::where('created_by', createdBy())
+            ->where(function ($q) use ($nameEn, $nameAr) {
+                $q->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = ?", [$nameEn])
+                    ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = ?", [$nameAr]);
+            })
             ->exists();
 
         if ($exists) {
@@ -80,17 +122,27 @@ class TaskTypeController extends BaseController
         }
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'name' => 'required|array',
+            'name.en' => 'required|string|max:255',
+            'name.ar' => 'nullable|string|max:255',
+            'description' => 'nullable|array',
+            'description.en' => 'nullable|string',
+            'description.ar' => 'nullable|string',
             'color' => 'required|string|size:7|regex:/^#[0-9A-Fa-f]{6}$/',
             'default_duration' => 'nullable|integer|min:1',
             'status' => 'required|in:active,inactive',
         ]);
 
+        $nameEn = $validated['name']['en'] ?? '';
+        $nameAr = $validated['name']['ar'] ?? '';
+
         // Check if task type with same name already exists for this company (excluding current)
-        $exists = TaskType::where('name', $validated['name'])
-            ->where('created_by', createdBy())
+        $exists = TaskType::where('created_by', createdBy())
             ->where('id', '!=', $taskTypeId)
+            ->where(function ($q) use ($nameEn, $nameAr) {
+                $q->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = ?", [$nameEn])
+                    ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = ?", [$nameAr]);
+            })
             ->exists();
 
         if ($exists) {

@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('task_types', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
+            $table->json('name');
+            $table->json('description')->nullable();
             $table->string('color', 7)->default('#3B82F6'); // Hex color code
             $table->integer('default_duration')->nullable(); // in minutes
             $table->enum('status', ['active', 'inactive'])->default('active');
