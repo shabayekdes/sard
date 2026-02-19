@@ -75,6 +75,7 @@
     "Invalid case selected.": "القضية المحددة غير صالحة.",
     "Invalid case selection.": "تحديد القضية غير صالح.",
     "Invalid client selected.": "العميل المحدد غير صالح.",
+    "Invalid document or user selection.": "تحديد المستند أو المستخدم غير صالح.",
     "Invalid research project selection.": "تحديد مشروع البحث غير صالح.",
     "Invalid research type selection.": "تحديد نوع البحث غير صالح.",
     "Invalid source selection.": "تحديد المصدر غير صالح.",
@@ -2113,8 +2114,13 @@
     "Closed Status": "حالة الإغلاق",
     "Collection Rate": "معدل التحصيل",
     "Comment Type": "نوع التعليق",
+    "Comment added successfully.": "تمت إضافة التعليق بنجاح.",
     "Comment deleted successfully": "تم حذف التعليق بنجاح",
+    "Comment deleted successfully.": "تم حذف التعليق بنجاح.",
+    "Comment not found.": "التعليق غير موجود.",
     "Comment status updated": "تم تحديث حالة التعليق",
+    "Comment status updated successfully.": "تم تحديث حالة التعليق بنجاح.",
+    "Comment updated successfully.": "تم تحديث التعليق بنجاح.",
     "Communication": "التواصل",
     "Company Profiles": "ملفات الشركات",
     "Completed Status": "حالة الإكمال",
@@ -2255,6 +2261,7 @@
     "Document Date": "تاريخ المستند",
     "Document ID": "معرّف المستند",
     "Document Management": "إدارة المستندات",
+    "Document not found.": "المستند غير موجود.",
     "Document Permissions": "صلاحيات المستندات",
     "Document Types": "أنواع المستندات",
     "Document Versions": "إصدارات المستند",
@@ -3299,5 +3306,6 @@
   "No payments found for this client": "لم يتم العثور على مدفوعات لهذا العميل",
   "Add New Document": "إضافة مستند جديد",
   "Session Title": "عنوان الجلسة",
-  "Add New Session": "إضافة جلسة جديدة"
+  "Add New Session": "إضافة جلسة جديدة",
+  "Permission": "الصلاحية"
 }

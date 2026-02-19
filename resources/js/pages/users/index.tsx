@@ -161,80 +161,84 @@ export default function Users() {
     }
 
     if (formMode === 'create') {
-      toast.loading(t('Creating user...'));
-
       router.post(route('users.store'), formData, {
-        onSuccess: () => {
+        onSuccess: (page) => {
           setIsFormModalOpen(false);
           toast.dismiss();
-          toast.success(t('User created successfully'));
+          const flash = (page.props as any).flash;
+          if (flash?.success) toast.success(flash.success);
+          else if (flash?.error) toast.error(flash.error);
         },
         onError: (errors) => {
           toast.dismiss();
-          toast.error(`Failed to create user: ${Object.values(errors).join(', ')}`);
+          const errorList = typeof errors === 'string' ? errors : Object.values(errors).join(', ');
+          toast.error(t('Failed to create {{model}}: {{errors}}', { model: t('User'), errors: errorList }));
         }
       });
     } else if (formMode === 'edit') {
-      toast.loading(t('Updating user...'));
-
       router.put(route("users.update", currentItem.id), formData, {
-        onSuccess: () => {
+        onSuccess: (page) => {
           setIsFormModalOpen(false);
           toast.dismiss();
-          toast.success(t('User updated successfully'));
+          const flash = (page.props as any).flash;
+          if (flash?.success) toast.success(flash.success);
+          else if (flash?.error) toast.error(flash.error);
         },
         onError: (errors) => {
           toast.dismiss();
-          toast.error(`Failed to update user: ${Object.values(errors).join(', ')}`);
+          const errorList = typeof errors === 'string' ? errors : Object.values(errors).join(', ');
+          toast.error(t('Failed to update {{model}}: {{errors}}', { model: t('User'), errors: errorList }));
         }
       });
     }
   };
 
   const handleDeleteConfirm = () => {
-    toast.loading(t('Deleting user...'));
-
     router.delete(route("users.destroy", currentItem.id), {
-      onSuccess: () => {
+      onSuccess: (page) => {
         setIsDeleteModalOpen(false);
         toast.dismiss();
-        toast.success(t('User deleted successfully'));
+        const flash = (page.props as any).flash;
+        if (flash?.success) toast.success(flash.success);
+        else if (flash?.error) toast.error(flash.error);
       },
       onError: (errors) => {
         toast.dismiss();
-        toast.error(`Failed to delete user: ${Object.values(errors).join(', ')}`);
+        const errorList = typeof errors === 'string' ? errors : Object.values(errors).join(', ');
+        toast.error(t('Failed to delete {{model}}: {{errors}}', { model: t('User'), errors: errorList }));
       }
     });
   };
 
   const handleResetPasswordConfirm = (data: { password: string, password_confirmation: string }) => {
-    toast.loading(t('Resetting password...'));
-
     router.put(route('users.reset-password', currentItem.id), data, {
-      onSuccess: () => {
+      onSuccess: (page) => {
         setIsResetPasswordModalOpen(false);
         toast.dismiss();
-        toast.success(t('Password reset successfully'));
+        const flash = (page.props as any).flash;
+        if (flash?.success) toast.success(flash.success);
+        else if (flash?.error) toast.error(flash.error);
       },
       onError: (errors) => {
         toast.dismiss();
-        toast.error(`Failed to reset password: ${Object.values(errors).join(', ')}`);
+        const errorList = typeof errors === 'string' ? errors : Object.values(errors).join(', ');
+        toast.error(t('Failed to reset :model password', { model: t('User') }) + ': ' + errorList);
       }
     });
   };
 
   const handleToggleStatus = (user: any) => {
-    const newStatus = user.status === 'active' ? 'inactive' : 'active';
-    toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} user...`);
-
     router.put(route('users.toggle-status', user.id), {}, {
-      onSuccess: () => {
+      onSuccess: (page) => {
         toast.dismiss();
-        toast.success(`User ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully`);
+        const flash = (page.props as any).flash;
+        if (flash?.success) toast.success(flash.success);
+        else if (flash?.error) toast.error(flash.error);
       },
       onError: (errors) => {
         toast.dismiss();
-        toast.error(`Failed to update user status: ${Object.values(errors).join(', ')}`);
+        const errorList = typeof errors === 'string' ? errors : Object.values(errors).join(', ');
+        toast.error(t('Failed to update {{model}} status: {{errors}}', { model: t('User'), errors: errorList }));
       }
     });
   };
@@ -687,7 +691,7 @@ export default function Users() {
               onClose={() => setIsDeleteModalOpen(false)}
               onConfirm={handleDeleteConfirm}
               itemName={currentItem?.name || ''}
-              entityName="user"
+              entityName="User"
           />
 
           {/* Reset Password Modal */}

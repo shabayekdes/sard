@@ -52,14 +52,14 @@ class DocumentCommentController extends Controller
             ->first();
 
         if (!$document) {
-            return redirect()->back()->with('error', 'Document not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Document')]));
         }
 
         $validated['created_by'] = createdBy();
 
         DocumentComment::create($validated);
 
-        return redirect()->back()->with('success', 'Comment added successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Comment')]));
     }
 
     public function update(Request $request, $commentId)
@@ -69,7 +69,7 @@ class DocumentCommentController extends Controller
             ->first();
 
         if (!$comment) {
-            return redirect()->back()->with('error', 'Comment not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Comment')]));
         }
 
         $validated = $request->validate([
@@ -78,7 +78,7 @@ class DocumentCommentController extends Controller
 
         $comment->update($validated);
 
-        return redirect()->back()->with('success', 'Comment updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Comment')]));
     }
 
     public function destroy($commentId)
@@ -88,12 +88,12 @@ class DocumentCommentController extends Controller
             ->first();
 
         if (!$comment) {
-            return redirect()->back()->with('error', 'Comment not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Comment')]));
         }
 
         $comment->delete();
 
-        return redirect()->back()->with('success', 'Comment deleted successfully.');
+        return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Comment')]));
     }
 
     public function toggleResolve($commentId)
@@ -103,12 +103,12 @@ class DocumentCommentController extends Controller
             ->first();
 
         if (!$comment) {
-            return redirect()->back()->with('error', 'Comment not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Comment')]));
         }
 
         $comment->is_resolved = !$comment->is_resolved;
         $comment->save();
 
-        return redirect()->back()->with('success', 'Comment status updated successfully.');
+        return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Comment')]));
     }
 }

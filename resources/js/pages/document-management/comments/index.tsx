@@ -53,17 +53,20 @@ export default function DocumentCommentsIndex() {
     };
 
     const handleToggleResolve = (comment: any) => {
-        const action = comment.is_resolved ? 'Reopening' : 'Resolving';
-        toast.loading(t(`${action} comment...`));
-
         router.put(route('document-management.comments.toggle-resolve', comment.id), {}, {
-            onSuccess: () => {
+            onSuccess: (page) => {
                 toast.dismiss();
-                toast.success(t('Comment status updated'));
+                const flash = (page.props as any).flash;
+                if (flash?.success) {
+                    toast.success(flash.success);
+                } else if (flash?.error) {
+                    toast.error(flash.error);
+                }
             },
             onError: (errors) => {
                 toast.dismiss();
-                toast.error(`Failed to update comment: ${Object.values(errors).join(', ')}`);
+                const errorList = typeof errors === 'string' ? errors : Object.values(errors).join(', ');
+                toast.error(t('Failed to update {{model}} status: {{errors}}', { model: t('Comment'), errors: errorList }));
             },
         });
     };
@@ -84,40 +87,49 @@ export default function DocumentCommentsIndex() {
     };
 
     const handleFormSubmit = (formData: any) => {
-        const action = formMode === 'create' ? 'store' : 'update';
         const routeName = formMode === 'create' 
             ? 'document-management.comments.store' 
             : 'document-management.comments.update';
-
-        toast.loading(t(`${formMode === 'create' ? 'Adding' : 'Updating'} comment...`));
-
+        
         const method = formMode === 'create' ? 'post' : 'put';
         const url = formMode === 'create' ? route(routeName) : route(routeName, currentItem.id);
 
         router[method](url, formData, {
-            onSuccess: () => {
+            onSuccess: (page) => {
                 setIsFormModalOpen(false);
                 toast.dismiss();
-                toast.success(t(`Comment ${formMode === 'create' ? 'added' : 'updated'} successfully`));
+                const flash = (page.props as any).flash;
+                if (flash?.success) {
+                    toast.success(flash.success);
+                } else if (flash?.error) {
+                    toast.error(flash.error);
+                }
             },
             onError: (errors) => {
                 toast.dismiss();
-                toast.error(`Failed to ${action} comment: ${Object.values(errors).join(', ')}`);
+                const errorList = typeof errors === 'string' ? errors : Object.values(errors).join(', ');
+                const key = formMode === 'create' ? 'Failed to create {{model}}: {{errors}}' : 'Failed to update {{model}}: {{errors}}';
+                toast.error(t(key, { model: t('Comment'), errors: errorList }));
             },
         });
     };
 
     const handleDeleteConfirm = () => {
-        toast.loading(t('Deleting comment...'));
         router.delete(route('document-management.comments.destroy', currentItem.id), {
-            onSuccess: () => {
+            onSuccess: (page) => {
                 setIsDeleteModalOpen(false);
                 toast.dismiss();
-                toast.success(t('Comment deleted successfully'));
+                const flash = (page.props as any).flash;
+                if (flash?.success) {
+                    toast.success(flash.success);
+                } else if (flash?.error) {
+                    toast.error(flash.error);
+                }
             },
             onError: (errors) => {
                 toast.dismiss();
-                toast.error(`Failed to delete comment: ${Object.values(errors).join(', ')}`);
+                const errorList = typeof errors === 'string' ? errors : Object.values(errors).join(', ');
+                toast.error(t('Failed to delete {{model}}: {{errors}}', { model: t('Comment'), errors: errorList }));
             },
         });
     };
@@ -434,8 +446,8 @@ export default function DocumentCommentsIndex() {
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={handleDeleteConfirm}
-                itemName={currentItem?.comment_text || 'comment'}
-                entityName="comment"
+                itemName={currentItem?.comment_text || t('Comment')}
+                entityName={t('Comment')}
             />
         </PageTemplate>
     );

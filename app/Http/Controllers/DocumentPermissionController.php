@@ -70,7 +70,7 @@ class DocumentPermissionController extends Controller
             ->first();
 
         if (!$document || !$user) {
-            return redirect()->back()->with('error', 'Invalid document or user selection.');
+            return redirect()->back()->with('error', __('Invalid document or user selection.'));
         }
 
         $validated['created_by'] = createdBy();
@@ -83,10 +83,10 @@ class DocumentPermissionController extends Controller
 
         if ($existing) {
             $existing->update($validated);
-            return redirect()->back()->with('success', 'Permission updated successfully.');
+            return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Permission')]));
         } else {
             DocumentPermission::create($validated);
-            return redirect()->back()->with('success', 'Permission granted successfully.');
+            return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Permission')]));
         }
     }
 
@@ -97,7 +97,7 @@ class DocumentPermissionController extends Controller
             ->first();
 
         if (!$permission) {
-            return redirect()->back()->with('error', 'Permission not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Permission')]));
         }
 
         $validated = $request->validate([
@@ -106,7 +106,7 @@ class DocumentPermissionController extends Controller
 
         $permission->update($validated);
 
-        return redirect()->back()->with('success', 'Permission updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Permission')]));
     }
 
     public function destroy($permissionId)
@@ -116,11 +116,11 @@ class DocumentPermissionController extends Controller
             ->first();
 
         if (!$permission) {
-            return redirect()->back()->with('error', 'Permission not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Permission')]));
         }
 
         $permission->delete();
 
-        return redirect()->back()->with('success', 'Permission revoked successfully.');
+        return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Permission')]));
     }
 }

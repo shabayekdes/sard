@@ -67,40 +67,49 @@ export default function DocumentPermissionsIndex() {
     };
 
     const handleFormSubmit = (formData: any) => {
-        const action = formMode === 'create' ? 'store' : 'update';
         const routeName = formMode === 'create' 
             ? 'document-management.permissions.store' 
             : 'document-management.permissions.update';
-
-        toast.loading(t(`${formMode === 'create' ? 'Granting' : 'Updating'} permission...`));
-
+        
         const method = formMode === 'create' ? 'post' : 'put';
         const url = formMode === 'create' ? route(routeName) : route(routeName, currentItem.id);
 
         router[method](url, formData, {
-            onSuccess: () => {
+            onSuccess: (page) => {
                 setIsFormModalOpen(false);
                 toast.dismiss();
-                toast.success(t(`Permission ${formMode === 'create' ? 'granted' : 'updated'} successfully`));
+                const flash = (page.props as any).flash;
+                if (flash?.success) {
+                    toast.success(flash.success);
+                } else if (flash?.error) {
+                    toast.error(flash.error);
+                }
             },
             onError: (errors) => {
                 toast.dismiss();
-                toast.error(`Failed to ${action} permission: ${Object.values(errors).join(', ')}`);
+                const errorList = typeof errors === 'string' ? errors : Object.values(errors).join(', ');
+                const key = formMode === 'create' ? 'Failed to create {{model}}: {{errors}}' : 'Failed to update {{model}}: {{errors}}';
+                toast.error(t(key, { model: t('Permission'), errors: errorList }));
             },
         });
     };
 
     const handleDeleteConfirm = () => {
-        toast.loading(t('Revoking permission...'));
         router.delete(route('document-management.permissions.destroy', currentItem.id), {
-            onSuccess: () => {
+            onSuccess: (page) => {
                 setIsDeleteModalOpen(false);
                 toast.dismiss();
-                toast.success(t('Permission revoked successfully'));
+                const flash = (page.props as any).flash;
+                if (flash?.success) {
+                    toast.success(flash.success);
+                } else if (flash?.error) {
+                    toast.error(flash.error);
+                }
             },
             onError: (errors) => {
                 toast.dismiss();
-                toast.error(`Failed to revoke permission: ${Object.values(errors).join(', ')}`);
+                const errorList = typeof errors === 'string' ? errors : Object.values(errors).join(', ');
+                toast.error(t('Failed to delete {{model}}: {{errors}}', { model: t('Permission'), errors: errorList }));
             },
         });
     };
@@ -440,8 +449,8 @@ export default function DocumentPermissionsIndex() {
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={handleDeleteConfirm}
-                itemName="permission"
-                entityName="permission"
+                itemName={currentItem?.permission_type || ''}
+                entityName="Permission"
             />
         </PageTemplate>
     );
