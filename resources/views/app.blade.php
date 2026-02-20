@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
+        @if (app()->isProduction())
         <script type="text/javascript">
             (function(c,l,a,r,i,t,y){
                 c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -12,6 +13,7 @@
                 y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
             })(window, document, "clarity", "script", "uzzmvffhqo");
         </script>
+        @endif
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>
