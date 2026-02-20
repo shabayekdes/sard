@@ -12,8 +12,9 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 export default function ResearchSources() {
-  const { t } = useTranslation();
-  const { auth, sources, filters: pageFilters = {} } = usePage().props as any;
+  const { t, i18n } = useTranslation();
+  const currentLocale = i18n.language?.startsWith('ar') ? 'ar' : 'en';
+  const { auth, sources, filters: pageFilters = {}, sourceTypeOptions = [] } = usePage().props as any;
   const permissions = auth?.permissions || [];
 
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
@@ -163,29 +164,26 @@ export default function ResearchSources() {
       key: 'source_name',
       label: t('Source Name'),
       sortable: true,
-      render: (value: string) => (
-        <div className="flex items-center gap-2">
-          <Database className="h-4 w-4 text-blue-500" />
-          <span className="font-medium">{value}</span>
-        </div>
-      )
+      render: (value: string, row?: any) => {
+        const name = row?.source_name_translations
+          ? (row.source_name_translations[currentLocale] || row.source_name_translations.en || row.source_name_translations.ar || '')
+          : (value || '');
+        return (
+          <div className="flex items-center gap-2">
+            <Database className="h-4 w-4 text-blue-500" />
+            <span className="font-medium">{name}</span>
+          </div>
+        );
+      }
     },
     {
       key: 'source_type',
       label: t('Type'),
       render: (value: string) => {
-        const typeColors = {
-          database: 'bg-blue-50 text-blue-700 ring-blue-600/20',
-          case_law: 'bg-green-50 text-green-700 ring-green-600/20',
-          statutory: 'bg-orange-50 text-orange-700 ring-orange-600/20',
-          regulatory: 'bg-purple-50 text-purple-700 ring-purple-600/20',
-          secondary: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
-          custom: 'bg-gray-50 text-gray-700 ring-gray-600/20'
-        };
-        
+        const label = (sourceTypeOptions as { value: string; label: string }[]).find(o => o.value === value)?.label ?? value;
         return (
-          <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${typeColors[value as keyof typeof typeColors] || typeColors.custom}`}>
-            {t(value.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()))}
+          <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-gray-50 text-gray-700 ring-gray-600/20">
+            {t(label)}
           </span>
         );
       }
@@ -211,11 +209,16 @@ export default function ResearchSources() {
     {
       key: 'description',
       label: t('Description'),
-      render: (value: string) => (
-        <div className="max-w-md truncate" title={value}>
-          {value || '-'}
-        </div>
-      )
+      render: (value: string, row?: any) => {
+        const desc = row?.description_translations
+          ? (row.description_translations[currentLocale] || row.description_translations.en || row.description_translations.ar || '')
+          : (value || '');
+        return (
+          <div className="max-w-md truncate" title={desc}>
+            {desc || '-'}
+          </div>
+        );
+      }
     },
     {
       key: 'status',
@@ -278,12 +281,7 @@ export default function ResearchSources() {
                           onChange: setSelectedType,
                           options: [
                               { value: 'all', label: t('All Types') },
-                              { value: 'database', label: t('Database') },
-                              { value: 'case_law', label: t('Case Law') },
-                              { value: 'statutory', label: t('Statutory') },
-                              { value: 'regulatory', label: t('Regulatory') },
-                              { value: 'secondary', label: t('Secondary') },
-                              { value: 'custom', label: t('Custom') },
+                              ...(sourceTypeOptions as { value: string; label: string }[]).map(o => ({ value: o.value, label: t(o.label) })),
                           ],
                       },
                       {
@@ -357,24 +355,19 @@ export default function ResearchSources() {
               isOpen={isFormModalOpen}
               onClose={() => setIsFormModalOpen(false)}
               onSubmit={handleFormSubmit}
-              formConfig={{
+                  formConfig={{
                   fields: [
-                      { name: 'source_name', label: t('Source Name'), type: 'text', required: true },
+                      { name: 'source_name.en', label: t('Source Name (English)'), type: 'text', required: true },
+                      { name: 'source_name.ar', label: t('Source Name (Arabic)'), type: 'text' },
                       {
                           name: 'source_type',
                           label: t('Source Type'),
                           type: 'select',
                           required: true,
-                          options: [
-                              { value: 'database', label: t('Database') },
-                              { value: 'case_law', label: t('Case Law') },
-                              { value: 'statutory', label: t('Statutory') },
-                              { value: 'regulatory', label: t('Regulatory') },
-                              { value: 'secondary', label: t('Secondary') },
-                              { value: 'custom', label: t('Custom') },
-                          ],
+                          options: (sourceTypeOptions as { value: string; label: string }[]).map(o => ({ value: o.value, label: t(o.label) })),
                       },
-                      { name: 'description', label: t('Description'), type: 'textarea', rows: 3 },
+                      { name: 'description.en', label: t('Description (English)'), type: 'textarea', rows: 3 },
+                      { name: 'description.ar', label: t('Description (Arabic)'), type: 'textarea', rows: 3 },
                       { name: 'url', label: t('URL'), type: 'text' },
                       { name: 'access_info', label: t('Access Information'), type: 'textarea', rows: 2 },
                       {
@@ -389,8 +382,34 @@ export default function ResearchSources() {
                       },
                   ],
                   modalSize: 'lg',
+                  transformData: (data: any) => {
+                    const transformed = { ...data };
+                    if (transformed['source_name.en'] != null || transformed['source_name.ar'] != null) {
+                      transformed.source_name = {
+                        en: transformed['source_name.en'] ?? '',
+                        ar: transformed['source_name.ar'] ?? ''
+                      };
+                      delete transformed['source_name.en'];
+                      delete transformed['source_name.ar'];
+                    }
+                    if (transformed['description.en'] != null || transformed['description.ar'] != null) {
+                      transformed.description = {
+                        en: transformed['description.en'] ?? '',
+                        ar: transformed['description.ar'] ?? ''
+                      };
+                      delete transformed['description.en'];
+                      delete transformed['description.ar'];
+                    }
+                    return transformed;
+                  },
               }}
-              initialData={currentItem}
+              initialData={currentItem ? {
+                ...currentItem,
+                'source_name.en': currentItem.source_name_translations?.en ?? (typeof currentItem.source_name === 'object' ? currentItem.source_name?.en : '') ?? '',
+                'source_name.ar': currentItem.source_name_translations?.ar ?? (typeof currentItem.source_name === 'object' ? currentItem.source_name?.ar : '') ?? '',
+                'description.en': currentItem.description_translations?.en ?? (typeof currentItem.description === 'object' ? currentItem.description?.en : '') ?? '',
+                'description.ar': currentItem.description_translations?.ar ?? (typeof currentItem.description === 'object' ? currentItem.description?.ar : '') ?? '',
+              } : undefined}
               title={
                   formMode === 'create' ? t('Add New Research Source') : formMode === 'edit' ? t('Edit Research Source') : t('View Research Source')
               }
@@ -401,7 +420,9 @@ export default function ResearchSources() {
               isOpen={isDeleteModalOpen}
               onClose={() => setIsDeleteModalOpen(false)}
               onConfirm={handleDeleteConfirm}
-              itemName={currentItem?.source_name || ''}
+              itemName={currentItem?.source_name_translations
+                ? (currentItem.source_name_translations[currentLocale] || currentItem.source_name_translations.en || currentItem.source_name_translations.ar || '')
+                : (typeof currentItem?.source_name === 'object' ? (currentItem.source_name?.[currentLocale] || currentItem.source_name?.en || currentItem.source_name?.ar) : currentItem?.source_name) || ''}
               entityName="research source"
           />
       </PageTemplate>

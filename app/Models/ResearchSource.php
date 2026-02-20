@@ -2,13 +2,17 @@
 
 namespace App\Models;
 
+use App\Enum\ResearchSourceType;
 use App\Traits\AutoApplyPermissionCheck;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Translatable\HasTranslations;
 
 class ResearchSource extends BaseModel
 {
-    use HasFactory, AutoApplyPermissionCheck;
+    use HasFactory, HasTranslations, AutoApplyPermissionCheck;
+
+    public array $translatable = ['source_name', 'description'];
 
     protected $fillable = [
         'source_name',
@@ -22,6 +26,7 @@ class ResearchSource extends BaseModel
     ];
 
     protected $casts = [
+        'source_type' => ResearchSourceType::class,
         'credentials' => 'array',
     ];
 

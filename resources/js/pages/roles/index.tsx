@@ -5,6 +5,7 @@ import { PermissionBadges } from '@/components/PermissionBadges';
 import { useEffect, useState } from 'react';
 import { usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
+import { t } from '@/utils/i18n';
 
 export default function RolesPage() {
   const { t } = useTranslation();
@@ -76,8 +77,9 @@ export default function RolesPage() {
   ];
 
   return (
-    <PageCrudWrapper 
-      config={config} 
+    <PageCrudWrapper
+      config={config}
+      title={t('Roles')}
       url="/roles" 
       breadcrumbs={breadcrumbs}
     />

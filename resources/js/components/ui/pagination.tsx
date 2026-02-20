@@ -17,6 +17,7 @@ interface PaginationProps {
   entityName?: string;
   onPageChange?: (url: string) => void;
   perPage?: string | number;
+  currentPerPage?: string | number;
   perPageOptions?: number[];
   onPerPageChange?: (value: string) => void;
   className?: string;
@@ -32,10 +33,12 @@ export function Pagination({
   entityName = 'items',
   onPageChange,
   perPage,
+  currentPerPage,
   perPageOptions = [10, 25, 50, 100],
   onPerPageChange,
   className = '',
 }: PaginationProps) {
+  const effectivePerPage = perPage ?? currentPerPage ?? perPageOptions[0];
   const { t } = useTranslation();
   const isRtl = document.documentElement.dir === 'rtl' || document.body?.dir === 'rtl';
 
@@ -49,10 +52,11 @@ export function Pagination({
 
   return (
     <div className={cn(
-      "p-4 border-t dark:border-gray-700 flex items-center justify-between dark:bg-gray-900",
+      "p-4 border-t dark:border-gray-700 flex flex-col gap-4 items-center sm:flex-row sm:items-center sm:justify-between sm:gap-0 dark:bg-gray-900",
       className
     )}>
-      <div className="flex gap-1">
+      {/* Pagination buttons — on mobile: row 1 centered; on sm+: left side */}
+      <div className="flex gap-1 justify-center sm:justify-start">
         {links && links.length > 0 ? (
           links.map((link: any, i: number) => {
             // Check if the link is "Next" or "Previous" to use text instead of icon
@@ -105,18 +109,19 @@ export function Pagination({
           )
         )}
       </div>
-      <div className="flex items-center gap-3 text-sm text-muted-foreground dark:text-gray-300 flex-row">
-        <span>
+      {/* "Showing X to Y of Z" + per page — on mobile: row 2 centered; on sm+: right side */}
+      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 sm:flex-nowrap sm:justify-end">
+        <span className="text-sm text-muted-foreground dark:text-gray-300 min-w-0">
           {t("Showing")} <span className="font-medium dark:text-white">{from}</span> {t("to")}{" "}
           <span className="font-medium dark:text-white">{to}</span> {t("of")}{" "}
           <span className="font-medium dark:text-white">{total}</span> {entityName}
         </span>
         {onPerPageChange && (
-          <div className="flex items-center gap-2 flex-row">
-            <Label className="text-xs text-muted-foreground dark:text-gray-300">
+          <div className="flex items-center gap-2">
+            <Label className="text-xs text-muted-foreground dark:text-gray-300 shrink-0">
               {t("Per Page", { defaultValue: "لكل صفحة" })}
             </Label>
-            <Select value={String(perPage ?? perPageOptions[0])} onValueChange={onPerPageChange}>
+            <Select value={String(effectivePerPage)} onValueChange={onPerPageChange}>
               <SelectTrigger className="h-8 w-16">
                 <SelectValue />
               </SelectTrigger>
@@ -131,7 +136,6 @@ export function Pagination({
           </div>
         )}
       </div>
-
     </div>
   );
 }

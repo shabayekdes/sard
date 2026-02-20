@@ -62,7 +62,6 @@ class DatabaseSeeder extends Seeder
 
                 // Legal Research module seeders
                 ResearchProjectSeeder::class,
-                ResearchSourceSeeder::class,
                 ResearchCategorySeeder::class,
                 KnowledgeArticleSeeder::class,
                 LegalPrecedentSeeder::class,

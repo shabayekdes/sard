@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enum\ResearchSourceType;
 use App\Models\ResearchSource;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -15,10 +16,16 @@ class ResearchSourceController extends Controller
             ->where('created_by', createdBy());
 
         if ($request->has('search') && !empty($request->search)) {
-            $query->where(function ($q) use ($request) {
-                $q->where('source_name', 'like', '%' . $request->search . '%')
-                    ->orWhere('description', 'like', '%' . $request->search . '%')
-                    ->orWhere('url', 'like', '%' . $request->search . '%');
+            $searchTerm = $request->search;
+            $locale = app()->getLocale();
+            $query->where(function ($q) use ($searchTerm, $locale) {
+                $q->where('url', 'like', '%' . $searchTerm . '%')
+                    ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(source_name, '$.{$locale}')) LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(source_name, '$.en')) LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(source_name, '$.ar')) LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(description, '$.{$locale}')) LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(description, '$.en')) LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(description, '$.ar')) LIKE ?", ["%{$searchTerm}%"]);
             });
         }
 
@@ -30,26 +37,58 @@ class ResearchSourceController extends Controller
             $query->where('status', $request->status);
         }
 
-        if ($request->has('sort_field') && !empty($request->sort_field)) {
-            $query->orderBy($request->sort_field, $request->sort_direction ?? 'asc');
+        $sortField = $request->input('sort_field');
+        $sortDirection = $request->input('sort_direction', 'asc');
+        if (!empty($sortField)) {
+            if (in_array($sortField, ['source_name', 'description'])) {
+                $locale = app()->getLocale();
+                $query->orderByRaw("JSON_UNQUOTE(JSON_EXTRACT({$sortField}, '$.{$locale}')) " . ($sortDirection === 'desc' ? 'DESC' : 'ASC'));
+            } else {
+                $query->orderBy($sortField, $sortDirection);
+            }
         } else {
-            $query->orderBy('source_name', 'asc');
+            $locale = app()->getLocale();
+            $query->orderByRaw("JSON_UNQUOTE(JSON_EXTRACT(source_name, '$.{$locale}')) asc");
         }
 
         $sources = $query->paginate($request->per_page ?? 10);
 
+        $sources->getCollection()->transform(function ($source) {
+            return [
+                'id' => $source->id,
+                'source_name' => $source->source_name,
+                'source_name_translations' => $source->getTranslations('source_name'),
+                'description' => $source->description,
+                'description_translations' => $source->getTranslations('description'),
+                'source_type' => $source->source_type?->value ?? $source->source_type,
+                'url' => $source->url,
+                'access_info' => $source->access_info,
+                'credentials' => $source->credentials,
+                'status' => $source->status,
+                'created_by' => $source->created_by,
+                'creator' => $source->creator,
+                'created_at' => $source->created_at,
+                'updated_at' => $source->updated_at,
+            ];
+        });
+
         return Inertia::render('legal-research/sources/index', [
             'sources' => $sources,
             'filters' => $request->all(['search', 'source_type', 'status', 'sort_field', 'sort_direction', 'per_page']),
+            'sourceTypeOptions' => ResearchSourceType::optionsForFrontend(),
         ]);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'source_name' => 'required|string|max:255',
-            'source_type' => 'required|in:database,case_law,statutory,regulatory,secondary,custom',
-            'description' => 'nullable|string',
+            'source_name' => 'required|array',
+            'source_name.ar' => 'nullable|string|max:255',
+            'source_name.en' => 'required_with:source_name|string|max:255',
+            'source_type' => 'required|string|in:' . implode(',', array_column(ResearchSourceType::cases(), 'value')),
+            'description' => 'nullable|array',
+            'description.ar' => 'nullable|string',
+            'description.en' => 'nullable|string',
             'url' => 'nullable|url',
             'access_info' => 'nullable|string',
             'credentials' => 'nullable|array',
@@ -73,9 +112,13 @@ class ResearchSourceController extends Controller
         }
 
         $validated = $request->validate([
-            'source_name' => 'required|string|max:255',
-            'source_type' => 'required|in:database,case_law,statutory,regulatory,secondary,custom',
-            'description' => 'nullable|string',
+            'source_name' => 'required|array',
+            'source_name.ar' => 'nullable|string|max:255',
+            'source_name.en' => 'required_with:source_name|string|max:255',
+            'source_type' => 'required|string|in:' . implode(',', array_column(ResearchSourceType::cases(), 'value')),
+            'description' => 'nullable|array',
+            'description.ar' => 'nullable|string',
+            'description.en' => 'nullable|string',
             'url' => 'nullable|url',
             'access_info' => 'nullable|string',
             'credentials' => 'nullable|array',

@@ -10,9 +10,9 @@ return new class extends Migration
     {
         Schema::create('research_sources', function (Blueprint $table) {
             $table->id();
-            $table->string('source_name');
-            $table->enum('source_type', ['database', 'case_law', 'statutory', 'regulatory', 'secondary', 'custom'])->default('database');
-            $table->text('description')->nullable();
+            $table->json('source_name');
+            $table->string('source_type');
+            $table->json('description')->nullable();
             $table->string('url')->nullable();
             $table->text('access_info')->nullable();
             $table->json('credentials')->nullable();

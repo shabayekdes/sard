@@ -2,8 +2,14 @@
 
 namespace App\Models;
 
+use Spatie\Translatable\HasTranslations;
+
 class Role extends BaseSpatieRole
 {
+    use HasTranslations;
+
+    public array $translatable = ['label', 'description'];
+
     protected $fillable = [
         'name',
         'label',

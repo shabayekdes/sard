@@ -3,12 +3,8 @@ import { useState, useEffect, ReactNode } from 'react';
 import { PageTemplate, PageAction } from '@/components/page-template';
 import { PlusIcon } from 'lucide-react';
 import { router, usePage } from '@inertiajs/react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Filter, Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/pagination';
+import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from './CrudTable';
 import { CrudFormModal } from './CrudFormModal';
@@ -65,7 +61,7 @@ export function PageCrudWrapper({
   useEffect(() => {
     const initialFilters: Record<string, any> = {};
     filters.forEach(filter => {
-      const filterKey = filter.name || filter.key;
+      const filterKey = filter.key;
       initialFilters[filterKey] = pageFilters[filterKey] || '';
     });
     setFilterValues(initialFilters);
@@ -479,8 +475,9 @@ export function PageCrudWrapper({
 
   // Add the default "Add New" button if allowed and user has permission
   if (showAddButton && hasPermission(permissions, entity.permissions.create)) {
+    const singularName = entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1);
     pageActions.push({
-      label: `Add New ${entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)}`,
+      label: t('Add New {{name}}', { name: t(singularName) }),
       icon: <PlusIcon className="h-4 w-4" />,
       variant: 'default',
       onClick: () => handleAddNew()
@@ -506,125 +503,33 @@ export function PageCrudWrapper({
       noPadding
     >
       {/* Search and filters section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4">
-        <div className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <form onSubmit={handleSearch} className="flex gap-2">
-                <div className="relative w-64">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder={`Search ${entity.name}...`}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9"
-                  />
-                </div>
-                <Button type="submit" size="sm">
-                  <Search className="h-4 w-4 mr-1.5" />
-                  {t("Search")}
-                </Button>
-              </form>
-
-              {filters.length > 0 && (
-                <div className="ml-2">
-                  <Button
-                    variant={hasActiveFilters() ? "default" : "outline"}
-                    size="sm"
-                    className="h-8 px-2 py-1"
-                    onClick={() => setShowFilters(!showFilters)}
-                  >
-                    <Filter className="h-3.5 w-3.5 mr-1.5" />
-                    {showFilters ? 'Hide Filters' : 'Filters'}
-                    {hasActiveFilters() && (
-                      <span className="ml-1 bg-primary-foreground text-primary rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                        {activeFilterCount()}
-                      </span>
-                    )}
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Label className="text-xs text-muted-foreground">{t("Per Page")}:</Label>
-              <Select
-                value={pageFilters.per_page?.toString() || "10"}
-                onValueChange={(value) => {
-                  const params: any = { page: 1, per_page: parseInt(value) };
-
-                  if (searchTerm) {
-                    params.search = searchTerm;
-                  }
-
-                  Object.entries(filterValues).forEach(([key, val]) => {
-                    if (val && val !== '') {
-                      params[key] = val;
-                    }
-                  });
-
-                  router.get(entity.endpoint, params, { preserveState: true, preserveScroll: true });
-                }}
-              >
-                <SelectTrigger className="w-16 h-8">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="25">25</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                  <SelectItem value="100">100</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {showFilters && filters.length > 0 && (
-            <div className="w-full mt-3 p-4 bg-gray-50 dark:bg-gray-800 border dark:border-gray-700 rounded-md">
-              <div className="flex flex-wrap gap-4 items-end">
-                {filters.map((filter) => {
-                  const filterKey = filter.name || filter.key;
-                  return (
-                    <div key={filterKey} className="space-y-2">
-                      <Label>{filter.label}</Label>
-                      {filter.type === 'select' && (
-                        <Select
-                          value={filterValues[filterKey] || ''}
-                          onValueChange={(value) => handleFilterChange(filterKey, value)}
-                        >
-                          <SelectTrigger className="w-40">
-                            <SelectValue placeholder={`All ${filter.label}`} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {filter.options?.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </div>
-                  );
-                })}
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-9"
-                  onClick={handleResetFilters}
-                  disabled={!hasActiveFilters()}
-                >
-                  {t("Reset Filters")}
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
+      <div className="mb-4 rounded-lg bg-white dark:bg-gray-900">
+        <SearchAndFilterBar
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          onSearch={handleSearch}
+          filters={filters.map((filter) => {
+            const filterKey = filter.key;
+            return {
+              name: filterKey,
+              label: filter.label,
+              type: filter.type as 'select' | 'date',
+              value: filterValues[filterKey] ?? '',
+              onChange: (value: any) => handleFilterChange(filterKey, value),
+              options: filter.options,
+            };
+          })}
+          showFilters={showFilters}
+          setShowFilters={setShowFilters}
+          hasActiveFilters={hasActiveFilters}
+          activeFilterCount={activeFilterCount}
+          onResetFilters={handleResetFilters}
+          onApplyFilters={applyFilters}
+        />
       </div>
 
-      {/* Table section */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
+      {/* Content section */}
+      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800 dark:bg-gray-900">
         <CrudTable
           columns={table.columns}
           actions={table.actions}
@@ -645,8 +550,17 @@ export function PageCrudWrapper({
           to={data.to || 0}
           total={data.total}
           links={data.links}
-          entityName={entity.name}
+          entityName={t(entity.name)}
           onPageChange={(url) => router.get(url)}
+          currentPerPage={pageFilters.per_page?.toString() || '10'}
+          onPerPageChange={(value) => {
+            const params: any = { page: 1, per_page: parseInt(value) };
+            if (searchTerm) params.search = searchTerm;
+            Object.entries(filterValues).forEach(([key, val]) => {
+              if (val && val !== '') params[key] = val;
+            });
+            router.get(entity.endpoint, params, { preserveState: true, preserveScroll: true });
+          }}
         />
       </div>
 
@@ -661,10 +575,10 @@ export function PageCrudWrapper({
         initialData={currentItem}
         title={
           formMode === 'create'
-            ? `Add New ${entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)}`
+            ? t('Add New {{name}}', { name: t(entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)) })
             : formMode === 'edit'
-              ? `Edit ${entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)}`
-              : `View ${entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)}`
+              ? t('Edit {{name}}', { name: t(entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)) })
+              : t('View {{name}}', { name: t(entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)) })
         }
         mode={formMode}
         description={config.description}

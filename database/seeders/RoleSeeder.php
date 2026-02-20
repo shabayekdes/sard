@@ -9,6 +9,14 @@ use Spatie\Permission\Models\Permission;
 class RoleSeeder extends Seeder
 {
     /**
+     * JSON-encode label/description for roles table (translatable JSON columns).
+     */
+    private static function translatableJson(string $en, string $ar = ''): string
+    {
+        return json_encode(['en' => $en, 'ar' => $ar ?: $en]);
+    }
+
+    /**
      * Run the database seeds.
      */
     public function run(): void
@@ -17,8 +25,8 @@ class RoleSeeder extends Seeder
         $superAdminRole = Role::firstOrCreate(
             ['name' => 'superadmin', 'guard_name' => 'web'],
             [
-                'label' => 'Super Admin',
-                'description' => 'Super Admin has full access to all features',
+                'label' => self::translatableJson('Super Admin', 'مدير النظام'),
+                'description' => self::translatableJson('Super Admin has full access to all features', 'مدير النظام لديه صلاحية كاملة لجميع الميزات'),
             ]
         );
 
@@ -26,8 +34,8 @@ class RoleSeeder extends Seeder
         $adminRole = Role::firstOrCreate(
             ['name' => 'company', 'guard_name' => 'web'],
             [
-                'label' => 'Company',
-                'description' => 'Company has access to manage buissness',
+                'label' => self::translatableJson('Company', 'الشركة'),
+                'description' => self::translatableJson('Company has access to manage buissness', 'الشركة لديها صلاحية إدارة الأعمال'),
             ]
         );
 
@@ -754,26 +762,26 @@ class RoleSeeder extends Seeder
             $roles = [
                 [
                     'name' => 'senior_attorney',
-                    'label' => 'Senior Attorney',
-                    'description' => 'Senior attorney with advanced permissions',
+                    'label' => self::translatableJson('Senior Attorney', 'محامٍ أول'),
+                    'description' => self::translatableJson('Senior attorney with advanced permissions', 'محامٍ أول بصلاحيات متقدمة'),
                     'permissions' => ['manage-cases', 'view-cases', 'create-cases', 'edit-cases', 'manage-clients', 'view-clients', 'manage-documents', 'view-documents']
                 ],
                 [
                     'name' => 'junior_attorney',
-                    'label' => 'Junior Attorney',
-                    'description' => 'Junior attorney with limited permissions',
+                    'label' => self::translatableJson('Junior Attorney', 'محامٍ مبتدئ'),
+                    'description' => self::translatableJson('Junior attorney with limited permissions', 'محامٍ مبتدئ بصلاحيات محدودة'),
                     'permissions' => ['view-cases', 'view-clients', 'view-documents', 'create-case-notes', 'view-case-notes']
                 ],
                 [
                     'name' => 'paralegal',
-                    'label' => 'Paralegal',
-                    'description' => 'Paralegal with document and research access',
+                    'label' => self::translatableJson('Paralegal', 'مساعد قانوني'),
+                    'description' => self::translatableJson('Paralegal with document and research access', 'مساعد قانوني مع صلاحية المستندات والبحث'),
                     'permissions' => ['view-cases', 'manage-documents', 'view-documents', 'manage-research-projects', 'view-research-projects']
                 ],
                 [
                     'name' => 'legal_secretary',
-                    'label' => 'Legal Secretary',
-                    'description' => 'Legal secretary with administrative access',
+                    'label' => self::translatableJson('Legal Secretary', 'سكرتير قانوني'),
+                    'description' => self::translatableJson('Legal secretary with administrative access', 'سكرتير قانوني بصلاحيات إدارية'),
                     'permissions' => ['view-calendar', 'manage-calendar', 'view-clients', 'manage-messages', 'view-messages']
                 ]
             ];
@@ -782,8 +790,8 @@ class RoleSeeder extends Seeder
             $roles = [
                 [
                     'name' => 'attorney',
-                    'label' => 'Attorney',
-                    'description' => 'Attorney with case management access',
+                    'label' => self::translatableJson('Attorney', 'محامٍ'),
+                    'description' => self::translatableJson('Attorney with case management access', 'محامٍ بصلاحية إدارة القضايا'),
                     'permissions' => ['manage-cases', 'view-cases', 'manage-clients', 'view-clients', 'manage-documents', 'view-documents']
                 ]
             ];

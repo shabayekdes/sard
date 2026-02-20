@@ -475,7 +475,7 @@ export default function Users() {
                                               <p className="mb-3 text-sm text-gray-600 dark:text-gray-300">{user.email}</p>
                                               <div className="flex items-center">
                                                   <div
-                                                      className={`mr-2 h-2 w-2 rounded-full ${
+                                                      className={`h-2 w-2 rounded-full ltr:mr-2 rtl:ml-2 ${
                                                           user.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
                                                       }`}
                                                   ></div>
@@ -707,7 +707,7 @@ export default function Users() {
                   modalSize: 'sm',
               }}
               initialData={{}}
-              title={`Reset Password for ${currentItem?.name || 'User'}`}
+              title={t('Reset Password for {{name}}', { name: currentItem?.name || t('User') })}
               mode="edit"
           />
       </PageTemplate>
