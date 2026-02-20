@@ -12,8 +12,9 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export default function CaseStatuses() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { auth, caseStatuses, filters: pageFilters = {} } = usePage().props as any;
+    const currentLocale = i18n.language || 'en';
     const permissions = auth?.permissions || [];
 
     const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
@@ -215,11 +216,28 @@ export default function CaseStatuses() {
             key: 'name',
             label: t('Name'),
             sortable: true,
+            render: (value: any, row: any) => {
+                if (row.name_translations && typeof row.name_translations === 'object') {
+                    return row.name_translations[currentLocale] || row.name_translations.en || row.name_translations.ar || '-';
+                }
+                if (typeof value === 'object' && value !== null) {
+                    return value[currentLocale] || value.en || value.ar || '-';
+                }
+                return value || '-';
+            },
         },
         {
             key: 'description',
             label: t('Description'),
-            render: (value: string) => value || '-',
+            render: (value: any, row: any) => {
+                if (row.description_translations && typeof row.description_translations === 'object') {
+                    return row.description_translations[currentLocale] || row.description_translations.en || row.description_translations.ar || '-';
+                }
+                if (typeof value === 'object' && value !== null) {
+                    return value[currentLocale] || value.en || value.ar || '-';
+                }
+                return value || '-';
+            },
         },
         {
             key: 'color',
@@ -388,8 +406,10 @@ export default function CaseStatuses() {
                 onSubmit={handleFormSubmit}
                 formConfig={{
                     fields: [
-                        { name: 'name', label: t('Name'), type: 'text', required: true },
-                        { name: 'description', label: t('Description'), type: 'textarea' },
+                        { name: 'name.en', label: t('Name (English)'), type: 'text', required: true },
+                        { name: 'name.ar', label: t('Name (Arabic)'), type: 'text', required: false },
+                        { name: 'description.en', label: t('Description (English)'), type: 'textarea' },
+                        { name: 'description.ar', label: t('Description (Arabic)'), type: 'textarea' },
                         { name: 'color', label: t('Color'), type: 'color', defaultValue: '#10B981' },
                         { name: 'is_default', label: t('Default Status'), type: 'checkbox' },
                         { name: 'is_closed', label: t('Closed Status'), type: 'checkbox' },
@@ -405,8 +425,38 @@ export default function CaseStatuses() {
                         },
                     ],
                     modalSize: 'lg',
+                    transformData: (data: any) => {
+                        const transformed: any = { ...data };
+                        if (transformed['name.en'] != null || transformed['name.ar'] != null) {
+                            transformed.name = {
+                                en: transformed['name.en'] ?? '',
+                                ar: transformed['name.ar'] ?? '',
+                            };
+                            delete transformed['name.en'];
+                            delete transformed['name.ar'];
+                        }
+                        if (transformed['description.en'] != null || transformed['description.ar'] != null) {
+                            transformed.description = {
+                                en: transformed['description.en'] ?? '',
+                                ar: transformed['description.ar'] ?? '',
+                            };
+                            delete transformed['description.en'];
+                            delete transformed['description.ar'];
+                        }
+                        return transformed;
+                    },
                 }}
-                initialData={currentItem}
+                initialData={
+                    currentItem
+                        ? {
+                              ...currentItem,
+                              'name.en': currentItem.name_translations?.en ?? (typeof currentItem.name === 'object' && currentItem.name != null ? currentItem.name.en : '') ?? (typeof currentItem.name === 'string' ? currentItem.name : '') ?? '',
+                              'name.ar': currentItem.name_translations?.ar ?? (typeof currentItem.name === 'object' && currentItem.name != null ? currentItem.name.ar : '') ?? '',
+                              'description.en': currentItem.description_translations?.en ?? (typeof currentItem.description === 'object' && currentItem.description != null ? currentItem.description.en : '') ?? (typeof currentItem.description === 'string' ? currentItem.description : '') ?? '',
+                              'description.ar': currentItem.description_translations?.ar ?? (typeof currentItem.description === 'object' && currentItem.description != null ? currentItem.description.ar : '') ?? '',
+                          }
+                        : undefined
+                }
                 title={formMode === 'create' ? t('Add New Case Status') : formMode === 'edit' ? t('Edit Case Status') : t('View Case Status')}
                 mode={formMode}
             />
@@ -415,7 +465,13 @@ export default function CaseStatuses() {
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={handleDeleteConfirm}
-                itemName={currentItem?.name || ''}
+                itemName={
+                    currentItem?.name_translations
+                        ? (currentItem.name_translations[currentLocale] || currentItem.name_translations.en || currentItem.name_translations.ar || '')
+                        : typeof currentItem?.name === 'object' && currentItem?.name != null
+                          ? (currentItem.name[currentLocale] || currentItem.name.en || currentItem.name.ar || '')
+                          : (currentItem?.name ?? '')
+                }
                 entityName="case status"
             />
         </PageTemplate>

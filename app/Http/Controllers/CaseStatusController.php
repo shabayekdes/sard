@@ -14,10 +14,17 @@ class CaseStatusController extends Controller
             ->with(['creator'])
             ->where('created_by', createdBy());
 
+        // Handle search - search in translatable fields
         if ($request->has('search') && !empty($request->search)) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                    ->orWhere('description', 'like', '%' . $request->search . '%');
+            $searchTerm = $request->search;
+            $locale = app()->getLocale();
+            $query->where(function ($q) use ($searchTerm, $locale) {
+                $q->whereRaw("JSON_EXTRACT(name, '$.{$locale}') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(name, '$.en') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(name, '$.ar') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(description, '$.{$locale}') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(description, '$.en') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(description, '$.ar') LIKE ?", ["%{$searchTerm}%"]);
             });
         }
 
@@ -33,6 +40,25 @@ class CaseStatusController extends Controller
 
         $caseStatuses = $query->paginate($request->per_page ?? 10);
 
+        // Transform the data to include translated values
+        $caseStatuses->getCollection()->transform(function ($caseStatus) {
+            return [
+                'id' => $caseStatus->id,
+                'name' => $caseStatus->name,
+                'name_translations' => $caseStatus->getTranslations('name'),
+                'description' => $caseStatus->description,
+                'description_translations' => $caseStatus->getTranslations('description'),
+                'color' => $caseStatus->color,
+                'is_default' => $caseStatus->is_default,
+                'is_closed' => $caseStatus->is_closed,
+                'status' => $caseStatus->status,
+                'created_by' => $caseStatus->created_by,
+                'creator' => $caseStatus->creator,
+                'created_at' => $caseStatus->created_at,
+                'updated_at' => $caseStatus->updated_at,
+            ];
+        });
+
         return Inertia::render('cases/case-statuses/index', [
             'caseStatuses' => $caseStatuses,
             'filters' => $request->all(['search', 'status', 'sort_field', 'sort_direction', 'per_page']),
@@ -42,8 +68,12 @@ class CaseStatusController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'name' => 'required|array',
+            'name.en' => 'required|string|max:255',
+            'name.ar' => 'nullable|string|max:255',
+            'description' => 'nullable|array',
+            'description.en' => 'nullable|string',
+            'description.ar' => 'nullable|string',
             'color' => 'nullable|string|max:7',
             'is_default' => 'nullable|boolean',
             'is_closed' => 'nullable|boolean',
@@ -75,8 +105,12 @@ class CaseStatusController extends Controller
         }
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'name' => 'required|array',
+            'name.en' => 'required|string|max:255',
+            'name.ar' => 'nullable|string|max:255',
+            'description' => 'nullable|array',
+            'description.en' => 'nullable|string',
+            'description.ar' => 'nullable|string',
             'color' => 'nullable|string|max:7',
             'is_default' => 'nullable|boolean',
             'is_closed' => 'nullable|boolean',

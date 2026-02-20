@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('case_statuses', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
+            $table->json('name');
+            $table->json('description')->nullable();
             $table->string('color', 7)->default('#10B981');
             $table->boolean('is_default')->default(false);
             $table->boolean('is_closed')->default(false);
