@@ -355,7 +355,7 @@ export default function ResearchSources() {
               isOpen={isFormModalOpen}
               onClose={() => setIsFormModalOpen(false)}
               onSubmit={handleFormSubmit}
-                  formConfig={{
+              formConfig={{
                   fields: [
                       { name: 'source_name.en', label: t('Source Name (English)'), type: 'text', required: true },
                       { name: 'source_name.ar', label: t('Source Name (Arabic)'), type: 'text' },
