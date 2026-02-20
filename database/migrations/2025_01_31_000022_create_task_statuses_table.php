@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('task_statuses', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->json('name');
             $table->string('color', 7)->default('#6B7280'); // Hex color code
             $table->boolean('is_completed')->default(false);
             $table->enum('status', ['active', 'inactive'])->default('active');

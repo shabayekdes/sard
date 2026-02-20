@@ -81,6 +81,7 @@ class SeedDefaultCompanyData implements ShouldQueue
         SeedCourtTypes::dispatch($this->companyUserId);
         SeedCircleTypes::dispatch($this->companyUserId);
         SeedCaseStatuses::dispatch($this->companyUserId);
+        SeedTaskStatuses::dispatch($this->companyUserId);
         SeedHearingTypes::dispatch($this->companyUserId);
         SeedEventTypes::dispatch($this->companyUserId);
         SeedResearchSources::dispatch($this->companyUserId);

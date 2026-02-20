@@ -90,7 +90,6 @@ class DatabaseSeeder extends Seeder
                 PaymentSeeder::class,
 
                 // Task & Workflow Management module seeders
-                TaskStatusSeeder::class,
                 TaskSeeder::class,
                 WorkflowSeeder::class,
                 TaskCommentSeeder::class,

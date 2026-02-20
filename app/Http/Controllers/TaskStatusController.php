@@ -14,9 +14,15 @@ class TaskStatusController extends BaseController
             ->with(['creator'])
             ->where('created_by', createdBy());
 
-        // Handle search
+        // Handle search - search in translatable name
         if ($request->has('search') && !empty($request->search)) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $searchTerm = $request->search;
+            $locale = app()->getLocale();
+            $query->where(function ($q) use ($searchTerm, $locale) {
+                $q->whereRaw("JSON_EXTRACT(name, '$.{$locale}') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(name, '$.en') LIKE ?", ["%{$searchTerm}%"])
+                    ->orWhereRaw("JSON_EXTRACT(name, '$.ar') LIKE ?", ["%{$searchTerm}%"]);
+            });
         }
 
         // Handle status filter
@@ -26,12 +32,34 @@ class TaskStatusController extends BaseController
 
         // Handle sorting
         if ($request->has('sort_field') && !empty($request->sort_field)) {
-            $query->orderBy($request->sort_field, $request->sort_direction ?? 'asc');
+            $sortField = $request->sort_field;
+            $sortDir = $request->sort_direction ?? 'asc';
+            if ($sortField === 'name') {
+                $locale = app()->getLocale();
+                $query->orderByRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.{$locale}')) {$sortDir}");
+            } else {
+                $query->orderBy($sortField, $sortDir);
+            }
         } else {
             $query->orderBy('created_at', 'desc');
         }
 
         $taskStatuses = $query->paginate($request->per_page ?? 10);
+
+        $taskStatuses->getCollection()->transform(function ($taskStatus) {
+            return [
+                'id' => $taskStatus->id,
+                'name' => $taskStatus->name,
+                'name_translations' => $taskStatus->getTranslations('name'),
+                'color' => $taskStatus->color,
+                'is_completed' => $taskStatus->is_completed,
+                'status' => $taskStatus->status,
+                'created_by' => $taskStatus->created_by,
+                'creator' => $taskStatus->creator,
+                'created_at' => $taskStatus->created_at,
+                'updated_at' => $taskStatus->updated_at,
+            ];
+        });
 
         return Inertia::render('tasks/task-statuses/index', [
             'taskStatuses' => $taskStatuses,
@@ -42,7 +70,9 @@ class TaskStatusController extends BaseController
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|array',
+            'name.en' => 'required|string|max:255',
+            'name.ar' => 'nullable|string|max:255',
             'color' => 'required|string|size:7|regex:/^#[0-9A-Fa-f]{6}$/',
             'is_completed' => 'nullable|boolean',
             'status' => 'nullable|in:active,inactive',
@@ -52,9 +82,15 @@ class TaskStatusController extends BaseController
         $validated['status'] = $validated['status'] ?? 'active';
         $validated['is_completed'] = $validated['is_completed'] ?? false;
 
+        $nameEn = $validated['name']['en'] ?? '';
+        $nameAr = $validated['name']['ar'] ?? '';
+
         // Check if task status with same name already exists for this company
-        $exists = TaskStatus::where('name', $validated['name'])
-            ->where('created_by', createdBy())
+        $exists = TaskStatus::where('created_by', createdBy())
+            ->where(function ($q) use ($nameEn, $nameAr) {
+                $q->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = ?", [$nameEn])
+                    ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = ?", [$nameAr]);
+            })
             ->exists();
 
         if ($exists) {
@@ -77,16 +113,24 @@ class TaskStatusController extends BaseController
         }
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|array',
+            'name.en' => 'required|string|max:255',
+            'name.ar' => 'nullable|string|max:255',
             'color' => 'required|string|size:7|regex:/^#[0-9A-Fa-f]{6}$/',
             'is_completed' => 'required|boolean',
             'status' => 'required|in:active,inactive',
         ]);
 
+        $nameEn = $validated['name']['en'] ?? '';
+        $nameAr = $validated['name']['ar'] ?? '';
+
         // Check if task status with same name already exists for this company (excluding current)
-        $exists = TaskStatus::where('name', $validated['name'])
-            ->where('created_by', createdBy())
+        $exists = TaskStatus::where('created_by', createdBy())
             ->where('id', '!=', $taskStatusId)
+            ->where(function ($q) use ($nameEn, $nameAr) {
+                $q->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = ?", [$nameEn])
+                    ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = ?", [$nameAr]);
+            })
             ->exists();
 
         if ($exists) {

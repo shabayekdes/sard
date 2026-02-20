@@ -12,9 +12,19 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 export default function TaskStatuses() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { auth, taskStatuses, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
+  const currentLocale = i18n.language || 'en';
+
+  const getTranslatedValue = (value: any): string => {
+    if (!value) return '-';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'object' && value !== null) {
+      return value[currentLocale] || value.en || value.ar || '-';
+    }
+    return '-';
+  };
 
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
   const [selectedStatus, setSelectedStatus] = useState(pageFilters.status || 'all');
@@ -206,7 +216,8 @@ export default function TaskStatuses() {
     {
       key: 'name',
       label: t('Name'),
-      sortable: true
+      sortable: true,
+      render: (value: any) => getTranslatedValue(value)
     },
     {
       key: 'color',
@@ -358,7 +369,8 @@ export default function TaskStatuses() {
               onSubmit={handleFormSubmit}
               formConfig={{
                   fields: [
-                      { name: 'name', label: t('Name'), type: 'text', required: true },
+                      { name: 'name.en', label: t('Name (English)'), type: 'text', required: true },
+                      { name: 'name.ar', label: t('Name (Arabic)'), type: 'text' },
                       { name: 'color', label: t('Color'), type: 'color', required: true, defaultValue: '#6B7280' },
                       {
                           name: 'is_completed',
@@ -378,8 +390,24 @@ export default function TaskStatuses() {
                       },
                   ],
                   modalSize: 'lg',
+                  transformData: (data: any) => {
+                      const transformed = { ...data };
+                      if (transformed['name.en'] != null || transformed['name.ar'] != null) {
+                          transformed.name = {
+                              en: transformed['name.en'] ?? '',
+                              ar: transformed['name.ar'] ?? '',
+                          };
+                          delete transformed['name.en'];
+                          delete transformed['name.ar'];
+                      }
+                      return transformed;
+                  },
               }}
-              initialData={currentItem}
+              initialData={currentItem ? {
+                  ...currentItem,
+                  'name.en': typeof currentItem.name === 'object' && currentItem.name !== null ? currentItem.name.en : '',
+                  'name.ar': typeof currentItem.name === 'object' && currentItem.name !== null ? currentItem.name.ar : '',
+              } : {}}
               title={formMode === 'create' ? t('Add New Task Status') : formMode === 'edit' ? t('Edit Task Status') : t('View Task Status')}
               mode={formMode}
           />
@@ -388,7 +416,7 @@ export default function TaskStatuses() {
               isOpen={isDeleteModalOpen}
               onClose={() => setIsDeleteModalOpen(false)}
               onConfirm={handleDeleteConfirm}
-              itemName={currentItem?.name || ''}
+              itemName={getTranslatedValue(currentItem?.name) || ''}
               entityName="task status"
           />
       </PageTemplate>
