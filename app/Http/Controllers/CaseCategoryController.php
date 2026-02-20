@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CaseCategory;
+use App\Models\CaseType;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -262,6 +263,27 @@ class CaseCategoryController extends Controller
         });
 
         return response()->json($subcategories);
+    }
+
+    /**
+     * Get case types for a subcategory (case_category_id on case_types = subcategory id)
+     */
+    public function getCaseTypes(Request $request, $subcategoryId)
+    {
+        $caseTypes = CaseType::where('case_category_id', $subcategoryId)
+            ->where('created_by', createdBy())
+            ->where('status', 'active')
+            ->get(['id', 'name']);
+
+        $caseTypes->transform(function ($caseType) {
+            return [
+                'id' => $caseType->id,
+                'name' => $caseType->name,
+                'name_translations' => $caseType->getTranslations('name'),
+            ];
+        });
+
+        return response()->json($caseTypes);
     }
 }
 

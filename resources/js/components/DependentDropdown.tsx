@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 interface DropdownField {
     name: string;
@@ -19,9 +20,11 @@ interface DependentDropdownProps {
     onChange: (fieldName: string, value: string, formData?: any, additionalData?: any) => void;
     disabled?: boolean;
     errors?: Record<string, string>;
+    /** Layout: 'row' = fields in one row (grid), 'column' = stacked vertically (default) */
+    layout?: 'row' | 'column';
 }
 
-export default function DependentDropdown({ fields, values, onChange, disabled = false, errors = {} }: DependentDropdownProps) {
+export default function DependentDropdown({ fields, values, onChange, disabled = false, errors = {}, layout = 'column' }: DependentDropdownProps) {
     const { t } = useTranslation();
     const { isRtl } = useLayout();
     const { base_url } = usePage().props as any;
@@ -163,16 +166,15 @@ export default function DependentDropdown({ fields, values, onChange, disabled =
         onChange(fieldName, value, { selectedInfo, loadedOptions: [] });
     };
 
-    const getGridCols = () => {
-        const count = fields.length;
-        if (count <= 2) return 'grid-cols-2';
-        if (count <= 3) return 'grid-cols-3';
-        if (count <= 4) return 'grid-cols-4';
-        return 'grid-cols-5';
-    };
+    const gridCols = layout === 'row'
+        ? (fields.length <= 2 ? 'grid-cols-2' : fields.length <= 3 ? 'grid-cols-3' : fields.length <= 4 ? 'grid-cols-4' : 'grid-cols-5')
+        : 'grid-cols-1';
+    const containerClass = layout === 'row'
+        ? cn('grid w-full gap-4', gridCols)
+        : 'space-y-4';
 
     return (
-        <div className="space-y-4">
+        <div className={containerClass}>
             {fields.map((field, index) => {
                 const isFirstField = index === 0;
                 const parentField = isFirstField ? null : fields[index - 1];
@@ -196,9 +198,9 @@ export default function DependentDropdown({ fields, values, onChange, disabled =
                             >
                                 {isLoading ? t('Loading...') : t('Select {{label}}', { label: field.label })}
                             </option>
-                            {fieldOptions.map((option) => (
+                            {fieldOptions.map((option, optionIndex) => (
                                 <option 
-                                    key={option.value} 
+                                    key={`${field.name}-${option.value}-${optionIndex}`} 
                                     value={option.value}
                                     className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
                                 >

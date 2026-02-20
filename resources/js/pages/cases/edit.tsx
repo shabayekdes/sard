@@ -8,6 +8,7 @@ import { Repeater, type RepeaterField } from '@/components/ui/repeater';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import DependentDropdown from '@/components/DependentDropdown';
 import { useLayout } from '@/contexts/LayoutContext';
 import { router, usePage } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
@@ -62,6 +63,13 @@ export default function EditCase() {
             ...defaultFormData,
             ...caseProp,
             opposite_parties: oppositeParties,
+            title: caseProp?.title != null ? String(caseProp.title) : '',
+            case_number: caseProp?.case_number != null ? String(caseProp.case_number) : '',
+            file_number: caseProp?.file_number != null ? String(caseProp.file_number) : '',
+            filing_date: caseProp?.filing_date != null ? String(caseProp.filing_date).slice(0, 10) : '',
+            expected_completion_date: caseProp?.expected_completion_date != null ? String(caseProp.expected_completion_date).slice(0, 10) : '',
+            estimated_value: caseProp?.estimated_value != null ? String(caseProp.estimated_value) : '',
+            description: caseProp?.description != null ? String(caseProp.description) : '',
             client_id: caseProp?.client_id != null ? String(caseProp.client_id) : '',
             case_category_id: caseProp?.case_category_id != null ? String(caseProp.case_category_id) : '',
             case_subcategory_id: caseProp?.case_subcategory_id != null ? String(caseProp.case_subcategory_id) : '',
@@ -73,8 +81,6 @@ export default function EditCase() {
             status: caseProp?.status || 'active',
         };
     });
-    const [subcategoryOptions, setSubcategoryOptions] = useState<{ value: string; label: string }[]>([]);
-    const [isSubcategoryLoading, setIsSubcategoryLoading] = useState(false);
 
     const normalizedErrors = useMemo(() => {
         const next: Record<string, string> = {};
@@ -100,29 +106,59 @@ export default function EditCase() {
         setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
-    useEffect(() => {
-        const loadSubcategories = async () => {
-            if (!formData.case_category_id) {
-                setSubcategoryOptions([]);
-                return;
-            }
-            setIsSubcategoryLoading(true);
-            try {
-                const response = await fetch(`${base_url}/case/case-categories/${encodeURIComponent(formData.case_category_id)}/subcategories`);
-                if (!response.ok) throw new Error('Failed to load subcategories');
-                const data = await response.json();
-                const options = Array.isArray(data)
-                    ? data.map((item: any) => ({ value: String(item.id || item.value || ''), label: String(item.name || item.label || '') }))
-                    : [];
-                setSubcategoryOptions(options);
-            } catch {
-                setSubcategoryOptions([]);
-            } finally {
-                setIsSubcategoryLoading(false);
-            }
-        };
-        loadSubcategories();
-    }, [formData.case_category_id, base_url]);
+    const uniqueClients = useMemo(() => {
+        const seen = new Set<string>();
+        return (clients || []).filter((c: any) => {
+            const id = c.id.toString();
+            if (seen.has(id)) return false;
+            seen.add(id);
+            return true;
+        });
+    }, [clients]);
+
+    const uniqueCaseStatuses = useMemo(() => {
+        const seen = new Set<string>();
+        return (caseStatuses || []).filter((s: any) => {
+            const id = s.id.toString();
+            if (seen.has(id)) return false;
+            seen.add(id);
+            return true;
+        });
+    }, [caseStatuses]);
+
+    const uniqueCourts = useMemo(() => {
+        const seen = new Set<string>();
+        return (courts || []).filter((c: any) => {
+            const id = c.id.toString();
+            if (seen.has(id)) return false;
+            seen.add(id);
+            return true;
+        });
+    }, [courts]);
+
+    const categorySubcategoryTypeFields = useMemo(
+        () => [
+            {
+                name: 'case_category_id',
+                label: t('Case Main Category'),
+                options: (caseCategories || []).map((cat: any) => ({
+                    value: cat.id.toString(),
+                    label: resolveTranslatableName(cat),
+                })),
+            },
+            {
+                name: 'case_subcategory_id',
+                label: t('Case Sub Category'),
+                apiEndpoint: '/case/case-categories/{case_category_id}/subcategories',
+            },
+            {
+                name: 'case_type_id',
+                label: t('Case Type'),
+                apiEndpoint: '/case/case-categories/{case_subcategory_id}/case-types',
+            },
+        ],
+        [caseCategories, currentLocale, t]
+    );
 
     const handleFormSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -184,13 +220,13 @@ export default function EditCase() {
                                     <SelectValue placeholder={t('Select Client')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {(clients || []).map((client: any) => (
-                                        <SelectItem key={client.id} value={client.id.toString()}>
+                                    {uniqueClients.map((client: any) => (
+                                        <SelectItem key={`client-${client.id}`} value={client.id.toString()}>
                                             {client.name}
                                         </SelectItem>
                                     ))}
-                                    {auth?.user && (
-                                        <SelectItem value={auth.user.id.toString()}>{auth.user.name} (Me)</SelectItem>
+                                    {auth?.user && !uniqueClients.some((c: any) => c.id === auth.user?.id) && (
+                                        <SelectItem key={`client-me-${auth.user.id}`} value={auth.user.id.toString()}>{auth.user.name} (Me)</SelectItem>
                                     )}
                                 </SelectContent>
                             </Select>
@@ -198,7 +234,7 @@ export default function EditCase() {
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="title">{t('Case Title')}</Label>
-                            <Input id="title" value={formData.title} onChange={(e) => updateField('title', e.target.value)} required />
+                            <Input id="title" value={formData.title ?? ''} onChange={(e) => updateField('title', e.target.value)} required />
                             {renderError('title')}
                         </div>
                         <div className="space-y-2">
@@ -223,30 +259,14 @@ export default function EditCase() {
 
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div className="space-y-2">
-                            <Label>{t('Case Type')}</Label>
-                            <Select value={formData.case_type_id} onValueChange={(value) => updateField('case_type_id', value)}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder={t('Select Type')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {(caseTypes || []).map((type: any) => (
-                                        <SelectItem key={type.id} value={type.id.toString()}>
-                                            {resolveTranslatableName(type)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {renderError('case_type_id')}
-                        </div>
-                        <div className="space-y-2">
                             <Label>{t('Case Status')}</Label>
                             <Select value={formData.case_status_id} onValueChange={(value) => updateField('case_status_id', value)}>
                                 <SelectTrigger>
                                     <SelectValue placeholder={t('Select Status')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {(caseStatuses || []).map((status: any) => (
-                                        <SelectItem key={status.id} value={status.id.toString()}>
+                                    {uniqueCaseStatuses.map((status: any) => (
+                                        <SelectItem key={`case-status-${status.id}`} value={status.id.toString()}>
                                             {resolveTranslatableName(status)}
                                         </SelectItem>
                                     ))}
@@ -275,12 +295,12 @@ export default function EditCase() {
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div className="space-y-2">
                             <Label htmlFor="case_number">{t('Case Number')}</Label>
-                            <Input id="case_number" value={formData.case_number} onChange={(e) => updateField('case_number', e.target.value)} />
+                            <Input id="case_number" value={formData.case_number ?? ''} onChange={(e) => updateField('case_number', e.target.value)} />
                             {renderError('case_number')}
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="file_number">{t('File Number')}</Label>
-                            <Input id="file_number" value={formData.file_number} onChange={(e) => updateField('file_number', e.target.value)} />
+                            <Input id="file_number" value={formData.file_number ?? ''} onChange={(e) => updateField('file_number', e.target.value)} />
                             {renderError('file_number')}
                         </div>
                         <div className="space-y-2">
@@ -290,8 +310,8 @@ export default function EditCase() {
                                     <SelectValue placeholder={t('Select Court')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {(courts || []).map((court: any) => (
-                                        <SelectItem key={court.id} value={court.id.toString()}>
+                                    {uniqueCourts.map((court: any) => (
+                                        <SelectItem key={`court-${court.id}`} value={court.id.toString()}>
                                             {court.name}
                                         </SelectItem>
                                     ))}
@@ -301,56 +321,28 @@ export default function EditCase() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                        <div className="space-y-2">
-                            <Label>{t('Case Main Category')}</Label>
-                            <Select
-                                value={formData.case_category_id}
-                                onValueChange={(value) => {
-                                    updateField('case_category_id', value);
-                                    updateField('case_subcategory_id', '');
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+                        <div className="space-y-2 md:col-span-3">
+                            <DependentDropdown
+                                layout="row"
+                                fields={categorySubcategoryTypeFields}
+                                values={{
+                                    case_category_id: formData.case_category_id,
+                                    case_subcategory_id: formData.case_subcategory_id,
+                                    case_type_id: formData.case_type_id,
                                 }}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder={t('Select Main Category')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {(caseCategories || []).map((category: any) => (
-                                        <SelectItem key={category.id} value={category.id.toString()}>
-                                            {resolveTranslatableName(category)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {renderError('case_category_id')}
-                        </div>
-                        <div className="space-y-2">
-                            <Label>{t('Case Sub Category')}</Label>
-                            <Select
-                                value={formData.case_subcategory_id}
-                                onValueChange={(value) => updateField('case_subcategory_id', value)}
-                                disabled={!formData.case_category_id || isSubcategoryLoading}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue
-                                        placeholder={
-                                            isSubcategoryLoading
-                                                ? t('Loading...')
-                                                : formData.case_category_id
-                                                  ? t('Select Sub Category')
-                                                  : t('Select Main Category First')
-                                        }
-                                    />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {subcategoryOptions.map((sub) => (
-                                        <SelectItem key={sub.value} value={sub.value}>
-                                            {sub.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {renderError('case_subcategory_id')}
+                                onChange={(fieldName, value) => updateField(fieldName, value)}
+                                errors={{
+                                    case_category_id: normalizedErrors.case_category_id,
+                                    case_subcategory_id: normalizedErrors.case_subcategory_id,
+                                    case_type_id: normalizedErrors.case_type_id,
+                                }}
+                            />
+                            {(normalizedErrors.case_category_id || normalizedErrors.case_subcategory_id || normalizedErrors.case_type_id) && (
+                                <p className="text-xs text-red-500">
+                                    {normalizedErrors.case_category_id || normalizedErrors.case_subcategory_id || normalizedErrors.case_type_id}
+                                </p>
+                            )}
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="estimated_value">{t('Estimated Value')}</Label>
@@ -359,7 +351,7 @@ export default function EditCase() {
                                 type="number"
                                 min="0"
                                 step="0.01"
-                                value={formData.estimated_value}
+                                value={formData.estimated_value ?? ''}
                                 onChange={(e) => updateField('estimated_value', e.target.value)}
                             />
                             {renderError('estimated_value')}
@@ -372,7 +364,7 @@ export default function EditCase() {
                             <Input
                                 id="filing_date"
                                 type="date"
-                                value={formData.filing_date}
+                                value={formData.filing_date ?? ''}
                                 onChange={(e) => updateField('filing_date', e.target.value)}
                             />
                             {renderError('filing_date')}
@@ -382,7 +374,7 @@ export default function EditCase() {
                             <Input
                                 id="expected_completion_date"
                                 type="date"
-                                value={formData.expected_completion_date}
+                                value={formData.expected_completion_date ?? ''}
                                 onChange={(e) => updateField('expected_completion_date', e.target.value)}
                             />
                             {renderError('expected_completion_date')}
@@ -406,7 +398,7 @@ export default function EditCase() {
 
                     <div className="space-y-2">
                         <Label htmlFor="description">{t('Description')}</Label>
-                        <Textarea id="description" value={formData.description} onChange={(e) => updateField('description', e.target.value)} />
+                        <Textarea id="description" value={formData.description ?? ''} onChange={(e) => updateField('description', e.target.value)} />
                         {renderError('description')}
                     </div>
 

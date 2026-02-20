@@ -179,6 +179,13 @@ export function Repeater({
       case 'select':
         {
           const selectId = `${repeaterIdRef.current}_${itemIndex}_${field.name}`;
+          const seenValues = new Set<string>();
+          const uniqueOptions = (field.options || []).filter((option) => {
+            const v = String(option.value);
+            if (seenValues.has(v)) return false;
+            seenValues.add(v);
+            return true;
+          });
 
           fieldNode = (
             <Select
@@ -190,9 +197,9 @@ export function Repeater({
                 <SelectValue placeholder={field.placeholder} />
               </SelectTrigger>
               <SelectContent className="z-[9999]">
-                {field.options?.map((option, optionIndex) => (
+                {uniqueOptions.map((option, optionIndex) => (
                   <SelectItem
-                    key={`${selectId}_${optionIndex}_${option.value}`}
+                    key={`${selectId}_${String(option.value)}_${optionIndex}`}
                     value={String(option.value)}
                   >
                     {option.label}

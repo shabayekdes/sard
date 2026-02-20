@@ -8,6 +8,7 @@ import { Repeater, type RepeaterField } from '@/components/ui/repeater';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import DependentDropdown from '@/components/DependentDropdown';
 import { useLayout } from '@/contexts/LayoutContext';
 import { router, usePage } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
@@ -15,8 +16,20 @@ import { useTranslation } from 'react-i18next';
 
 export default function CreateCase() {
     const { t, i18n } = useTranslation();
-    const { auth, clients, caseTypes, caseCategories, caseStatuses, courts, countries, documentTypes, googleCalendarEnabled, planLimits, errors = {}, base_url } =
-        usePage().props as any;
+    const {
+        auth,
+        clients,
+        caseTypes,
+        caseCategories,
+        caseStatuses,
+        courts,
+        countries,
+        documentTypes,
+        googleCalendarEnabled,
+        planLimits,
+        errors = {},
+        base_url,
+    } = usePage().props as any;
     const { isRtl } = useLayout();
     const canCreate = !planLimits || planLimits.can_create;
     const currentLocale = i18n.language || 'en';
@@ -55,9 +68,6 @@ export default function CreateCase() {
         sync_with_google_calendar: false,
         documents: [],
     }));
-    const [subcategoryOptions, setSubcategoryOptions] = useState<{ value: string; label: string }[]>([]);
-    const [isSubcategoryLoading, setIsSubcategoryLoading] = useState(false);
-
     const normalizedErrors = useMemo(() => {
         const next: Record<string, string> = {};
         Object.entries(errors || {}).forEach(([key, value]) => {
@@ -81,40 +91,63 @@ export default function CreateCase() {
         return displayName || '';
     };
 
+    const uniqueClients = useMemo(() => {
+        const seen = new Set<string>();
+        return (clients || []).filter((c: any) => {
+            const id = c.id.toString();
+            if (seen.has(id)) return false;
+            seen.add(id);
+            return true;
+        });
+    }, [clients]);
+
+    const uniqueCaseStatuses = useMemo(() => {
+        const seen = new Set<string>();
+        return (caseStatuses || []).filter((s: any) => {
+            const id = s.id.toString();
+            if (seen.has(id)) return false;
+            seen.add(id);
+            return true;
+        });
+    }, [caseStatuses]);
+
+    const uniqueCourts = useMemo(() => {
+        const seen = new Set<string>();
+        return (courts || []).filter((c: any) => {
+            const id = c.id.toString();
+            if (seen.has(id)) return false;
+            seen.add(id);
+            return true;
+        });
+    }, [courts]);
+
+    const categorySubcategoryTypeFields = useMemo(
+        () => [
+            {
+                name: 'case_category_id',
+                label: t('Case Main Category'),
+                options: (caseCategories || []).map((cat: any) => ({
+                    value: cat.id.toString(),
+                    label: resolveTranslatableName(cat),
+                })),
+            },
+            {
+                name: 'case_subcategory_id',
+                label: t('Case Sub Category'),
+                apiEndpoint: '/case/case-categories/{case_category_id}/subcategories',
+            },
+            {
+                name: 'case_type_id',
+                label: t('Case Type'),
+                apiEndpoint: '/case/case-categories/{case_subcategory_id}/case-types',
+            },
+        ],
+        [caseCategories, currentLocale, t]
+    );
+
     const updateField = (field: string, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
     };
-
-    useEffect(() => {
-        const loadSubcategories = async () => {
-            if (!formData.case_category_id) {
-                setSubcategoryOptions([]);
-                return;
-            }
-
-            setIsSubcategoryLoading(true);
-            try {
-                const response = await fetch(`${base_url}/case/case-categories/${encodeURIComponent(formData.case_category_id)}/subcategories`);
-                if (!response.ok) {
-                    throw new Error('Failed to load subcategories');
-                }
-                const data = await response.json();
-                const options = Array.isArray(data)
-                    ? data.map((item: any) => ({
-                          value: String(item.id || item.value || ''),
-                          label: String(item.name || item.label || ''),
-                      }))
-                    : [];
-                setSubcategoryOptions(options);
-            } catch {
-                setSubcategoryOptions([]);
-            } finally {
-                setIsSubcategoryLoading(false);
-            }
-        };
-
-        loadSubcategories();
-    }, [formData.case_category_id, base_url]);
 
     const handleFormSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -126,10 +159,9 @@ export default function CreateCase() {
             );
             return;
         }
-        
+
         const filteredDocuments = (formData.documents || []).filter(
-            (doc: any) =>
-                doc?.document_name && doc?.document_type_id && doc?.confidentiality && doc?.file
+            (doc: any) => doc?.document_name && doc?.document_type_id && doc?.confidentiality && doc?.file,
         );
 
         const payload = {
@@ -167,8 +199,7 @@ export default function CreateCase() {
         { title: t('Add Case') },
     ];
 
-    const renderError = (field: string) =>
-        normalizedErrors[field] ? <p className="text-xs text-red-500">{normalizedErrors[field]}</p> : null;
+    const renderError = (field: string) => (normalizedErrors[field] ? <p className="text-xs text-red-500">{normalizedErrors[field]}</p> : null);
 
     const oppositePartyErrorKey = Object.keys(normalizedErrors).find((key) => key.startsWith('opposite_parties'));
 
@@ -210,7 +241,7 @@ export default function CreateCase() {
                 { value: 'confidential', label: t('Confidential') },
                 { value: 'privileged', label: t('Privileged') },
             ],
-            placeholder: t('Select {{label}}', { label: t('Confidentiality Level')}),
+            placeholder: t('Select {{label}}', { label: t('Confidentiality Level') }),
         },
         { name: 'file', label: t('Upload New Document'), type: 'media-picker', required: true },
     ];
@@ -227,12 +258,14 @@ export default function CreateCase() {
                                     <SelectValue placeholder={t('Select Client')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {(clients || []).map((client: any) => (
-                                        <SelectItem key={client.id} value={client.id.toString()}>
+                                    {uniqueClients.map((client: any) => (
+                                        <SelectItem key={`client-${client.id}`} value={client.id.toString()}>
                                             {client.name}
                                         </SelectItem>
                                     ))}
-                                    {auth?.user && <SelectItem value={auth.user.id.toString()}>{auth.user.name} (Me)</SelectItem>}
+                                    {auth?.user && !uniqueClients.some((c: any) => c.id === auth.user?.id) && (
+                                        <SelectItem key={`client-me-${auth.user.id}`} value={auth.user.id.toString()}>{auth.user.name} (Me)</SelectItem>
+                                    )}
                                 </SelectContent>
                             </Select>
                             {renderError('client_id')}
@@ -268,30 +301,14 @@ export default function CreateCase() {
 
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div className="space-y-2">
-                            <Label>{t('Case Type')}</Label>
-                            <Select value={formData.case_type_id} onValueChange={(value) => updateField('case_type_id', value)}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder={t('Select Type')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {(caseTypes || []).map((type: any) => (
-                                        <SelectItem key={type.id} value={type.id.toString()}>
-                                            {resolveTranslatableName(type)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {renderError('case_type_id')}
-                        </div>
-                        <div className="space-y-2">
                             <Label>{t('Case Status')}</Label>
                             <Select value={formData.case_status_id} onValueChange={(value) => updateField('case_status_id', value)}>
                                 <SelectTrigger>
                                     <SelectValue placeholder={t('Select Status')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {(caseStatuses || []).map((status: any) => (
-                                        <SelectItem key={status.id} value={status.id.toString()}>
+                                    {uniqueCaseStatuses.map((status: any) => (
+                                        <SelectItem key={`case-status-${status.id}`} value={status.id.toString()}>
                                             {resolveTranslatableName(status)}
                                         </SelectItem>
                                     ))}
@@ -336,8 +353,8 @@ export default function CreateCase() {
                                     <SelectValue placeholder={t('Select Court')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {(courts || []).map((court: any) => (
-                                        <SelectItem key={court.id} value={court.id.toString()}>
+                                    {uniqueCourts.map((court: any) => (
+                                        <SelectItem key={`court-${court.id}`} value={court.id.toString()}>
                                             {court.name}
                                         </SelectItem>
                                     ))}
@@ -347,59 +364,29 @@ export default function CreateCase() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                        <div className="space-y-2">
-                            <Label>{t('Case Main Category')}</Label>
-                            <Select
-                                value={formData.case_category_id}
-                                onValueChange={(value) => {
-                                    updateField('case_category_id', value);
-                                    updateField('case_subcategory_id', '');
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+                        <div className="space-y-2 md:col-span-3">
+                            <DependentDropdown
+                                layout="row"
+                                fields={categorySubcategoryTypeFields}
+                                values={{
+                                    case_category_id: formData.case_category_id,
+                                    case_subcategory_id: formData.case_subcategory_id,
+                                    case_type_id: formData.case_type_id,
                                 }}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder={t('Select Main Category')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {(caseCategories || []).map((category: any) => (
-                                        <SelectItem key={category.id} value={category.id.toString()}>
-                                            {resolveTranslatableName(category)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {renderError('case_category_id')}
+                                onChange={(fieldName, value) => updateField(fieldName, value)}
+                                errors={{
+                                    case_category_id: normalizedErrors.case_category_id,
+                                    case_subcategory_id: normalizedErrors.case_subcategory_id,
+                                    case_type_id: normalizedErrors.case_type_id,
+                                }}
+                            />
+                            {(normalizedErrors.case_category_id || normalizedErrors.case_subcategory_id || normalizedErrors.case_type_id) && (
+                                <p className="text-xs text-red-500">
+                                    {normalizedErrors.case_category_id || normalizedErrors.case_subcategory_id || normalizedErrors.case_type_id}
+                                </p>
+                            )}
                         </div>
-
-                        <div className="space-y-2">
-                            <Label>{t('Case Sub Category')}</Label>
-                            <Select
-                                value={formData.case_subcategory_id}
-                                onValueChange={(value) => updateField('case_subcategory_id', value)}
-                                disabled={!formData.case_category_id || isSubcategoryLoading}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue
-                                        placeholder={
-                                            isSubcategoryLoading
-                                                ? t('Loading...')
-                                                : formData.case_category_id
-                                                  ? t('Select {{label}}', { label: t('Sub Category') })
-                                                  : t('Select {{label}} first', { label: t('Main Category') })
-                                        }
-                                    />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {subcategoryOptions.map((subcategory) => (
-                                        <SelectItem key={subcategory.value} value={subcategory.value}>
-                                            {subcategory.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {renderError('case_subcategory_id')}
-                        </div>
-
                         <div className="space-y-2">
                             <Label htmlFor="estimated_value">{t('Estimated Value')}</Label>
                             <Input

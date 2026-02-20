@@ -4,17 +4,15 @@ import { usePage, router } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
-import { CrudFormModal } from '@/components/CrudFormModal';
 import { CrudDeleteModal } from '@/components/CrudDeleteModal';
 import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { Switch } from '@/components/ui/switch';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
-import { Repeater, RepeaterField } from '@/components/ui/repeater';
 
 export default function Cases() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { auth, cases, caseTypes, caseCategories, caseStatuses, clients, courts, countries, googleCalendarEnabled, planLimits, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
 
@@ -25,10 +23,8 @@ export default function Cases() {
   const [selectedStatus, setSelectedStatus] = useState(pageFilters.status || 'all');
   const [selectedCourt, setSelectedCourt] = useState(pageFilters.court_id || 'all');
   const [showFilters, setShowFilters] = useState(false);
-  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<any>(null);
-  const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
 
   const hasActiveFilters = () => {
     return searchTerm !== '' || selectedCaseType !== 'all' || selectedCaseStatus !== 'all' ||
@@ -97,60 +93,6 @@ export default function Cases() {
 
   const handleAddNew = () => {
     router.get(route('cases.create'));
-  };
-
-  const handleFormSubmit = (formData: any) => {
-    // Convert 'none' to null for category and subcategory
-    if (formData.case_category_id === 'none' || formData.case_category_id === '') {
-      formData.case_category_id = null;
-    }
-    if (formData.case_subcategory_id === 'none' || formData.case_subcategory_id === '') {
-      formData.case_subcategory_id = null;
-    }
-
-    if (formMode === 'create') {
-
-      router.post(route('cases.store'), formData, {
-        onSuccess: (page) => {
-          setIsFormModalOpen(false);
-          toast.dismiss();
-          if (page.props.flash.success) {
-            toast.success(page.props.flash.success);
-          } else if (page.props.flash.error) {
-            toast.error(page.props.flash.error);
-          }
-        },
-        onError: (errors) => {
-          toast.dismiss();
-          if (typeof errors === 'string') {
-            toast.error(errors);
-          } else {
-            toast.error(`Failed to create case: ${Object.values(errors).join(', ')}`);
-          }
-        }
-      });
-    } else if (formMode === 'edit') {
-
-      router.put(route('cases.update', currentItem.id), formData, {
-        onSuccess: (page) => {
-          setIsFormModalOpen(false);
-          toast.dismiss();
-          if (page.props.flash.success) {
-            toast.success(page.props.flash.success);
-          } else if (page.props.flash.error) {
-            toast.error(page.props.flash.error);
-          }
-        },
-        onError: (errors) => {
-          toast.dismiss();
-          if (typeof errors === 'string') {
-            toast.error(errors);
-          } else {
-            toast.error(`Failed to update case: ${Object.values(errors).join(', ')}`);
-          }
-        }
-      });
-    }
   };
 
   const handleDeleteConfirm = () => {
@@ -481,213 +423,6 @@ export default function Cases() {
           }}
         />
       </div>
-
-      <CrudFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
-        formConfig={{
-          fields: [
-            {
-              name: 'client_id',
-              label: t('Client'),
-              type: 'select',
-              required: true,
-              options: clients
-                ? [
-                  ...clients.map((client: any) => ({
-                    value: client.id.toString(),
-                    label: client.name,
-                  })),
-                  {
-                    value: auth.user.id.toString(),
-                    label: `${auth.user.name} (Me)`,
-                  },
-                ]
-                : [
-                  {
-                    value: auth.user.id.toString(),
-                    label: `${auth.user.name} (Me)`,
-                  },
-                ],
-            },
-            {
-              name: 'attributes',
-              label: t('Attributes'),
-              type: 'radio',
-              required: true,
-              defaultValue: 'petitioner',
-              options: [
-                { value: 'petitioner', label: t('Petitioner') },
-                { value: 'respondent', label: t('Respondent') },
-              ],
-            },
-            {
-              name: 'opposite_parties',
-              label: t('Opposite Party'),
-              type: 'custom',
-              render: (field: any, formData: any, onChange: (name: string, value: any) => void) => {
-                const repeaterFields: RepeaterField[] = [
-                  { name: 'name', label: t('Name'), type: 'text', required: true },
-                  { name: 'id_number', label: t('ID National'), type: 'text' },
-                  {
-                    name: 'nationality_id',
-                    label: t('Nationality'),
-                    type: 'select',
-                    options: countries,
-                    placeholder: countries.length > 0 ? t('Select Nationality') : t('No nationalities available'),
-                  },
-                  { name: 'lawyer_name', label: t('Lawyer Name'), type: 'text' },
-                ];
-
-                return (
-                  <Repeater
-                    fields={repeaterFields}
-                    value={formData.opposite_parties || []}
-                    onChange={(value) => onChange('opposite_parties', value)}
-                    minItems={1}
-                    maxItems={-1}
-                    addButtonText={t('Add Opposite Party')}
-                    removeButtonText={t('Remove')}
-                  />
-                );
-              },
-            },
-            { name: 'title', label: t('Case Title'), type: 'text', required: true },
-            { name: 'case_number', label: t('Case Number'), type: 'text' },
-            { name: 'file_number', label: t('File Number'), type: 'text' },
-            {
-              name: 'case_category_subcategory',
-              type: 'dependent-dropdown',
-              required: true,
-              dependentConfig: [
-                {
-                  name: 'case_category_id',
-                  label: t('Case Main Category'),
-                  options: caseCategories
-                    ? caseCategories.map((cat: any) => {
-                      // Handle translatable name
-                      let displayName = cat.name;
-                      if (typeof cat.name === 'object' && cat.name !== null) {
-                        displayName = cat.name[i18n.language] || cat.name.en || cat.name.ar || '';
-                      } else if (cat.name_translations && typeof cat.name_translations === 'object') {
-                        displayName =
-                          cat.name_translations[i18n.language] ||
-                          cat.name_translations.en ||
-                          cat.name_translations.ar ||
-                          '';
-                      }
-                      return {
-                        value: cat.id.toString(),
-                        label: displayName,
-                      };
-                    })
-                    : [],
-                },
-                {
-                  name: 'case_subcategory_id',
-                  label: t('Case Sub Category'),
-                  apiEndpoint: '/case/case-categories/{case_category_id}/subcategories',
-                  showCurrentValue: true,
-                },
-              ],
-            },
-            {
-              name: 'case_type_id',
-              label: t('Case Type'),
-              type: 'select',
-              required: true,
-              options: caseTypes
-                ? caseTypes.map((type: any) => ({
-                  value: type.id.toString(),
-                  label: type.name,
-                }))
-                : [],
-            },
-            {
-              name: 'case_status_id',
-              label: t('Case Status'),
-              type: 'select',
-              required: true,
-              options: caseStatuses
-                ? caseStatuses.map((status: any) => ({
-                  value: status.id.toString(),
-                  label: status.name,
-                }))
-                : [],
-            },
-            {
-              name: 'priority',
-              label: t('Priority'),
-              type: 'select',
-              required: true,
-              options: [
-                { value: 'low', label: t('Low') },
-                { value: 'medium', label: t('Medium') },
-                { value: 'high', label: t('High') },
-              ],
-              defaultValue: 'medium',
-            },
-            {
-              name: 'court_id',
-              label: t('Court'),
-              type: 'select',
-              options: courts
-                ? courts.map((court: any) => ({
-                  value: court.id.toString(),
-                  label: court.name,
-                  key: `court-${court.id}`,
-                }))
-                : [],
-            },
-            { name: 'filing_date', label: t('Filling Date'), type: 'date' },
-            { name: 'expected_completion_date', label: t('Expecting Completion'), type: 'date' },
-            { name: 'estimated_value', label: t('Estimated Value'), type: 'number' },
-            { name: 'description', label: t('Description'), type: 'textarea' },
-            {
-              name: 'status',
-              label: t('Status'),
-              type: 'select',
-              options: [
-                { value: 'active', label: 'Active' },
-                { value: 'inactive', label: 'Inactive' },
-              ],
-              defaultValue: 'active',
-            },
-          ].concat(
-            googleCalendarEnabled
-              ? [
-                {
-                  name: 'sync_with_google_calendar',
-                  label: t('Synchronize in Google Calendar'),
-                  type: 'switch',
-                  defaultValue: false,
-                },
-              ]
-              : [],
-          ),
-          modalSize: 'xl',
-        }}
-        initialData={
-          currentItem
-            ? {
-              ...currentItem,
-              case_category_id: currentItem.case_category_id ? currentItem.case_category_id.toString() : '',
-              case_subcategory_id: currentItem.case_subcategory_id ? currentItem.case_subcategory_id.toString() : '',
-              opposite_parties: currentItem.opposite_parties
-                ? currentItem.opposite_parties.map((party: any) => ({
-                  name: party.name || '',
-                  id_number: party.id_number || '',
-                  nationality_id: party.nationality_id ? party.nationality_id.toString() : '',
-                  lawyer_name: party.lawyer_name || '',
-                }))
-                : [],
-            }
-            : { case_category_id: '', case_subcategory_id: '', opposite_parties: [] }
-        }
-        title={formMode === 'create' ? t('Add New Case') : formMode === 'edit' ? t('Edit Case') : t('View Case')}
-        mode={formMode}
-      />
 
       <CrudDeleteModal
         isOpen={isDeleteModalOpen}
