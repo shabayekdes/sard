@@ -11,15 +11,10 @@ import { Badge } from '@/components/ui/badge'
 import { useTranslation } from 'react-i18next'
 
 interface NotificationTemplate {
-  id: number;
-  name: string;
-  type: string;
-  created_at: string;
-  notification_template_langs: Array<{
-    lang: string;
-    title: string;
-    content: string;
-  }>;
+  id: number
+  name: string
+  type: string
+  created_at: string
 }
 
 interface Props {

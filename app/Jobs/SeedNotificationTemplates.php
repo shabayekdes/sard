@@ -44,40 +44,6 @@ class SeedNotificationTemplates implements ShouldQueue
      */
     public function handle(): void
     {
-        $languages = json_decode(file_get_contents(resource_path('lang/language.json')), true);
-        $langCodes = collect($languages)->pluck('code')->toArray();
-
-        $templates = \App\Models\NotificationTemplate::all();
-
-        foreach ($templates as $template) {
-            foreach ($langCodes as $langCode) {
-                $existingContent = \App\Models\NotificationTemplateLang::where('parent_id', $template->id)
-                    ->where('lang', $langCode)
-                    ->where('created_by', $this->companyUserId)
-                    ->first();
-
-                if ($existingContent) {
-                    continue;
-                }
-
-                $globalContent = \App\Models\NotificationTemplateLang::where('parent_id', $template->id)
-                    ->where('lang', $langCode)
-                    ->where('created_by', 1)
-                    ->first();
-
-                if ($globalContent) {
-                    \App\Models\NotificationTemplateLang::create([
-                        'parent_id' => $template->id,
-                        'lang' => $langCode,
-                        'title' => $globalContent->title,
-                        'content' => $globalContent->content,
-                        'created_by' => $this->companyUserId
-                    ]);
-                }
-            }
-        }
-
-        // Also create default notification settings
         $this->createDefaultNotificationSettings();
 
         Log::info("SeedNotificationTemplates: Completed", [

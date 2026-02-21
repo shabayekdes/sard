@@ -12,6 +12,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('type')->default('slack');
+            $table->json('title')->nullable();
+            $table->json('content')->nullable();
             $table->unsignedBigInteger('user_id')->default(1);
             $table->timestamps();
         });

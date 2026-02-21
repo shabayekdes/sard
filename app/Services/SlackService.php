@@ -90,24 +90,14 @@ class SlackService
             return "*{$templateName->value} Notification*\n\nTemplate not found.";
         }
 
-        // Get template content for the language
-        $templateLang = $template->notificationTemplateLangs()
-            ->where('lang', $language)
-            ->first();
+        $content = $template->getTranslation('content', $language, false) ?: $template->getTranslation('content', 'en', false);
 
-        if (!$templateLang) {
-            // Fallback to English if language not found
-            $templateLang = $template->notificationTemplateLangs()
-                ->where('lang', 'en')
-                ->first();
-        }
-
-        if (!$templateLang) {
+        if ($content === null || $content === '') {
             return "*{$templateName->value} Notification*\n\nTemplate content not found.";
         }
 
         // Replace variables in template content
-        return $this->replaceVariables($templateLang->content, $variables);
+        return $this->replaceVariables($content, $variables);
     }
       private function replaceVariables(string $content, array $variables): string
     {

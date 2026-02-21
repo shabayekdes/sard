@@ -12,18 +12,12 @@ import { Save } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from '@/components/custom-toast'
 
-interface NotificationTemplateLang {
-  id: number
-  lang: string
-  title: string
-  content: string
-}
-
 interface NotificationTemplate {
   id: number
   name: string
   type: string
-  notification_template_langs: NotificationTemplateLang[]
+  title?: Record<string, string>
+  content?: Record<string, string>
 }
 
 interface Language {
@@ -43,15 +37,16 @@ export default function NotificationTemplateShow({ template, languages, variable
   const { flash } = usePage().props as any
   const [notificationType, setNotificationType] = useState(template.type)
   const [currentLang, setCurrentLang] = useState(languages[0]?.code || 'en')
-  const [templateLangs, setTemplateLangs] = useState(
-    template.notification_template_langs.reduce((acc, lang) => {
-      acc[lang.lang] = {
-        title: lang.title,
-        content: lang.content
+  const [templateLangs, setTemplateLangs] = useState(() => {
+    const initial: Record<string, { title: string; content: string }> = {}
+    languages.forEach((lang) => {
+      initial[lang.code] = {
+        title: template.title?.[lang.code] ?? '',
+        content: template.content?.[lang.code] ?? ''
       }
-      return acc
-    }, {} as Record<string, { title: string; content: string }>)
-  )
+    })
+    return initial
+  })
 
   const handleTitleChange = (lang: string, title: string) => {
     setTemplateLangs(prev => ({

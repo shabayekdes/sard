@@ -29,26 +29,14 @@ class TwilioService
                 throw new Exception("Notification template '{$templateName->value}' not found");
             }
 
-            // Get template content for the specified language
-            $templateLang = $template->notificationTemplateLangs()
-                ->where('lang', $language)
-                ->where('created_by', createdBy())
-                ->first();
+            $content = $template->getTranslation('content', $language, false) ?: $template->getTranslation('content', 'en', false);
 
-            // Fallback to English if language not found
-            if (!$templateLang) {
-                $templateLang = $template->notificationTemplateLangs()
-                    ->where('lang', 'en')
-                    ->where('created_by', createdBy())
-                    ->first();
-            }
-
-            if (!$templateLang) {
+            if ($content === null || $content === '') {
                 throw new Exception("No content found for template '{$templateName->value}'");
             }
 
             // Replace variables in content
-            $message = $this->replaceVariables($templateLang->content, $variables);
+            $message = $this->replaceVariables($content, $variables);
 
             // Send SMS to specified phone
             return $this->sendSMS($toPhone, $message);

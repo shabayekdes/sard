@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Enum\EmailTemplateName;
 use App\Models\NotificationTemplate;
-use App\Models\NotificationTemplateLang;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -12,7 +11,7 @@ class NotificationTemplateController extends Controller
 {
     public function index(Request $request)
     {
-        $query = NotificationTemplate::with('notificationTemplateLangs');
+        $query = NotificationTemplate::query();
 
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%')
@@ -37,7 +36,10 @@ class NotificationTemplateController extends Controller
 
     public function show(NotificationTemplate $notificationTemplate)
     {
-        $template = $notificationTemplate->load('notificationTemplateLangs');
+        $template = $notificationTemplate;
+        $template->setAttribute('title', $template->getTranslations('title'));
+        $template->setAttribute('content', $template->getTranslations('content'));
+
         $languages = json_decode(file_get_contents(resource_path('lang/language.json')), true);
 
         $variables = $this->getVariablesByNameAndType(EmailTemplateName::from($template->name), $template->type);
@@ -197,16 +199,9 @@ class NotificationTemplateController extends Controller
                 'content' => 'required|string'
             ]);
 
-            NotificationTemplateLang::updateOrCreate(
-                [
-                    'parent_id' => $notificationTemplate->id,
-                    'lang' => $request->lang
-                ],
-                [
-                    'title' => $request->title,
-                    'content' => $request->get('content')
-                ]
-            );
+            $notificationTemplate->setTranslation('title', $request->lang, $request->title);
+            $notificationTemplate->setTranslation('content', $request->lang, $request->get('content'));
+            $notificationTemplate->save();
 
             return redirect()->back()->with('success', __('Notification content updated successfully.'));
         } catch (\Exception $e) {

@@ -3,17 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Translatable\HasTranslations;
 
 class NotificationTemplate extends Model
 {
+    use HasTranslations;
+
+    public array $translatable = ['title', 'content'];
+
     protected $fillable = [
         'name',
         'type',
+        'title',
+        'content',
     ];
-
-    public function notificationTemplateLangs(): HasMany
-    {
-        return $this->hasMany(NotificationTemplateLang::class, 'parent_id');
-    }
 }
