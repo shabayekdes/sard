@@ -131,7 +131,7 @@ class TimeEntryController extends Controller
                 ->first();
 
             if (!$case) {
-                return redirect()->back()->with('error', 'Invalid case selected.');
+                return redirect()->back()->with('error', __('Invalid case selected.'));
             }
             
             // Set client_id from case
@@ -147,12 +147,12 @@ class TimeEntryController extends Controller
             ->first();
 
         if (!$user) {
-            return redirect()->back()->with('error', 'Invalid user selected.');
+            return redirect()->back()->with('error', __('Invalid user selected.'));
         }
 
         TimeEntry::create($validated);
 
-        return redirect()->back()->with('success', 'Time entry created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Time Entry')]));
     }
 
     public function update(Request $request, $timeEntryId)
@@ -162,7 +162,7 @@ class TimeEntryController extends Controller
             ->first();
 
         if (!$timeEntry) {
-            return redirect()->back()->with('error', 'Time entry not found.');
+            return redirect()->back()->with('error', __('Time entry not found.'));
         }
 
         $validated = $request->validate([
@@ -196,7 +196,7 @@ class TimeEntryController extends Controller
                 ->first();
 
             if (!$case) {
-                return redirect()->back()->with('error', 'Invalid case selected.');
+                return redirect()->back()->with('error', __('Invalid case selected.'));
             }
             
             // Set client_id from case
@@ -212,12 +212,12 @@ class TimeEntryController extends Controller
             ->first();
 
         if (!$user) {
-            return redirect()->back()->with('error', 'Invalid user selected.');
+            return redirect()->back()->with('error', __('Invalid user selected.'));
         }
 
         $timeEntry->update($validated);
 
-        return redirect()->back()->with('success', 'Time entry updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Time Entry')]));
     }
 
     public function destroy($timeEntryId)
@@ -227,17 +227,17 @@ class TimeEntryController extends Controller
             ->first();
 
         if (!$timeEntry) {
-            return redirect()->back()->with('error', 'Time entry not found.');
+            return redirect()->back()->with('error', __('Time entry not found.'));
         }
 
         // Prevent deletion of billed entries
         if ($timeEntry->status === 'billed') {
-            return redirect()->back()->with('error', 'Cannot delete billed time entries.');
+            return redirect()->back()->with('error', __('Cannot delete billed time entries.'));
         }
 
         $timeEntry->delete();
 
-        return redirect()->back()->with('success', 'Time entry deleted successfully.');
+        return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Time Entry')]));
     }
 
     public function approve($timeEntryId)
@@ -247,16 +247,16 @@ class TimeEntryController extends Controller
             ->first();
 
         if (!$timeEntry) {
-            return redirect()->back()->with('error', 'Time entry not found.');
+            return redirect()->back()->with('error', __('Time entry not found.'));
         }
 
         if ($timeEntry->status !== 'submitted') {
-            return redirect()->back()->with('error', 'Only submitted time entries can be approved.');
+            return redirect()->back()->with('error', __('Only submitted time entries can be approved.'));
         }
 
         $timeEntry->update(['status' => 'approved']);
 
-        return redirect()->back()->with('success', 'Time entry approved successfully.');
+        return redirect()->back()->with('success', __('Time entry approved successfully.'));
     }
 
     public function startTimer(Request $request)
@@ -286,7 +286,7 @@ class TimeEntryController extends Controller
             ->first();
 
         if ($runningTimer) {
-            return redirect()->back()->with('error', 'You already have a running timer. Please stop it first.');
+            return redirect()->back()->with('error', __('You already have a running timer. Please stop it first.'));
         }
 
         $timeEntry = TimeEntry::create([
@@ -302,7 +302,7 @@ class TimeEntryController extends Controller
             'created_by' => createdBy(),
         ]);
 
-        return redirect()->back()->with('success', 'Timer started successfully.');
+        return redirect()->back()->with('success', __('Timer started successfully.'));
     }
 
     public function stopTimer($timeEntryId)
@@ -315,7 +315,7 @@ class TimeEntryController extends Controller
             ->first();
 
         if (!$timeEntry) {
-            return redirect()->back()->with('error', 'Running timer not found.');
+            return redirect()->back()->with('error', __('Running timer not found.'));
         }
 
         $endTime = now();
@@ -327,6 +327,6 @@ class TimeEntryController extends Controller
             'hours' => round($hours, 2),
         ]);
 
-        return redirect()->back()->with('success', 'Timer stopped successfully.');
+        return redirect()->back()->with('success', __('Timer stopped successfully.'));
     }
 }

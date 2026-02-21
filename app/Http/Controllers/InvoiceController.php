@@ -175,7 +175,7 @@ class InvoiceController extends BaseController
     {
         // Only company users can create invoices
         if (!auth()->user()->hasRole(['company', 'superadmin'])) {
-            return redirect()->back()->with('error', 'Only company users can create invoices.');
+            return redirect()->back()->with('error', __('Only company users can create invoices.'));
         }
 
         $request->validate([
@@ -252,7 +252,7 @@ class InvoiceController extends BaseController
             return redirect()->back()->with('warning', $message);
         }
 
-        return redirect()->back()->with('success', 'Invoice created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Invoice')]));
     }
 
     public function update(Request $request, Invoice $invoice)
@@ -309,13 +309,13 @@ class InvoiceController extends BaseController
             }
         }
 
-        return redirect()->back()->with('success', 'Invoice updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Invoice')]));
     }
 
     public function destroy(Invoice $invoice)
     {
         $invoice->delete();
-        return redirect()->back()->with('success', 'Invoice deleted successfully.');
+        return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Invoice')]));
     }
 
     public function send(Invoice $invoice)
@@ -345,7 +345,7 @@ class InvoiceController extends BaseController
             return redirect()->back()->with('warning', $message);
         }
 
-        return redirect()->back()->with('success', 'Invoice sent successfully.');
+        return redirect()->back()->with('success', __('Invoice sent successfully.'));
     }
 
     public function generate(Invoice $invoice)
@@ -391,7 +391,7 @@ class InvoiceController extends BaseController
             ->get();
 
         if ($timeEntries->isEmpty()) {
-            return redirect()->back()->with('error', 'No unbilled time entries found.');
+            return redirect()->back()->with('error', __('No unbilled time entries found.'));
         }
 
         $subtotal = $timeEntries->sum('total_amount');
@@ -425,7 +425,7 @@ class InvoiceController extends BaseController
         });
 
         return redirect()->route('billing.invoices.index')
-            ->with('success', 'Invoice generated from time entries successfully.');
+            ->with('success', __('Invoice generated from time entries successfully.'));
     }
 
     public function generateFromTimeAndExpenses(Request $request)
@@ -459,7 +459,7 @@ class InvoiceController extends BaseController
 
         $subtotal = $timeEntries->sum('total_amount') + $expenses->sum('amount');
         if ($timeEntries->isEmpty() && $expenses->isEmpty()) {
-            return redirect()->back()->with('error', 'No billable items selected.');
+            return redirect()->back()->with('error', __('No billable items selected.'));
         }
 
         $invoice = Invoice::create([
@@ -507,7 +507,7 @@ class InvoiceController extends BaseController
         });
 
         return redirect()->route('billing.invoices.index')
-            ->with('success', 'Invoice generated successfully.');
+            ->with('success', __('Invoice generated successfully.'));
     }
 
     public function getClientCases($clientId)

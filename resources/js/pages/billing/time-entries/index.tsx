@@ -100,8 +100,6 @@ export default function TimeEntries() {
 
   const handleFormSubmit = (formData: any) => {
     if (formMode === 'create') {
-      toast.loading(t('Creating time entry...'));
-
       router.post(route('billing.time-entries.store'), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
@@ -116,8 +114,6 @@ export default function TimeEntries() {
         }
       });
     } else if (formMode === 'edit') {
-      toast.loading(t('Updating time entry...'));
-
       router.put(route('billing.time-entries.update', currentItem.id), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
@@ -137,8 +133,6 @@ export default function TimeEntries() {
 
 
   const handleDeleteConfirm = () => {
-    toast.loading(t('Deleting time entry...'));
-
     router.delete(route('billing.time-entries.destroy', currentItem.id), {
       onSuccess: (page) => {
         setIsDeleteModalOpen(false);
@@ -155,8 +149,6 @@ export default function TimeEntries() {
   };
 
   const handleApprove = (timeEntry: any) => {
-    toast.loading(t('Approving time entry...'));
-
     router.put(route('billing.time-entries.approve', timeEntry.id), {}, {
       onSuccess: (page) => {
         toast.dismiss();
@@ -331,19 +323,22 @@ export default function TimeEntries() {
     }
   ];
 
+  // Define page actions
+  const pageActions = [];
+  if (hasPermission(permissions, 'create-time-entries')) {
+    pageActions.push({
+      label: t('Add New Time Entry'),
+      icon: <Plus className="h-4 w-4 mr-2" />,
+      variant: 'default' as const,
+      onClick: handleAddNew
+    });
+  }
+
   return (
     <PageTemplate
       title={t("Time Entries")}
       url="/billing/time-entries"
-      actions={[
-
-        ...(hasPermission(permissions, 'create-time-entries') ? [{
-          label: t('Add Time Entry'),
-          icon: <Plus className="h-4 w-4 mr-2" />,
-          variant: 'outline' as const,
-          onClick: handleAddNew
-        }] : [])
-      ]}
+      actions={pageActions}
       breadcrumbs={breadcrumbs}
       noPadding
     >
@@ -622,7 +617,7 @@ export default function TimeEntries() {
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
         itemName={currentItem?.entry_id || ''}
-        entityName="time entry"
+        entityName="Time Entry"
       />
     </PageTemplate>
   );

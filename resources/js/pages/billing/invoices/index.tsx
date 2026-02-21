@@ -94,8 +94,6 @@ export default function Invoices() {
 
   const handleFormSubmit = (formData: any) => {
     if (formMode === 'create') {
-      toast.loading(t('Creating invoice...'));
-
       router.post(route('billing.invoices.store'), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
@@ -110,8 +108,6 @@ export default function Invoices() {
         }
       });
     } else if (formMode === 'edit') {
-      toast.loading(t('Updating invoice...'));
-
       router.put(route('billing.invoices.update', currentItem.id), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
@@ -129,8 +125,6 @@ export default function Invoices() {
   };
 
   const handleDeleteConfirm = () => {
-    toast.loading(t('Deleting invoice...'));
-
     router.delete(route('billing.invoices.destroy', currentItem.id), {
       onSuccess: (page) => {
         setIsDeleteModalOpen(false);
@@ -147,8 +141,6 @@ export default function Invoices() {
   };
 
   const handleSend = (invoice: any) => {
-    toast.loading(t('Sending invoice...'));
-
     router.put(route('billing.invoices.send', invoice.id), {}, {
       onSuccess: (page) => {
         toast.dismiss();
@@ -173,8 +165,6 @@ export default function Invoices() {
   };
 
   const handlePaymentSubmit = (formData: any) => {
-    toast.loading(t('Recording payment...'));
-
     router.post(route('billing.payments.store'), formData, {
       onSuccess: (page) => {
         setIsPaymentModalOpen(false);
@@ -508,7 +498,7 @@ export default function Invoices() {
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
         itemName={currentItem?.invoice_number || ''}
-        entityName="invoice"
+        entityName="Invoice"
       />
 
       {/* Payment Modal */}

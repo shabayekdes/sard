@@ -477,7 +477,7 @@ export default function Calendar() {
       </div>
     );
   };
-console.log({upcomingEvents})
+
   const renderUpcomingEvents = () => (
     <Card>
       <CardHeader>
