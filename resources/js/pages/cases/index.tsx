@@ -11,10 +11,21 @@ import { Pagination } from '@/components/ui/pagination';
 import { Switch } from '@/components/ui/switch';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
+function resolveTranslatable(val: unknown, locale: string): string {
+  if (val == null) return '';
+  if (typeof val === 'string') return val;
+  if (typeof val === 'object' && val !== null && ('en' in val || 'ar' in val)) {
+    const o = val as Record<string, string>;
+    return o[locale] || o.en || o.ar || '';
+  }
+  return String(val);
+}
+
 export default function Cases() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { auth, cases, caseTypes, caseCategories, caseStatuses, clients, courts, countries, googleCalendarEnabled, planLimits, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
+  const currentLocale = i18n.language || 'en';
 
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
   const [selectedCaseType, setSelectedCaseType] = useState(pageFilters.case_type_id || 'all');
@@ -199,7 +210,7 @@ export default function Cases() {
             onClick={() => router.get(route('clients.show', row.client.id))}
             className="flex flex-col text-left text-primary hover:text-primary/80 hover:underline focus:outline-none cursor-pointer"
           >
-            <span>{row.client.name || '-'}</span>
+            <span>{resolveTranslatable(row.client.name, currentLocale) || '-'}</span>
             {row.client.phone && (
               <span className="text-sm text-gray-500 dark:text-gray-400">{row.client.phone}</span>
             )}
@@ -218,7 +229,7 @@ export default function Cases() {
             color: row.case_status?.color
           }}
         >
-          {row.case_status?.name || '-'}
+          {resolveTranslatable(row.case_status?.name, currentLocale) || '-'}
         </span>
       )
     },
@@ -310,7 +321,7 @@ export default function Cases() {
                 { value: 'all', label: t('All Types') },
                 ...(caseTypes || []).map((type: any) => ({
                   value: type.id.toString(),
-                  label: type.name,
+                  label: resolveTranslatable(type.name, currentLocale),
                 })),
               ],
             },
@@ -324,7 +335,7 @@ export default function Cases() {
                 { value: 'all', label: t('All Statuses') },
                 ...(caseStatuses || []).map((status: any) => ({
                   value: status.id.toString(),
-                  label: status.name,
+                  label: resolveTranslatable(status.name, currentLocale),
                 })),
               ],
             },
@@ -363,7 +374,7 @@ export default function Cases() {
                 { value: 'all', label: t('All Courts') },
                 ...(courts || []).map((court: any) => ({
                   value: court.id.toString(),
-                  label: court.name,
+                  label: resolveTranslatable(court.name, currentLocale),
                   key: `filter-court-${court.id}`,
                 })),
               ],

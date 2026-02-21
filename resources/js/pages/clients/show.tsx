@@ -78,7 +78,7 @@ export default function ClientShow() {
         { title: t('Dashboard'), href: route('dashboard') },
         { title: t('Client Management'), href: route('clients.index') },
         { title: t('Clients'), href: route('clients.index') },
-        { title: client.name },
+        { title: getTranslatedValue(client.name) },
     ];
 
     const pageActions = [
@@ -194,7 +194,7 @@ export default function ClientShow() {
                         color: row.case_status?.color,
                     }}
                 >
-                    {row.case_status?.name || '-'}
+                    {getTranslatedValue(row.case_status?.name) || '-'}
                 </span>
             ),
         },
@@ -566,7 +566,7 @@ export default function ClientShow() {
     const isBusiness = client.business_type === 'b2b';
 
     const detailItems: { label?: string; value?: ReactNode; type?: 'divider' }[] = [
-        { label: t('Name'), value: client.name || '-' },
+        { label: t('Name'), value: getTranslatedValue(client.name) || '-' },
         { label: t('Client Type'), value: getTranslatedValue(client.client_type?.name_translations || client.client_type?.name) || '-' },
         { label: t('Business Type'), value: businessTypeLabel },
         { label: t('Phone'), value: client.phone || '-' },
@@ -596,7 +596,7 @@ export default function ClientShow() {
 
     return (
         <PageTemplate
-            title={`${t('Client Details')}: ${client.name}`}
+            title={`${t('Client Details')}: ${getTranslatedValue(client.name)}`}
             url={route('clients.show', client.id)}
             breadcrumbs={breadcrumbs}
             actions={pageActions}
@@ -725,7 +725,7 @@ export default function ClientShow() {
                                                     { value: 'all', label: t('All Types') },
                                                     ...(caseTypes || []).map((type: any) => ({
                                                         value: type.id.toString(),
-                                                        label: type.name,
+                                                        label: getTranslatedValue(type.name),
                                                     })),
                                                 ],
                                             },
@@ -739,7 +739,7 @@ export default function ClientShow() {
                                                     { value: 'all', label: t('All Statuses') },
                                                     ...(caseStatuses || []).map((status: any) => ({
                                                         value: status.id.toString(),
-                                                        label: status.name,
+                                                        label: getTranslatedValue(status.name),
                                                     })),
                                                 ],
                                             },
@@ -778,7 +778,7 @@ export default function ClientShow() {
                                                     { value: 'all', label: t('All Courts') },
                                                     ...(courts || []).map((court: any) => ({
                                                         value: court.id.toString(),
-                                                        label: court.name,
+                                                        label: getTranslatedValue(court.name),
                                                     })),
                                                 ],
                                             },
@@ -1375,14 +1375,14 @@ export default function ClientShow() {
                                 // Get all invoices and ensure the payment's invoice is included
                                 const invoiceOptions = (allInvoices || []).map((invoice: any) => ({
                                     value: invoice.id.toString(),
-                                    label: `${invoice.invoice_number} - ${invoice.client?.name}`,
+                                    label: `${invoice.invoice_number} - ${getTranslatedValue(invoice.client?.name)}`,
                                 }));
 
                                 // If currentPayment has an invoice that's not in allInvoices, add it
                                 if (currentPayment?.invoice && !invoiceOptions.find((opt: any) => opt.value === String(currentPayment.invoice.id))) {
                                     invoiceOptions.push({
                                         value: String(currentPayment.invoice.id),
-                                        label: `${currentPayment.invoice.invoice_number} - ${currentPayment.invoice.client?.name || ''}`,
+                                        label: `${currentPayment.invoice.invoice_number} - ${getTranslatedValue(currentPayment.invoice.client?.name) || ''}`,
                                     });
                                 }
 

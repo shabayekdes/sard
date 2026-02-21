@@ -15,6 +15,16 @@ import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+function resolveTranslatable(val: unknown, locale: string): string {
+    if (val == null) return '';
+    if (typeof val === 'string') return val;
+    if (typeof val === 'object' && val !== null && ('en' in val || 'ar' in val)) {
+        const o = val as Record<string, string>;
+        return o[locale] || o.en || o.ar || '';
+    }
+    return String(val);
+}
+
 export default function Clients() {
     const { t, i18n } = useTranslation();
     const { auth, clients, clientTypes, planLimits, filters: pageFilters = {} } = usePage().props as any;
@@ -361,7 +371,7 @@ export default function Clients() {
         { value: 'all', label: t('All Types') },
         ...(clientTypes || []).map((type: any) => ({
             value: type.id.toString(),
-            label: type.name,
+            label: resolveTranslatable(type.name, currentLocale),
         })),
     ];
 
@@ -457,7 +467,7 @@ export default function Clients() {
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={handleDeleteConfirm}
-                itemName={currentItem?.name || ''}
+                itemName={resolveTranslatable(currentItem?.name, currentLocale)}
                 entityName="Client"
             />
 
@@ -468,7 +478,7 @@ export default function Clients() {
                         <DialogTitle>{t('Reset Client Password')}</DialogTitle>
                         <div className="text-muted-foreground text-sm">
                             <p>
-                                <strong>{t('Client')}:</strong> {currentItem?.name}
+                                <strong>{t('Client')}:</strong> {resolveTranslatable(currentItem?.name, currentLocale)}
                             </p>
                             <p>
                                 <strong>{t('Email')}:</strong> {currentItem?.email}

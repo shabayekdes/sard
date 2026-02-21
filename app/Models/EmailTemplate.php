@@ -18,6 +18,7 @@ class EmailTemplate extends BaseModel
         'from',
         'subject',
         'content',
+        'type',
         'user_id',
     ];
 
