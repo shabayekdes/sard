@@ -10,6 +10,7 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Input } from './ui/input';
+import { Loader } from './ui/loader';
 
 interface MediaItem {
     id: number;
@@ -173,9 +174,9 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
             }
         } catch (error) {
             toast.error(t('Error uploading files'));
+        } finally {
+            setUploading(false);
         }
-
-        setUploading(false);
     };
 
     const handleDrag = (e: React.DragEvent) => {
@@ -229,7 +230,15 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="space-y-4">
+                <div className="relative space-y-4">
+                    {/* Upload loading overlay */}
+                    {uploading && (
+                        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-lg bg-background/80 backdrop-blur-sm">
+                            <Loader size="lg" />
+                            <p className="text-muted-foreground text-sm font-medium">{t('Uploading...')}</p>
+                        </div>
+                    )}
+
                     {/* Header: Search, Upload, and Stats in one row */}
                     <div className={`flex flex-wrap items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
                         <div className="relative min-w-0 flex-1">
