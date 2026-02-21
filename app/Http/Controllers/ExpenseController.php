@@ -133,7 +133,7 @@ class ExpenseController extends BaseController
             'receipt_file' => $receiptFiles,
         ]);
 
-        return redirect()->back()->with('success', 'Expense created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Expense')]));
     }
 
     public function update(Request $request, Expense $expense)
@@ -182,19 +182,19 @@ class ExpenseController extends BaseController
             'receipt_file' => $receiptFiles,
         ]);
 
-        return redirect()->back()->with('success', 'Expense updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Expense')]));
     }
 
     public function destroy(Expense $expense)
     {
         $expense->delete();
-        return redirect()->back()->with('success', 'Expense deleted successfully.');
+        return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Expense')]));
     }
 
     public function approve(Expense $expense)
     {
         $expense->update(['is_approved' => !$expense->is_approved]);
-        return redirect()->back()->with('success', 'Expense approval status updated successfully.');
+        return redirect()->back()->with('success', __('Expense approval status updated successfully.'));
     }
 
     /**

@@ -145,8 +145,6 @@ export default function Expenses() {
 
   const handleFormSubmit = (formData: any) => {
     if (formMode === 'create') {
-      toast.loading(t('Creating expense...'));
-
       router.post(route('billing.expenses.store'), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
@@ -157,12 +155,10 @@ export default function Expenses() {
         },
         onError: (errors) => {
           toast.dismiss();
-          toast.error(`Failed to create expense: ${Object.values(errors).join(', ')}`);
+          toast.error(t('Failed to create {{model}}: {{errors}}', { model: t('Expense'), errors: Object.values(errors).join(', ') }));
         }
       });
     } else if (formMode === 'edit') {
-      toast.loading(t('Updating expense...'));
-
       router.put(route('billing.expenses.update', currentItem.id), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
@@ -173,15 +169,13 @@ export default function Expenses() {
         },
         onError: (errors) => {
           toast.dismiss();
-          toast.error(`Failed to update expense: ${Object.values(errors).join(', ')}`);
+          toast.error(t('Failed to update {{model}}: {{errors}}', { model: t('Expense'), errors: Object.values(errors).join(', ') }));
         }
       });
     }
   };
 
   const handleDeleteConfirm = () => {
-    toast.loading(t('Deleting expense...'));
-
     router.delete(route('billing.expenses.destroy', currentItem.id), {
       onSuccess: (page) => {
         setIsDeleteModalOpen(false);
@@ -192,15 +186,12 @@ export default function Expenses() {
       },
       onError: (errors) => {
         toast.dismiss();
-        toast.error(`Failed to delete expense: ${Object.values(errors).join(', ')}`);
+        toast.error(t('Failed to delete {{model}}: {{errors}}', { model: t('Expense'), errors: Object.values(errors).join(', ') }));
       }
     });
   };
 
   const handleApprove = (expense: any) => {
-    const action = expense.is_approved ? 'unapproving' : 'approving';
-    toast.loading(t(`${action} expense...`));
-
     router.put(route('billing.expenses.approve', expense.id), {}, {
       onSuccess: (page) => {
         toast.dismiss();
@@ -210,7 +201,7 @@ export default function Expenses() {
       },
       onError: (errors) => {
         toast.dismiss();
-        toast.error(`Failed to ${action} expense: ${Object.values(errors).join(', ')}`);
+        toast.error(t('Failed to update {{model}} status: {{errors}}', { model: t('Expense'), errors: Object.values(errors).join(', ') }));
       }
     });
   };
@@ -730,7 +721,7 @@ export default function Expenses() {
               onClose={() => setIsDeleteModalOpen(false)}
               onConfirm={handleDeleteConfirm}
               itemName={currentItem?.description || ''}
-              entityName="expense"
+              entityName="Expense"
           />
       </PageTemplate>
   );

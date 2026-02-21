@@ -114,7 +114,7 @@ class BillingRateController extends Controller
             ->first();
 
         if (!$user) {
-            return redirect()->back()->with('error', 'Invalid user selected.');
+            return redirect()->back()->with('error', __('Invalid user selected.'));
         }
 
         // Verify client belongs to the current user's company if provided
@@ -124,13 +124,13 @@ class BillingRateController extends Controller
                 ->first();
 
             if (!$client) {
-                return redirect()->back()->with('error', 'Invalid client selected.');
+                return redirect()->back()->with('error', __('Invalid client selected.'));
             }
         }
 
         BillingRate::create($validated);
 
-        return redirect()->back()->with('success', 'Billing rate created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Billing rate')]));
     }
 
     public function update(Request $request, $billingRateId)
@@ -140,7 +140,7 @@ class BillingRateController extends Controller
             ->first();
 
         if (!$billingRate) {
-            return redirect()->back()->with('error', 'Billing rate not found.');
+            return redirect()->back()->with('error', __('Billing rate not found.'));
         }
 
         $validated = $request->validate([
@@ -170,7 +170,7 @@ class BillingRateController extends Controller
             ->first();
 
         if (!$user) {
-            return redirect()->back()->with('error', 'Invalid user selected.');
+            return redirect()->back()->with('error', __('Invalid user selected.'));
         }
 
         // Verify client belongs to the current user's company if provided
@@ -180,13 +180,13 @@ class BillingRateController extends Controller
                 ->first();
 
             if (!$client) {
-                return redirect()->back()->with('error', 'Invalid client selected.');
+                return redirect()->back()->with('error', __('Invalid client selected.'));
             }
         }
 
         $billingRate->update($validated);
 
-        return redirect()->back()->with('success', 'Billing rate updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Billing rate')]));
     }
 
     public function destroy($billingRateId)
@@ -196,12 +196,12 @@ class BillingRateController extends Controller
             ->first();
 
         if (!$billingRate) {
-            return redirect()->back()->with('error', 'Billing rate not found.');
+            return redirect()->back()->with('error', __('Billing rate not found.'));
         }
 
         $billingRate->delete();
 
-        return redirect()->back()->with('success', 'Billing rate deleted successfully.');
+        return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Billing rate')]));
     }
 
     public function toggleStatus($billingRateId)
@@ -211,12 +211,12 @@ class BillingRateController extends Controller
             ->first();
 
         if (!$billingRate) {
-            return redirect()->back()->with('error', 'Billing rate not found.');
+            return redirect()->back()->with('error', __('Billing rate not found.'));
         }
 
         $billingRate->status = $billingRate->status === 'active' ? 'inactive' : 'active';
         $billingRate->save();
 
-        return redirect()->back()->with('success', 'Billing rate status updated successfully.');
+        return redirect()->back()->with('success', __('Billing rate status updated successfully.'));
     }
 }

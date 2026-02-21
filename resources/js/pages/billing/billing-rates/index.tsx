@@ -91,8 +91,6 @@ export default function BillingRates() {
 
   const handleFormSubmit = (formData: any) => {
     if (formMode === 'create') {
-      toast.loading(t('Creating billing rate...'));
-
       router.post(route('billing.billing-rates.store'), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
@@ -103,12 +101,10 @@ export default function BillingRates() {
         },
         onError: (errors) => {
           toast.dismiss();
-          toast.error(`Failed to create billing rate: ${Object.values(errors).join(', ')}`);
+          toast.error(t('Failed to create {{model}}: {{errors}}', { model: t('Billing rate'), errors: Object.values(errors).join(', ') }));
         }
       });
     } else if (formMode === 'edit') {
-      toast.loading(t('Updating billing rate...'));
-
       router.put(route('billing.billing-rates.update', currentItem.id), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
@@ -119,15 +115,13 @@ export default function BillingRates() {
         },
         onError: (errors) => {
           toast.dismiss();
-          toast.error(`Failed to update billing rate: ${Object.values(errors).join(', ')}`);
+          toast.error(t('Failed to update {{model}}: {{errors}}', { model: t('Billing rate'), errors: Object.values(errors).join(', ') }));
         }
       });
     }
   };
 
   const handleDeleteConfirm = () => {
-    toast.loading(t('Deleting billing rate...'));
-
     router.delete(route('billing.billing-rates.destroy', currentItem.id), {
       onSuccess: (page) => {
         setIsDeleteModalOpen(false);
@@ -138,15 +132,12 @@ export default function BillingRates() {
       },
       onError: (errors) => {
         toast.dismiss();
-        toast.error(`Failed to delete billing rate: ${Object.values(errors).join(', ')}`);
+        toast.error(t('Failed to delete {{model}}: {{errors}}', { model: t('Billing rate'), errors: Object.values(errors).join(', ') }));
       }
     });
   };
 
   const handleToggleStatus = (billingRate: any) => {
-    const newStatus = billingRate.status === 'active' ? 'inactive' : 'active';
-    toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} billing rate...`);
-
     router.put(route('billing.billing-rates.toggle-status', billingRate.id), {}, {
       onSuccess: (page) => {
         toast.dismiss();
@@ -156,7 +147,7 @@ export default function BillingRates() {
       },
       onError: (errors) => {
         toast.dismiss();
-        toast.error(`Failed to update billing rate status: ${Object.values(errors).join(', ')}`);
+        toast.error(t('Failed to update {{model}} status: {{errors}}', { model: t('Billing rate'), errors: Object.values(errors).join(', ') }));
       }
     });
   };
@@ -590,7 +581,7 @@ export default function BillingRates() {
               onClose={() => setIsDeleteModalOpen(false)}
               onConfirm={handleDeleteConfirm}
               itemName={`${currentItem?.user?.name} - ${currentItem?.client?.name || 'Default'}`}
-              entityName="billing rate"
+              entityName="Billing Rate"
           />
       </PageTemplate>
   );
