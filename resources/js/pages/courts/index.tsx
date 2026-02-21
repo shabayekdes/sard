@@ -95,8 +95,6 @@ export default function Courts() {
 
   const handleFormSubmit = (formData: any) => {
     if (formMode === 'create') {
-      toast.loading(t('Creating court...'));
-
       router.post(route('courts.store'), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
@@ -109,12 +107,10 @@ export default function Courts() {
         },
         onError: (errors) => {
           toast.dismiss();
-          toast.error(`Failed to create court: ${Object.values(errors).join(', ')}`);
+          toast.error(t('Failed to create {{model}}: {{errors}}', { model: t('Court'), errors: Object.values(errors).join(', ') }));
         }
       });
     } else if (formMode === 'edit') {
-      toast.loading(t('Updating court...'));
-
       router.put(route('courts.update', currentItem.id), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
@@ -127,15 +123,13 @@ export default function Courts() {
         },
         onError: (errors) => {
           toast.dismiss();
-          toast.error(`Failed to update court: ${Object.values(errors).join(', ')}`);
+          toast.error(t('Failed to update {{model}}: {{errors}}', { model: t('Court'), errors: Object.values(errors).join(', ') }));
         }
       });
     }
   };
 
   const handleDeleteConfirm = () => {
-    toast.loading(t('Deleting court...'));
-
     router.delete(route('courts.destroy', currentItem.id), {
       onSuccess: (page) => {
         setIsDeleteModalOpen(false);
@@ -148,15 +142,12 @@ export default function Courts() {
       },
       onError: (errors) => {
         toast.dismiss();
-        toast.error(`Failed to delete court: ${Object.values(errors).join(', ')}`);
+        toast.error(t('Failed to delete {{model}}: {{errors}}', { model: t('Court'), errors: Object.values(errors).join(', ') }));
       }
     });
   };
 
   const handleToggleStatus = (court: any) => {
-    const newStatus = court.status === 'active' ? 'inactive' : 'active';
-    toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} court...`);
-
     router.put(route('courts.toggle-status', court.id), {}, {
       onSuccess: (page) => {
         toast.dismiss();
@@ -168,7 +159,7 @@ export default function Courts() {
       },
       onError: (errors) => {
         toast.dismiss();
-        toast.error(`Failed to update court status: ${Object.values(errors).join(', ')}`);
+        toast.error(t('Failed to update {{model}} status: {{errors}}', { model: t('Court'), errors: Object.values(errors).join(', ') }));
       }
     });
   };
@@ -199,7 +190,7 @@ export default function Courts() {
 
   const breadcrumbs = [
     { title: t('Dashboard'), href: route('dashboard') },
-    { title: t('Court Schedule'), href: route('courts.index') },
+    { title: t('Case Management'), href: route('cases.index') },
     { title: t('Courts') }
   ];
 
@@ -473,7 +464,7 @@ export default function Courts() {
               onClose={() => setIsDeleteModalOpen(false)}
               onConfirm={handleDeleteConfirm}
               itemName={currentItem?.name || ''}
-              entityName="court"
+              entityName="Court"
           />
 
           {/* View Modal */}

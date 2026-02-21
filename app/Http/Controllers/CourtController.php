@@ -130,7 +130,7 @@ class CourtController extends Controller
             ->exists();
 
         if ($exists) {
-            return redirect()->back()->with('error', 'Court with this name already exists.');
+            return redirect()->back()->with('error', __('Court with this name already exists.'));
         }
 
         $court = Court::create($validated);
@@ -155,7 +155,7 @@ class CourtController extends Controller
             return redirect()->back()->with('warning', $message);
         }
 
-        return redirect()->back()->with('success', 'Court created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Court')]));
     }
 
     public function update(Request $request, $courtId)
@@ -183,17 +183,17 @@ class CourtController extends Controller
                     ->exists();
 
                 if ($exists) {
-                    return redirect()->back()->with('error', 'Court with this name already exists.');
+                    return redirect()->back()->with('error', __('Court with this name already exists.'));
                 }
 
                 $court->update($validated);
 
-                return redirect()->back()->with('success', 'Court updated successfully');
+                return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Court')]));
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to update court');
+                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to update court'));
             }
         } else {
-            return redirect()->back()->with('error', 'Court not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Court')]));
         }
     }
 
@@ -205,7 +205,7 @@ class CourtController extends Controller
             ->first();
 
         if (!$court) {
-            return redirect()->route('courts.index')->with('error', 'Court not found.');
+            return redirect()->route('courts.index')->with('error', __(':model not found.', ['model' => __('Court')]));
         }
 
         return Inertia::render('courts/show', [
@@ -222,12 +222,12 @@ class CourtController extends Controller
         if ($court) {
             try {
                 $court->delete();
-                return redirect()->back()->with('success', 'Court deleted successfully');
+                return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Court')]));
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to delete court');
+                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to delete court'));
             }
         } else {
-            return redirect()->back()->with('error', 'Court not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Court')]));
         }
     }
 
@@ -242,12 +242,12 @@ class CourtController extends Controller
                 $court->status = $court->status === 'active' ? 'inactive' : 'active';
                 $court->save();
 
-                return redirect()->back()->with('success', 'Court status updated successfully');
+                return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Court')]));
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to update court status');
+                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to update court status'));
             }
         } else {
-            return redirect()->back()->with('error', 'Court not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Court')]));
         }
     }
 }

@@ -19,6 +19,7 @@ import {
     FileChartColumnIncreasing,
     FileSearch,
     FileText,
+    Gavel,
     Gift,
     Globe,
     Image,
@@ -259,25 +260,18 @@ export function AppSidebar() {
             });
         }
 
-        // 6. Tasks & Workflow
-        // const taskChildren = [];
-        // if (
-        //     hasPermission(permissions, 'manage-task-comments') ||
-        //     hasPermission(permissions, 'manage-any-task-comments') ||
-        //     hasPermission(permissions, 'manage-own-task-comments')
-        // ) {
-        //     taskChildren.push({
-        //         title: t('Comments'),
-        //         href: route('tasks.task-comments.index'),
-        //     });
-        // }
-        // if (taskChildren.length > 0) {
-        //     items.push({
-        //         title: t('Tasks & Workflow'),
-        //         icon: CheckSquare,
-        //         children: taskChildren,
-        //     });
-        // }
+        // Courts
+        if (
+            hasPermission(permissions, 'manage-courts') ||
+            hasPermission(permissions, 'manage-any-courts') ||
+            hasPermission(permissions, 'manage-own-courts')
+        ) {
+            items.push({
+                title: t('Courts'),
+                href: route('courts.index'),
+                icon: Gavel,
+            });
+        }
 
         // 7. Billing
         const billingChildren = [];
