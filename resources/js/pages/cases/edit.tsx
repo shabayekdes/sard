@@ -18,6 +18,7 @@ const defaultFormData = {
     client_id: '',
     attributes: 'petitioner',
     opposite_parties: [] as any[],
+    documents: [] as any[],
     title: '',
     case_number: '',
     file_number: '',
@@ -37,7 +38,7 @@ const defaultFormData = {
 
 export default function EditCase() {
     const { t, i18n } = useTranslation();
-    const { auth, case: caseProp, clients, caseTypes, caseCategories, caseStatuses, courts, countries, googleCalendarEnabled, errors = {}, base_url } =
+    const { auth, case: caseProp, clients, caseTypes, caseCategories, caseStatuses, courts, countries, documentTypes, googleCalendarEnabled, errors = {}, base_url } =
         usePage().props as any;
     const { isRtl } = useLayout();
     const currentLocale = i18n.language || 'en';
@@ -79,6 +80,7 @@ export default function EditCase() {
             attributes: caseProp?.attributes || 'petitioner',
             priority: caseProp?.priority || 'medium',
             status: caseProp?.status || 'active',
+            documents: Array.isArray(caseProp?.documents) ? caseProp.documents : [],
         };
     });
 
@@ -162,10 +164,14 @@ export default function EditCase() {
 
     const handleFormSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        const filteredDocuments = (formData.documents || []).filter(
+            (doc: any) => doc?.document_name && doc?.document_type_id && doc?.confidentiality && doc?.file,
+        );
         const payload = {
             ...formData,
             case_category_id: formData.case_category_id === '' ? null : formData.case_category_id,
             case_subcategory_id: formData.case_subcategory_id === '' ? null : formData.case_subcategory_id,
+            documents: filteredDocuments,
         };
 
         router.put(route('cases.update', caseId), payload, {
@@ -194,6 +200,35 @@ export default function EditCase() {
     const renderError = (field: string) =>
         normalizedErrors[field] ? <p className="text-xs text-red-500">{normalizedErrors[field]}</p> : null;
     const oppositePartyErrorKey = Object.keys(normalizedErrors).find((k) => k.startsWith('opposite_parties'));
+
+    const documentTypeOptions = (documentTypes || []).map((type: any) => ({
+        value: type.id.toString(),
+        label: resolveTranslatableName(type),
+    }));
+    const caseDocumentFields: RepeaterField[] = [
+        { name: 'document_name', label: t('Document Name'), type: 'text', required: true },
+        {
+            name: 'document_type_id',
+            label: t('Document Type'),
+            type: 'select',
+            required: true,
+            options: documentTypeOptions,
+            placeholder: t('Select Document Type'),
+        },
+        {
+            name: 'confidentiality',
+            label: t('Confidentiality Level'),
+            type: 'select',
+            required: true,
+            options: [
+                { value: 'public', label: t('Public') },
+                { value: 'confidential', label: t('Confidential') },
+                { value: 'privileged', label: t('Privileged') },
+            ],
+            placeholder: t('Select {{label}}', { label: t('Confidentiality Level') }),
+        },
+        { name: 'file', label: t('Upload New Document'), type: 'media-picker', required: true },
+    ];
 
     const oppositePartyFields: RepeaterField[] = [
         { name: 'lawyer_name', label: t('Lawyer Name'), type: 'text' },
@@ -432,6 +467,33 @@ export default function EditCase() {
                         />
                         {oppositePartyErrorKey && (
                             <p className="text-xs text-red-500">{normalizedErrors[oppositePartyErrorKey]}</p>
+                        )}
+                    </div>
+                </div>
+
+                <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
+                    <h2 className="text-lg font-semibold">{t('Case Documents')}</h2>
+                    <div className="mt-4 space-y-4 rounded-lg border border-slate-200 bg-slate-50/50 p-4">
+                        <Repeater
+                            fields={caseDocumentFields}
+                            value={formData.documents}
+                            onChange={(value) => updateField('documents', value)}
+                            minItems={0}
+                            maxItems={-1}
+                            addButtonText={t('Add New Document')}
+                            removeButtonText={t('Remove')}
+                            showItemNumbers={false}
+                            className="space-y-3"
+                            itemClassName="bg-white border-slate-200"
+                        />
+                        {Object.keys(normalizedErrors).some((k) => k.startsWith('documents')) && (
+                            <p className="text-xs text-red-500">
+                                {normalizedErrors['documents.0.document_name'] ||
+                                    normalizedErrors['documents.0.file'] ||
+                                    normalizedErrors['documents.0.document_type_id'] ||
+                                    normalizedErrors['documents.0.confidentiality'] ||
+                                    t('Please fill all required document fields.')}
+                            </p>
                         )}
                     </div>
                 </div>

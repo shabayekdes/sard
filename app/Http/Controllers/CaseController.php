@@ -628,7 +628,31 @@ class CaseController extends BaseController
             ->where('key', 'googleCalendarEnabled')
             ->value('value') == '1';
 
+        $documentTypes = DocumentType::withPermissionCheck()
+            ->where('status', 'active')
+            ->get(['id', 'name', 'color']);
+        $documentTypes->transform(function ($docType) {
+            return [
+                'id' => $docType->id,
+                'name' => $docType->name,
+                'name_translations' => $docType->getTranslations('name'),
+            ];
+        });
+
         $caseData = $case->toArray();
+        $caseDocuments = CaseDocument::where('case_id', $case->id)->get();
+        $caseData['documents'] = $caseDocuments->map(function ($doc) {
+            $fileUrl = $doc->file_path ? (\Illuminate\Support\Facades\Storage::url($doc->file_path) ?? $doc->file_path) : '';
+            if ($fileUrl && !str_starts_with($fileUrl, 'http')) {
+                $fileUrl = url($fileUrl);
+            }
+            return [
+                'document_name' => $doc->document_name,
+                'document_type_id' => (string) $doc->document_type_id,
+                'confidentiality' => $doc->confidentiality ?? 'public',
+                'file' => $fileUrl ?: $doc->file_path,
+            ];
+        })->toArray();
         $caseData['opposite_parties'] = $case->oppositeParties->map(function ($party) {
             return [
                 'name' => $party->name,
@@ -655,6 +679,7 @@ class CaseController extends BaseController
             'caseStatuses' => $caseStatuses,
             'courts' => $courts,
             'countries' => $countries,
+            'documentTypes' => $documentTypes,
             'googleCalendarEnabled' => $googleCalendarEnabled,
         ]);
     }
@@ -834,6 +859,11 @@ class CaseController extends BaseController
             'opposite_parties.*.id_number' => 'nullable|string|max:255',
             'opposite_parties.*.nationality_id' => 'nullable|exists:countries,id',
             'opposite_parties.*.lawyer_name' => 'nullable|string|max:255',
+            'documents' => 'nullable|array',
+            'documents.*.document_name' => 'required_with:documents|string|max:255',
+            'documents.*.document_type_id' => 'required_with:documents|exists:document_types,id',
+            'documents.*.confidentiality' => 'required_with:documents|in:public,confidential,privileged',
+            'documents.*.file' => 'required_with:documents|string',
         ]);
 
         // Verify related records belong to current company
@@ -846,9 +876,10 @@ class CaseController extends BaseController
             return redirect()->back()->with('error', __('Invalid selection. Please try again.'));
         }
 
-        // Extract opposite parties before updating case
+        // Extract opposite parties and documents before updating case
         $oppositeParties = $validated['opposite_parties'] ?? [];
-        unset($validated['opposite_parties']);
+        $documents = $validated['documents'] ?? [];
+        unset($validated['opposite_parties'], $validated['documents']);
 
         $case->update($validated);
 
@@ -864,6 +895,25 @@ class CaseController extends BaseController
                     'lawyer_name' => $party['lawyer_name'] ?? null,
                     'created_by' => createdBy(),
                 ]);
+            }
+        }
+
+        // Replace case documents: delete existing, create from form
+        CaseDocument::where('case_id', $case->id)->delete();
+        if (!empty($documents)) {
+            foreach ($documents as $doc) {
+                $filePath = $this->convertToRelativePath($doc['file'] ?? '');
+                if ($filePath) {
+                    CaseDocument::create([
+                        'case_id' => $case->id,
+                        'document_name' => $doc['document_name'],
+                        'document_type_id' => $doc['document_type_id'],
+                        'confidentiality' => $doc['confidentiality'],
+                        'file_path' => $filePath,
+                        'status' => 'active',
+                        'created_by' => createdBy(),
+                    ]);
+                }
             }
         }
 
