@@ -741,10 +741,10 @@ export default function InvoicePayment() {
                                     className="w-full"
                                 />
                                 <div className="mt-2 flex gap-2">
-                                    <Button variant="outline" size="sm" onClick={() => setPaymentAmount(remainingAmount / 2)}>
+                                    <Button variant="outline" size="sm" onClick={() => setPaymentAmount(Math.round((remainingAmount / 2) * 100) / 100)}>
                                         50%
                                     </Button>
-                                    <Button variant="outline" size="sm" onClick={() => setPaymentAmount(remainingAmount)}>
+                                    <Button variant="outline" size="sm" onClick={() => setPaymentAmount(Math.round(remainingAmount * 100) / 100)}>
                                         {t('Full Amount')}
                                     </Button>
                                 </div>

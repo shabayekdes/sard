@@ -12,6 +12,17 @@ import * as LucidIcons from 'lucide-react';
 import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+/** Resolve translatable API value (e.g. { en: '...', ar: '...' }) to a string for display. */
+function resolveTranslatable(value: unknown, locale: string): string {
+    if (value == null) return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'object' && value !== null && ('en' in value || 'ar' in value)) {
+        const o = value as Record<string, string>;
+        return o[locale] || o.en || o.ar || '';
+    }
+    return String(value);
+}
+
 interface CrudTableProps {
     columns: TableColumn[];
     actions: TableAction[];
@@ -46,7 +57,8 @@ export function CrudTable({
     entityPermissions,
     showActions = true,
 }: CrudTableProps) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const locale = i18n.language || 'en';
     const isRtl = document.documentElement.dir === 'rtl';
     const renderSortIcon = (column: TableColumn) => {
         if (!column.sortable) return null;
@@ -197,7 +209,10 @@ export function CrudTable({
         // Handle different column types
         switch (col.type) {
             case 'badge':
-                return <Badge className={cn('capitalize', statusColors[value])}>{value}</Badge>;
+                const badgeLabel = typeof value === 'object' && value !== null && ('en' in value || 'ar' in value)
+                    ? resolveTranslatable(value, locale)
+                    : value;
+                return <Badge className={cn('capitalize', statusColors[value])}>{badgeLabel}</Badge>;
 
             case 'image':
                 if (!value) {
@@ -220,7 +235,11 @@ export function CrudTable({
                 return value ? <span className="text-sm">{window.appSettings?.formatDateTime(value, false)}</span> : <span>-</span>;
 
             case 'currency':
-                return <span className="text-sm">{typeof value === 'number' ? formatCurrency(value) : value}</span>;
+                const currencyDisplay = typeof value === 'number' ? formatCurrency(value)
+                    : typeof value === 'object' && value !== null && ('en' in value || 'ar' in value)
+                        ? resolveTranslatable(value, locale)
+                        : value;
+                return <span className="text-sm">{currencyDisplay}</span>;
 
             case 'boolean':
                 return <span className="text-sm">{value ? 'Yes' : 'No'}</span>;
@@ -229,6 +248,9 @@ export function CrudTable({
                 if (!value) return <span>-</span>;
 
                 const href = col.href ? (typeof col.href === 'function' ? col.href(row) : col.href.replace(':id', row.id)) : '#';
+                const linkText = typeof value === 'object' && value !== null && ('en' in value || 'ar' in value)
+                    ? resolveTranslatable(value, locale)
+                    : value;
 
                 return (
                     <Link
@@ -236,12 +258,16 @@ export function CrudTable({
                         className={col.linkClassName || 'text-blue-600 hover:underline'}
                         target={col.openInNewTab ? '_blank' : undefined}
                     >
-                        {value}
+                        {linkText}
                     </Link>
                 );
 
             default:
-                return <span className="text-sm font-medium">{value || '-'}</span>;
+                // Avoid rendering objects (e.g. translatable { en, ar }) as React children
+                const displayValue = typeof value === 'object' && value !== null && ('en' in value || 'ar' in value)
+                    ? resolveTranslatable(value, locale)
+                    : value;
+                return <span className="text-sm font-medium">{displayValue ?? '-'}</span>;
         }
     };
 
