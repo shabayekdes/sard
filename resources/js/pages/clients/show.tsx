@@ -12,8 +12,12 @@ import { useLayout } from '@/contexts/LayoutContext';
 import { formatCurrency } from '@/utils/helpers';
 import { hasPermission } from '@/utils/authorization';
 import { router, usePage } from '@inertiajs/react';
-import { ArrowLeft, Briefcase, CreditCard, Edit, Eye, FileText, Plus, Receipt, Trash2 } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
+import { ArrowLeft, Briefcase, CreditCard, Edit, Eye, FileText, Plus, Receipt, Save, Trash2 } from 'lucide-react';
+import { useState, useEffect, type ReactNode } from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslation } from 'react-i18next';
 import { toast } from '@/components/custom-toast';
 
@@ -59,9 +63,51 @@ export default function ClientShow() {
     const [isDocumentDeleteOpen, setIsDocumentDeleteOpen] = useState(false);
     const [currentDocument, setCurrentDocument] = useState<any>(null);
     const [documentFormMode, setDocumentFormMode] = useState<'create' | 'edit' | 'view'>('create');
-    // Billing tab
-    const [isBillingEditOpen, setIsBillingEditOpen] = useState(false);
+    // Billing tab (company-profile style: same form, read-only until Edit clicked, then Save)
+    const [isBillingEditing, setIsBillingEditing] = useState(false);
     const [isBillingDeleteOpen, setIsBillingDeleteOpen] = useState(false);
+    const [billingFormData, setBillingFormData] = useState({
+        billing_contact_name: '',
+        billing_contact_email: '',
+        billing_contact_phone: '',
+        billing_address: '',
+        payment_terms: 'net_30',
+        custom_payment_terms: '',
+        currency: '',
+        status: 'active',
+        billing_notes: '',
+    });
+
+    const emptyBillingFormData = {
+        billing_contact_name: '',
+        billing_contact_email: '',
+        billing_contact_phone: '',
+        billing_address: '',
+        payment_terms: 'net_30',
+        custom_payment_terms: '',
+        currency: '',
+        status: 'active',
+        billing_notes: '',
+    };
+
+    useEffect(() => {
+        if (client.billing_info) {
+            setBillingFormData({
+                billing_contact_name: client.billing_info.billing_contact_name ?? '',
+                billing_contact_email: client.billing_info.billing_contact_email ?? '',
+                billing_contact_phone: client.billing_info.billing_contact_phone ?? '',
+                billing_address: client.billing_info.billing_address ?? '',
+                payment_terms: client.billing_info.payment_terms ?? 'net_30',
+                custom_payment_terms: client.billing_info.custom_payment_terms ?? '',
+                currency: client.billing_info.currency ?? '',
+                status: client.billing_info.status ?? 'active',
+                billing_notes: client.billing_info.billing_notes ?? '',
+            });
+        } else {
+            setBillingFormData(emptyBillingFormData);
+            setIsBillingEditing(false);
+        }
+    }, [client.billing_info]);
 
     // Helper function to get translated value from translation object
     const getTranslatedValue = (value: any): string => {
@@ -479,6 +525,46 @@ export default function ClientShow() {
                 toast.error(t('Failed to delete document'));
             },
         });
+    };
+
+    const handleBillingChange = (name: string, value: string) => {
+        setBillingFormData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleBillingSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const payload = { ...billingFormData, client_id: client.id };
+        if (client.billing_info?.id) {
+            toast.loading(t('Updating billing information...'));
+            router.put(route('clients.billing.update', client.billing_info.id), payload, {
+                onSuccess: (page) => {
+                    toast.dismiss();
+                    setIsBillingEditing(false);
+                    const flash = (page?.props?.flash as any);
+                    if (flash?.success) toast.success(flash.success);
+                    if (flash?.error) toast.error(flash.error);
+                },
+                onError: (err) => {
+                    toast.dismiss();
+                    toast.error(typeof err === 'string' ? err : Object.values(err).join(', '));
+                },
+            });
+        } else {
+            toast.loading(t('Creating billing information...'));
+            router.post(route('clients.billing.store'), payload, {
+                onSuccess: (page) => {
+                    toast.dismiss();
+                    setIsBillingEditing(false);
+                    const flash = (page?.props?.flash as any);
+                    if (flash?.success) toast.success(flash.success);
+                    if (flash?.error) toast.error(flash.error);
+                },
+                onError: (err) => {
+                    toast.dismiss();
+                    toast.error(typeof err === 'string' ? err : Object.values(err).join(', '));
+                },
+            });
+        }
     };
 
     const documentColumns = [
@@ -1053,14 +1139,15 @@ export default function ClientShow() {
 
                         {activeTab === 'billing' && (
                             <div>
-                                {client.billing_info ? (
-                                    <Card className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-gray-800">
-                                        {/* Card header: title + Edit/Delete */}
-                                        <div className={`flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-gray-800`}>
+                                <form onSubmit={handleBillingSubmit}>
+                                    <Card className="px-6">
+                                        {/* Card header: title + Edit/Cancel + Delete (same as company profile) */}
+                                        <div className="mt-6 flex items-center justify-between border-b border-gray-200 pb-4 dark:border-gray-800">
                                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('Billing Information')}</h3>
                                             <div className={`flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
-                                                {hasPermission(permissions, 'delete-client-billing') && (
+                                                {client.billing_info && hasPermission(permissions, 'delete-client-billing') && (
                                                     <Button
+                                                        type="button"
                                                         variant="ghost"
                                                         size="icon"
                                                         className="h-9 w-9 shrink-0 rounded-md text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30 dark:hover:text-red-400"
@@ -1069,103 +1156,165 @@ export default function ClientShow() {
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 )}
-                                                {hasPermission(permissions, 'edit-client-billing') && (
+                                                {(hasPermission(permissions, 'edit-client-billing') || (!client.billing_info && hasPermission(permissions, 'create-client-billing'))) && (
                                                     <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-9 w-9 shrink-0 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-                                                        onClick={() => setIsBillingEditOpen(true)}
+                                                        type="button"
+                                                        variant={isBillingEditing ? 'outline' : 'default'}
+                                                        size="sm"
+                                                        className="flex items-center gap-2"
+                                                        onClick={() => setIsBillingEditing(!isBillingEditing)}
                                                     >
-                                                        <Edit className="h-4 w-4" />
+                                                        {isBillingEditing ? t('Cancel') : (
+                                                            <>
+                                                                <Edit className="h-4 w-4" />
+                                                                {client.billing_info ? t('Edit') : t('Add Billing Info')}
+                                                            </>
+                                                        )}
                                                     </Button>
                                                 )}
                                             </div>
                                         </div>
-                                        {/* Three-column layout: Col1 = Contact Name, Status, Payment Terms | Col2 = Contact Phone, Billing Address, Currency | Col3 = Contact Email, Creation Date, Custom Payment Terms */}
-                                        <div className="grid grid-cols-1 gap-6 p-6 text-sm md:grid-cols-3">
-                                            <div className={`flex flex-col gap-4 ${isRtl ? 'text-right' : ''}`}>
-                                                {client.billing_info.billing_contact_name != null && client.billing_info.billing_contact_name !== '' && (
-                                                    <div>
-                                                        <strong className="text-gray-600 dark:text-gray-400">{t('Contact Name')}:</strong>
-                                                        <p className="mt-0.5 text-gray-900 dark:text-gray-100">{client.billing_info.billing_contact_name}</p>
-                                                    </div>
-                                                )}
-                                                {client.billing_info.status && (
-                                                    <div>
-                                                        <strong className="text-gray-600 dark:text-gray-400">{t('Status')}:</strong>
-                                                        <p className="mt-0.5">
-                                                            <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                                                                {client.billing_info.status === 'active' ? t('Active') : client.billing_info.status}
-                                                            </Badge>
-                                                        </p>
-                                                    </div>
-                                                )}
-                                                {client.billing_info.payment_terms && (
-                                                    <div>
-                                                        <strong className="text-gray-600 dark:text-gray-400">{t('Payment Terms')}:</strong>
-                                                        <p className="mt-0.5 text-gray-900 dark:text-gray-100">
-                                                            {client.billing_info.formatted_payment_terms || client.billing_info.payment_terms}
-                                                        </p>
-                                                    </div>
-                                                )}
+                                            {/* Same form fields as edit: read-only when !isBillingEditing */}
+                                            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="billing_contact_name" className="text-sm font-medium">{t('Contact Name')}</Label>
+                                                    <Input
+                                                        id="billing_contact_name"
+                                                        value={billingFormData.billing_contact_name}
+                                                        onChange={(e) => handleBillingChange('billing_contact_name', e.target.value)}
+                                                        disabled={!isBillingEditing}
+                                                        className="text-sm"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="billing_contact_email" className="text-sm font-medium">{t('Contact Email')}</Label>
+                                                    <Input
+                                                        id="billing_contact_email"
+                                                        type="email"
+                                                        value={billingFormData.billing_contact_email}
+                                                        onChange={(e) => handleBillingChange('billing_contact_email', e.target.value)}
+                                                        disabled={!isBillingEditing}
+                                                        className="text-sm"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="billing_contact_phone" className="text-sm font-medium">{t('Contact Phone')}</Label>
+                                                    <Input
+                                                        id="billing_contact_phone"
+                                                        value={billingFormData.billing_contact_phone}
+                                                        onChange={(e) => handleBillingChange('billing_contact_phone', e.target.value)}
+                                                        disabled={!isBillingEditing}
+                                                        className="text-sm"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2 md:col-span-2">
+                                                    <Label htmlFor="billing_address" className="text-sm font-medium">{t('Billing Address')}</Label>
+                                                    <Input
+                                                        id="billing_address"
+                                                        value={billingFormData.billing_address}
+                                                        onChange={(e) => handleBillingChange('billing_address', e.target.value)}
+                                                        disabled={!isBillingEditing}
+                                                        className="text-sm"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="payment_terms" className="text-sm font-medium">{t('Payment Terms')}</Label>
+                                                    <Select
+                                                        value={billingFormData.payment_terms || 'net_30'}
+                                                        onValueChange={(v) => handleBillingChange('payment_terms', v)}
+                                                        disabled={!isBillingEditing}
+                                                    >
+                                                        <SelectTrigger className="text-sm">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="net_15" className="text-sm">{t('Net 15 days')}</SelectItem>
+                                                            <SelectItem value="net_30" className="text-sm">{t('Net 30 days')}</SelectItem>
+                                                            <SelectItem value="net_45" className="text-sm">{t('Net 45 days')}</SelectItem>
+                                                            <SelectItem value="net_60" className="text-sm">{t('Net 60 days')}</SelectItem>
+                                                            <SelectItem value="due_on_receipt" className="text-sm">{t('Due on receipt')}</SelectItem>
+                                                            <SelectItem value="custom" className="text-sm">{t('Custom')}</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="custom_payment_terms" className="text-sm font-medium">{t('Custom Payment Terms')}</Label>
+                                                    <Input
+                                                        id="custom_payment_terms"
+                                                        value={billingFormData.custom_payment_terms}
+                                                        onChange={(e) => handleBillingChange('custom_payment_terms', e.target.value)}
+                                                        disabled={!isBillingEditing}
+                                                        className="text-sm"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="currency" className="text-sm font-medium">{t('Currency')}</Label>
+                                                    <Select
+                                                        value={billingFormData.currency || ''}
+                                                        onValueChange={(v) => handleBillingChange('currency', v)}
+                                                        disabled={!isBillingEditing}
+                                                    >
+                                                        <SelectTrigger className="text-sm">
+                                                            <SelectValue placeholder={t('Select currency')} />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {(currencies || []).map((c: any) => (
+                                                                <SelectItem key={c.code || c.value} value={String(c.code ?? c.value ?? '')} className="text-sm">
+                                                                    {c.name || c.label || c.code || ''}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="status" className="text-sm font-medium">{t('Status')}</Label>
+                                                    <Select
+                                                        value={billingFormData.status || 'active'}
+                                                        onValueChange={(v) => handleBillingChange('status', v)}
+                                                        disabled={!isBillingEditing}
+                                                    >
+                                                        <SelectTrigger className="text-sm">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="active" className="text-sm">{t('Active')}</SelectItem>
+                                                            <SelectItem value="suspended" className="text-sm">{t('Suspended')}</SelectItem>
+                                                            <SelectItem value="closed" className="text-sm">{t('Closed')}</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div className="space-y-2 md:col-span-2">
+                                                    <Label htmlFor="billing_created_at" className="text-sm font-medium">{t('Creation Date')}</Label>
+                                                    <Input
+                                                        id="billing_created_at"
+                                                        value={client.billing_info?.created_at ? (window.appSettings?.formatDate(client.billing_info.created_at) || new Date(client.billing_info.created_at).toLocaleDateString()) : '-'}
+                                                        disabled
+                                                        className="text-sm bg-muted"
+                                                    />
+                                                </div>
                                             </div>
-                                            <div className={`flex flex-col gap-4 ${isRtl ? 'text-right' : ''}`}>
-                                                {client.billing_info.billing_contact_phone != null && client.billing_info.billing_contact_phone !== '' && (
-                                                    <div>
-                                                        <strong className="text-gray-600 dark:text-gray-400">{t('Contact Phone')}:</strong>
-                                                        <p className="mt-0.5 text-gray-900 dark:text-gray-100">{client.billing_info.billing_contact_phone}</p>
-                                                    </div>
-                                                )}
-                                                {client.billing_info.billing_address != null && client.billing_info.billing_address !== '' && (
-                                                    <div>
-                                                        <strong className="text-gray-600 dark:text-gray-400">{t('Billing Address')}:</strong>
-                                                        <p className="mt-0.5 text-gray-900 dark:text-gray-100">{client.billing_info.billing_address}</p>
-                                                    </div>
-                                                )}
-                                                {(client.billing_info.currency_name || client.billing_info.currency) && (
-                                                    <div>
-                                                        <strong className="text-gray-600 dark:text-gray-400">{t('Currency')}:</strong>
-                                                        <p className="mt-0.5 text-gray-900 dark:text-gray-100">
-                                                            {client.billing_info.currency_name || client.billing_info.currency}
-                                                            {client.billing_info.currency_code ? ` (${client.billing_info.currency_code})` : ''}
-                                                        </p>
-                                                    </div>
-                                                )}
+                                            <div className="my-6 space-y-2">
+                                                <div className="col-span-full h-px bg-gray-200 dark:bg-gray-800" />
+                                                <Label htmlFor="billing_notes" className="text-sm font-medium">{t('Notes')}</Label>
+                                                <Textarea
+                                                    id="billing_notes"
+                                                    value={billingFormData.billing_notes}
+                                                    onChange={(e) => handleBillingChange('billing_notes', e.target.value)}
+                                                    disabled={!isBillingEditing}
+                                                    rows={3}
+                                                    className="text-sm"
+                                                />
                                             </div>
-                                            <div className={`flex flex-col gap-4 ${isRtl ? 'text-right' : ''}`}>
-                                                {client.billing_info.billing_contact_email != null && client.billing_info.billing_contact_email !== '' && (
-                                                    <div>
-                                                        <strong className="text-gray-600 dark:text-gray-400">{t('Contact Email')}:</strong>
-                                                        <p className="mt-0.5 text-gray-900 dark:text-gray-100">{client.billing_info.billing_contact_email}</p>
-                                                    </div>
-                                                )}
-                                                {client.billing_info.created_at && (
-                                                    <div>
-                                                        <strong className="text-gray-600 dark:text-gray-400">{t('Creation Date')}:</strong>
-                                                        <p className="mt-0.5 text-gray-900 dark:text-gray-100">
-                                                            {window.appSettings?.formatDate(client.billing_info.created_at) ||
-                                                                new Date(client.billing_info.created_at).toLocaleDateString()}
-                                                        </p>
-                                                    </div>
-                                                )}
-                                                {client.billing_info.custom_payment_terms != null && client.billing_info.custom_payment_terms !== '' && (
-                                                    <div>
-                                                        <strong className="text-gray-600 dark:text-gray-400">{t('Custom Payment Terms')}:</strong>
-                                                        <p className="mt-0.5 text-gray-900 dark:text-gray-100">{client.billing_info.custom_payment_terms}</p>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                        {client.billing_info.billing_notes != null && client.billing_info.billing_notes !== '' && (
-                                            <div className={`border-t border-slate-200 px-6 py-4 dark:border-gray-800 ${isRtl ? 'text-right' : ''}`}>
-                                                <strong className="block text-gray-600 dark:text-gray-400">{t('Notes')}:</strong>
-                                                <p className="mt-2 whitespace-pre-wrap text-gray-900 dark:text-gray-100">{client.billing_info.billing_notes}</p>
+                                        </Card>
+                                        {isBillingEditing && (
+                                            <div className={`flex mt-6 ${isRtl ? 'justify-start' : 'justify-end'}`}>
+                                                <Button type="submit" className="flex items-center gap-2">
+                                                    <Save className="h-4 w-4" />
+                                                    {t('Save')}
+                                                </Button>
                                             </div>
                                         )}
-                                    </Card>
-                                ) : (
-                                    <div className="py-8 text-center text-gray-500">{t('No billing information found for this client')}</div>
-                                )}
+                                    </form>
                             </div>
                         )}
                     </div>
@@ -1257,75 +1406,6 @@ export default function ClientShow() {
                 onConfirm={handleDocumentDeleteConfirm}
                 itemName={currentDocument?.document_name || ''}
                 entityName="Document"
-            />
-
-            {/* Billing Edit Modal */}
-            <CrudFormModal
-                isOpen={isBillingEditOpen}
-                onClose={() => setIsBillingEditOpen(false)}
-                onSubmit={(formData) => {
-                    if (!client.billing_info?.id) return;
-                    router.put(route('clients.billing.update', client.billing_info.id), { ...formData, client_id: client.id }, {
-                        onSuccess: (page) => {
-                            setIsBillingEditOpen(false);
-                            toast.dismiss();
-                            const flash = (page?.props?.flash as any);
-                            if (flash?.success) toast.success(flash.success);
-                            if (flash?.error) toast.error(flash.error);
-                        },
-                        onError: (err) => {
-                            toast.dismiss();
-                            toast.error(typeof err === 'string' ? err : Object.values(err).join(', '));
-                        },
-                    });
-                }}
-                formConfig={{
-                    fields: [
-                        { name: 'billing_contact_name', label: t('Contact Name'), type: 'text' },
-                        { name: 'billing_contact_email', label: t('Contact Email'), type: 'email' },
-                        { name: 'billing_contact_phone', label: t('Contact Phone'), type: 'text' },
-                        { name: 'billing_address', label: t('Billing Address'), type: 'text' },
-                        {
-                            name: 'payment_terms',
-                            label: t('Payment Terms'),
-                            type: 'select',
-                            required: true,
-                            options: [
-                                { value: 'net_15', label: t('Net 15 days') },
-                                { value: 'net_30', label: t('Net 30 days') },
-                                { value: 'net_45', label: t('Net 45 days') },
-                                { value: 'net_60', label: t('Net 60 days') },
-                                { value: 'due_on_receipt', label: t('Due on receipt') },
-                                { value: 'custom', label: t('Custom') },
-                            ],
-                        },
-                        { name: 'custom_payment_terms', label: t('Custom Payment Terms'), type: 'text' },
-                        {
-                            name: 'currency',
-                            label: t('Currency'),
-                            type: 'select',
-                            options: currencies,
-                        },
-                        {
-                            name: 'status',
-                            label: t('Status'),
-                            type: 'select',
-                            options: [
-                                { value: 'active', label: t('Active') },
-                                { value: 'suspended', label: t('Suspended') },
-                                { value: 'closed', label: t('Closed') },
-                            ],
-                        },
-                        { name: 'billing_notes', label: t('Notes'), type: 'textarea' },
-                    ],
-                    modalSize: 'lg',
-                }}
-                initialData={{
-                    ...client.billing_info,
-                    client_id: client.id,
-                }}
-                title={t('Edit Billing Information')}
-                mode="edit"
             />
 
             {/* Billing Delete Modal */}
