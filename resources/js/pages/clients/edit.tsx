@@ -33,7 +33,6 @@ export default function EditClient() {
         };
     }, [client?.id, i18n]);
 
-    const phoneCountriesById = new Map((phoneCountries || []).map((country: any) => [String(country.value), country]));
     const phoneCountriesByCode = new Map((phoneCountries || []).map((country: any) => [String(country.code).toLowerCase(), country]));
     const phoneCountryCodes = (phoneCountries || []).map((country: any) => String(country.code || '').toLowerCase()).filter((code: string) => code);
     const allowedPhoneCountries = phoneCountryCodes.length
@@ -216,32 +215,30 @@ export default function EditClient() {
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div className="space-y-2">
                             <Label htmlFor="phone">{t('Phone Number')}</Label>
-                            <PhoneInput
-                                defaultCountry={(() => {
-                                    const currentCountryId = formData.country_id || client?.country_id || defaultPhoneCountry?.value;
-                                    const currentCountry = phoneCountriesById.get(String(currentCountryId));
-                                    return (currentCountry?.code || defaultPhoneCountry?.code || '').toLowerCase() || undefined;
-                                })()}
-                                value={formData.phone}
-                                countries={allowedPhoneCountries}
-                                inputProps={{ name: 'phone', required: true }}
-                                className="w-full"
-                                inputClassName="w-full !h-10 !border !border-input !bg-background !text-sm !text-foreground"
-                                countrySelectorStyleProps={{
-                                    buttonClassName: '!h-10 !border !border-input !bg-background',
-                                    dropdownStyleProps: {
-                                        className: '!bg-background !text-foreground phone-country-dropdown',
-                                    },
-                                }}
-                                onChange={(value, meta) => {
-                                    updateField('phone', value || '');
-                                    const code = String(meta?.country?.iso2 || '').toLowerCase();
-                                    const selectedCountry = phoneCountriesByCode.get(code) as any;
-                                    if (selectedCountry) {
-                                        updateField('country_id', String(selectedCountry.value));
-                                    }
-                                }}
-                            />
+                            <div className="phone-left-selector">
+                                <PhoneInput
+                                    defaultCountry={(defaultPhoneCountry?.code || '').toLowerCase() || undefined}
+                                    value={formData.phone}
+                                    countries={allowedPhoneCountries}
+                                    inputProps={{ name: 'phone', required: true }}
+                                    className="w-full"
+                                    inputClassName="w-full !h-10 !border !border-input !bg-background !text-sm !text-foreground"
+                                    countrySelectorStyleProps={{
+                                        buttonClassName: '!h-10 !border !border-input !bg-background',
+                                        dropdownStyleProps: {
+                                            className: '!bg-background !text-foreground phone-country-dropdown',
+                                        },
+                                    }}
+                                    onChange={(value, meta) => {
+                                        updateField('phone', value || '');
+                                        const code = String(meta?.country?.iso2 || '').toLowerCase();
+                                        const selectedCountry = phoneCountriesByCode.get(code) as any;
+                                        if (selectedCountry) {
+                                            updateField('country_id', String(selectedCountry.value));
+                                        }
+                                    }}
+                                />
+                            </div>
                             {renderError('phone')}
                         </div>
                         <div className="space-y-2">
