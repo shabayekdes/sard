@@ -53,7 +53,7 @@ class BankPaymentController extends Controller
             $attachmentPaths = null;
             if ($request->hasFile('attachment')) {
                 $file = $request->file('attachment');
-                $path = $file->store('payment-attachments/' . $invoice->id, 'public');
+                $path = 'storage/' . $file->store('payment-attachments/' . $invoice->id, 'public');
                 $attachmentPaths = [$path];
             }
             
