@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { ChevronLeft, Plus } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
 import { CrudFormModal } from '@/components/CrudFormModal';
@@ -39,7 +39,7 @@ export default function TaskTypes() {
   };
 
   const applyFilters = () => {
-    router.get(route('tasks.task-types.index'), {
+    router.get(route('setup.task-types.index'), {
       page: 1,
       search: searchTerm || undefined,
       status: selectedStatus !== 'all' ? selectedStatus : undefined,
@@ -50,14 +50,18 @@ export default function TaskTypes() {
   const handleSort = (field: string) => {
     const direction = pageFilters.sort_field === field && pageFilters.sort_direction === 'asc' ? 'desc' : 'asc';
 
-    router.get(route('tasks.task-types.index'), {
-      sort_field: field,
-      sort_direction: direction,
-      page: 1,
-      search: searchTerm || undefined,
-      status: selectedStatus !== 'all' ? selectedStatus : undefined,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+        route('setup.task-types.index'),
+        {
+            sort_field: field,
+            sort_direction: direction,
+            page: 1,
+            search: searchTerm || undefined,
+            status: selectedStatus !== 'all' ? selectedStatus : undefined,
+            per_page: pageFilters.per_page,
+        },
+        { preserveState: true, preserveScroll: true },
+    );
   };
 
   const handleAction = (action: string, item: any) => {
@@ -85,95 +89,93 @@ export default function TaskTypes() {
 
   const handleFormSubmit = (formData: any) => {
     if (formMode === 'create') {
-      toast.loading(t('Creating task type...'));
-      router.post(route('tasks.task-types.store'), formData, {
-        onSuccess: (page) => {
-          setIsFormModalOpen(false);
-          toast.dismiss();
-          if (page.props.flash.success) {
-            toast.success(page.props.flash.success);
-          } else if (page.props.flash.error) {
-            toast.error(page.props.flash.error);
-          }
-        },
-        onError: (errors) => {
-          toast.dismiss();
-          if (typeof errors === 'string') {
-            toast.error(errors);
-          } else {
-            toast.error(`Failed to create task type: ${Object.values(errors).join(', ')}`);
-          }
-        }
+      router.post(route('setup.task-types.store'), formData, {
+          onSuccess: (page) => {
+              setIsFormModalOpen(false);
+              toast.dismiss();
+              if (page.props.flash.success) {
+                  toast.success(page.props.flash.success);
+              } else if (page.props.flash.error) {
+                  toast.error(page.props.flash.error);
+              }
+          },
+          onError: (errors) => {
+              toast.dismiss();
+              if (typeof errors === 'string') {
+                  toast.error(errors);
+              } else {
+                  toast.error(`Failed to create task type: ${Object.values(errors).join(', ')}`);
+              }
+          },
       });
     } else if (formMode === 'edit') {
-      toast.loading(t('Updating task type...'));
-      router.put(route('tasks.task-types.update', currentItem.id), formData, {
-        onSuccess: (page) => {
-          setIsFormModalOpen(false);
-          toast.dismiss();
-          if (page.props.flash.success) {
-            toast.success(page.props.flash.success);
-          } else if (page.props.flash.error) {
-            toast.error(page.props.flash.error);
-          }
-        },
-        onError: (errors) => {
-          toast.dismiss();
-          if (typeof errors === 'string') {
-            toast.error(errors);
-          } else {
-            toast.error(`Failed to update task type: ${Object.values(errors).join(', ')}`);
-          }
-        }
+      router.put(route('setup.task-types.update', currentItem.id), formData, {
+          onSuccess: (page) => {
+              setIsFormModalOpen(false);
+              toast.dismiss();
+              if (page.props.flash.success) {
+                  toast.success(page.props.flash.success);
+              } else if (page.props.flash.error) {
+                  toast.error(page.props.flash.error);
+              }
+          },
+          onError: (errors) => {
+              toast.dismiss();
+              if (typeof errors === 'string') {
+                  toast.error(errors);
+              } else {
+                  toast.error(`Failed to update task type: ${Object.values(errors).join(', ')}`);
+              }
+          },
       });
     }
   };
 
   const handleDeleteConfirm = () => {
-    toast.loading(t('Deleting task type...'));
-    router.delete(route('tasks.task-types.destroy', currentItem.id), {
-      onSuccess: (page) => {
-        setIsDeleteModalOpen(false);
-        toast.dismiss();
-        if (page.props.flash.success) {
-          toast.success(page.props.flash.success);
-        } else if (page.props.flash.error) {
-          toast.error(page.props.flash.error);
-        }
-      },
-      onError: (errors) => {
-        toast.dismiss();
-        if (typeof errors === 'string') {
-          toast.error(errors);
-        } else {
-          toast.error(`Failed to delete task type: ${Object.values(errors).join(', ')}`);
-        }
-      }
+    router.delete(route('setup.task-types.destroy', currentItem.id), {
+        onSuccess: (page) => {
+            setIsDeleteModalOpen(false);
+            toast.dismiss();
+            if (page.props.flash.success) {
+                toast.success(page.props.flash.success);
+            } else if (page.props.flash.error) {
+                toast.error(page.props.flash.error);
+            }
+        },
+        onError: (errors) => {
+            toast.dismiss();
+            if (typeof errors === 'string') {
+                toast.error(errors);
+            } else {
+                toast.error(`Failed to delete task type: ${Object.values(errors).join(', ')}`);
+            }
+        },
     });
   };
 
   const handleToggleStatus = (taskType: any) => {
-    const newStatus = taskType.status === 'active' ? 'inactive' : 'active';
-    toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} task type...`);
-
-    router.put(route('tasks.task-types.toggle-status', taskType.id), {}, {
-      onSuccess: (page) => {
-        toast.dismiss();
-        if (page.props.flash.success) {
-          toast.success(page.props.flash.success);
-        } else if (page.props.flash.error) {
-          toast.error(page.props.flash.error);
-        }
-      },
-      onError: (errors) => {
-        toast.dismiss();
-        if (typeof errors === 'string') {
-          toast.error(errors);
-        } else {
-          toast.error(`Failed to update task type status: ${Object.values(errors).join(', ')}`);
-        }
-      }
-    });
+    router.put(
+        route('setup.task-types.toggle-status', taskType.id),
+        {},
+        {
+            onSuccess: (page) => {
+                toast.dismiss();
+                if (page.props.flash.success) {
+                    toast.success(page.props.flash.success);
+                } else if (page.props.flash.error) {
+                    toast.error(page.props.flash.error);
+                }
+            },
+            onError: (errors) => {
+                toast.dismiss();
+                if (typeof errors === 'string') {
+                    toast.error(errors);
+                } else {
+                    toast.error(`Failed to update task type status: ${Object.values(errors).join(', ')}`);
+                }
+            },
+        },
+    );
   };
 
   const handleResetFilters = () => {
@@ -181,13 +183,24 @@ export default function TaskTypes() {
     setSelectedStatus('all');
     setShowFilters(false);
 
-    router.get(route('tasks.task-types.index'), {
-      page: 1,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+        route('setup.task-types.index'),
+        {
+            page: 1,
+            per_page: pageFilters.per_page,
+        },
+        { preserveState: true, preserveScroll: true },
+    );
   };
 
   const pageActions = [];
+  pageActions.push({
+    label: t('Back to Master Data'),
+    icon: <ChevronLeft className="h-4 w-4" />,
+    variant: 'outline',
+    onClick: () => router.visit(route('setup.index'))
+  });
+
   if (hasPermission(permissions, 'create-task-types')) {
     pageActions.push({
       label: t('Add Task Type'),
@@ -198,10 +211,10 @@ export default function TaskTypes() {
   }
 
   const breadcrumbs = [
-    { title: t('Dashboard'), href: route('dashboard') },
-    { title: t('Task & Workflow'), href: route('tasks.index') },
-    { title: t('Task Types') }
-  ];
+        { title: t('Dashboard'), href: route('dashboard') },
+        { title: t('Mast Data'), href: route('setup.index') },
+        { title: t('Task Types') }
+      ];
 
   const columns = [
     {
@@ -348,7 +361,7 @@ export default function TaskTypes() {
                   currentPerPage={pageFilters.per_page?.toString() || '10'}
                   onPerPageChange={(value) => {
                       router.get(
-                          route('tasks.task-types.index'),
+                          route('setup.task-types.index'),
                           {
                               page: 1,
                               per_page: parseInt(value),

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { ChevronLeft, Plus } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
 import { CrudFormModal } from '@/components/CrudFormModal';
@@ -32,24 +32,32 @@ export default function CourtTypes() {
   };
 
   const applyFilters = () => {
-    router.get(route('advocate.court-types.index'), {
-      page: 1,
-      search: searchTerm || undefined,
-      status: selectedStatus !== 'all' ? selectedStatus : undefined,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+        route('setup.court-types.index'),
+        {
+            page: 1,
+            search: searchTerm || undefined,
+            status: selectedStatus !== 'all' ? selectedStatus : undefined,
+            per_page: pageFilters.per_page,
+        },
+        { preserveState: true, preserveScroll: true },
+    );
   };
 
   const handleSort = (field: string) => {
     const direction = pageFilters.sort_field === field && pageFilters.sort_direction === 'asc' ? 'desc' : 'asc';
-    router.get(route('advocate.court-types.index'), {
-      sort_field: field,
-      sort_direction: direction,
-      page: 1,
-      search: searchTerm || undefined,
-      status: selectedStatus !== 'all' ? selectedStatus : undefined,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+        route('setup.court-types.index'),
+        {
+            sort_field: field,
+            sort_direction: direction,
+            page: 1,
+            search: searchTerm || undefined,
+            status: selectedStatus !== 'all' ? selectedStatus : undefined,
+            per_page: pageFilters.per_page,
+        },
+        { preserveState: true, preserveScroll: true },
+    );
   };
 
   const handleAction = (action: string, item: any) => {
@@ -81,68 +89,69 @@ export default function CourtTypes() {
     const newStatus = item.status === 'active' ? 'inactive' : 'active';
     toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} court type...`);
 
-    router.put(route('advocate.court-types.toggle-status', item.id), {}, {
-      onSuccess: (page) => {
-        toast.dismiss();
-        if (page.props.flash.success) {
-          toast.success(page.props.flash.success);
-        }
-      },
-      onError: (errors) => {
-        toast.dismiss();
-        toast.error('Failed to update status');
-      }
-    });
+    router.put(
+        route('setup.court-types.toggle-status', item.id),
+        {},
+        {
+            onSuccess: (page) => {
+                toast.dismiss();
+                if (page.props.flash.success) {
+                    toast.success(page.props.flash.success);
+                }
+            },
+            onError: (errors) => {
+                toast.dismiss();
+                toast.error('Failed to update status');
+            },
+        },
+    );
   };
 
   const handleFormSubmit = (formData: any) => {
     if (formMode === 'create') {
-      toast.loading(t('Creating court type...'));
-      router.post(route('advocate.court-types.store'), formData, {
-        onSuccess: (page) => {
-          setIsFormModalOpen(false);
-          toast.dismiss();
-          if (page.props.flash.success) {
-            toast.success(page.props.flash.success);
-          }
-        },
-        onError: (errors) => {
-          toast.dismiss();
-          toast.error(`Failed to create court type: ${Object.values(errors).join(', ')}`);
-        }
+      router.post(route('setup.court-types.store'), formData, {
+          onSuccess: (page) => {
+              setIsFormModalOpen(false);
+              toast.dismiss();
+              if (page.props.flash.success) {
+                  toast.success(page.props.flash.success);
+              }
+          },
+          onError: (errors) => {
+              toast.dismiss();
+              toast.error(`Failed to create court type: ${Object.values(errors).join(', ')}`);
+          },
       });
     } else if (formMode === 'edit') {
-      toast.loading(t('Updating court type...'));
-      router.put(route('advocate.court-types.update', currentItem.id), formData, {
-        onSuccess: (page) => {
-          setIsFormModalOpen(false);
-          toast.dismiss();
-          if (page.props.flash.success) {
-            toast.success(page.props.flash.success);
-          }
-        },
-        onError: (errors) => {
-          toast.dismiss();
-          toast.error(`Failed to update court type: ${Object.values(errors).join(', ')}`);
-        }
+      router.put(route('setup.court-types.update', currentItem.id), formData, {
+          onSuccess: (page) => {
+              setIsFormModalOpen(false);
+              toast.dismiss();
+              if (page.props.flash.success) {
+                  toast.success(page.props.flash.success);
+              }
+          },
+          onError: (errors) => {
+              toast.dismiss();
+              toast.error(`Failed to update court type: ${Object.values(errors).join(', ')}`);
+          },
       });
     }
   };
 
   const handleDeleteConfirm = () => {
-    toast.loading(t('Deleting court type...'));
-    router.delete(route('advocate.court-types.destroy', currentItem.id), {
-      onSuccess: (page) => {
-        setIsDeleteModalOpen(false);
-        toast.dismiss();
-        if (page.props.flash.success) {
-          toast.success(page.props.flash.success);
-        }
-      },
-      onError: (errors) => {
-        toast.dismiss();
-        toast.error('Failed to delete court type');
-      }
+    router.delete(route('setup.court-types.destroy', currentItem.id), {
+        onSuccess: (page) => {
+            setIsDeleteModalOpen(false);
+            toast.dismiss();
+            if (page.props.flash.success) {
+                toast.success(page.props.flash.success);
+            }
+        },
+        onError: (errors) => {
+            toast.dismiss();
+            toast.error('Failed to delete court type');
+        },
     });
   };
 
@@ -150,13 +159,24 @@ export default function CourtTypes() {
     setSearchTerm('');
     setSelectedStatus('all');
     setShowFilters(false);
-    router.get(route('advocate.court-types.index'), {
-      page: 1,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+        route('setup.court-types.index'),
+        {
+            page: 1,
+            per_page: pageFilters.per_page,
+        },
+        { preserveState: true, preserveScroll: true },
+    );
   };
 
   const pageActions = [];
+  pageActions.push({
+    label: t('Back to Master Data'),
+    icon: <ChevronLeft className="h-4 w-4" />,
+    variant: 'outline',
+    onClick: () => router.visit(route('setup.index'))
+  });
+
   if (hasPermission(permissions, 'create-court-types')) {
     pageActions.push({
       label: t('Add Court Type'),
@@ -168,7 +188,7 @@ export default function CourtTypes() {
 
   const breadcrumbs = [
     { title: t('Dashboard'), href: route('dashboard') },
-    { title: t('Advocate'), href: route('advocate.company-profiles.index') },
+    { title: t('Mast Data'), href: route('setup.index') },
     { title: t('Court Types') }
   ];
 
@@ -303,7 +323,7 @@ export default function CourtTypes() {
                   currentPerPage={pageFilters.per_page?.toString() || '10'}
                   onPerPageChange={(value) => {
                       router.get(
-                          route('advocate.court-types.index'),
+                          route('setup.court-types.index'),
                           {
                               page: 1,
                               per_page: parseInt(value),

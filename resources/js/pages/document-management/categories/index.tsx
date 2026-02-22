@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { ChevronLeft, Plus } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
 import { CrudFormModal } from '@/components/CrudFormModal';
@@ -36,7 +36,7 @@ export default function DocumentCategories() {
         params.sort_direction = pageFilters.sort_direction || 'asc';
       }
       if (pageFilters.per_page) params.per_page = pageFilters.per_page;
-      router.get(route('document-management.categories.index'), params, {
+      router.get(route('setup.document-categories.index'), params, {
         preserveState: false,
         preserveScroll: false
       });
@@ -55,24 +55,32 @@ export default function DocumentCategories() {
   };
 
   const applyFilters = () => {
-    router.get(route('document-management.categories.index'), {
-      page: 1,
-      search: searchTerm || undefined,
-      status: selectedStatus !== 'all' ? selectedStatus : undefined,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+        route('setup.document-categories.index'),
+        {
+            page: 1,
+            search: searchTerm || undefined,
+            status: selectedStatus !== 'all' ? selectedStatus : undefined,
+            per_page: pageFilters.per_page,
+        },
+        { preserveState: true, preserveScroll: true },
+    );
   };
 
   const handleSort = (field: string) => {
     const direction = pageFilters.sort_field === field && pageFilters.sort_direction === 'asc' ? 'desc' : 'asc';
-    router.get(route('document-management.categories.index'), {
-      sort_field: field,
-      sort_direction: direction,
-      page: 1,
-      search: searchTerm || undefined,
-      status: selectedStatus !== 'all' ? selectedStatus : undefined,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+        route('setup.document-categories.index'),
+        {
+            sort_field: field,
+            sort_direction: direction,
+            page: 1,
+            search: searchTerm || undefined,
+            status: selectedStatus !== 'all' ? selectedStatus : undefined,
+            per_page: pageFilters.per_page,
+        },
+        { preserveState: true, preserveScroll: true },
+    );
   };
 
   const handleAction = (action: string, item: any) => {
@@ -99,83 +107,95 @@ export default function DocumentCategories() {
 
   const handleFormSubmit = (formData: any) => {
     if (formMode === 'create') {
-      toast.loading(t('Creating category...'));
-      router.post(route('document-management.categories.store'), formData, {
-        onSuccess: (page) => {
-          setIsFormModalOpen(false);
-          toast.dismiss();
-          if (page.props.flash.success) {
-            toast.success(page.props.flash.success);
-          }
-        },
-        onError: (errors) => {
-          toast.dismiss();
-          toast.error(`Failed to create category: ${Object.values(errors).join(', ')}`);
-        }
+      router.post(route('setup.document-categories.store'), formData, {
+          onSuccess: (page) => {
+              setIsFormModalOpen(false);
+              toast.dismiss();
+              if (page.props.flash.success) {
+                  toast.success(page.props.flash.success);
+              }
+          },
+          onError: (errors) => {
+              toast.dismiss();
+              toast.error(`Failed to create category: ${Object.values(errors).join(', ')}`);
+          },
       });
     } else if (formMode === 'edit') {
-      toast.loading(t('Updating category...'));
-      router.put(route('document-management.categories.update', currentItem.id), formData, {
-        onSuccess: (page) => {
-          setIsFormModalOpen(false);
-          toast.dismiss();
-          if (page.props.flash.success) {
-            toast.success(page.props.flash.success);
-          }
-        },
-        onError: (errors) => {
-          toast.dismiss();
-          toast.error(`Failed to update category: ${Object.values(errors).join(', ')}`);
-        }
+      router.put(route('setup.document-categories.update', currentItem.id), formData, {
+          onSuccess: (page) => {
+              setIsFormModalOpen(false);
+              toast.dismiss();
+              if (page.props.flash.success) {
+                  toast.success(page.props.flash.success);
+              }
+          },
+          onError: (errors) => {
+              toast.dismiss();
+              toast.error(`Failed to update category: ${Object.values(errors).join(', ')}`);
+          },
       });
     }
   };
 
   const handleDeleteConfirm = () => {
-    toast.loading(t('Deleting category...'));
-    router.delete(route('document-management.categories.destroy', currentItem.id), {
-      onSuccess: (page) => {
-        setIsDeleteModalOpen(false);
-        toast.dismiss();
-        if (page.props.flash.success) {
-          toast.success(page.props.flash.success);
-        }
-      },
-      onError: (errors) => {
-        toast.dismiss();
-        toast.error('Failed to delete category');
-      }
+    router.delete(route('setup.document-categories.destroy', currentItem.id), {
+        onSuccess: (page) => {
+            setIsDeleteModalOpen(false);
+            toast.dismiss();
+            if (page.props.flash.success) {
+                toast.success(page.props.flash.success);
+            }
+        },
+        onError: (errors) => {
+            toast.dismiss();
+            toast.error('Failed to delete category');
+        },
     });
   };
 
   const handleToggleStatus = (category: any) => {
     const newStatus = category.status === 'active' ? 'inactive' : 'active';
     toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} category...`);
-    router.put(route('document-management.categories.toggle-status', category.id), {}, {
-      onSuccess: (page) => {
-        toast.dismiss();
-        if (page.props.flash.success) {
-          toast.success(page.props.flash.success);
-        }
-      },
-      onError: (errors) => {
-        toast.dismiss();
-        toast.error('Failed to update category status');
-      }
-    });
+    router.put(
+        route('setup.document-categories.toggle-status', category.id),
+        {},
+        {
+            onSuccess: (page) => {
+                toast.dismiss();
+                if (page.props.flash.success) {
+                    toast.success(page.props.flash.success);
+                }
+            },
+            onError: (errors) => {
+                toast.dismiss();
+                toast.error('Failed to update category status');
+            },
+        },
+    );
   };
 
   const handleResetFilters = () => {
     setSearchTerm('');
     setSelectedStatus('all');
     setShowFilters(false);
-    router.get(route('document-management.categories.index'), {
-      page: 1,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+        route('setup.document-categories.index'),
+        {
+            page: 1,
+            per_page: pageFilters.per_page,
+        },
+        { preserveState: true, preserveScroll: true },
+    );
   };
 
   const pageActions = [];
+  pageActions.push({
+    label: t('Back to Master Data'),
+    icon: <ChevronLeft className="h-4 w-4" />,
+    variant: 'outline',
+    onClick: () => router.visit(route('setup.index'))
+  });
+  
   if (hasPermission(permissions, 'create-document-categories')) {
     pageActions.push({
       label: t('Add Category'),
@@ -186,10 +206,10 @@ export default function DocumentCategories() {
   }
 
   const breadcrumbs = [
-    { title: t('Dashboard'), href: route('dashboard') },
-    { title: t('Document Management'), href: route('document-management.categories.index') },
-    { title: t('Categories') }
-  ];
+        { title: t('Dashboard'), href: route('dashboard') },
+        { title: t('Mast Data'), href: route('setup.index') },
+        { title: t('Categories') }
+      ];
 
   const columns = [
     { key: 'category_id', label: t('Category ID'), sortable: true },
@@ -305,7 +325,7 @@ export default function DocumentCategories() {
                   currentPerPage={pageFilters.per_page?.toString() || '10'}
                   onPerPageChange={(value) => {
                       router.get(
-                          route('document-management.categories.index'),
+                          route('setup.document-categories.index'),
                           {
                               page: 1,
                               per_page: parseInt(value),

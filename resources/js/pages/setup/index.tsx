@@ -37,134 +37,134 @@ export default function SetupIndex() {
   const userRole = auth?.user?.type || auth?.user?.role || '';
 
   const sections: SetupSection[] = useMemo(
-    () => [
-      {
-        sectionTitle: t('Client Management'),
-        items: [
+      () => [
           {
-            title: t('Client Type'),
-            description: t('Categorize clients by type'),
-            href: route('clients.client-types.index'),
-            permissions: ['manage-client-types', 'manage-any-client-types', 'manage-own-client-types'],
-          },
-        ],
-      },
-      {
-        sectionTitle: t('Case Management'),
-        items: [
-          {
-            title: t('Case Categories'),
-            description: t('Organize cases by classification'),
-            href: route('cases.case-categories.index'),
-            permissions: ['manage-case-categories', 'manage-any-case-categories', 'manage-own-case-categories'],
+              sectionTitle: t('Client Management'),
+              items: [
+                  {
+                      title: t('Client Type'),
+                      description: t('Categorize clients by type'),
+                      href: route('setup.client-types.index'),
+                      permissions: ['manage-client-types', 'manage-any-client-types', 'manage-own-client-types'],
+                  },
+              ],
           },
           {
-            title: t('Case Types'),
-            description: t('Define legal case types'),
-            href: route('cases.case-types.index'),
-            permissions: ['manage-case-types', 'manage-any-case-types', 'manage-own-case-types'],
+              sectionTitle: t('Case Management'),
+              items: [
+                  {
+                      title: t('Case Categories'),
+                      description: t('Organize cases by classification'),
+                      href: route('setup.case-categories.index'),
+                      permissions: ['manage-case-categories', 'manage-any-case-categories', 'manage-own-case-categories'],
+                  },
+                  {
+                      title: t('Case Types'),
+                      description: t('Define legal case types'),
+                      href: route('setup.case-types.index'),
+                      permissions: ['manage-case-types', 'manage-any-case-types', 'manage-own-case-types'],
+                  },
+                  {
+                      title: t('Session Types'),
+                      description: t('Define legal session types'),
+                      href: route('setup.hearing-types.index'),
+                      permissions: ['manage-hearing-types', 'manage-any-hearing-types', 'manage-own-hearing-types'],
+                  },
+                  {
+                      title: t('Event Types'),
+                      description: t('Categorize events within the system'),
+                      href: route('setup.event-types.index'),
+                      permissions: ['manage-event-types', 'manage-any-event-types', 'manage-own-event-types'],
+                  },
+                  {
+                      title: t('Case Statuses'),
+                      description: t('Follow up on case status and progress'),
+                      href: route('setup.case-statuses.index'),
+                      permissions: ['manage-case-statuses', 'manage-any-case-statuses', 'manage-own-case-statuses'],
+                  },
+              ],
           },
           {
-            title: t('Session Types'),
-            description: t('Define legal session types'),
-            href: route('hearing-types.index'),
-            permissions: ['manage-hearing-types', 'manage-any-hearing-types', 'manage-own-hearing-types'],
+              sectionTitle: t('Courts & Judiciary'),
+              items: [
+                  {
+                      title: t('Court Types'),
+                      description: t('Categorize courts by degree'),
+                      href: route('setup.court-types.index'),
+                      permissions: ['manage-court-types', 'manage-any-court-types', 'manage-own-court-types'],
+                  },
+                  {
+                      title: t('Circle Types'),
+                      description: t('Organize departments within courts'),
+                      href: route('setup.circle-types.index'),
+                      permissions: ['manage-circle-types', 'manage-any-circle-types', 'manage-own-circle-types'],
+                  },
+              ],
           },
           {
-            title: t('Event Types'),
-            description: t('Categorize events within the system'),
-            href: route('advocate.event-types.index'),
-            permissions: ['manage-event-types', 'manage-any-event-types', 'manage-own-event-types'],
+              sectionTitle: t('Document Management'),
+              items: [
+                  {
+                      title: t('Document Categories'),
+                      description: t('Organize documents into categories'),
+                      href: route('setup.document-categories.index'),
+                      permissions: ['manage-document-categories', 'manage-any-document-categories', 'manage-own-document-categories'],
+                  },
+                  {
+                      title: t('Document Types'),
+                      description: t('Define and categorize document types'),
+                      href: route('setup.document-types.index'),
+                      permissions: ['manage-document-types', 'manage-any-document-types', 'manage-own-document-types'],
+                  },
+              ],
           },
           {
-            title: t('Case Statuses'),
-            description: t('Follow up on case status and progress'),
-            href: route('cases.case-statuses.index'),
-            permissions: ['manage-case-statuses', 'manage-any-case-statuses', 'manage-own-case-statuses'],
-          },
-        ],
-      },
-      {
-        sectionTitle: t('Courts & Judiciary'),
-        items: [
-          {
-            title: t('Court Types'),
-            description: t('Categorize courts by degree'),
-            href: route('advocate.court-types.index'),
-            permissions: ['manage-court-types', 'manage-any-court-types', 'manage-own-court-types'],
-          },
-          {
-            title: t('Circle Types'),
-            description: t('Organize departments within courts'),
-            href: route('advocate.circle-types.index'),
-            permissions: ['manage-circle-types', 'manage-any-circle-types', 'manage-own-circle-types'],
-          },
-        ],
-      },
-      {
-        sectionTitle: t('Document Management'),
-        items: [
-          {
-            title: t('Document Categories'),
-            description: t('Organize documents into categories'),
-            href: route('document-management.categories.index'),
-            permissions: ['manage-document-categories', 'manage-any-document-categories', 'manage-own-document-categories'],
+              sectionTitle: t('Research'),
+              items: [
+                  {
+                      title: t('Research Type'),
+                      description: t('Determine available search methods'),
+                      href: route('setup.research-types.index'),
+                      permissions: ['manage-research-types', 'manage-any-research-types', 'manage-own-research-types'],
+                  },
+                  {
+                      title: t('Research Source'),
+                      description: t('Determine sources of search results'),
+                      href: route('setup.research-sources.index'),
+                      permissions: ['manage-research-sources', 'manage-any-research-sources', 'manage-own-research-sources'],
+                  },
+              ],
           },
           {
-            title: t('Document Types'),
-            description: t('Define and categorize document types'),
-            href: route('advocate.document-types.index'),
-            permissions: ['manage-document-types', 'manage-any-document-types', 'manage-own-document-types'],
-          },
-        ],
-      },
-      {
-        sectionTitle: t('Research Settings'),
-        items: [
-          {
-            title: t('Research Type'),
-            description: t('Determine available search methods'),
-            href: route('legal-research.research-types.index'),
-            permissions: ['manage-research-types', 'manage-any-research-types', 'manage-own-research-types'],
-          },
-          {
-            title: t('Research Source'),
-            description: t('Determine sources of search results'),
-            href: route('legal-research.sources.index'),
-            permissions: ['manage-research-sources', 'manage-any-research-sources', 'manage-own-research-sources'],
-          },
-        ],
-      },
-      {
-        sectionTitle: t('Task Management'),
-        items: [
-          {
-            title: t('Task Types'),
-            description: t('Categorize tasks by type'),
-            href: route('tasks.task-types.index'),
-            permissions: ['manage-task-types', 'manage-any-task-types', 'manage-own-task-types'],
+              sectionTitle: t('Task Management'),
+              items: [
+                  {
+                      title: t('Task Types'),
+                      description: t('Categorize tasks by type'),
+                      href: route('setup.task-types.index'),
+                      permissions: ['manage-task-types', 'manage-any-task-types', 'manage-own-task-types'],
+                  },
+                  {
+                      title: t('Task Statuses'),
+                      description: t('Follow up on task progress'),
+                      href: route('setup.task-statuses.index'),
+                      permissions: ['manage-task-statuses', 'manage-any-task-statuses', 'manage-own-task-statuses'],
+                  },
+              ],
           },
           {
-            title: t('Task Statuses'),
-            description: t('Follow up on task progress'),
-            href: route('tasks.task-statuses.index'),
-            permissions: ['manage-task-statuses', 'manage-any-task-statuses', 'manage-own-task-statuses'],
+              sectionTitle: t('Billing'),
+              items: [
+                  {
+                      title: t('Expense Category'),
+                      description: t('Categorize and organize expense items'),
+                      href: route('setup.expense-categories.index'),
+                      permissions: ['manage-expense-categories', 'manage-any-expense-categories', 'manage-own-expense-categories'],
+                  },
+              ],
           },
-        ],
-      },
-      {
-        sectionTitle: t('Billing'),
-        items: [
-          {
-            title: t('Expense Category'),
-            description: t('Categorize and organize expense items'),
-            href: route('billing.expense-categories.index'),
-            permissions: ['manage-expense-categories', 'manage-any-expense-categories', 'manage-own-expense-categories'],
-          },
-        ],
-      },
-    ],
-    [t]
+      ],
+      [t],
   );
 
   const sectionsWithVisibleItems = useMemo(
@@ -179,7 +179,7 @@ export default function SetupIndex() {
   );
 
   return (
-    <PageTemplate title={t('Settings')} url="/setup">
+    <PageTemplate title={t('Master Data')} url="/setup">
       <div className="space-y-8">
         {sectionsWithVisibleItems.length === 0 ? (
           <p className="text-muted-foreground text-sm py-8">{t('No setup options available.')}</p>

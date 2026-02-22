@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { ChevronLeft, Plus } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
 import { CrudFormModal } from '@/components/CrudFormModal';
@@ -40,7 +40,7 @@ export default function HearingTypes() {
   };
 
   const applyFilters = () => {
-    router.get(route('hearing-types.index'), {
+    router.get(route('setup.hearing-types.index'), {
       page: 1,
       search: searchTerm || undefined,
       status: selectedStatus !== 'all' ? selectedStatus : undefined,
@@ -51,14 +51,18 @@ export default function HearingTypes() {
   const handleSort = (field: string) => {
     const direction = pageFilters.sort_field === field && pageFilters.sort_direction === 'asc' ? 'desc' : 'asc';
 
-    router.get(route('hearing-types.index'), {
-      sort_field: field,
-      sort_direction: direction,
-      page: 1,
-      search: searchTerm || undefined,
-      status: selectedStatus !== 'all' ? selectedStatus : undefined,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+        route('setup.hearing-types.index'),
+        {
+            sort_field: field,
+            sort_direction: direction,
+            page: 1,
+            search: searchTerm || undefined,
+            status: selectedStatus !== 'all' ? selectedStatus : undefined,
+            per_page: pageFilters.per_page,
+        },
+        { preserveState: true, preserveScroll: true },
+    );
   };
 
   const handleAction = (action: string, item: any) => {
@@ -91,38 +95,38 @@ export default function HearingTypes() {
     if (formMode === 'create') {
       toast.loading(t('Creating hearing type...'));
 
-      router.post(route('hearing-types.store'), formData, {
-        onSuccess: (page) => {
-          setIsFormModalOpen(false);
-          toast.dismiss();
-          if (page.props.flash.success) {
-            toast.success(page.props.flash.success);
-          } else if (page.props.flash.error) {
-            toast.error(page.props.flash.error);
-          }
-        },
-        onError: (errors) => {
-          toast.dismiss();
-          toast.error(`Failed to create hearing type: ${Object.values(errors).join(', ')}`);
-        }
+      router.post(route('setup.hearing-types.store'), formData, {
+          onSuccess: (page) => {
+              setIsFormModalOpen(false);
+              toast.dismiss();
+              if (page.props.flash.success) {
+                  toast.success(page.props.flash.success);
+              } else if (page.props.flash.error) {
+                  toast.error(page.props.flash.error);
+              }
+          },
+          onError: (errors) => {
+              toast.dismiss();
+              toast.error(`Failed to create hearing type: ${Object.values(errors).join(', ')}`);
+          },
       });
     } else if (formMode === 'edit') {
       toast.loading(t('Updating hearing type...'));
 
-      router.put(route('hearing-types.update', currentItem.id), formData, {
-        onSuccess: (page) => {
-          setIsFormModalOpen(false);
-          toast.dismiss();
-          if (page.props.flash.success) {
-            toast.success(page.props.flash.success);
-          } else if (page.props.flash.error) {
-            toast.error(page.props.flash.error);
-          }
-        },
-        onError: (errors) => {
-          toast.dismiss();
-          toast.error(`Failed to update hearing type: ${Object.values(errors).join(', ')}`);
-        }
+      router.put(route('setup.hearing-types.update', currentItem.id), formData, {
+          onSuccess: (page) => {
+              setIsFormModalOpen(false);
+              toast.dismiss();
+              if (page.props.flash.success) {
+                  toast.success(page.props.flash.success);
+              } else if (page.props.flash.error) {
+                  toast.error(page.props.flash.error);
+              }
+          },
+          onError: (errors) => {
+              toast.dismiss();
+              toast.error(`Failed to update hearing type: ${Object.values(errors).join(', ')}`);
+          },
       });
     }
   };
@@ -130,20 +134,20 @@ export default function HearingTypes() {
   const handleDeleteConfirm = () => {
     toast.loading(t('Deleting hearing type...'));
 
-    router.delete(route('hearing-types.destroy', currentItem.id), {
-      onSuccess: (page) => {
-        setIsDeleteModalOpen(false);
-        toast.dismiss();
-        if (page.props.flash.success) {
-          toast.success(page.props.flash.success);
-        } else if (page.props.flash.error) {
-          toast.error(page.props.flash.error);
-        }
-      },
-      onError: (errors) => {
-        toast.dismiss();
-        toast.error(`Failed to delete hearing type: ${Object.values(errors).join(', ')}`);
-      }
+    router.delete(route('setup.hearing-types.destroy', currentItem.id), {
+        onSuccess: (page) => {
+            setIsDeleteModalOpen(false);
+            toast.dismiss();
+            if (page.props.flash.success) {
+                toast.success(page.props.flash.success);
+            } else if (page.props.flash.error) {
+                toast.error(page.props.flash.error);
+            }
+        },
+        onError: (errors) => {
+            toast.dismiss();
+            toast.error(`Failed to delete hearing type: ${Object.values(errors).join(', ')}`);
+        },
     });
   };
 
@@ -151,20 +155,24 @@ export default function HearingTypes() {
     const newStatus = hearingType.status === 'active' ? 'inactive' : 'active';
     toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} hearing type...`);
 
-    router.put(route('hearing-types.toggle-status', hearingType.id), {}, {
-      onSuccess: (page) => {
-        toast.dismiss();
-        if (page.props.flash.success) {
-          toast.success(page.props.flash.success);
-        } else if (page.props.flash.error) {
-          toast.error(page.props.flash.error);
-        }
-      },
-      onError: (errors) => {
-        toast.dismiss();
-        toast.error(`Failed to update hearing type status: ${Object.values(errors).join(', ')}`);
-      }
-    });
+    router.put(
+        route('setup.hearing-types.toggle-status', hearingType.id),
+        {},
+        {
+            onSuccess: (page) => {
+                toast.dismiss();
+                if (page.props.flash.success) {
+                    toast.success(page.props.flash.success);
+                } else if (page.props.flash.error) {
+                    toast.error(page.props.flash.error);
+                }
+            },
+            onError: (errors) => {
+                toast.dismiss();
+                toast.error(`Failed to update hearing type status: ${Object.values(errors).join(', ')}`);
+            },
+        },
+    );
   };
 
   const handleResetFilters = () => {
@@ -172,13 +180,23 @@ export default function HearingTypes() {
     setSelectedStatus('all');
     setShowFilters(false);
 
-    router.get(route('hearing-types.index'), {
-      page: 1,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+        route('setup.hearing-types.index'),
+        {
+            page: 1,
+            per_page: pageFilters.per_page,
+        },
+        { preserveState: true, preserveScroll: true },
+    );
   };
 
   const pageActions = [];
+  pageActions.push({
+    label: t('Back to Master Data'),
+    icon: <ChevronLeft className="h-4 w-4" />,
+    variant: 'outline',
+    onClick: () => router.visit(route('setup.index'))
+  });
 
   if (hasPermission(permissions, 'create-hearing-types')) {
     pageActions.push({
@@ -190,10 +208,10 @@ export default function HearingTypes() {
   }
 
   const breadcrumbs = [
-    { title: t('Dashboard'), href: route('dashboard') },
-    { title: t('Court Schedule'), href: route('courts.index') },
-    { title: t('Hearing Types') }
-  ];
+        { title: t('Dashboard'), href: route('dashboard') },
+        { title: t('Mast Data'), href: route('setup.index') },
+        { title: t('Hearing Types') }
+      ];
 
   // Helper function to get translated value from JSON object
   const getTranslatedValue = (value: any, maxLength?: number): string => {
@@ -314,7 +332,7 @@ export default function HearingTypes() {
                   currentPerPage={pageFilters.per_page?.toString() || '10'}
                   onPerPageChange={(value) => {
                       router.get(
-                          route('hearing-types.index'),
+                          route('setup.hearing-types.index'),
                           {
                               page: 1,
                               per_page: parseInt(value),

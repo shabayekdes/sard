@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { ChevronLeft, Plus } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
 import { CrudFormModal } from '@/components/CrudFormModal';
@@ -38,7 +38,7 @@ export default function CaseTypes() {
   };
 
   const applyFilters = () => {
-    router.get(route('cases.case-types.index'), {
+    router.get(route('setup.case-types.index'), {
       page: 1,
       search: searchTerm || undefined,
       status: selectedStatus !== 'all' ? selectedStatus : undefined,
@@ -49,7 +49,7 @@ export default function CaseTypes() {
   const handleSort = (field: string) => {
     const direction = pageFilters.sort_field === field && pageFilters.sort_direction === 'asc' ? 'desc' : 'asc';
 
-    router.get(route('cases.case-types.index'), {
+    router.get(route('setup.case-types.index'), {
       sort_field: field,
       sort_direction: direction,
       page: 1,
@@ -101,38 +101,38 @@ export default function CaseTypes() {
     if (formMode === 'create') {
       toast.loading(t('Creating case type...'));
 
-      router.post(route('cases.case-types.store'), formData, {
-        onSuccess: (page) => {
-          setIsFormModalOpen(false);
-          toast.dismiss();
-          if (page.props.flash.success) {
-            toast.success(page.props.flash.success);
-          } else if (page.props.flash.error) {
-            toast.error(page.props.flash.error);
-          }
-        },
-        onError: (errors) => {
-          toast.dismiss();
-          toast.error(`Failed to create case type: ${Object.values(errors).join(', ')}`);
-        }
+      router.post(route('setup.case-types.store'), formData, {
+          onSuccess: (page) => {
+              setIsFormModalOpen(false);
+              toast.dismiss();
+              if (page.props.flash.success) {
+                  toast.success(page.props.flash.success);
+              } else if (page.props.flash.error) {
+                  toast.error(page.props.flash.error);
+              }
+          },
+          onError: (errors) => {
+              toast.dismiss();
+              toast.error(`Failed to create case type: ${Object.values(errors).join(', ')}`);
+          },
       });
     } else if (formMode === 'edit') {
       toast.loading(t('Updating case type...'));
 
-      router.put(route('cases.case-types.update', currentItem.id), formData, {
-        onSuccess: (page) => {
-          setIsFormModalOpen(false);
-          toast.dismiss();
-          if (page.props.flash.success) {
-            toast.success(page.props.flash.success);
-          } else if (page.props.flash.error) {
-            toast.error(page.props.flash.error);
-          }
-        },
-        onError: (errors) => {
-          toast.dismiss();
-          toast.error(`Failed to update case type: ${Object.values(errors).join(', ')}`);
-        }
+      router.put(route('setup.case-types.update', currentItem.id), formData, {
+          onSuccess: (page) => {
+              setIsFormModalOpen(false);
+              toast.dismiss();
+              if (page.props.flash.success) {
+                  toast.success(page.props.flash.success);
+              } else if (page.props.flash.error) {
+                  toast.error(page.props.flash.error);
+              }
+          },
+          onError: (errors) => {
+              toast.dismiss();
+              toast.error(`Failed to update case type: ${Object.values(errors).join(', ')}`);
+          },
       });
     }
   };
@@ -140,20 +140,20 @@ export default function CaseTypes() {
   const handleDeleteConfirm = () => {
     toast.loading(t('Deleting case type...'));
 
-    router.delete(route('cases.case-types.destroy', currentItem.id), {
-      onSuccess: (page) => {
-        setIsDeleteModalOpen(false);
-        toast.dismiss();
-        if (page.props.flash.success) {
-          toast.success(page.props.flash.success);
-        } else if (page.props.flash.error) {
-          toast.error(page.props.flash.error);
-        }
-      },
-      onError: (errors) => {
-        toast.dismiss();
-        toast.error(`Failed to delete case type: ${Object.values(errors).join(', ')}`);
-      }
+    router.delete(route('setup.case-types.destroy', currentItem.id), {
+        onSuccess: (page) => {
+            setIsDeleteModalOpen(false);
+            toast.dismiss();
+            if (page.props.flash.success) {
+                toast.success(page.props.flash.success);
+            } else if (page.props.flash.error) {
+                toast.error(page.props.flash.error);
+            }
+        },
+        onError: (errors) => {
+            toast.dismiss();
+            toast.error(`Failed to delete case type: ${Object.values(errors).join(', ')}`);
+        },
     });
   };
 
@@ -161,20 +161,24 @@ export default function CaseTypes() {
     const newStatus = caseType.status === 'active' ? 'inactive' : 'active';
     toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} case type...`);
 
-    router.put(route('cases.case-types.toggle-status', caseType.id), {}, {
-      onSuccess: (page) => {
-        toast.dismiss();
-        if (page.props.flash.success) {
-          toast.success(page.props.flash.success);
-        } else if (page.props.flash.error) {
-          toast.error(page.props.flash.error);
-        }
-      },
-      onError: (errors) => {
-        toast.dismiss();
-        toast.error(`Failed to update case type status: ${Object.values(errors).join(', ')}`);
-      }
-    });
+    router.put(
+        route('setup.case-types.toggle-status', caseType.id),
+        {},
+        {
+            onSuccess: (page) => {
+                toast.dismiss();
+                if (page.props.flash.success) {
+                    toast.success(page.props.flash.success);
+                } else if (page.props.flash.error) {
+                    toast.error(page.props.flash.error);
+                }
+            },
+            onError: (errors) => {
+                toast.dismiss();
+                toast.error(`Failed to update case type status: ${Object.values(errors).join(', ')}`);
+            },
+        },
+    );
   };
 
   const handleResetFilters = () => {
@@ -182,13 +186,23 @@ export default function CaseTypes() {
     setSelectedStatus('all');
     setShowFilters(false);
 
-    router.get(route('cases.case-types.index'), {
-      page: 1,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+        route('setup.case-types.index'),
+        {
+            page: 1,
+            per_page: pageFilters.per_page,
+        },
+        { preserveState: true, preserveScroll: true },
+    );
   };
 
   const pageActions = [];
+  pageActions.push({
+    label: t('Back to Master Data'),
+    icon: <ChevronLeft className="h-4 w-4" />,
+    variant: 'outline',
+    onClick: () => router.visit(route('setup.index'))
+  });
 
   if (hasPermission(permissions, 'create-case-types')) {
     pageActions.push({
@@ -200,10 +214,10 @@ export default function CaseTypes() {
   }
 
   const breadcrumbs = [
-    { title: t('Dashboard'), href: route('dashboard') },
-    { title: t('Case Management'), href: route('cases.index') },
-    { title: t('Case Types') }
-  ];
+        { title: t('Dashboard'), href: route('dashboard') },
+        { title: t('Mast Data'), href: route('setup.index') },
+        { title: t('Case Types') }
+      ];
 
   const currentLocale = i18n.language || 'en';
 
@@ -331,12 +345,16 @@ export default function CaseTypes() {
           onApplyFilters={applyFilters}
           currentPerPage={pageFilters.per_page?.toString() || "10"}
           onPerPageChange={(value) => {
-            router.get(route('cases.case-types.index'), {
-              page: 1,
-              per_page: parseInt(value),
-              search: searchTerm || undefined,
-              status: selectedStatus !== 'all' ? selectedStatus : undefined
-            }, { preserveState: true, preserveScroll: true });
+            router.get(
+                route('setup.case-types.index'),
+                {
+                    page: 1,
+                    per_page: parseInt(value),
+                    search: searchTerm || undefined,
+                    status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                },
+                { preserveState: true, preserveScroll: true },
+            );
           }}
         />
       </div>

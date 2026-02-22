@@ -467,7 +467,7 @@ export function AppSidebar() {
             }
             if (hasSetup) {
                 items.push({
-                    title: t('Setup'),
+                    title: t('Master Data'),
                     href: route('setup.index'),
                     icon: Settings,
                 });

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { ChevronLeft, Plus } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
 import { CrudFormModal } from '@/components/CrudFormModal';
@@ -32,24 +32,32 @@ export default function CircleTypes() {
     };
 
     const applyFilters = () => {
-        router.get(route('advocate.circle-types.index'), {
-            page: 1,
-            search: searchTerm || undefined,
-            status: selectedStatus !== 'all' ? selectedStatus : undefined,
-            per_page: pageFilters.per_page
-        }, { preserveState: true, preserveScroll: true });
+        router.get(
+            route('setup.circle-types.index'),
+            {
+                page: 1,
+                search: searchTerm || undefined,
+                status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                per_page: pageFilters.per_page,
+            },
+            { preserveState: true, preserveScroll: true },
+        );
     };
 
     const handleSort = (field: string) => {
         const direction = pageFilters.sort_field === field && pageFilters.sort_direction === 'asc' ? 'desc' : 'asc';
-        router.get(route('advocate.circle-types.index'), {
-            sort_field: field,
-            sort_direction: direction,
-            page: 1,
-            search: searchTerm || undefined,
-            status: selectedStatus !== 'all' ? selectedStatus : undefined,
-            per_page: pageFilters.per_page
-        }, { preserveState: true, preserveScroll: true });
+        router.get(
+            route('setup.circle-types.index'),
+            {
+                sort_field: field,
+                sort_direction: direction,
+                page: 1,
+                search: searchTerm || undefined,
+                status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                per_page: pageFilters.per_page,
+            },
+            { preserveState: true, preserveScroll: true },
+        );
     };
 
     const handleAction = (action: string, item: any) => {
@@ -81,27 +89,30 @@ export default function CircleTypes() {
         const newStatus = item.status === 'active' ? 'inactive' : 'active';
         toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} circle type...`);
 
-        router.put(route('advocate.circle-types.toggle-status', item.id), {}, {
-            onSuccess: (page) => {
-                toast.dismiss();
-                if (page.props.flash.success) {
-                    toast.success(page.props.flash.success);
-                }
-                if (page.props.flash.error) {
-                    toast.error(page.props.flash.error);
-                }
+        router.put(
+            route('setup.circle-types.toggle-status', item.id),
+            {},
+            {
+                onSuccess: (page) => {
+                    toast.dismiss();
+                    if (page.props.flash.success) {
+                        toast.success(page.props.flash.success);
+                    }
+                    if (page.props.flash.error) {
+                        toast.error(page.props.flash.error);
+                    }
+                },
+                onError: (errors) => {
+                    toast.dismiss();
+                    toast.error(t('Failed to update status'));
+                },
             },
-            onError: (errors) => {
-                toast.dismiss();
-                toast.error(t('Failed to update status'));
-            }
-        });
+        );
     };
 
     const handleFormSubmit = (formData: any) => {
         if (formMode === 'create') {
-            toast.loading(t('Creating circle type...'));
-            router.post(route('advocate.circle-types.store'), formData, {
+            router.post(route('setup.circle-types.store'), formData, {
                 onSuccess: (page) => {
                     setIsFormModalOpen(false);
                     toast.dismiss();
@@ -112,11 +123,10 @@ export default function CircleTypes() {
                 onError: (errors) => {
                     toast.dismiss();
                     toast.error(`${t('Failed to create circle type')}: ${Object.values(errors).join(', ')}`);
-                }
+                },
             });
         } else if (formMode === 'edit') {
-            toast.loading(t('Updating circle type...'));
-            router.put(route('advocate.circle-types.update', currentItem.id), formData, {
+            router.put(route('setup.circle-types.update', currentItem.id), formData, {
                 onSuccess: (page) => {
                     setIsFormModalOpen(false);
                     toast.dismiss();
@@ -127,14 +137,13 @@ export default function CircleTypes() {
                 onError: (errors) => {
                     toast.dismiss();
                     toast.error(`${t('Failed to update circle type')}: ${Object.values(errors).join(', ')}`);
-                }
+                },
             });
         }
     };
 
     const handleDeleteConfirm = () => {
-        toast.loading(t('Deleting circle type...'));
-        router.delete(route('advocate.circle-types.destroy', currentItem.id), {
+        router.delete(route('setup.circle-types.destroy', currentItem.id), {
             onSuccess: (page) => {
                 toast.dismiss();
                 if (page.props.flash.success) {
@@ -150,7 +159,7 @@ export default function CircleTypes() {
                 toast.dismiss();
                 const errorMessage = errors.message || Object.values(errors).join(', ') || t('Failed to delete circle type');
                 toast.error(errorMessage);
-            }
+            },
         });
     };
 
@@ -158,13 +167,24 @@ export default function CircleTypes() {
         setSearchTerm('');
         setSelectedStatus('all');
         setShowFilters(false);
-        router.get(route('advocate.circle-types.index'), {
-            page: 1,
-            per_page: pageFilters.per_page
-        }, { preserveState: true, preserveScroll: true });
+        router.get(
+            route('setup.circle-types.index'),
+            {
+                page: 1,
+                per_page: pageFilters.per_page,
+            },
+            { preserveState: true, preserveScroll: true },
+        );
     };
 
     const pageActions = [];
+    pageActions.push({
+        label: t('Back to Master Data'),
+        icon: <ChevronLeft className="h-4 w-4" />,
+        variant: 'outline',
+        onClick: () => router.visit(route('setup.index'))
+    });
+
     if (hasPermission(permissions, 'create-circle-types')) {
         pageActions.push({
             label: t('Add Circle Type'),
@@ -176,7 +196,7 @@ export default function CircleTypes() {
 
     const breadcrumbs = [
         { title: t('Dashboard'), href: route('dashboard') },
-        { title: t('Advocate'), href: route('advocate.company-profiles.index') },
+        { title: t('Mast Data'), href: route('setup.index') },
         { title: t('Circle Types') }
     ];
 
@@ -311,7 +331,7 @@ export default function CircleTypes() {
                     currentPerPage={pageFilters.per_page?.toString() || '10'}
                     onPerPageChange={(value) => {
                         router.get(
-                            route('advocate.circle-types.index'),
+                            route('setup.circle-types.index'),
                             {
                                 page: 1,
                                 per_page: parseInt(value),

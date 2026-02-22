@@ -7,7 +7,7 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { hasPermission } from '@/utils/authorization';
 import { router, usePage } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { ChevronLeft, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -40,7 +40,7 @@ export default function CaseStatuses() {
 
     const applyFilters = () => {
         router.get(
-            route('cases.case-statuses.index'),
+            route('setup.case-statuses.index'),
             {
                 page: 1,
                 search: searchTerm || undefined,
@@ -55,7 +55,7 @@ export default function CaseStatuses() {
         const direction = pageFilters.sort_field === field && pageFilters.sort_direction === 'asc' ? 'desc' : 'asc';
 
         router.get(
-            route('cases.case-statuses.index'),
+            route('setup.case-statuses.index'),
             {
                 sort_field: field,
                 sort_direction: direction,
@@ -99,7 +99,7 @@ export default function CaseStatuses() {
         if (formMode === 'create') {
             toast.loading(t('Creating case status...'));
 
-            router.post(route('cases.case-statuses.store'), formData, {
+            router.post(route('setup.case-statuses.store'), formData, {
                 onSuccess: (page) => {
                     setIsFormModalOpen(false);
                     toast.dismiss();
@@ -117,7 +117,7 @@ export default function CaseStatuses() {
         } else if (formMode === 'edit') {
             toast.loading(t('Updating case status...'));
 
-            router.put(route('cases.case-statuses.update', currentItem.id), formData, {
+            router.put(route('setup.case-statuses.update', currentItem.id), formData, {
                 onSuccess: (page) => {
                     setIsFormModalOpen(false);
                     toast.dismiss();
@@ -138,7 +138,7 @@ export default function CaseStatuses() {
     const handleDeleteConfirm = () => {
         toast.loading(t('Deleting case status...'));
 
-        router.delete(route('cases.case-statuses.destroy', currentItem.id), {
+        router.delete(route('setup.case-statuses.destroy', currentItem.id), {
             onSuccess: (page) => {
                 setIsDeleteModalOpen(false);
                 toast.dismiss();
@@ -160,7 +160,7 @@ export default function CaseStatuses() {
         toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} case status...`);
 
         router.put(
-            route('cases.case-statuses.toggle-status', caseStatus.id),
+            route('setup.case-statuses.toggle-status', caseStatus.id),
             {},
             {
                 onSuccess: (page) => {
@@ -185,7 +185,7 @@ export default function CaseStatuses() {
         setShowFilters(false);
 
         router.get(
-            route('cases.case-statuses.index'),
+            route('setup.case-statuses.index'),
             {
                 page: 1,
                 per_page: pageFilters.per_page,
@@ -195,6 +195,12 @@ export default function CaseStatuses() {
     };
 
     const pageActions = [];
+    pageActions.push({
+        label: t('Back to Master Data'),
+        icon: <ChevronLeft className="h-4 w-4" />,
+        variant: 'outline',
+        onClick: () => router.visit(route('setup.index'))
+    });
 
     if (hasPermission(permissions, 'create-case-statuses')) {
         pageActions.push({
@@ -206,10 +212,10 @@ export default function CaseStatuses() {
     }
 
     const breadcrumbs = [
-        { title: t('Dashboard'), href: route('dashboard') },
-        { title: t('Case Management'), href: route('cases.index') },
-        { title: t('Case Statuses') },
-    ];
+            { title: t('Dashboard'), href: route('dashboard') },
+            { title: t('Mast Data'), href: route('setup.index') },
+            { title: t('Case Statuses') },
+        ];
 
     const columns = [
         {
@@ -387,7 +393,7 @@ export default function CaseStatuses() {
                     currentPerPage={pageFilters.per_page?.toString() || '10'}
                     onPerPageChange={(value) => {
                         router.get(
-                            route('cases.case-statuses.index'),
+                            route('setup.case-statuses.index'),
                             {
                                 page: 1,
                                 per_page: parseInt(value),

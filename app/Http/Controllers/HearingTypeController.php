@@ -132,7 +132,7 @@ class HearingTypeController extends Controller
             ->first();
 
         if (!$hearingType) {
-            return redirect()->route('hearing-types.index')->with('error', 'Hearing type not found.');
+            return redirect()->route('setup.hearing-types.index')->with('error', 'Hearing type not found.');
         }
 
         return Inertia::render('hearing-types/show', [

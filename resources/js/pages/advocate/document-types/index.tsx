@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { ChevronLeft, Plus } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
 import { CrudFormModal } from '@/components/CrudFormModal';
@@ -52,9 +52,9 @@ export default function DocumentTypes() {
       }
 
       // Reload the current page with current filters to get translated data
-      router.get(route('advocate.document-types.index'), params, {
-        preserveState: false,
-        preserveScroll: false
+      router.get(route('setup.document-types.index'), params, {
+          preserveState: false,
+          preserveScroll: false,
       });
     };
 
@@ -73,24 +73,32 @@ export default function DocumentTypes() {
   };
 
   const applyFilters = () => {
-    router.get(route('advocate.document-types.index'), {
-      page: 1,
-      search: searchTerm || undefined,
-      status: selectedStatus !== 'all' ? selectedStatus : undefined,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+        route('setup.document-types.index'),
+        {
+            page: 1,
+            search: searchTerm || undefined,
+            status: selectedStatus !== 'all' ? selectedStatus : undefined,
+            per_page: pageFilters.per_page,
+        },
+        { preserveState: true, preserveScroll: true },
+    );
   };
 
   const handleSort = (field: string) => {
     const direction = pageFilters.sort_field === field && pageFilters.sort_direction === 'asc' ? 'desc' : 'asc';
-    router.get(route('advocate.document-types.index'), {
-      sort_field: field,
-      sort_direction: direction,
-      page: 1,
-      search: searchTerm || undefined,
-      status: selectedStatus !== 'all' ? selectedStatus : undefined,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+        route('setup.document-types.index'),
+        {
+            sort_field: field,
+            sort_direction: direction,
+            page: 1,
+            search: searchTerm || undefined,
+            status: selectedStatus !== 'all' ? selectedStatus : undefined,
+            per_page: pageFilters.per_page,
+        },
+        { preserveState: true, preserveScroll: true },
+    );
   };
 
   const handleAction = (action: string, item: any) => {
@@ -120,71 +128,69 @@ export default function DocumentTypes() {
   };
 
   const handleToggleStatus = (item: any) => {
-    const newStatus = item.status === 'active' ? 'inactive' : 'active';
-    toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} document type...`);
-
-    router.put(route('advocate.document-types.toggle-status', item.id), {}, {
-      onSuccess: (page) => {
-        toast.dismiss();
-        if (page.props.flash.success) {
-          toast.success(page.props.flash.success);
-        }
-      },
-      onError: (errors) => {
-        toast.dismiss();
-        toast.error('Failed to update status');
-      }
-    });
+    router.put(
+        route('setup.document-types.toggle-status', item.id),
+        {},
+        {
+            onSuccess: (page) => {
+                toast.dismiss();
+                if (page.props.flash.success) {
+                    toast.success(page.props.flash.success);
+                }
+            },
+            onError: (errors) => {
+                toast.dismiss();
+                toast.error('Failed to update status');
+            },
+        },
+    );
   };
 
   const handleFormSubmit = (formData: any) => {
     if (formMode === 'create') {
-      toast.loading(t('Creating document type...'));
-      router.post(route('advocate.document-types.store'), formData, {
-        onSuccess: (page) => {
-          setIsFormModalOpen(false);
-          toast.dismiss();
-          if (page.props.flash.success) {
-            toast.success(page.props.flash.success);
-          }
-        },
-        onError: (errors) => {
-          toast.dismiss();
-          toast.error(`Failed to create document type: ${Object.values(errors).join(', ')}`);
-        }
+      router.post(route('setup.document-types.store'), formData, {
+          onSuccess: (page) => {
+              setIsFormModalOpen(false);
+              toast.dismiss();
+              if (page.props.flash.success) {
+                  toast.success(page.props.flash.success);
+              }
+          },
+          onError: (errors) => {
+              toast.dismiss();
+              toast.error(`Failed to create document type: ${Object.values(errors).join(', ')}`);
+          },
       });
     } else if (formMode === 'edit') {
-      toast.loading(t('Updating document type...'));
-      router.put(route('advocate.document-types.update', currentItem.id), formData, {
-        onSuccess: (page) => {
-          setIsFormModalOpen(false);
-          toast.dismiss();
-          if (page.props.flash.success) {
-            toast.success(page.props.flash.success);
-          }
-        },
-        onError: (errors) => {
-          toast.dismiss();
-          toast.error(`Failed to update document type: ${Object.values(errors).join(', ')}`);
-        }
+      router.put(route('setup.document-types.update', currentItem.id), formData, {
+          onSuccess: (page) => {
+              setIsFormModalOpen(false);
+              toast.dismiss();
+              if (page.props.flash.success) {
+                  toast.success(page.props.flash.success);
+              }
+          },
+          onError: (errors) => {
+              toast.dismiss();
+              toast.error(`Failed to update document type: ${Object.values(errors).join(', ')}`);
+          },
       });
     }
   };
 
   const handleDeleteConfirm = () => {
-    toast.loading(t('Deleting document type...'));
-    router.delete(route('advocate.document-types.destroy', currentItem.id), {
-      onSuccess: (page) => {
-        setIsDeleteModalOpen(false);
-        toast.dismiss();
-        if (page.props.flash.success) {
-          toast.success(page.props.flash.success);
-        }
-      },
-      onError: (errors) => {
-        toast.dismiss();
-        toast.error('Failed to delete document type');
-      }
+    router.delete(route('setup.document-types.destroy', currentItem.id), {
+        onSuccess: (page) => {
+            setIsDeleteModalOpen(false);
+            toast.dismiss();
+            if (page.props.flash.success) {
+                toast.success(page.props.flash.success);
+            }
+        },
+        onError: (errors) => {
+            toast.dismiss();
+            toast.error('Failed to delete document type');
+        },
     });
   };
 
@@ -192,13 +198,24 @@ export default function DocumentTypes() {
     setSearchTerm('');
     setSelectedStatus('all');
     setShowFilters(false);
-    router.get(route('advocate.document-types.index'), {
-      page: 1,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+        route('setup.document-types.index'),
+        {
+            page: 1,
+            per_page: pageFilters.per_page,
+        },
+        { preserveState: true, preserveScroll: true },
+    );
   };
 
   const pageActions = [];
+  pageActions.push({
+    label: t('Back to Master Data'),
+    icon: <ChevronLeft className="h-4 w-4" />,
+    variant: 'outline',
+    onClick: () => router.visit(route('setup.index'))
+  });
+
   if (hasPermission(permissions, 'create-document-types')) {
     pageActions.push({
       label: t('Add Document Type'),
@@ -209,10 +226,10 @@ export default function DocumentTypes() {
   }
 
   const breadcrumbs = [
-    { title: t('Dashboard'), href: route('dashboard') },
-    { title: t('Advocate'), href: route('advocate.company-profiles.index') },
-    { title: t('Document Types') }
-  ];
+        { title: t('Dashboard'), href: route('dashboard') },
+        { title: t('Mast Data'), href: route('setup.index') },
+        { title: t('Document Types') }
+      ];
 
   const columns = [
     {
@@ -339,7 +356,7 @@ export default function DocumentTypes() {
                   currentPerPage={pageFilters.per_page?.toString() || '10'}
                   onPerPageChange={(value) => {
                       router.get(
-                          route('advocate.document-types.index'),
+                          route('setup.document-types.index'),
                           {
                               page: 1,
                               per_page: parseInt(value),

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { ChevronLeft, Plus } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
 import { CrudFormModal } from '@/components/CrudFormModal';
@@ -39,7 +39,7 @@ export default function CaseCategories() {
     };
 
     const applyFilters = () => {
-        router.get(route('cases.case-categories.index'), {
+        router.get(route('setup.case-categories.index'), {
             page: 1,
             search: searchTerm || undefined,
             status: selectedStatus !== 'all' ? selectedStatus : undefined,
@@ -50,7 +50,7 @@ export default function CaseCategories() {
     const handleSort = (field: string) => {
         const direction = pageFilters.sort_field === field && pageFilters.sort_direction === 'asc' ? 'desc' : 'asc';
 
-        router.get(route('cases.case-categories.index'), {
+        router.get(route('setup.case-categories.index'), {
             sort_field: field,
             sort_direction: direction,
             page: 1,
@@ -96,7 +96,7 @@ export default function CaseCategories() {
         if (formMode === 'create') {
             toast.loading(t('Creating case category...'));
 
-            router.post(route('cases.case-categories.store'), formData, {
+            router.post(route('setup.case-categories.store'), formData, {
                 onSuccess: (page) => {
                     setIsFormModalOpen(false);
                     toast.dismiss();
@@ -114,7 +114,7 @@ export default function CaseCategories() {
         } else if (formMode === 'edit') {
             toast.loading(t('Updating case category...'));
 
-            router.put(route('cases.case-categories.update', currentItem.id), formData, {
+            router.put(route('setup.case-categories.update', currentItem.id), formData, {
                 onSuccess: (page) => {
                     setIsFormModalOpen(false);
                     toast.dismiss();
@@ -135,7 +135,7 @@ export default function CaseCategories() {
     const handleDeleteConfirm = () => {
         toast.loading(t('Deleting case category...'));
 
-        router.delete(route('cases.case-categories.destroy', currentItem.id), {
+        router.delete(route('setup.case-categories.destroy', currentItem.id), {
             onSuccess: (page) => {
                 setIsDeleteModalOpen(false);
                 toast.dismiss();
@@ -156,7 +156,7 @@ export default function CaseCategories() {
         const newStatus = caseCategory.status === 'active' ? 'inactive' : 'active';
         toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} case category...`);
 
-        router.put(route('cases.case-categories.toggle-status', caseCategory.id), {}, {
+        router.put(route('setup.case-categories.toggle-status', caseCategory.id), {}, {
             onSuccess: (page) => {
                 toast.dismiss();
                 if (page.props.flash.success) {
@@ -177,13 +177,19 @@ export default function CaseCategories() {
         setSelectedStatus('all');
         setShowFilters(false);
 
-        router.get(route('cases.case-categories.index'), {
+        router.get(route('setup.case-categories.index'), {
             page: 1,
             per_page: pageFilters.per_page
         }, { preserveState: true, preserveScroll: true });
     };
 
     const pageActions = [];
+    pageActions.push({
+        label: t('Back to Master Data'),
+        icon: <ChevronLeft className="h-4 w-4" />,
+        variant: 'outline',
+        onClick: () => router.visit(route('setup.index'))
+    });
 
     if (hasPermission(permissions, 'create-case-categories')) {
         pageActions.push({
@@ -195,10 +201,10 @@ export default function CaseCategories() {
     }
 
     const breadcrumbs = [
-        { title: t('Dashboard'), href: route('dashboard') },
-        { title: t('Case Management'), href: route('cases.index') },
-        { title: t('Case Categories') }
-    ];
+            { title: t('Dashboard'), href: route('dashboard') },
+            { title: t('Mast Data'), href: route('setup.index') },
+            { title: t('Case Categories') }
+        ];
 
     // Filter parent categories for dropdown (exclude current item when editing)
     const getParentOptions = () => {
@@ -368,7 +374,7 @@ export default function CaseCategories() {
                     onApplyFilters={applyFilters}
                     currentPerPage={pageFilters.per_page?.toString() || "10"}
                     onPerPageChange={(value) => {
-                        router.get(route('cases.case-categories.index'), {
+                        router.get(route('setup.case-categories.index'), {
                             page: 1,
                             per_page: parseInt(value),
                             search: searchTerm || undefined,

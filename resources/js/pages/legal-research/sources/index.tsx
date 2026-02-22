@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
-import { Plus, Database, ExternalLink } from 'lucide-react';
+import { ChevronLeft, Plus, Database, ExternalLink } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
 import { CrudFormModal } from '@/components/CrudFormModal';
@@ -32,7 +32,7 @@ export default function ResearchSources() {
   };
 
   const applyFilters = () => {
-    router.get(route('legal-research.sources.index'), {
+    router.get(route('setup.research-sources.index'), {
       page: 1,
       search: searchTerm || undefined,
       source_type: selectedType !== 'all' ? selectedType : undefined,
@@ -43,15 +43,19 @@ export default function ResearchSources() {
 
   const handleSort = (field: string) => {
     const direction = pageFilters.sort_field === field && pageFilters.sort_direction === 'asc' ? 'desc' : 'asc';
-    router.get(route('legal-research.sources.index'), {
-      sort_field: field,
-      sort_direction: direction,
-      page: 1,
-      search: searchTerm || undefined,
-      source_type: selectedType !== 'all' ? selectedType : undefined,
-      status: selectedStatus !== 'all' ? selectedStatus : undefined,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+        route('setup.research-sources.index'),
+        {
+            sort_field: field,
+            sort_direction: direction,
+            page: 1,
+            search: searchTerm || undefined,
+            source_type: selectedType !== 'all' ? selectedType : undefined,
+            status: selectedStatus !== 'all' ? selectedStatus : undefined,
+            per_page: pageFilters.per_page,
+        },
+        { preserveState: true, preserveScroll: true },
+    );
   };
 
   const handleAction = (action: string, item: any) => {
@@ -84,28 +88,30 @@ export default function ResearchSources() {
     const newStatus = source.status === 'active' ? 'inactive' : 'active';
     toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} source...`);
 
-    router.put(route('legal-research.sources.toggle-status', source.id), {}, {
-      onSuccess: (page) => {
-        toast.dismiss();
-        if (page.props.flash.success) {
-          toast.success(page.props.flash.success);
-        }
-      },
-      onError: (errors) => {
-        toast.dismiss();
-        toast.error(`Failed to update source status: ${Object.values(errors).join(', ')}`);
-      }
-    });
+    router.put(
+        route('setup.research-sources.toggle-status', source.id),
+        {},
+        {
+            onSuccess: (page) => {
+                toast.dismiss();
+                if (page.props.flash.success) {
+                    toast.success(page.props.flash.success);
+                }
+            },
+            onError: (errors) => {
+                toast.dismiss();
+                toast.error(`Failed to update source status: ${Object.values(errors).join(', ')}`);
+            },
+        },
+    );
   };
 
   const handleFormSubmit = (formData: any) => {
     const action = formMode === 'create' ? 'store' : 'update';
     const route_name = formMode === 'create' 
-      ? 'legal-research.sources.store' 
-      : 'legal-research.sources.update';
+      ? 'setup.research-sources.store'
+      : 'setup.research-sources.update';
     
-    toast.loading(t(`${formMode === 'create' ? 'Creating' : 'Updating'} research source...`));
-
     const method = formMode === 'create' ? 'post' : 'put';
     const url = formMode === 'create' 
       ? route(route_name) 
@@ -127,23 +133,29 @@ export default function ResearchSources() {
   };
 
   const handleDeleteConfirm = () => {
-    toast.loading(t('Deleting research source...'));
-    router.delete(route('legal-research.sources.destroy', currentItem.id), {
-      onSuccess: (page) => {
-        setIsDeleteModalOpen(false);
-        toast.dismiss();
-        if (page.props.flash.success) {
-          toast.success(page.props.flash.success);
-        }
-      },
-      onError: (errors) => {
-        toast.dismiss();
-        toast.error(`Failed to delete research source: ${Object.values(errors).join(', ')}`);
-      }
+    router.delete(route('setup.research-sources.destroy', currentItem.id), {
+        onSuccess: (page) => {
+            setIsDeleteModalOpen(false);
+            toast.dismiss();
+            if (page.props.flash.success) {
+                toast.success(page.props.flash.success);
+            }
+        },
+        onError: (errors) => {
+            toast.dismiss();
+            toast.error(`Failed to delete research source: ${Object.values(errors).join(', ')}`);
+        },
     });
   };
 
   const pageActions = [];
+  pageActions.push({
+    label: t('Back to Master Data'),
+    icon: <ChevronLeft className="h-4 w-4" />,
+    variant: 'outline',
+    onClick: () => router.visit(route('setup.index'))
+  });
+
   if (hasPermission(permissions, 'create-research-sources')) {
     pageActions.push({
       label: t('Add Research Source'),
@@ -154,10 +166,10 @@ export default function ResearchSources() {
   }
 
   const breadcrumbs = [
-    { title: t('Dashboard'), href: route('dashboard') },
-    { title: t('Legal Research') },
-    { title: t('Research Sources') }
-  ];
+        { title: t('Dashboard'), href: route('dashboard') },
+        { title: t('Mast Data'), href: route('setup.index') },
+        { title: t('Research Sources') }
+      ];
 
   const columns = [
     {
@@ -306,7 +318,7 @@ export default function ResearchSources() {
                       setSelectedType('all');
                       setSelectedStatus('all');
                       setShowFilters(false);
-                      router.get(route('legal-research.sources.index'), { page: 1, per_page: pageFilters.per_page });
+                      router.get(route('setup.research-sources.index'), { page: 1, per_page: pageFilters.per_page });
                   }}
                   onApplyFilters={applyFilters}
               />
@@ -340,7 +352,7 @@ export default function ResearchSources() {
                   onPageChange={(url) => router.get(url)}
                   currentPerPage={pageFilters.per_page?.toString() || '10'}
                   onPerPageChange={(value) => {
-                      router.get(route('legal-research.sources.index'), {
+                      router.get(route('setup.research-sources.index'), {
                           page: 1,
                           per_page: parseInt(value),
                           search: searchTerm || undefined,

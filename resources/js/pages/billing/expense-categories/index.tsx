@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { ChevronLeft, Plus } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
 import { CrudFormModal } from '@/components/CrudFormModal';
@@ -44,7 +44,7 @@ export default function ExpenseCategories() {
   };
 
   const applyFilters = () => {
-    router.get(route('billing.expense-categories.index'), {
+    router.get(route('setup.expense-categories.index'), {
       page: 1,
       search: searchTerm || undefined,
       status: selectedStatus !== 'all' ? selectedStatus : undefined,
@@ -80,55 +80,49 @@ export default function ExpenseCategories() {
 
   const handleFormSubmit = (formData: any) => {
     if (formMode === 'create') {
-      toast.loading(t('Creating expense category...'));
-
-      router.post(route('billing.expense-categories.store'), formData, {
-        onSuccess: (page) => {
-          setIsFormModalOpen(false);
-          toast.dismiss();
-          if (page.props.flash.success) {
-            toast.success(page.props.flash.success);
-          }
-        },
-        onError: (errors) => {
-          toast.dismiss();
-          toast.error(`Failed to create expense category: ${Object.values(errors).join(', ')}`);
-        }
+      router.post(route('setup.expense-categories.store'), formData, {
+          onSuccess: (page) => {
+              setIsFormModalOpen(false);
+              toast.dismiss();
+              if (page.props.flash.success) {
+                  toast.success(page.props.flash.success);
+              }
+          },
+          onError: (errors) => {
+              toast.dismiss();
+              toast.error(`Failed to create expense category: ${Object.values(errors).join(', ')}`);
+          },
       });
     } else if (formMode === 'edit') {
-      toast.loading(t('Updating expense category...'));
-
-      router.put(route('billing.expense-categories.update', currentItem.id), formData, {
-        onSuccess: (page) => {
-          setIsFormModalOpen(false);
-          toast.dismiss();
-          if (page.props.flash.success) {
-            toast.success(page.props.flash.success);
-          }
-        },
-        onError: (errors) => {
-          toast.dismiss();
-          toast.error(`Failed to update expense category: ${Object.values(errors).join(', ')}`);
-        }
+      router.put(route('setup.expense-categories.update', currentItem.id), formData, {
+          onSuccess: (page) => {
+              setIsFormModalOpen(false);
+              toast.dismiss();
+              if (page.props.flash.success) {
+                  toast.success(page.props.flash.success);
+              }
+          },
+          onError: (errors) => {
+              toast.dismiss();
+              toast.error(`Failed to update expense category: ${Object.values(errors).join(', ')}`);
+          },
       });
     }
   };
 
   const handleDeleteConfirm = () => {
-    toast.loading(t('Deleting expense category...'));
-
-    router.delete(route('billing.expense-categories.destroy', currentItem.id), {
-      onSuccess: (page) => {
-        setIsDeleteModalOpen(false);
-        toast.dismiss();
-        if (page.props.flash.success) {
-          toast.success(page.props.flash.success);
-        }
-      },
-      onError: (errors) => {
-        toast.dismiss();
-        toast.error(`Failed to delete expense category: ${Object.values(errors).join(', ')}`);
-      }
+    router.delete(route('setup.expense-categories.destroy', currentItem.id), {
+        onSuccess: (page) => {
+            setIsDeleteModalOpen(false);
+            toast.dismiss();
+            if (page.props.flash.success) {
+                toast.success(page.props.flash.success);
+            }
+        },
+        onError: (errors) => {
+            toast.dismiss();
+            toast.error(`Failed to delete expense category: ${Object.values(errors).join(', ')}`);
+        },
     });
   };
 
@@ -137,14 +131,18 @@ export default function ExpenseCategories() {
     setSortField(field);
     setSortDirection(newDirection);
 
-    router.get(route('billing.expense-categories.index'), {
-      page: 1,
-      search: searchTerm || undefined,
-      status: selectedStatus !== 'all' ? selectedStatus : undefined,
-      sort_field: field,
-      sort_direction: newDirection,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+        route('setup.expense-categories.index'),
+        {
+            page: 1,
+            search: searchTerm || undefined,
+            status: selectedStatus !== 'all' ? selectedStatus : undefined,
+            sort_field: field,
+            sort_direction: newDirection,
+            per_page: pageFilters.per_page,
+        },
+        { preserveState: true, preserveScroll: true },
+    );
   };
 
   const handleResetFilters = () => {
@@ -154,14 +152,24 @@ export default function ExpenseCategories() {
     setSortDirection('asc');
     setShowFilters(false);
 
-    router.get(route('billing.expense-categories.index'), {
-      page: 1,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+        route('setup.expense-categories.index'),
+        {
+            page: 1,
+            per_page: pageFilters.per_page,
+        },
+        { preserveState: true, preserveScroll: true },
+    );
   };
 
   // Define page actions
   const pageActions = [];
+  pageActions.push({
+    label: t('Back to Master Data'),
+    icon: <ChevronLeft className="h-4 w-4" />,
+    variant: 'outline',
+    onClick: () => router.visit(route('setup.index'))
+  });
 
   if (hasPermission(permissions, 'create-expense-categories')) {
     pageActions.push({
@@ -173,11 +181,10 @@ export default function ExpenseCategories() {
   }
 
   const breadcrumbs = [
-    { title: t('Dashboard'), href: route('dashboard') },
-    { title: t('Billing & Invoicing'), href: route('billing.time-entries.index') },
-    { title: t('Setup'), href: route('billing.expense-categories.index') },
-    { title: t('Expense Categories') }
-  ];
+        { title: t('Dashboard'), href: route('dashboard') },
+        { title: t('Mast Data'), href: route('setup.index') },
+        { title: t('Expense Categories') }
+      ];
 
   // Define table columns
   const columns = [
@@ -318,7 +325,7 @@ export default function ExpenseCategories() {
                   currentPerPage={pageFilters.per_page?.toString() || '10'}
                   onPerPageChange={(value) => {
                       router.get(
-                          route('billing.expense-categories.index'),
+                          route('setup.expense-categories.index'),
                           {
                               page: 1,
                               per_page: parseInt(value),

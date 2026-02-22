@@ -9,10 +9,10 @@ export default function HearingTypeShow() {
   const { hearingType } = usePage().props as any;
 
   const breadcrumbs = [
-    { title: t('Dashboard'), href: route('dashboard') },
-    { title: t('Court Schedule'), href: route('courts.index') },
-    { title: t('Hearing Types'), href: route('hearing-types.index') },
-    { title: hearingType.name }
+      { title: t('Dashboard'), href: route('dashboard') },
+      { title: t('Court Schedule'), href: route('courts.index') },
+      { title: t('Hearing Types'), href: route('setup.hearing-types.index') },
+      { title: hearingType.name },
   ];
 
   return (
