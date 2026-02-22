@@ -47,12 +47,6 @@ export default function SetupIndex() {
             href: route('clients.client-types.index'),
             permissions: ['manage-client-types', 'manage-any-client-types', 'manage-own-client-types'],
           },
-          {
-            title: t('Document Type'),
-            description: t('Define and categorize document types'),
-            href: route('advocate.document-types.index'),
-            permissions: ['manage-document-types', 'manage-any-document-types', 'manage-own-document-types'],
-          },
         ],
       },
       {
@@ -125,7 +119,7 @@ export default function SetupIndex() {
         ],
       },
       {
-        sectionTitle: t('Search Settings'),
+        sectionTitle: t('Research Settings'),
         items: [
           {
             title: t('Research Type'),
@@ -166,18 +160,6 @@ export default function SetupIndex() {
             description: t('Categorize and organize expense items'),
             href: route('billing.expense-categories.index'),
             permissions: ['manage-expense-categories', 'manage-any-expense-categories', 'manage-own-expense-categories'],
-          },
-        ],
-      },
-      {
-        sectionTitle: t('Notifications'),
-        items: [
-          {
-            title: t('Notification Template'),
-            description: t('Manage and customize notification templates'),
-            href: route('notification-templates.index'),
-            permissions: [],
-            roleCondition: 'company',
           },
         ],
       },

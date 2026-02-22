@@ -15,7 +15,16 @@ import { PhoneInput, defaultCountries } from 'react-international-phone';
 
 export default function CreateClient() {
     const { t, i18n } = useTranslation();
-    const { clientTypes, countries, documentTypes, phoneCountries, planLimits, defaultCountry = '', defaultTaxRate = '', errors = {} } = usePage().props as any;
+    const {
+        clientTypes,
+        countries,
+        documentTypes,
+        phoneCountries,
+        planLimits,
+        defaultCountry = '',
+        defaultTaxRate = '',
+        errors = {},
+    } = usePage().props as any;
     const currentLocale = i18n.language || 'en';
     const canCreate = !planLimits || planLimits.can_create;
     const { isRtl } = useLayout();
@@ -53,7 +62,7 @@ export default function CreateClient() {
         business_type: 'b2c',
         nationality_id: defaultNationality?.value ? String(defaultNationality.value) : '',
         id_number: '',
-        gender: '',
+        gender: 'male',
         date_of_birth: '',
         unified_number: '',
         cr_number: '',
@@ -92,7 +101,7 @@ export default function CreateClient() {
             );
             return;
         }
-        
+
         const filteredDocuments = (formData.documents || []).filter((document: any) => {
             return document?.document_name || document?.document_type_id || document?.file;
         });
@@ -164,7 +173,9 @@ export default function CreateClient() {
                 <div className="mb-6 rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div className="space-y-2">
-                            <Label htmlFor="name">{t('Client Name')}</Label>
+                            <Label htmlFor="name" required>
+                                {t('Client Name')}
+                            </Label>
                             <Input id="name" value={formData.name} onChange={(e) => updateField('name', e.target.value)} required />
                             {renderError('name')}
                         </div>
@@ -200,16 +211,16 @@ export default function CreateClient() {
                                 onValueChange={(value) => updateField('business_type', value)}
                                 className={isRtl ? 'flex justify-end gap-6' : 'flex gap-6'}
                             >
-                                <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
-                                    <RadioGroupItem value="b2c" id="business_type_b2c" />
-                                    <Label htmlFor="business_type_b2c" className="font-normal">
-                                        {t('Individual')}
-                                    </Label>
-                                </div>
-                                <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
+                                <div className="flex items-center gap-2">
                                     <RadioGroupItem value="b2b" id="business_type_b2b" />
                                     <Label htmlFor="business_type_b2b" className="font-normal">
                                         {t('Business')}
+                                    </Label>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <RadioGroupItem value="b2c" id="business_type_b2c" />
+                                    <Label htmlFor="business_type_b2c" className="font-normal">
+                                        {t('Individual')}
                                     </Label>
                                 </div>
                             </RadioGroup>
@@ -244,12 +255,16 @@ export default function CreateClient() {
                             {renderError('phone')}
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="email">{t('Email')}</Label>
+                            <Label htmlFor="email" required>
+                                {t('Email')}
+                            </Label>
                             <Input id="email" type="email" value={formData.email} onChange={(e) => updateField('email', e.target.value)} required />
                             {renderError('email')}
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="password">{t('Password')}</Label>
+                            <Label htmlFor="password" required>
+                                {t('Password')}
+                            </Label>
                             <Input
                                 id="password"
                                 type="password"
@@ -284,22 +299,22 @@ export default function CreateClient() {
                                     {renderError('id_number')}
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className={isRtl ? 'block text-right' : ''}>{t('Gender')}</Label>
+                                    <Label>{t('Gender')}</Label>
                                     <RadioGroup
                                         value={formData.gender}
                                         onValueChange={(value) => updateField('gender', value)}
                                         className={isRtl ? 'flex justify-end gap-6' : 'flex gap-6'}
                                     >
-                                        <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
-                                            <RadioGroupItem value="male" id="gender_male" />
-                                            <Label htmlFor="gender_male" className="font-normal">
-                                                {t('Male')}
-                                            </Label>
-                                        </div>
-                                        <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
+                                        <div className="flex items-center gap-2">
                                             <RadioGroupItem value="female" id="gender_female" />
                                             <Label htmlFor="gender_female" className="font-normal">
                                                 {t('Female')}
+                                            </Label>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <RadioGroupItem value="male" id="gender_male" />
+                                            <Label htmlFor="gender_male" className="font-normal">
+                                                {t('Male')}
                                             </Label>
                                         </div>
                                     </RadioGroup>
@@ -379,7 +394,7 @@ export default function CreateClient() {
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="address">{t('Address')}</Label>
-                            <Input id="address" value={formData.address} onChange={(e) => updateField('address', e.target.value)} />
+                            <Textarea id="address" value={formData.address} onChange={(e) => updateField('address', e.target.value)} rows={3} />
                             {renderError('address')}
                         </div>
                         <div className="space-y-2">
@@ -393,9 +408,6 @@ export default function CreateClient() {
                     <h2 className="text-lg font-semibold">{t('Client Documents')}</h2>
 
                     <div className="space-y-4 rounded-lg border border-slate-200 bg-slate-50/50 p-4">
-                        <div className="flex items-center justify-between">
-                            <h3 className="text-sm font-semibold text-slate-700">{t('Client Documents')}</h3>
-                        </div>
                         <Repeater
                             fields={documentFields}
                             value={formData.documents}

@@ -291,6 +291,7 @@ class ClientController extends Controller
         $phoneValidator = Validator::make(
             ['phone' => $validated['phone']],
             ['phone' => 'phone:'.$phoneCountry->country_code],
+            ['phone.phone' => __('Please enter a valid phone number for the selected country.')],
         );
 
         if ($phoneValidator->fails()) {
@@ -434,6 +435,13 @@ class ClientController extends Controller
                     'documents.*.file' => 'required_with:documents|string',
                     'documents.*.description' => 'nullable|string',
                     'documents.*.status' => 'nullable|in:active,archived',
+                ], [
+                    'name.required' => __('Client name is required.'),
+                    'email.required' => __('Email is required.'),
+                    'email.email' => __('Please enter a valid email address.'),
+                    'country_id.required' => __('Country is required.'),
+                    'phone.required' => __('Phone number is required.'),
+                    'business_type.required' => __('Business type is required.'),
                 ]);
 
                 $phoneCountry = Country::where('id', $validated['country_id'])
@@ -447,6 +455,7 @@ class ClientController extends Controller
                 $phoneValidator = Validator::make(
                     ['phone' => $validated['phone']],
                     ['phone' => 'phone:'.$phoneCountry->country_code],
+                    ['phone.phone' => __('Please enter a valid phone number for the selected country.')],
                 );
 
                 if ($phoneValidator->fails()) {

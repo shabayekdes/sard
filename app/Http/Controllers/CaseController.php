@@ -722,7 +722,7 @@ class CaseController extends BaseController
             'case_category_id' => 'nullable|exists:case_categories,id',
             'case_subcategory_id' => 'nullable|exists:case_categories,id',
             'case_status_id' => 'required|exists:case_statuses,id',
-            'court_id' => 'required|exists:courts,id',
+            'court_id' => 'nullable|exists:courts,id',
             'priority' => 'required|in:low,medium,high',
             'filing_date' => 'nullable|date',
             'expected_completion_date' => 'nullable|date',

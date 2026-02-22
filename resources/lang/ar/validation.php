@@ -227,6 +227,8 @@ return [
         'hearing_date' => 'تاريخ الجلسة',
         'hearing_time' => 'وقت الجلسة',
         'source_id' => 'المصدر',
+        'case_status_id' => 'حالة القضية',
+        'case_type_id' => 'نوع القضية'
     ],
 
 ];

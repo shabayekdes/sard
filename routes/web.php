@@ -409,9 +409,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ]);
         })->name('media-library');
 
-        Route::middleware('permission:view-setup')->group(function () {
-            Route::get('setup', fn () => Inertia::render('setup/index'))->name('setup.index');
-        });
+        Route::get('setup', fn () => Inertia::render('setup/index'))->middleware('permission:view-setup')->name('setup.index');
 
         // Media Library API routes
         Route::get('api/media', [MediaController::class, 'index'])->middleware('permission:manage-media')->name('api.media.index');

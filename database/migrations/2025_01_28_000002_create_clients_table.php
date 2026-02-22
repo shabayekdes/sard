@@ -15,18 +15,19 @@ return new class extends Migration
             $table->id();
             $table->string('client_id')->unique(); // Auto-generated client ID
             $table->string('name');
-            $table->string('email')->nullable();
-            $table->string('phone')->nullable();
+            $table->string('email')->unique();
+            $table->string('phone')->nullable()->unique();
             $table->text('address')->nullable();
             $table->foreignId('client_type_id')->nullable()->constrained()->nullOnDelete();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->string('company_name')->nullable(); // For corporate clients
             $table->string('tax_id')->nullable();
+            $table->decimal('tax_rate', 5, 2)->default(0);
             $table->date('date_of_birth')->nullable();
             $table->text('notes')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();
-            
+
             // Index for better performance
             $table->index(['created_by', 'status']);
         });
