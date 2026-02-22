@@ -156,7 +156,14 @@ export default function Settings() {
         if (auth.user && auth.user.type === 'company') {
             // Only allow system settings, email settings, email notification settings, brand settings, webhook settings, google calendar settings, and settings
             // Slack settings don't require permission - available to all company users
-            return ['manage-email-notifications', 'manage-slack-notifications', 'manage-brand-settings', 'manage-webhook-settings', 'manage-google-calendar-settings', 'settings'].includes(item.permission) || !item.permission;
+            return [
+              'manage-email-notifications',
+              // 'manage-slack-notifications',
+              'manage-brand-settings',
+              'manage-webhook-settings',
+              // 'manage-google-calendar-settings',
+              'settings'
+            ].includes(item.permission) || !item.permission;
         }
         return false;
     });
@@ -274,14 +281,11 @@ export default function Settings() {
     };
 
     return (
-        <PageTemplate
-            title={t('Settings')}
-            url="/settings"
-        >
-            <div className={`flex flex-col md:flex-row gap-8 ${position === 'right' ? 'md:flex-row' : ''}`}>
+        <PageTemplate title={t('Settings')} url="/settings">
+            <div className={`flex flex-col gap-8 md:flex-row ${position === 'right' ? 'md:flex-row' : ''}`}>
                 {/* <div className="flex flex-col md:flex-row gap-8"> */}
                 {/* Sidebar Navigation */}
-                <div className="md:w-64 flex-shrink-0">
+                <div className="flex-shrink-0 md:w-64">
                     <div className="sticky top-20">
                         <ScrollArea className="h-[calc(100vh-5rem)]">
                             <div className={`space-y-1 ${position === 'right' ? 'pl-4' : 'pr-4'}`}>
@@ -327,8 +331,6 @@ export default function Settings() {
                         </section>
                     )}
 
-
-
                     {/* Currency Settings Section */}
                     {(auth.permissions?.includes('manage-currency-settings') || auth.user?.type === 'superadmin') && (
                         <section id="currency-settings" ref={currencySettingsRef} className="mb-8">
@@ -351,7 +353,7 @@ export default function Settings() {
                     )}
 
                     {/* Slack Settings Section - Available to all company users */}
-                    {(auth.permissions?.includes('manage-slack-notifications') || auth.user?.type === 'company') && (
+                    {isSaas && (
                         <section id="slack-settings" ref={slackSettingsRef} className="mb-8">
                             <SlackSettings settings={slackSettings} notificationTemplates={notificationTemplates} />
                         </section>
@@ -363,8 +365,6 @@ export default function Settings() {
                             <TwilioNotificationSettings />
                         </section>
                     )}
-
-
 
                     {/* Payment Settings Section */}
                     {isSaas && (
@@ -416,12 +416,11 @@ export default function Settings() {
                     )}
 
                     {/* Google Calendar Settings Section */}
-                    {auth.user?.type === 'company' && (
+                    {isSaas && (
                         <section id="google-calendar-settings" ref={googleCalendarSettingsRef} className="mb-8">
                             <GoogleCalendarSettings settings={systemSettings} />
                         </section>
                     )}
-
                 </div>
             </div>
             <Toaster />

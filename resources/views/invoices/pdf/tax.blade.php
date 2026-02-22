@@ -24,10 +24,16 @@
         <div class="pdf-card-content">
             <div class="flex justify-content-between align-items-start gap-3">
                 <div class="pdf-header-left">
-                    <h1 class="pdf-main-title">فاتورة ضريبية مبسطة</h1>
+                    @if (($customer['business_type'] ?? '') === 'b2b')
+                        <h1 class="pdf-main-title">فاتورة ضريبية</h1>
+                    @else
+                        <h1 class="pdf-main-title">فاتورة ضريبية مبسطة</h1>
+                    @endif
                     <p class="pdf-meta-line"><strong>رقم الفاتورة:</strong> {{ $invoice->invoice_number }}</p>
                     @if ($invoice->case)
-                        <p class="pdf-meta-line"><strong>عنوان القضية:</strong> {{ $invoice->case->case_id ? $invoice->case->case_id . ' - ' . $invoice->case->title : $invoice->case->title }}</p>
+                        <p class="pdf-meta-line"><strong>عنوان
+                                القضية:</strong> {{ $invoice->case->case_id ? $invoice->case->case_id . ' - ' . $invoice->case->title : $invoice->case->title }}
+                        </p>
                     @endif
                     <p class="pdf-meta-line pdf-dates">
                         <span><strong>تاريخ الفاتورة:</strong> {{ $invoiceDateFormatted }}</span>
@@ -51,8 +57,10 @@
                 <p class="pdf-card-name">{{ $seller['name'] ?: '-' }}</p>
                 <p class="pdf-card-row"><span class="pdf-label">العنوان:</span> {{ $seller['address'] ?: '-' }}</p>
                 <p class="pdf-card-row"><span class="pdf-label">رقم الهاتف:</span> {{ $seller['phone'] ?: '-' }}</p>
-                <p class="pdf-card-row"><span class="pdf-label">البريد الإلكتروني:</span> {{ $seller['email'] ?: '-' }}</p>
-                <p class="pdf-card-row"><span class="pdf-label">الرقم الضريبي:</span> {{ $seller['tax_number'] ?: '-' }}</p>
+                <p class="pdf-card-row"><span class="pdf-label">البريد الإلكتروني:</span> {{ $seller['email'] ?: '-' }}
+                </p>
+                <p class="pdf-card-row"><span class="pdf-label">الرقم الضريبي:</span> {{ $seller['tax_number'] ?: '-' }}
+                </p>
                 <p class="pdf-card-row"><span class="pdf-label">السجل التجاري:</span> {{ $seller['cr'] ?: '-' }}</p>
             </div>
         </div>
@@ -62,10 +70,13 @@
                 <p class="pdf-card-name">{{ $customer['name'] ?: '-' }}</p>
                 <p class="pdf-card-row"><span class="pdf-label">العنوان:</span> {{ $customer['address'] ?: '-' }}</p>
                 <p class="pdf-card-row"><span class="pdf-label">رقم الهاتف:</span> {{ $customer['phone'] ?: '-' }}</p>
-                <p class="pdf-card-row"><span class="pdf-label">البريد الإلكتروني:</span> {{ $customer['email'] ?: '-' }}</p>
-                <p class="pdf-card-row"><span class="pdf-label">الرقم الضريبي:</span> {{ $customer['vat_number'] ?: '-' }}</p>
+                <p class="pdf-card-row"><span
+                            class="pdf-label">البريد الإلكتروني:</span> {{ $customer['email'] ?: '-' }}</p>
                 @if (($customer['business_type'] ?? '') === 'b2b')
-                    <p class="pdf-card-row"><span class="pdf-label">السجل التجاري:</span> {{ $customer['cr_number'] ?: '-' }}</p>
+                    <p class="pdf-card-row"><span
+                                class="pdf-label">الرقم الضريبي:</span> {{ $customer['vat_number'] ?: '-' }}</p>
+                    <p class="pdf-card-row"><span
+                                class="pdf-label">السجل التجاري:</span> {{ $customer['cr_number'] ?: '-' }}</p>
                 @endif
             </div>
         </div>
@@ -79,9 +90,9 @@
                 <th class="pdf-th pdf-th-desc">البيان</th>
                 <th class="pdf-th pdf-th-num">الكمية</th>
                 <th class="pdf-th pdf-th-num">سعر الوحدة</th>
-                <th class="pdf-th pdf-th-num">الإجمالي الفرعي بدون الضريبة</th>
+                <th class="pdf-th pdf-th-num">الإجمالي الفرعي<br>بدون الضريبة</th>
                 <th class="pdf-th pdf-th-num">الضريبة</th>
-                <th class="pdf-th pdf-th-num">الإجمالي شامل الضريبة</th>
+                <th class="pdf-th pdf-th-num">الإجمالي شامل<br>الضريبة</th>
             </tr>
             </thead>
             <tbody>

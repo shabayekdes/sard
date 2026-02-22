@@ -361,13 +361,13 @@ export default function ShowInvoice() {
                                         <th className="px-6 py-3 text-start text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
                                             {t('Unit Price')}
                                         </th>
-                                        <th className="px-6 py-3 text-start text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                        <th className="px-6 py-3 text-start text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400 whitespace-pre-line">
                                             {t('Subtotal without Tax')}
                                         </th>
                                         <th className="px-6 py-3 text-start text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
                                             {t('Tax')}
                                         </th>
-                                        <th className="px-6 py-3 text-start text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                        <th className="px-6 py-3 text-start text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400 whitespace-pre-line">
                                             {t('Total including Tax')}
                                         </th>
                                     </tr>
