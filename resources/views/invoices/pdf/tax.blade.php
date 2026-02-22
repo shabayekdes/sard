@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>فاتورة ضريبية مبسطة</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
         {!! file_get_contents(public_path('css/pdf-invoice.css')) !!}
     </style>
@@ -11,7 +14,7 @@
 <body>
 @php
     $formatNum = fn ($value) => number_format((float) $value, 2);
-    $formatMoney = fn ($value) => formatCurrencyForPdf((float) $value, $invoice->created_by, $currency_code);
+    $formatMoney = fn ($value) => formatCurrencyForCompany((float) $value, $invoice->created_by);
     $paymentsTotal = $invoice->payments?->sum('amount') ?? 0;
     $amountDue = ($totals['grand_total'] ?? 0) - $paymentsTotal;
     $dueDateFormatted = $invoice->due_date ? $invoice->due_date->format('Y-m-d') : $issued_at->format('Y-m-d');
