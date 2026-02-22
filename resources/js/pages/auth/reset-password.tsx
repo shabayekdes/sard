@@ -2,14 +2,17 @@ import { useForm } from '@inertiajs/react';
 import { Lock, Mail } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
+import AuthButton from '@/components/auth/auth-button';
 import InputError from '@/components/input-error';
+import { LanguageSwitcher } from '@/components/language-switcher';
+import TextLink from '@/components/text-link';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useTranslation } from 'react-i18next';
-import AuthLayout from '@/layouts/auth-layout';
-import AuthButton from '@/components/auth/auth-button';
 import { useBrand } from '@/contexts/BrandContext';
-import { THEME_COLORS } from '@/hooks/use-appearance';
+import { useLayout } from '@/contexts/LayoutContext';
+import { THEME_COLORS, useAppearance } from '@/hooks/use-appearance';
+import AuthLayout from '@/layouts/auth-layout';
+import { useTranslation } from 'react-i18next';
 
 interface ResetPasswordProps {
     token: string;
@@ -25,11 +28,14 @@ type ResetPasswordForm = {
 
 export default function ResetPassword({ token, email }: ResetPasswordProps) {
     const { t } = useTranslation();
-    const { themeColor, customColor } = useBrand();
+    const { position } = useLayout();
+    const { themeColor, customColor, logoLight, logoDark } = useBrand();
+    const { appearance } = useAppearance();
     const primaryColor = themeColor === 'custom' ? customColor : THEME_COLORS[themeColor as keyof typeof THEME_COLORS];
+    const currentLogo = appearance === 'light' ? logoDark : logoLight;
     const { data, setData, post, processing, errors, reset } = useForm<Required<ResetPasswordForm>>({
-        token: token,
-        email: email,
+        token,
+        email,
         password: '',
         password_confirmation: '',
     });
@@ -42,17 +48,38 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
     };
 
     return (
-        <AuthLayout
-            title={t("Reset your password")}
-            description={t("Please enter your new password below")}
-            icon={<Lock className="h-7 w-7" style={{ color: primaryColor }} />}
-        >
-            <form onSubmit={submit} className="space-y-5">
+        <AuthLayout title={t('Reset your password')} leftImageSrc="/images/sign-in.jpeg">
+            <form className="space-y-5" onSubmit={submit}>
+                <div className="flex items-center justify-between">
+                    {currentLogo && <img src={currentLogo} alt={t('SARD')} className="h-8 object-contain" />}
+                    <div className="rounded-md border border-slate-200 bg-white px-2">
+                        <LanguageSwitcher />
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 rounded-lg border border-slate-200 bg-white p-1 text-sm font-medium">
+                    <div
+                        className="flex items-center justify-center rounded-md px-3 py-2"
+                        style={{ backgroundColor: `${primaryColor}1A`, color: primaryColor }}
+                        aria-current="page"
+                    >
+                        {t('Reset password')}
+                    </div>
+                    <TextLink
+                        href={route('login')}
+                        className="flex items-center justify-center rounded-md px-3 py-2 text-slate-600 transition-colors duration-200"
+                    >
+                        {t('Log in')}
+                    </TextLink>
+                </div>
                 <div className="space-y-4">
                     <div className="relative">
-                        <Label htmlFor="email" className="text-gray-700 dark:text-gray-300 font-medium mb-1 block">{t("Email")}</Label>
+                        <Label htmlFor="email" className="mb-3 block font-medium text-gray-700 dark:text-gray-300">
+                            {t('Email')}
+                        </Label>
                         <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <div
+                                className={`pointer-events-none absolute inset-y-0 z-10 flex items-center px-3 ${position === 'right' ? 'right-0' : 'left-0'}`}
+                            >
                                 <Mail className="h-5 w-5 text-gray-400" />
                             </div>
                             <Input
@@ -60,17 +87,21 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                                 type="email"
                                 readOnly
                                 value={data.email}
-                                className="pl-10 w-full border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg transition-all duration-200"
+                                className="w-full rounded-lg border-gray-300 bg-white pr-12 pl-10 transition-all duration-200 dark:border-gray-600 dark:bg-gray-700"
                                 style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
                             />
                         </div>
                         <InputError message={errors.email} />
                     </div>
 
-                    <div className="relative">
-                        <Label htmlFor="password" className="text-gray-700 dark:text-gray-300 font-medium mb-1 block">{t("Password")}</Label>
+                    <div>
+                        <Label htmlFor="password" className="mb-3 block font-medium text-gray-700 dark:text-gray-300">
+                            {t('Password')}
+                        </Label>
                         <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <div
+                                className={`pointer-events-none absolute inset-y-0 z-10 flex items-center px-3 ${position === 'right' ? 'right-0' : 'left-0'}`}
+                            >
                                 <Lock className="h-5 w-5 text-gray-400" />
                             </div>
                             <Input
@@ -83,17 +114,21 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                                 value={data.password}
                                 onChange={(e) => setData('password', e.target.value)}
                                 placeholder="••••••••"
-                                className="pl-10 w-full border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg transition-all duration-200"
+                                className="w-full rounded-lg border-gray-300 bg-white pr-12 pl-10 transition-all duration-200 dark:border-gray-600 dark:bg-gray-700"
                                 style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
                             />
                         </div>
                         <InputError message={errors.password} />
                     </div>
 
-                    <div className="relative">
-                        <Label htmlFor="password_confirmation" className="text-gray-700 dark:text-gray-300 font-medium mb-1 block">{t("Confirm password")}</Label>
+                    <div>
+                        <Label htmlFor="password_confirmation" className="mb-3 block font-medium text-gray-700 dark:text-gray-300">
+                            {t('Confirm password')}
+                        </Label>
                         <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <div
+                                className={`pointer-events-none absolute inset-y-0 z-10 flex items-center px-3 ${position === 'right' ? 'right-0' : 'left-0'}`}
+                            >
                                 <Lock className="h-5 w-5 text-gray-400" />
                             </div>
                             <Input
@@ -105,7 +140,7 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                                 value={data.password_confirmation}
                                 onChange={(e) => setData('password_confirmation', e.target.value)}
                                 placeholder="••••••••"
-                                className="pl-10 w-full border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg transition-all duration-200"
+                                className="w-full rounded-lg border-gray-300 bg-white pr-12 pl-10 transition-all duration-200 dark:border-gray-600 dark:bg-gray-700"
                                 style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
                             />
                         </div>
@@ -113,11 +148,8 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                     </div>
                 </div>
 
-                <AuthButton 
-                    tabIndex={3} 
-                    processing={processing}
-                >
-                    {t("Reset password")}
+                <AuthButton tabIndex={3} processing={processing}>
+                    {t('Reset password')}
                 </AuthButton>
             </form>
         </AuthLayout>

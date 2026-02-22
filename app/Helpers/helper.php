@@ -1179,7 +1179,7 @@ if (! function_exists('defaultSettings')) {
             'timeFormat' => 'H:i',
             'calendarStartDay' => 'sunday',
             'defaultTimezone' => 'Asia/Riyadh',
-            'emailVerification' => false,
+            'emailVerification' => true,
             'landingPageEnabled' => false,
             'defaultTaxRate' => '15',
             'recaptchaEnabled' => config('services.recaptcha.enabled'),

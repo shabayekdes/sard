@@ -1,20 +1,25 @@
 import { useForm } from '@inertiajs/react';
-import { Mail } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
-import TextLink from '@/components/text-link';
-import { useTranslation } from 'react-i18next';
-import AuthLayout from '@/layouts/auth-layout';
 import AuthButton from '@/components/auth/auth-button';
-import { toast } from '@/components/custom-toast';
+import TextLink from '@/components/text-link';
+import { LanguageSwitcher } from '@/components/language-switcher';
 import { useBrand } from '@/contexts/BrandContext';
-import { THEME_COLORS } from '@/hooks/use-appearance';
+import { THEME_COLORS, useAppearance } from '@/hooks/use-appearance';
+import AuthLayout from '@/layouts/auth-layout';
+import { useTranslation } from 'react-i18next';
+import { toast } from '@/components/custom-toast';
 
 export default function VerifyEmail({ status }: { status?: string }) {
     const { t } = useTranslation();
-    const { themeColor, customColor } = useBrand();
+    const { themeColor, customColor, logoLight, logoDark } = useBrand();
+    const { appearance } = useAppearance();
     const primaryColor = themeColor === 'custom' ? customColor : THEME_COLORS[themeColor as keyof typeof THEME_COLORS];
+    const currentLogo = appearance === 'light' ? logoDark : logoLight;
     const { post, processing } = useForm({});
+    const statusMessage = status === 'verification-link-sent'
+        ? t('A new verification link has been sent to the email address you provided during registration.')
+        : undefined;
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -24,34 +29,48 @@ export default function VerifyEmail({ status }: { status?: string }) {
             },
             onError: () => {
                 toast.error(t('Failed to send verification email. Please try again.'));
-            }
+            },
         });
     };
 
     return (
-        <AuthLayout
-            title={t("Verify your email")}
-            description={t("Please verify your email address by clicking on the link we just emailed to you.")}
-            icon={<Mail className="h-7 w-7" style={{ color: primaryColor }} />}
-            status={status === 'verification-link-sent' ? 
-                t("A new verification link has been sent to the email address you provided during registration.") : 
-                undefined}
-        >
-            <form onSubmit={submit} className="space-y-5">
-                <AuthButton 
-                    processing={processing}
-                >
-                    {t("Resend verification email")}
+        <AuthLayout title={t('Verify your email')} leftImageSrc="/images/sign-in.jpeg" status={statusMessage}>
+            <form className="space-y-5" onSubmit={submit}>
+                <div className="flex items-center justify-between">
+                    {currentLogo && <img src={currentLogo} alt={t('SARD')} className="h-8 object-contain" />}
+                    <div className="rounded-md border border-slate-200 bg-white px-2">
+                        <LanguageSwitcher />
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 rounded-lg border border-slate-200 bg-white p-1 text-sm font-medium">
+                    <div
+                        className="flex items-center justify-center rounded-md px-3 py-2"
+                        style={{ backgroundColor: `${primaryColor}1A`, color: primaryColor }}
+                        aria-current="page"
+                    >
+                        {t('Verify email')}
+                    </div>
+                    <TextLink
+                        href={route('login')}
+                        className="flex items-center justify-center rounded-md px-3 py-2 text-slate-600 transition-colors duration-200"
+                    >
+                        {t('Log in')}
+                    </TextLink>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('Please verify your email address by clicking on the link we just emailed to you.')}
+                </p>
+                <AuthButton processing={processing}>
+                    {t('Resend verification email')}
                 </AuthButton>
-
                 <div className="text-center">
-                    <TextLink 
-                        href={route('logout')} 
-                        method="post" 
+                    <TextLink
+                        href={route('logout')}
+                        method="post"
                         className="font-medium transition-colors duration-200"
                         style={{ color: primaryColor }}
                     >
-                        {t("Log out")}
+                        {t('Log out')}
                     </TextLink>
                 </div>
             </form>

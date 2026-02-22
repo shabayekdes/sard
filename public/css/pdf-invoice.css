@@ -870,6 +870,6 @@ table {
   height: 100%;
   width: auto;
   aspect-ratio: 1;
-  max-width: 80%;
+  max-width: 70%;
   object-fit: contain;
 }

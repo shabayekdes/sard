@@ -98,10 +98,7 @@
             <tbody>
             @if ($items && $items->count() > 0)
                 @foreach ($items as $item)
-                    @php
-                        $itemType = $item['type'] ?? 'manual';
-                    @endphp
-                    <tr class="pdf-tr {{ $itemType === 'expense' ? 'pdf-tr-expense' : '' }}">
+                    <tr class="pdf-tr">
                         <td class="pdf-td pdf-td-desc">{{ $item['description'] }}</td>
                         <td class="pdf-td pdf-td-num">{{ $formatNum($item['quantity']) }}</td>
                         <td class="pdf-td pdf-td-num">{{ $formatMoney($item['unit_price']) }}</td>
