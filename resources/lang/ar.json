@@ -75,6 +75,7 @@
     "Invalid case selected.": "القضية المحددة غير صالحة.",
     "Invalid case selection.": "تحديد القضية غير صالح.",
     "Invalid client selected.": "العميل المحدد غير صالح.",
+    "Invalid category selection.": "تحديد الفئة غير صالح.",
     "Invalid document or user selection.": "تحديد المستند أو المستخدم غير صالح.",
     "Invalid research project selection.": "تحديد مشروع البحث غير صالح.",
     "Invalid research type selection.": "تحديد نوع البحث غير صالح.",
@@ -3955,5 +3956,6 @@
     "Manage Own Calendar": "إدارة التقويم الخاصة",
     "View Calendar": "عرض التقويم",
   "Source Name (English)": "اسم المصدر (الإنجليزية)",
-    "Source Name (Arabic)": "اسم المصدر (العربية)"
+    "Source Name (Arabic)": "اسم المصدر (العربية)",
+  "Approval": "الموافقة"
 }

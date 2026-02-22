@@ -65,7 +65,7 @@ class DocumentController extends Controller
 
         if (!$document) {
             return redirect()->route('document-management.documents.index')
-                ->with('error', 'Document not found.');
+                ->with('error', __(':model not found.', ['model' => __('Document')]));
         }
 
         $latestVersion = \App\Models\DocumentVersion::where('document_id', $documentId)
@@ -112,7 +112,7 @@ class DocumentController extends Controller
             ->first();
 
         if (!$category) {
-            return redirect()->back()->with('error', 'Invalid category selection.');
+            return redirect()->back()->with('error', __('Invalid category selection.'));
         }
 
         $validated['file_path'] = $validated['file'];
@@ -126,7 +126,7 @@ class DocumentController extends Controller
 
         Document::create($validated);
 
-        return redirect()->back()->with('success', 'Document uploaded successfully.');
+        return redirect()->back()->with('success', __(':model uploaded successfully.', ['model' => __('Document')]));
     }
 
     public function update(Request $request, $documentId)
@@ -136,7 +136,7 @@ class DocumentController extends Controller
             ->first();
 
         if (!$document) {
-            return redirect()->back()->with('error', 'Document not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Document')]));
         }
 
         $validated = $request->validate([
@@ -154,12 +154,12 @@ class DocumentController extends Controller
             ->first();
 
         if (!$category) {
-            return redirect()->back()->with('error', 'Invalid category selection.');
+            return redirect()->back()->with('error', __('Invalid category selection.'));
         }
 
         $document->update($validated);
 
-        return redirect()->back()->with('success', 'Document updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Document')]));
     }
 
     private function convertToRelativePath(string $url): string
@@ -187,7 +187,7 @@ class DocumentController extends Controller
             ->first();
 
         if (!$document) {
-            return redirect()->back()->with('error', 'Document not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Document')]));
         }
 
         // Delete file from storage
@@ -197,7 +197,7 @@ class DocumentController extends Controller
 
         $document->delete();
 
-        return redirect()->back()->with('success', 'Document deleted successfully.');
+        return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Document')]));
     }
 
     public function download($documentId)
@@ -207,7 +207,7 @@ class DocumentController extends Controller
             ->first();
 
         if (!$document || !$document->file_path) {
-            return redirect()->back()->with('error', 'Document not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Document')]));
         }
 
         $originalPath = $document->file_path;
@@ -233,7 +233,7 @@ class DocumentController extends Controller
             return response()->download(storage_path('app/public/' . $originalPath), $document->name);
         }
 
-        return redirect()->back()->with('error', 'File not found.');
+        return redirect()->back()->with('error', __('File not found'));
     }
 
     public function apiDownload($documentId)
@@ -243,7 +243,7 @@ class DocumentController extends Controller
             ->first();
 
         if (!$document || !$document->file_path) {
-            return response()->json(['error' => 'Document not found'], 404);
+            return response()->json(['error' => __(':model not found.', ['model' => __('Document')])], 404);
         }
 
         $originalPath = $document->file_path;
@@ -272,6 +272,6 @@ class DocumentController extends Controller
             return response()->download(storage_path('app/public/' . $originalPath), $document->name);
         }
 
-        return response()->json(['error' => 'File not found'], 404);
+        return response()->json(['error' => __('File not found')], 404);
     }
 }

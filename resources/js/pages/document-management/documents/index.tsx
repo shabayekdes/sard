@@ -116,8 +116,6 @@ export default function Documents() {
     }
 
     if (formMode === 'create') {
-      toast.loading(t('Uploading document...'));
-
       router.post(route('document-management.documents.store'), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
@@ -130,12 +128,10 @@ export default function Documents() {
         },
         onError: (errors) => {
           toast.dismiss();
-          toast.error(`Failed to upload document: ${Object.values(errors).join(', ')}`);
+          toast.error(t('Failed to create {{model}}: {{errors}}', { model: t('Document'), errors: Object.values(errors).join(', ') }));
         }
       });
     } else if (formMode === 'edit') {
-      toast.loading(t('Updating document...'));
-
       router.put(route('document-management.documents.update', currentItem.id), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
@@ -148,15 +144,13 @@ export default function Documents() {
         },
         onError: (errors) => {
           toast.dismiss();
-          toast.error(`Failed to update document: ${Object.values(errors).join(', ')}`);
+          toast.error(t('Failed to update {{model}}: {{errors}}', { model: t('Document'), errors: Object.values(errors).join(', ') }));
         }
       });
     }
   };
 
   const handleDeleteConfirm = () => {
-    toast.loading(t('Deleting document...'));
-
     router.delete(route('document-management.documents.destroy', currentItem.id), {
       onSuccess: (page) => {
         setIsDeleteModalOpen(false);
@@ -169,7 +163,7 @@ export default function Documents() {
       },
       onError: (errors) => {
         toast.dismiss();
-        toast.error(`Failed to delete document: ${Object.values(errors).join(', ')}`);
+        toast.error(t('Failed to delete {{model}}: {{errors}}', { model: t('Document'), errors: Object.values(errors).join(', ') }));
       }
     });
   };
@@ -456,7 +450,7 @@ export default function Documents() {
               onClose={() => setIsDeleteModalOpen(false)}
               onConfirm={handleDeleteConfirm}
               itemName={currentItem?.name || ''}
-              entityName="document"
+              entityName="Document"
           />
       </PageTemplate>
   );

@@ -10,6 +10,7 @@ import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
+import { Switch } from '@/components/ui/switch';
 import { formatCurrency } from '@/utils/helpers';
 
 export default function BillingRates() {
@@ -76,9 +77,6 @@ export default function BillingRates() {
         break;
       case 'delete':
         setIsDeleteModalOpen(true);
-        break;
-      case 'toggle-status':
-        handleToggleStatus(item);
         break;
     }
   };
@@ -255,15 +253,23 @@ export default function BillingRates() {
     {
       key: 'status',
       label: t('Status'),
-      render: (value: string) => (
-        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${
-          value === 'active'
-            ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
-            : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
-        }`}>
-          {value === 'active' ? t('Active') : t('Inactive')}
-        </span>
-      )
+      render: (value: string, row: any) => {
+        const canToggleStatus = hasPermission(permissions, 'toggle-status-billing-rates');
+        return (
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={value === 'active'}
+              disabled={!canToggleStatus}
+              onCheckedChange={() => {
+                if (!canToggleStatus) return;
+                handleToggleStatus(row);
+              }}
+              aria-label={value === 'active' ? t('Deactivate billing rate') : t('Activate billing rate')}
+            />
+            <span className="text-muted-foreground text-xs">{value === 'active' ? t('Active') : t('Inactive')}</span>
+          </div>
+        );
+      }
     }
   ];
 
@@ -282,13 +288,6 @@ export default function BillingRates() {
       action: 'edit',
       className: 'text-amber-500',
       requiredPermission: 'edit-billing-rates'
-    },
-    {
-      label: t('Toggle Status'),
-      icon: 'Lock',
-      action: 'toggle-status',
-      className: 'text-amber-500',
-      requiredPermission: 'toggle-status-billing-rates'
     },
     {
       label: t('Delete'),
