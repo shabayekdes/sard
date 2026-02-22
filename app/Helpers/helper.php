@@ -1373,6 +1373,40 @@ if (! function_exists('formatCurrencyForCompany')) {
     }
 }
 
+if (! function_exists('formatCurrencyForPdf')) {
+    /**
+     * Format currency for PDF output using currency code instead of symbol.
+     * Use this for invoice PDFs so that symbols like ﷼ (Rial) that may not render
+     * in PDF fonts on some servers (e.g. production) are replaced by the code (e.g. SAR).
+     *
+     * @param float|string $amount
+     * @param int|null $userId Company/user ID for decimal/thousands settings (e.g. invoice created_by).
+     * @param string $currencyCode Currency code to display (e.g. SAR, USD). Never use DB symbol in PDF.
+     * @return string
+     */
+    function formatCurrencyForPdf($amount, $userId, $currencyCode)
+    {
+        $amount = (float) $amount;
+        $userSettings = settings($userId);
+        $userSettings = is_array($userSettings) ? $userSettings : [];
+
+        $decimalPlaces = (int) ($userSettings['decimalFormat'] ?? 2);
+        $thousandsSeparator = $userSettings['thousandsSeparator'] ?? ',';
+        $symbolSpace = ($userSettings['currencySymbolSpace'] ?? false) === '1';
+        $symbolPosition = $userSettings['currencySymbolPosition'] ?? 'before';
+        $floatNumber = ($userSettings['floatNumber'] ?? '1') !== '0';
+
+        if (! $floatNumber) {
+            $amount = floor($amount);
+        }
+
+        $formattedAmount = number_format($amount, $decimalPlaces, '.', $thousandsSeparator);
+        $space = $symbolSpace ? ' ' : '';
+
+        return $symbolPosition === 'after' ? $formattedAmount . $space . $currencyCode : $currencyCode . $space . $formattedAmount;
+    }
+}
+
 if (! function_exists('createdBy')) {
     function createdBy()
     {

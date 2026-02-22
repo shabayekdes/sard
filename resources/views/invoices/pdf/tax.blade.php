@@ -11,7 +11,7 @@
 <body>
 @php
     $formatNum = fn ($value) => number_format((float) $value, 2);
-    $formatMoney = fn ($value) => formatCurrencyForCompany((float) $value, $invoice->created_by);
+    $formatMoney = fn ($value) => formatCurrencyForPdf((float) $value, $invoice->created_by, $currency_code);
     $paymentsTotal = $invoice->payments?->sum('amount') ?? 0;
     $amountDue = ($totals['grand_total'] ?? 0) - $paymentsTotal;
     $dueDateFormatted = $invoice->due_date ? $invoice->due_date->format('Y-m-d') : $issued_at->format('Y-m-d');
