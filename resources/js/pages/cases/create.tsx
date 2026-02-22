@@ -1,4 +1,5 @@
 import { toast } from '@/components/custom-toast';
+import DependentDropdown from '@/components/DependentDropdown';
 import { PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,9 +7,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Repeater, type RepeaterField } from '@/components/ui/repeater';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import DependentDropdown from '@/components/DependentDropdown';
 import { useLayout } from '@/contexts/LayoutContext';
 import { router, usePage } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
@@ -134,15 +133,15 @@ export default function CreateCase() {
             {
                 name: 'case_subcategory_id',
                 label: t('Case Sub Category'),
-                apiEndpoint: '/case/case-categories/{case_category_id}/subcategories',
+                apiEndpoint: '/setup/case-categories/{case_category_id}/subcategories',
             },
             {
                 name: 'case_type_id',
                 label: t('Case Type'),
-                apiEndpoint: '/case/case-categories/{case_subcategory_id}/case-types',
+                apiEndpoint: '/setup/case-categories/{case_subcategory_id}/case-types',
             },
         ],
-        [caseCategories, currentLocale, t]
+        [caseCategories, currentLocale, t],
     );
 
     const updateField = (field: string, value: any) => {
@@ -252,7 +251,7 @@ export default function CreateCase() {
                 <div className="mb-6 rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div className="space-y-2">
-                            <Label>{t('Client')}</Label>
+                            <Label required>{t('Client')}</Label>
                             <Select value={formData.client_id} onValueChange={(value) => updateField('client_id', value)}>
                                 <SelectTrigger>
                                     <SelectValue placeholder={t('Select Client')} />
@@ -264,14 +263,18 @@ export default function CreateCase() {
                                         </SelectItem>
                                     ))}
                                     {auth?.user && !uniqueClients.some((c: any) => c.id === auth.user?.id) && (
-                                        <SelectItem key={`client-me-${auth.user.id}`} value={auth.user.id.toString()}>{auth.user.name} (Me)</SelectItem>
+                                        <SelectItem key={`client-me-${auth.user.id}`} value={auth.user.id.toString()}>
+                                            {auth.user.name} (Me)
+                                        </SelectItem>
                                     )}
                                 </SelectContent>
                             </Select>
                             {renderError('client_id')}
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="title">{t('Case Title')}</Label>
+                            <Label htmlFor="title" required>
+                                {t('Case Title')}
+                            </Label>
                             <Input id="title" value={formData.title} onChange={(e) => updateField('title', e.target.value)} required />
                             {renderError('title')}
                         </div>
@@ -283,15 +286,15 @@ export default function CreateCase() {
                                 className={isRtl ? 'flex justify-end gap-6' : 'flex gap-6'}
                             >
                                 <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
-                                    <RadioGroupItem value="petitioner" id="attributes_petitioner" />
-                                    <Label htmlFor="attributes_petitioner" className="font-normal">
-                                        {t('Petitioner')}
-                                    </Label>
-                                </div>
-                                <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
                                     <RadioGroupItem value="respondent" id="attributes_respondent" />
                                     <Label htmlFor="attributes_respondent" className="font-normal">
                                         {t('Respondent')}
+                                    </Label>
+                                </div>
+                                <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
+                                    <RadioGroupItem value="petitioner" id="attributes_petitioner" />
+                                    <Label htmlFor="attributes_petitioner" className="font-normal">
+                                        {t('Petitioner')}
                                     </Label>
                                 </div>
                             </RadioGroup>
@@ -316,7 +319,6 @@ export default function CreateCase() {
                             </Select>
                             {renderError('case_status_id')}
                         </div>
-
                         <div className="space-y-2">
                             <Label>{t('Priority')}</Label>
                             <Select value={formData.priority} onValueChange={(value) => updateField('priority', value)}>
@@ -331,9 +333,40 @@ export default function CreateCase() {
                             </Select>
                             {renderError('priority')}
                         </div>
+                        <div className="space-y-2">
+                            <Label>{t('Status')}</Label>
+                            <Select value={formData.status} onValueChange={(value) => updateField('status', value)}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="active">{t('Active')}</SelectItem>
+                                    <SelectItem value="inactive">{t('Inactive')}</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            {renderError('status')}
+                        </div>
                     </div>
 
                     <div className="col-span-full my-6 h-px space-y-2 bg-gray-200 dark:bg-gray-800" />
+
+                    <div className="mb-3 space-y-2 md:col-span-3">
+                        <DependentDropdown
+                            layout="row"
+                            fields={categorySubcategoryTypeFields}
+                            values={{
+                                case_category_id: formData.case_category_id,
+                                case_subcategory_id: formData.case_subcategory_id,
+                                case_type_id: formData.case_type_id,
+                            }}
+                            onChange={(fieldName, value) => updateField(fieldName, value)}
+                            errors={{
+                                case_category_id: normalizedErrors.case_category_id,
+                                case_subcategory_id: normalizedErrors.case_subcategory_id,
+                                case_type_id: normalizedErrors.case_type_id,
+                            }}
+                        />
+                    </div>
 
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div className="space-y-2">
@@ -364,29 +397,7 @@ export default function CreateCase() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-                        <div className="space-y-2 md:col-span-3">
-                            <DependentDropdown
-                                layout="row"
-                                fields={categorySubcategoryTypeFields}
-                                values={{
-                                    case_category_id: formData.case_category_id,
-                                    case_subcategory_id: formData.case_subcategory_id,
-                                    case_type_id: formData.case_type_id,
-                                }}
-                                onChange={(fieldName, value) => updateField(fieldName, value)}
-                                errors={{
-                                    case_category_id: normalizedErrors.case_category_id,
-                                    case_subcategory_id: normalizedErrors.case_subcategory_id,
-                                    case_type_id: normalizedErrors.case_type_id,
-                                }}
-                            />
-                            {(normalizedErrors.case_category_id || normalizedErrors.case_subcategory_id || normalizedErrors.case_type_id) && (
-                                <p className="text-xs text-red-500">
-                                    {normalizedErrors.case_category_id || normalizedErrors.case_subcategory_id || normalizedErrors.case_type_id}
-                                </p>
-                            )}
-                        </div>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div className="space-y-2">
                             <Label htmlFor="estimated_value">{t('Estimated Value')}</Label>
                             <Input
@@ -399,9 +410,6 @@ export default function CreateCase() {
                             />
                             {renderError('estimated_value')}
                         </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div className="space-y-2">
                             <Label htmlFor="filing_date">{t('Filling Date')}</Label>
                             <Input
@@ -422,19 +430,6 @@ export default function CreateCase() {
                             />
                             {renderError('expected_completion_date')}
                         </div>
-                        <div className="space-y-2">
-                            <Label>{t('Status')}</Label>
-                            <Select value={formData.status} onValueChange={(value) => updateField('status', value)}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="active">{t('Active')}</SelectItem>
-                                    <SelectItem value="inactive">{t('Inactive')}</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            {renderError('status')}
-                        </div>
                     </div>
 
                     <div className="col-span-full my-6 h-px space-y-2 bg-gray-200 dark:bg-gray-800" />
@@ -444,18 +439,6 @@ export default function CreateCase() {
                         <Textarea id="description" value={formData.description} onChange={(e) => updateField('description', e.target.value)} />
                         {renderError('description')}
                     </div>
-
-                    {googleCalendarEnabled && (
-                        <div className="flex items-center gap-3">
-                            <Switch
-                                id="sync_with_google_calendar"
-                                checked={Boolean(formData.sync_with_google_calendar)}
-                                onCheckedChange={(value) => updateField('sync_with_google_calendar', value)}
-                            />
-                            <Label htmlFor="sync_with_google_calendar">{t('Synchronize in Google Calendar')}</Label>
-                            {renderError('sync_with_google_calendar')}
-                        </div>
-                    )}
                 </div>
 
                 <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">

@@ -417,29 +417,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::get('/', fn() => Inertia::render('setup/index'))->name('index');
 
                 Route::middleware('permission:manage-client-types')->group(function () {
-                    Route::get('clients/client-types', [\App\Http\Controllers\ClientTypeController::class, 'index'])->name('client-types.index');
-                    Route::post('clients/client-types', [\App\Http\Controllers\ClientTypeController::class, 'store'])->middleware('permission:create-client-types')->name('client-types.store');
-                    Route::put('clients/client-types/{clientType}', [\App\Http\Controllers\ClientTypeController::class, 'update'])->middleware('permission:edit-client-types')->name('client-types.update');
-                    Route::delete('clients/client-types/{clientType}', [\App\Http\Controllers\ClientTypeController::class, 'destroy'])->middleware('permission:delete-client-types')->name('client-types.destroy');
-                    Route::put('clients/client-types/{clientType}/toggle-status', [\App\Http\Controllers\ClientTypeController::class, 'toggleStatus'])->middleware('permission:edit-client-types')->name('client-types.toggle-status');
+                    Route::get('client-types', [\App\Http\Controllers\ClientTypeController::class, 'index'])->name('client-types.index');
+                    Route::post('client-types', [\App\Http\Controllers\ClientTypeController::class, 'store'])->middleware('permission:create-client-types')->name('client-types.store');
+                    Route::put('client-types/{clientType}', [\App\Http\Controllers\ClientTypeController::class, 'update'])->middleware('permission:edit-client-types')->name('client-types.update');
+                    Route::delete('client-types/{clientType}', [\App\Http\Controllers\ClientTypeController::class, 'destroy'])->middleware('permission:delete-client-types')->name('client-types.destroy');
+                    Route::put('client-types/{clientType}/toggle-status', [\App\Http\Controllers\ClientTypeController::class, 'toggleStatus'])->middleware('permission:edit-client-types')->name('client-types.toggle-status');
                 });
                 Route::middleware('permission:manage-case-categories')->group(function () {
-                    Route::get('case/case-categories', [\App\Http\Controllers\CaseCategoryController::class, 'index'])->name('case-categories.index');
-                    Route::post('case/case-categories', [\App\Http\Controllers\CaseCategoryController::class, 'store'])->middleware('permission:create-case-categories')->name('case-categories.store');
-                    Route::put('case/case-categories/{caseCategory}', [\App\Http\Controllers\CaseCategoryController::class, 'update'])->middleware('permission:edit-case-categories')->name('case-categories.update');
-                    Route::delete('case/case-categories/{caseCategory}', [\App\Http\Controllers\CaseCategoryController::class, 'destroy'])->middleware('permission:delete-case-categories')->name('case-categories.destroy');
-                    Route::put('case/case-categories/{caseCategory}/toggle-status', [\App\Http\Controllers\CaseCategoryController::class, 'toggleStatus'])->middleware('permission:edit-case-categories')->name('case-categories.toggle-status');
-                    Route::get('case/case-categories/{categoryId}/subcategories', [\App\Http\Controllers\CaseCategoryController::class, 'getSubcategories'])->name('case-categories.subcategories');
-                    Route::get('case/case-categories/{subcategoryId}/case-types', [\App\Http\Controllers\CaseCategoryController::class, 'getCaseTypes'])->name('case-categories.case-types');
+                    Route::get('case-categories', [\App\Http\Controllers\CaseCategoryController::class, 'index'])->name('case-categories.index');
+                    Route::post('case-categories', [\App\Http\Controllers\CaseCategoryController::class, 'store'])->middleware('permission:create-case-categories')->name('case-categories.store');
+                    Route::put('case-categories/{caseCategory}', [\App\Http\Controllers\CaseCategoryController::class, 'update'])->middleware('permission:edit-case-categories')->name('case-categories.update');
+                    Route::delete('case-categories/{caseCategory}', [\App\Http\Controllers\CaseCategoryController::class, 'destroy'])->middleware('permission:delete-case-categories')->name('case-categories.destroy');
+                    Route::put('case-categories/{caseCategory}/toggle-status', [\App\Http\Controllers\CaseCategoryController::class, 'toggleStatus'])->middleware('permission:edit-case-categories')->name('case-categories.toggle-status');
+                    Route::get('case-categories/{categoryId}/subcategories', [\App\Http\Controllers\CaseCategoryController::class, 'getSubcategories'])->name('case-categories.subcategories');
+                    Route::get('case-categories/{subcategoryId}/case-types', [\App\Http\Controllers\CaseCategoryController::class, 'getCaseTypes'])->name('case-categories.case-types');
                 });
 
                 // Case Types routes
                 Route::middleware('permission:manage-case-types')->group(function () {
-                    Route::get('case/case-types', [\App\Http\Controllers\CaseTypeController::class, 'index'])->name('case-types.index');
-                    Route::post('case/case-types', [\App\Http\Controllers\CaseTypeController::class, 'store'])->middleware('permission:create-case-types')->name('case-types.store');
-                    Route::put('case/case-types/{caseType}', [\App\Http\Controllers\CaseTypeController::class, 'update'])->middleware('permission:edit-case-types')->name('case-types.update');
-                    Route::delete('case/case-types/{caseType}', [\App\Http\Controllers\CaseTypeController::class, 'destroy'])->middleware('permission:delete-case-types')->name('case-types.destroy');
-                    Route::put('case/case-types/{caseType}/toggle-status', [\App\Http\Controllers\CaseTypeController::class, 'toggleStatus'])->middleware('permission:edit-case-types')->name('case-types.toggle-status');
+                    Route::get('case-types', [\App\Http\Controllers\CaseTypeController::class, 'index'])->name('case-types.index');
+                    Route::post('case-types', [\App\Http\Controllers\CaseTypeController::class, 'store'])->middleware('permission:create-case-types')->name('case-types.store');
+                    Route::put('case-types/{caseType}', [\App\Http\Controllers\CaseTypeController::class, 'update'])->middleware('permission:edit-case-types')->name('case-types.update');
+                    Route::delete('case-types/{caseType}', [\App\Http\Controllers\CaseTypeController::class, 'destroy'])->middleware('permission:delete-case-types')->name('case-types.destroy');
+                    Route::put('case-types/{caseType}/toggle-status', [\App\Http\Controllers\CaseTypeController::class, 'toggleStatus'])->middleware('permission:edit-case-types')->name('case-types.toggle-status');
                 });
 
                 // Hearing Type Management routes
@@ -454,97 +454,97 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
                 // Event Type routes
                 Route::middleware('permission:manage-event-types')->group(function () {
-                    Route::get('advocate/event-types', [\App\Http\Controllers\EventTypeController::class, 'index'])->name('event-types.index');
-                    Route::post('advocate/event-types', [\App\Http\Controllers\EventTypeController::class, 'store'])->middleware('permission:create-event-types')->name('event-types.store');
-                    Route::put('advocate/event-types/{eventType}', [\App\Http\Controllers\EventTypeController::class, 'update'])->middleware('permission:edit-event-types')->name('event-types.update');
-                    Route::delete('advocate/event-types/{eventType}', [\App\Http\Controllers\EventTypeController::class, 'destroy'])->middleware('permission:delete-event-types')->name('event-types.destroy');
-                    Route::put('advocate/event-types/{eventType}/toggle-status', [\App\Http\Controllers\EventTypeController::class, 'toggleStatus'])->middleware('permission:edit-event-types')->name('event-types.toggle-status');
+                    Route::get('event-types', [\App\Http\Controllers\EventTypeController::class, 'index'])->name('event-types.index');
+                    Route::post('event-types', [\App\Http\Controllers\EventTypeController::class, 'store'])->middleware('permission:create-event-types')->name('event-types.store');
+                    Route::put('event-types/{eventType}', [\App\Http\Controllers\EventTypeController::class, 'update'])->middleware('permission:edit-event-types')->name('event-types.update');
+                    Route::delete('event-types/{eventType}', [\App\Http\Controllers\EventTypeController::class, 'destroy'])->middleware('permission:delete-event-types')->name('event-types.destroy');
+                    Route::put('event-types/{eventType}/toggle-status', [\App\Http\Controllers\EventTypeController::class, 'toggleStatus'])->middleware('permission:edit-event-types')->name('event-types.toggle-status');
                 });
                 // Case Statuses routes
                 Route::middleware('permission:manage-case-statuses')->group(function () {
-                    Route::get('case/case-statuses', [\App\Http\Controllers\CaseStatusController::class, 'index'])->name('case-statuses.index');
-                    Route::post('case/case-statuses', [\App\Http\Controllers\CaseStatusController::class, 'store'])->middleware('permission:create-case-statuses')->name('case-statuses.store');
-                    Route::put('case/case-statuses/{caseStatus}', [\App\Http\Controllers\CaseStatusController::class, 'update'])->middleware('permission:edit-case-statuses')->name('case-statuses.update');
-                    Route::delete('case/case-statuses/{caseStatus}', [\App\Http\Controllers\CaseStatusController::class, 'destroy'])->middleware('permission:delete-case-statuses')->name('case-statuses.destroy');
-                    Route::put('case/case-statuses/{caseStatus}/toggle-status', [\App\Http\Controllers\CaseStatusController::class, 'toggleStatus'])->middleware('permission:edit-case-statuses')->name('case-statuses.toggle-status');
+                    Route::get('case-statuses', [\App\Http\Controllers\CaseStatusController::class, 'index'])->name('case-statuses.index');
+                    Route::post('case-statuses', [\App\Http\Controllers\CaseStatusController::class, 'store'])->middleware('permission:create-case-statuses')->name('case-statuses.store');
+                    Route::put('case-statuses/{caseStatus}', [\App\Http\Controllers\CaseStatusController::class, 'update'])->middleware('permission:edit-case-statuses')->name('case-statuses.update');
+                    Route::delete('case-statuses/{caseStatus}', [\App\Http\Controllers\CaseStatusController::class, 'destroy'])->middleware('permission:delete-case-statuses')->name('case-statuses.destroy');
+                    Route::put('case-statuses/{caseStatus}/toggle-status', [\App\Http\Controllers\CaseStatusController::class, 'toggleStatus'])->middleware('permission:edit-case-statuses')->name('case-statuses.toggle-status');
                 });
                 // Court Type routes
                 Route::middleware('permission:manage-court-types')->group(function () {
-                    Route::get('advocate/court-types', [\App\Http\Controllers\CourtTypeController::class, 'index'])->name('court-types.index');
-                    Route::post('advocate/court-types', [\App\Http\Controllers\CourtTypeController::class, 'store'])->middleware('permission:create-court-types')->name('court-types.store');
-                    Route::put('advocate/court-types/{courtType}', [\App\Http\Controllers\CourtTypeController::class, 'update'])->middleware('permission:edit-court-types')->name('court-types.update');
-                    Route::delete('advocate/court-types/{courtType}', [\App\Http\Controllers\CourtTypeController::class, 'destroy'])->middleware('permission:delete-court-types')->name('court-types.destroy');
-                    Route::put('advocate/court-types/{courtType}/toggle-status', [\App\Http\Controllers\CourtTypeController::class, 'toggleStatus'])->middleware('permission:edit-court-types')->name('court-types.toggle-status');
+                    Route::get('court-types', [\App\Http\Controllers\CourtTypeController::class, 'index'])->name('court-types.index');
+                    Route::post('court-types', [\App\Http\Controllers\CourtTypeController::class, 'store'])->middleware('permission:create-court-types')->name('court-types.store');
+                    Route::put('court-types/{courtType}', [\App\Http\Controllers\CourtTypeController::class, 'update'])->middleware('permission:edit-court-types')->name('court-types.update');
+                    Route::delete('court-types/{courtType}', [\App\Http\Controllers\CourtTypeController::class, 'destroy'])->middleware('permission:delete-court-types')->name('court-types.destroy');
+                    Route::put('court-types/{courtType}/toggle-status', [\App\Http\Controllers\CourtTypeController::class, 'toggleStatus'])->middleware('permission:edit-court-types')->name('court-types.toggle-status');
                 });
                 // Circle Type routes
                 Route::middleware('permission:manage-circle-types')->group(function () {
-                    Route::get('advocate/circle-types', [\App\Http\Controllers\CircleTypeController::class, 'index'])->name('circle-types.index');
-                    Route::post('advocate/circle-types', [\App\Http\Controllers\CircleTypeController::class, 'store'])->middleware('permission:create-circle-types')->name('circle-types.store');
-                    Route::put('advocate/circle-types/{circleType}', [\App\Http\Controllers\CircleTypeController::class, 'update'])->middleware('permission:edit-circle-types')->name('circle-types.update');
-                    Route::delete('advocate/circle-types/{circleType}', [\App\Http\Controllers\CircleTypeController::class, 'destroy'])->middleware('permission:delete-circle-types')->name('circle-types.destroy');
-                    Route::put('advocate/circle-types/{circleType}/toggle-status', [\App\Http\Controllers\CircleTypeController::class, 'toggleStatus'])->middleware('permission:edit-circle-types')->name('circle-types.toggle-status');
+                    Route::get('circle-types', [\App\Http\Controllers\CircleTypeController::class, 'index'])->name('circle-types.index');
+                    Route::post('circle-types', [\App\Http\Controllers\CircleTypeController::class, 'store'])->middleware('permission:create-circle-types')->name('circle-types.store');
+                    Route::put('circle-types/{circleType}', [\App\Http\Controllers\CircleTypeController::class, 'update'])->middleware('permission:edit-circle-types')->name('circle-types.update');
+                    Route::delete('circle-types/{circleType}', [\App\Http\Controllers\CircleTypeController::class, 'destroy'])->middleware('permission:delete-circle-types')->name('circle-types.destroy');
+                    Route::put('circle-types/{circleType}/toggle-status', [\App\Http\Controllers\CircleTypeController::class, 'toggleStatus'])->middleware('permission:edit-circle-types')->name('circle-types.toggle-status');
                 });
                 // Document Category routes
                 Route::middleware('permission:manage-document-categories')->group(function () {
-                    Route::get('document-management/categories', [\App\Http\Controllers\DocumentCategoryController::class, 'index'])->name('document-categories.index');
-                    Route::post('document-management/categories', [\App\Http\Controllers\DocumentCategoryController::class, 'store'])->middleware('permission:create-document-categories')->name('document-categories.store');
-                    Route::put('document-management/categories/{category}', [\App\Http\Controllers\DocumentCategoryController::class, 'update'])->middleware('permission:edit-document-categories')->name('document-categories.update');
-                    Route::delete('document-management/categories/{category}', [\App\Http\Controllers\DocumentCategoryController::class, 'destroy'])->middleware('permission:delete-document-categories')->name('document-categories.destroy');
-                    Route::put('document-management/categories/{category}/toggle-status', [\App\Http\Controllers\DocumentCategoryController::class, 'toggleStatus'])->middleware('permission:edit-document-categories')->name('document-categories.toggle-status');
+                    Route::get('document-categories', [\App\Http\Controllers\DocumentCategoryController::class, 'index'])->name('document-categories.index');
+                    Route::post('document-categories', [\App\Http\Controllers\DocumentCategoryController::class, 'store'])->middleware('permission:create-document-categories')->name('document-categories.store');
+                    Route::put('document-categories/{category}', [\App\Http\Controllers\DocumentCategoryController::class, 'update'])->middleware('permission:edit-document-categories')->name('document-categories.update');
+                    Route::delete('document-categories/{category}', [\App\Http\Controllers\DocumentCategoryController::class, 'destroy'])->middleware('permission:delete-document-categories')->name('document-categories.destroy');
+                    Route::put('document-categories/{category}/toggle-status', [\App\Http\Controllers\DocumentCategoryController::class, 'toggleStatus'])->middleware('permission:edit-document-categories')->name('document-categories.toggle-status');
                 });
 
                 // Document Type routes
                 Route::middleware('permission:manage-document-types')->group(function () {
-                    Route::get('advocate/document-types', [\App\Http\Controllers\DocumentTypeController::class, 'index'])->name('document-types.index');
-                    Route::post('advocate/document-types', [\App\Http\Controllers\DocumentTypeController::class, 'store'])->middleware('permission:create-document-types')->name('document-types.store');
-                    Route::put('advocate/document-types/{documentType}', [\App\Http\Controllers\DocumentTypeController::class, 'update'])->middleware('permission:edit-document-types')->name('document-types.update');
-                    Route::delete('advocate/document-types/{documentType}', [\App\Http\Controllers\DocumentTypeController::class, 'destroy'])->middleware('permission:delete-document-types')->name('document-types.destroy');
-                    Route::put('advocate/document-types/{documentType}/toggle-status', [\App\Http\Controllers\DocumentTypeController::class, 'toggleStatus'])->middleware('permission:edit-document-types')->name('document-types.toggle-status');
+                    Route::get('document-types', [\App\Http\Controllers\DocumentTypeController::class, 'index'])->name('document-types.index');
+                    Route::post('document-types', [\App\Http\Controllers\DocumentTypeController::class, 'store'])->middleware('permission:create-document-types')->name('document-types.store');
+                    Route::put('document-types/{documentType}', [\App\Http\Controllers\DocumentTypeController::class, 'update'])->middleware('permission:edit-document-types')->name('document-types.update');
+                    Route::delete('document-types/{documentType}', [\App\Http\Controllers\DocumentTypeController::class, 'destroy'])->middleware('permission:delete-document-types')->name('document-types.destroy');
+                    Route::put('document-types/{documentType}/toggle-status', [\App\Http\Controllers\DocumentTypeController::class, 'toggleStatus'])->middleware('permission:edit-document-types')->name('document-types.toggle-status');
                 });
 
                 // Research Type routes
                 Route::middleware('permission:manage-research-types')->group(function () {
-                    Route::get('legal-research/research-types', [\App\Http\Controllers\ResearchTypeController::class, 'index'])->name('research-types.index');
-                    Route::post('legal-research/research-types', [\App\Http\Controllers\ResearchTypeController::class, 'store'])->middleware('permission:create-research-types')->name('research-types.store');
-                    Route::put('legal-research/research-types/{researchType}', [\App\Http\Controllers\ResearchTypeController::class, 'update'])->middleware('permission:edit-research-types')->name('research-types.update');
-                    Route::delete('legal-research/research-types/{researchType}', [\App\Http\Controllers\ResearchTypeController::class, 'destroy'])->middleware('permission:delete-research-types')->name('research-types.destroy');
-                    Route::put('legal-research/research-types/{researchType}/toggle-status', [\App\Http\Controllers\ResearchTypeController::class, 'toggleStatus'])->middleware('permission:edit-research-types')->name('research-types.toggle-status');
+                    Route::get('research-types', [\App\Http\Controllers\ResearchTypeController::class, 'index'])->name('research-types.index');
+                    Route::post('research-types', [\App\Http\Controllers\ResearchTypeController::class, 'store'])->middleware('permission:create-research-types')->name('research-types.store');
+                    Route::put('research-types/{researchType}', [\App\Http\Controllers\ResearchTypeController::class, 'update'])->middleware('permission:edit-research-types')->name('research-types.update');
+                    Route::delete('research-types/{researchType}', [\App\Http\Controllers\ResearchTypeController::class, 'destroy'])->middleware('permission:delete-research-types')->name('research-types.destroy');
+                    Route::put('research-types/{researchType}/toggle-status', [\App\Http\Controllers\ResearchTypeController::class, 'toggleStatus'])->middleware('permission:edit-research-types')->name('research-types.toggle-status');
                 });
 
                 // Research Source routes
                 Route::middleware('permission:manage-research-sources')->group(function () {
-                    Route::get('legal-research/sources', [\App\Http\Controllers\ResearchSourceController::class, 'index'])->name('research-sources.index');
-                    Route::post('legal-research/sources', [\App\Http\Controllers\ResearchSourceController::class, 'store'])->middleware('permission:create-research-sources')->name('research-sources.store');
-                    Route::put('legal-research/sources/{source}', [\App\Http\Controllers\ResearchSourceController::class, 'update'])->middleware('permission:edit-research-sources')->name('research-sources.update');
-                    Route::delete('legal-research/sources/{source}', [\App\Http\Controllers\ResearchSourceController::class, 'destroy'])->middleware('permission:delete-research-sources')->name('research-sources.destroy');
-                    Route::put('legal-research/sources/{source}/toggle-status', [\App\Http\Controllers\ResearchSourceController::class, 'toggleStatus'])->middleware('permission:edit-research-sources')->name('research-sources.toggle-status');
+                    Route::get('research-sources', [\App\Http\Controllers\ResearchSourceController::class, 'index'])->name('research-sources.index');
+                    Route::post('research-sources', [\App\Http\Controllers\ResearchSourceController::class, 'store'])->middleware('permission:create-research-sources')->name('research-sources.store');
+                    Route::put('research-sources/{source}', [\App\Http\Controllers\ResearchSourceController::class, 'update'])->middleware('permission:edit-research-sources')->name('research-sources.update');
+                    Route::delete('research-sources/{source}', [\App\Http\Controllers\ResearchSourceController::class, 'destroy'])->middleware('permission:delete-research-sources')->name('research-sources.destroy');
+                    Route::put('research-sources/{source}/toggle-status', [\App\Http\Controllers\ResearchSourceController::class, 'toggleStatus'])->middleware('permission:edit-research-sources')->name('research-sources.toggle-status');
                 });
 
                 // Task Type routes
                 Route::middleware('permission:manage-task-types')->group(function () {
-                    Route::get('task/task-types', [\App\Http\Controllers\TaskTypeController::class, 'index'])->name('task-types.index');
-                    Route::post('task/task-types', [\App\Http\Controllers\TaskTypeController::class, 'store'])->middleware('permission:create-task-types')->name('task-types.store');
-                    Route::put('task/task-types/{taskType}', [\App\Http\Controllers\TaskTypeController::class, 'update'])->middleware('permission:edit-task-types')->name('task-types.update');
-                    Route::delete('task/task-types/{taskType}', [\App\Http\Controllers\TaskTypeController::class, 'destroy'])->middleware('permission:delete-task-types')->name('task-types.destroy');
-                    Route::put('task/task-types/{taskType}/toggle-status', [\App\Http\Controllers\TaskTypeController::class, 'toggleStatus'])->middleware('permission:toggle-status-task-types')->name('task-types.toggle-status');
+                    Route::get('task-types', [\App\Http\Controllers\TaskTypeController::class, 'index'])->name('task-types.index');
+                    Route::post('task-types', [\App\Http\Controllers\TaskTypeController::class, 'store'])->middleware('permission:create-task-types')->name('task-types.store');
+                    Route::put('task-types/{taskType}', [\App\Http\Controllers\TaskTypeController::class, 'update'])->middleware('permission:edit-task-types')->name('task-types.update');
+                    Route::delete('task-types/{taskType}', [\App\Http\Controllers\TaskTypeController::class, 'destroy'])->middleware('permission:delete-task-types')->name('task-types.destroy');
+                    Route::put('task-types/{taskType}/toggle-status', [\App\Http\Controllers\TaskTypeController::class, 'toggleStatus'])->middleware('permission:toggle-status-task-types')->name('task-types.toggle-status');
                 });
 
                 // Task Status routes
                 Route::middleware('permission:manage-task-statuses')->group(function () {
-                    Route::get('task/task-statuses', [\App\Http\Controllers\TaskStatusController::class, 'index'])->name('task-statuses.index');
-                    Route::post('task/task-statuses', [\App\Http\Controllers\TaskStatusController::class, 'store'])->middleware('permission:create-task-statuses')->name('task-statuses.store');
-                    Route::put('task/task-statuses/{taskStatus}', [\App\Http\Controllers\TaskStatusController::class, 'update'])->middleware('permission:edit-task-statuses')->name('task-statuses.update');
-                    Route::delete('task/task-statuses/{taskStatus}', [\App\Http\Controllers\TaskStatusController::class, 'destroy'])->middleware('permission:delete-task-statuses')->name('task-statuses.destroy');
-                    Route::put('task/task-statuses/{taskStatus}/toggle-status', [\App\Http\Controllers\TaskStatusController::class, 'toggleStatus'])->middleware('permission:toggle-status-task-statuses')->name('task-statuses.toggle-status');
+                    Route::get('task-statuses', [\App\Http\Controllers\TaskStatusController::class, 'index'])->name('task-statuses.index');
+                    Route::post('task-statuses', [\App\Http\Controllers\TaskStatusController::class, 'store'])->middleware('permission:create-task-statuses')->name('task-statuses.store');
+                    Route::put('task-statuses/{taskStatus}', [\App\Http\Controllers\TaskStatusController::class, 'update'])->middleware('permission:edit-task-statuses')->name('task-statuses.update');
+                    Route::delete('task-statuses/{taskStatus}', [\App\Http\Controllers\TaskStatusController::class, 'destroy'])->middleware('permission:delete-task-statuses')->name('task-statuses.destroy');
+                    Route::put('task-statuses/{taskStatus}/toggle-status', [\App\Http\Controllers\TaskStatusController::class, 'toggleStatus'])->middleware('permission:toggle-status-task-statuses')->name('task-statuses.toggle-status');
                 });
 
                 // Expense Category routes
                 Route::middleware('permission:manage-expense-categories')->group(function () {
-                    Route::get('billing/expense-categories', [\App\Http\Controllers\ExpenseCategoryController::class, 'index'])->name('expense-categories.index');
-                    Route::post('billing/expense-categories', [\App\Http\Controllers\ExpenseCategoryController::class, 'store'])->middleware('permission:create-expense-categories')->name('expense-categories.store');
-                    Route::put('billing/expense-categories/{expenseCategory}', [\App\Http\Controllers\ExpenseCategoryController::class, 'update'])->middleware('permission:edit-expense-categories')->name('expense-categories.update');
-                    Route::delete('billing/expense-categories/{expenseCategory}', [\App\Http\Controllers\ExpenseCategoryController::class, 'destroy'])->middleware('permission:delete-expense-categories')->name('expense-categories.destroy');
-                    Route::put('billing/expense-categories/{expenseCategory}/toggle-status', [\App\Http\Controllers\ExpenseCategoryController::class, 'toggleStatus'])->middleware('permission:toggle-status-expense-categories')->name('expense-categories.toggle-status');
+                    Route::get('expense-categories', [\App\Http\Controllers\ExpenseCategoryController::class, 'index'])->name('expense-categories.index');
+                    Route::post('expense-categories', [\App\Http\Controllers\ExpenseCategoryController::class, 'store'])->middleware('permission:create-expense-categories')->name('expense-categories.store');
+                    Route::put('expense-categories/{expenseCategory}', [\App\Http\Controllers\ExpenseCategoryController::class, 'update'])->middleware('permission:edit-expense-categories')->name('expense-categories.update');
+                    Route::delete('expense-categories/{expenseCategory}', [\App\Http\Controllers\ExpenseCategoryController::class, 'destroy'])->middleware('permission:delete-expense-categories')->name('expense-categories.destroy');
+                    Route::put('expense-categories/{expenseCategory}/toggle-status', [\App\Http\Controllers\ExpenseCategoryController::class, 'toggleStatus'])->middleware('permission:toggle-status-expense-categories')->name('expense-categories.toggle-status');
                 });
             });
 

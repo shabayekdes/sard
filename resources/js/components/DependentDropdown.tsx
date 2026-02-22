@@ -184,32 +184,39 @@ export default function DependentDropdown({ fields, values, onChange, disabled =
                 
                 return (
                     <div key={field.name} className="space-y-2">
-                        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">{field.label}</label>
-                        <select
-                            value={values[field.name] || ''}
-                            onChange={(e) => handleFieldChange(field.name, e.target.value, index)}
-                            disabled={isDisabled || isLoading}
-                            dir={fieldDir}
-                            className={`flex h-10 w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${errors[field.name] ? 'border-red-500' : 'border-input'}`}
+                        <Label
+                            className={cn(errors[field.name] && 'text-destructive')}
+                            htmlFor={field.name}
                         >
-                            <option 
-                                value=""
-                                className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none text-muted-foreground"
+                            {field.label}
+                        </Label>
+                        <Select
+                            value={values[field.name] || ''}
+                            onValueChange={(value) => handleFieldChange(field.name, value, index)}
+                            disabled={isDisabled || isLoading}
+                        >
+                            <SelectTrigger
+                                id={field.name}
+                                dir={fieldDir}
+                                className={cn(errors[field.name] && 'border-destructive')}
                             >
-                                {isLoading ? t('Loading...') : t('Select {{label}}', { label: field.label })}
-                            </option>
-                            {fieldOptions.map((option, optionIndex) => (
-                                <option 
-                                    key={`${field.name}-${option.value}-${optionIndex}`} 
-                                    value={option.value}
-                                    className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-                                >
-                                    {option.label}
-                                </option>
-                            ))}
-                        </select>
+                                <SelectValue
+                                    placeholder={isLoading ? t('Loading...') : t('Select {{label}}', { label: field.label })}
+                                />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {fieldOptions.map((option, optionIndex) => (
+                                    <SelectItem
+                                        key={`${field.name}-${option.value}-${optionIndex}`}
+                                        value={option.value}
+                                    >
+                                        {option.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                         {errors[field.name] && (
-                            <p className="text-sm text-red-500 mt-1">{errors[field.name]}</p>
+                            <p className="text-sm text-destructive mt-1">{errors[field.name]}</p>
                         )}
                     </div>
                 );
