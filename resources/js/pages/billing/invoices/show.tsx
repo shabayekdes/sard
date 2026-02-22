@@ -36,7 +36,6 @@ export default function ShowInvoice() {
     const taxRate = invoice?.tax_rate ?? invoice?.client?.tax_rate ?? 0;
 
     const handleSend = () => {
-        toast.loading(t('Sending invoice...'));
         router.put(
             route('billing.invoices.send', invoice.id),
             {},
@@ -66,7 +65,6 @@ export default function ShowInvoice() {
     };
 
     const handlePaymentSubmit = (formData: any) => {
-        toast.loading(t('Recording payment...'));
         router.post(route('billing.payments.store'), formData, {
             onSuccess: (page: any) => {
                 toast.dismiss();
@@ -326,14 +324,16 @@ export default function ShowInvoice() {
                             <p>
                                 <span className="text-muted-foreground font-medium">{t('Email')}:</span> {invoice?.client?.email || '-'}
                             </p>
-                            <p>
-                                <span className="text-muted-foreground font-medium">{t('Tax Number')}:</span> {invoice?.client?.tax_id || '-'}
-                            </p>
                             {invoice?.client?.business_type === 'b2b' && (
-                                <p>
-                                    <span className="text-muted-foreground font-medium">{t('Commercial Register')}:</span>{' '}
-                                    {invoice?.client?.cr_number || '-'}
-                                </p>
+                                <>
+                                    <p>
+                                        <span className="text-muted-foreground font-medium">{t('Tax Number')}:</span> {invoice?.client?.tax_id || '-'}
+                                    </p>
+                                    <p>
+                                        <span className="text-muted-foreground font-medium">{t('Commercial Register')}:</span>{' '}
+                                        {invoice?.client?.cr_number || '-'}
+                                    </p>
+                                </>
                             )}
                         </CardContent>
                     </Card>
