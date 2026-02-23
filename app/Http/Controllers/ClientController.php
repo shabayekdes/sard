@@ -253,10 +253,10 @@ class ClientController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
+            'email' => 'required|email|max:255|unique:clients,email',
             'password' => 'required|string|min:6',
             'country_id' => 'required|exists:countries,id',
-            'phone' => 'required|string',
+            'phone' => 'required|string|unique:clients,phone',
             'business_type' => 'required|string|in:b2c,b2b',
             'nationality_id' => 'nullable|exists:countries,id',
             'gender' => 'nullable|string|in:male,female',
@@ -411,9 +411,9 @@ class ClientController extends Controller
         try {
             $validated = $request->validate([
                     'name' => 'required|string|max:255',
-                    'email' => 'required|email|max:255',
+                    'email' => 'required|email|max:255|unique:clients,email,'.$client->id,
                     'country_id' => 'required|exists:countries,id',
-                    'phone' => 'required|string',
+                    'phone' => 'required|string|unique:clients,phone,'.$client->id,
                     'business_type' => 'required|string|in:b2c,b2b',
                     'nationality_id' => 'nullable|exists:countries,id',
                     'gender' => 'nullable|string|in:male,female',
