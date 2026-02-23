@@ -63,7 +63,9 @@
                 </p>
                 <p class="pdf-card-row"><span class="pdf-label">الرقم الضريبي:</span> {{ $seller['tax_number'] ?: '-' }}
                 </p>
-                <p class="pdf-card-row"><span class="pdf-label">السجل التجاري:</span> {{ $seller['cr'] ?: '-' }}</p>
+                @if (($customer['business_type'] ?? '') === 'b2b')
+                    <p class="pdf-card-row"><span class="pdf-label">السجل التجاري:</span> {{ $seller['cr'] ?: '-' }}</p>
+                @endif
             </div>
         </div>
         <div class="pdf-card flex-grow-1">
