@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useTranslation } from 'react-i18next';
 import { Link, router } from '@inertiajs/react';
-import { formatCurrency } from '@/utils/helpers';
+import { CurrencyAmount, formatCurrencyAmount } from '@/components/currency-amount';
 import { CrudFormModal } from '@/components/CrudFormModal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, AreaChart, Area, BarChart, Bar } from 'recharts';
@@ -21,6 +21,7 @@ interface CompanyDashboardData {
     totalRevenue: number;
     monthlyGrowth: number;
     pendingTasks: number;
+    totalTasks?: number;
     upcomingHearings: number;
     unreadMessages: number;
     successRate?: number;
@@ -167,6 +168,7 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
     totalRevenue: 125000,
     monthlyGrowth: 12.5,
     pendingTasks: 23,
+    totalTasks: 45,
     upcomingHearings: 8,
     unreadMessages: 15,
     successRate: 84.5,
@@ -319,7 +321,7 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs font-medium text-muted-foreground">{t('Total Revenue')}</p>
-                      <h3 className="mt-2 text-2xl font-bold">{formatCurrency(stats?.totalRevenue ?? 0)}</h3>
+                      <h3 className="mt-2 text-2xl font-bold"><CurrencyAmount amount={stats?.totalRevenue ?? 0} iconSize={24} /></h3>
                       <p className="text-xs text-muted-foreground mt-1">{t('This year')}</p>
                     </div>
                     <div className="rounded-full bg-emerald-100 p-3 dark:bg-emerald-900">
@@ -337,6 +339,7 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
                     <div>
                       <p className="text-xs font-medium text-muted-foreground">{t('Pending Tasks')}</p>
                       <h3 className="mt-2 text-2xl font-bold">{stats.pendingTasks}</h3>
+                      <p className="text-xs text-muted-foreground mt-1">{(stats.totalTasks ?? 0).toLocaleString()} {t('total tasks')}</p>
                     </div>
                     <div className="rounded-full bg-orange-100 p-3 dark:bg-orange-900">
                       <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400" />
@@ -593,7 +596,7 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
                     <XAxis dataKey="month_name" tick={{ fontSize: 12 }} />
                     <YAxis tick={{ fontSize: 12 }} />
                     <RechartsTooltip
-                      formatter={(value: number) => formatCurrency(value)}
+                      formatter={(value: number) => formatCurrencyAmount(value, 'company', { showSymbol: true, showCode: false })}
                       contentStyle={{
                         backgroundColor: '#fff',
                         border: '1px solid #e2e8f0',
@@ -642,7 +645,7 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
                           <p className="text-xs text-muted-foreground">{invoice.client?.name || t('No client')}</p>
                         </div>
                         <span className="font-bold text-red-600 text-lg">
-                          {formatCurrency(invoice.total_amount)}
+                          <CurrencyAmount amount={invoice.total_amount} />
                         </span>
                       </div>
                     </Link>

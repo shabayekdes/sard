@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { Switch } from '@/components/ui/switch';
-import { formatCurrency } from '@/utils/helpers';
+import { CurrencyAmount } from '@/components/currency-amount';
 
 export default function BillingRates() {
   const { t } = useTranslation();
@@ -229,9 +229,9 @@ export default function BillingRates() {
       render: (value: any, row: any) => {
         switch (row.rate_type) {
           case 'hourly':
-            return `${formatCurrency(row.hourly_rate)}/hr`;
+            return <><CurrencyAmount amount={row.hourly_rate} />/hr</>;
           case 'fixed':
-            return formatCurrency(row.fixed_amount);
+            return <CurrencyAmount amount={row.fixed_amount} />;
           case 'contingency':
             return `${row.contingency_percentage}%`;
           default:
@@ -537,21 +537,17 @@ export default function BillingRates() {
                           type: 'text',
                           render: () => {
                               const item = currentItem;
-                              let displayRate = '-';
-                              if (item) {
-                                  switch (item.rate_type) {
-                                      case 'hourly':
-                                          displayRate = `${formatCurrency(item.hourly_rate)}/hr`;
-                                          break;
-                                      case 'fixed':
-                                          displayRate = formatCurrency(item.fixed_amount);
-                                          break;
-                                      case 'contingency':
-                                          displayRate = `${item.contingency_percentage}%`;
-                                          break;
-                                  }
+                              if (!item) return <div className="rounded-md border bg-gray-50 p-2">-</div>;
+                              switch (item.rate_type) {
+                                  case 'hourly':
+                                      return <div className="rounded-md border bg-gray-50 p-2"><CurrencyAmount amount={item.hourly_rate} />/hr</div>;
+                                  case 'fixed':
+                                      return <div className="rounded-md border bg-gray-50 p-2"><CurrencyAmount amount={item.fixed_amount} /></div>;
+                                  case 'contingency':
+                                      return <div className="rounded-md border bg-gray-50 p-2">{item.contingency_percentage}%</div>;
+                                  default:
+                                      return <div className="rounded-md border bg-gray-50 p-2">-</div>;
                               }
-                              return <div className="rounded-md border bg-gray-50 p-2">{displayRate}</div>;
                           },
                       },
                       { name: 'effective_date', label: t('Effective Date'), type: 'text' },

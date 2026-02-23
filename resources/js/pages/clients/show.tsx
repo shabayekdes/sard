@@ -9,7 +9,6 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { Switch } from '@/components/ui/switch';
 import { useLayout } from '@/contexts/LayoutContext';
-import { formatCurrency } from '@/utils/helpers';
 import { hasPermission } from '@/utils/authorization';
 import { router, usePage } from '@inertiajs/react';
 import { ArrowLeft, Briefcase, CreditCard, Edit, Eye, FileText, Plus, Receipt, Save, Trash2 } from 'lucide-react';
@@ -302,10 +301,7 @@ export default function ClientShow() {
         {
             key: 'total_amount',
             label: t('Total'),
-            render: (value: any) => {
-                const amount = parseFloat(value);
-                return isNaN(amount) ? formatCurrency(0.0) : formatCurrency(amount);
-            },
+            type: 'currency' as const
         },
         {
             key: 'invoice_date',
@@ -362,10 +358,7 @@ export default function ClientShow() {
         {
             key: 'amount',
             label: t('Amount'),
-            render: (value: any) => {
-                const amount = parseFloat(value);
-                return isNaN(amount) ? formatCurrency(0.0) : formatCurrency(amount.toFixed(2));
-            },
+            type: 'currency' as const,
         },
         {
             key: 'payment_method',

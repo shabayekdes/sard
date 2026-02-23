@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, CreditCard, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { formatCurrencyForCompany } from '@/utils/helpers';
+import { CurrencyAmount } from '@/components/currency-amount';
 
 interface BenefitPaymentModalProps {
   isOpen: boolean;
@@ -81,7 +81,7 @@ export function BenefitPaymentModal({ isOpen, onClose, invoice, amount }: Benefi
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">{t('Amount')}</span>
-              <span className="text-lg font-bold">{formatCurrencyForCompany(amount.toFixed(2))}</span>
+              <span className="text-lg font-bold"><CurrencyAmount amount={amount} /></span>
             </div>
           </div>
 

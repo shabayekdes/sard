@@ -4,8 +4,8 @@ import { PageAction, PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { CurrencyAmount } from '@/components/currency-amount';
 import { hasPermission } from '@/utils/authorization';
-import { formatCurrencyForCompany } from '@/utils/helpers';
 import { router, usePage } from '@inertiajs/react';
 import { ArrowLeft, DollarSign, Download, Edit, FileText, Link, MoreVerticalIcon, Send, User } from 'lucide-react';
 import { useState } from 'react';
@@ -25,7 +25,6 @@ export default function ShowInvoice() {
     const permissions = auth?.permissions || [];
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
-    const formatAmount = (amount: number) => formatCurrencyForCompany(amount);
     const formatDate = (date: string | null) => (date ? window.appSettings?.formatDate?.(date) || new Date(date).toLocaleDateString() : '-');
 
     const amountPaid = Number(amountPaidProp ?? invoice?.amount_paid ?? 0);
@@ -397,16 +396,16 @@ export default function ShowInvoice() {
                                                     {item.quantity}
                                                 </td>
                                                 <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100">
-                                                    {formatAmount(parseFloat(item.rate || 0))}
+                                                    <CurrencyAmount amount={parseFloat(item.rate || 0)} className="text-gray-900 dark:text-gray-100" />
                                                 </td>
                                                 <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100">
-                                                    {formatAmount(subtotalWithoutTax)}
+                                                    <CurrencyAmount amount={subtotalWithoutTax} className="text-gray-900 dark:text-gray-100" />
                                                 </td>
                                                 <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100">
-                                                    {formatAmount(tax)}
+                                                    <CurrencyAmount amount={tax} className="text-gray-900 dark:text-gray-100" />
                                                 </td>
                                                 <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100">
-                                                    {formatAmount(total)}
+                                                    <CurrencyAmount amount={total} className="text-gray-900 dark:text-gray-100" />
                                                 </td>
                                             </tr>
                                         );
@@ -431,25 +430,25 @@ export default function ShowInvoice() {
                             <div className="w-full max-w-sm space-y-2 text-sm">
                                 <div className="flex justify-between">
                                     <span className="text-muted-foreground">{t('Subtotal')}</span>
-                                    <span className="font-medium">{formatAmount(subtotal)}</span>
+                                    <span className="font-medium"><CurrencyAmount amount={subtotal} className="text-gray-900 dark:text-gray-100" /></span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-muted-foreground">{taxRate ? t('Tax Value') + ` (${taxRate}%)` : t('Tax Value')}</span>
-                                    <span className="font-medium">{formatAmount(taxAmount)}</span>
+                                    <span className="font-medium"><CurrencyAmount amount={taxAmount} className="text-gray-900 dark:text-gray-100" /></span>
                                 </div>
                                 <div className="border-t border-gray-200 dark:border-gray-700" />
                                 <div className="flex justify-between pt-1 text-base font-bold">
                                     <span>{t('Total Invoice (VAT inclusive)')}</span>
-                                    <span>{formatAmount(totalAmount)}</span>
+                                    <span><CurrencyAmount amount={totalAmount} className="text-gray-900 dark:text-gray-100" /></span>
                                 </div>
                                 <div className="border-t border-gray-200 dark:border-gray-700" />
                                 <div className="flex justify-between pt-2">
                                     <span className="text-muted-foreground">{t('Amount Paid')}</span>
-                                    <span className="font-medium">{formatAmount(amountPaid)}</span>
+                                    <span className="font-medium"><CurrencyAmount amount={amountPaid} className="text-gray-900 dark:text-gray-100" /></span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-muted-foreground">{t('Remaining Amount')}</span>
-                                    <span className="font-medium">{formatAmount(remainingAmount)}</span>
+                                    <span className="font-medium"><CurrencyAmount amount={remainingAmount} className="text-gray-900 dark:text-gray-100" /></span>
                                 </div>
                             </div>
                         </div>

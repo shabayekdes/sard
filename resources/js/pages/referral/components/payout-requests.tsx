@@ -11,7 +11,7 @@ import { useState } from 'react';
 import { Plus, Check, X } from 'lucide-react';
 import { useForm } from '@inertiajs/react';
 import { toast } from '@/components/custom-toast';
-import { formatCurrencyForPlansAndReferrals } from '@/utils/helpers';
+import { formatCurrencyAmount } from '@/components/currency-amount';
 
 interface PayoutRequestsProps {
   userType: string;
@@ -115,8 +115,8 @@ export default function PayoutRequests({ userType, payoutRequests, settings, sta
                     {errors.amount && <p className="text-sm text-red-500">{errors.amount}</p>}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    <p>{t('Available Balance')}: {formatCurrencyForPlansAndReferrals(stats.availableBalance)}</p>
-                    <p>{t('Minimum Amount')}: {formatCurrencyForPlansAndReferrals(settings.threshold_amount)}</p>
+                    <p>{t('Available Balance')}: {formatCurrencyAmount(stats.availableBalance, 'superadmin', { showSymbol: true, showCode: false })}</p>
+                    <p>{t('Minimum Amount')}: {formatCurrencyAmount(settings.threshold_amount, 'superadmin', { showSymbol: true, showCode: false })}</p>
                   </div>
                   <div className="flex justify-end space-x-2">
                     <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>
@@ -133,8 +133,8 @@ export default function PayoutRequests({ userType, payoutRequests, settings, sta
           <CardContent>
             <p className="text-sm text-muted-foreground">
               {stats.availableBalance < settings.threshold_amount
-                ? t('You need at least {{amount}} to request a payout', { amount: formatCurrencyForPlansAndReferrals(settings.threshold_amount) })
-                : t('You can request up to {{amount}} for payout', { amount: formatCurrencyForPlansAndReferrals(stats.availableBalance) })}
+                ? t('You need at least {{amount}} to request a payout', { amount: formatCurrencyAmount(settings.threshold_amount, 'superadmin', { showSymbol: true, showCode: false }) })
+                : t('You can request up to {{amount}} for payout', { amount: formatCurrencyAmount(stats.availableBalance, 'superadmin', { showSymbol: true, showCode: false }) })}
             </p>
           </CardContent>
         </Card>
@@ -168,7 +168,7 @@ export default function PayoutRequests({ userType, payoutRequests, settings, sta
                       </div>
                     </TableCell>
                   )}
-                  <TableCell>{formatCurrencyForPlansAndReferrals(request.amount)}</TableCell>
+                  <TableCell>{formatCurrencyAmount(request.amount, 'superadmin', { showSymbol: true, showCode: false })}</TableCell>
                   <TableCell>{getStatusBadge(request.status)}</TableCell>
                   <TableCell>{window.appSettings?.formatDateTime(request.created_at, false) || new Date(request.created_at).toLocaleDateString()}</TableCell>
                   {userType === 'superadmin' && request.status === 'pending' && (

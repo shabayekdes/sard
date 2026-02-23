@@ -39,7 +39,7 @@ import { CrudDeleteModal } from '@/components/CrudDeleteModal';
 import { useForm } from '@inertiajs/react';
 import { toast } from '@/components/custom-toast';
 import { PlanSubscriptionModal } from '@/components/plan-subscription-modal';
-import { formatCurrency, formatCurrencyForPlansAndReferrals } from '@/utils/helpers';
+import { CurrencyAmount } from '@/components/currency-amount';
 
 interface Plan {
   id: number;
@@ -752,7 +752,7 @@ export default function Plans({
                                   <h3 className={`mb-2 text-2xl font-bold ${plan.recommended ? 'text-primary' : ''} `}>{plan.name}</h3>
                                   <div className="mb-3 flex items-baseline gap-1.5">
                                       <span className={`text-3xl font-extrabold ${plan.recommended ? 'text-primary' : ''} `}>
-                                          {formatCurrencyForPlansAndReferrals(plan.price)}
+                                          <CurrencyAmount amount={plan.price} variant="superadmin" />
                                       </span>
                                       <span className="text-muted-foreground text-sm">/{t(plan.duration.toLowerCase())}</span>
                                   </div>

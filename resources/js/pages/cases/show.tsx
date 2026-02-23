@@ -1,3 +1,4 @@
+import { CurrencyAmount } from '@/components/currency-amount';
 import { CrudDeleteModal } from '@/components/CrudDeleteModal';
 import { CrudFormModal } from '@/components/CrudFormModal';
 import { CrudTable } from '@/components/CrudTable';
@@ -1212,8 +1213,8 @@ export default function CaseShow() {
                                     <div>
                                         <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Estimated Value')}:</span>
                                         <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                            {caseData.estimated_value
-                                                ? (window.appSettings?.formatCurrency?.(caseData.estimated_value) || caseData.estimated_value)
+                                            {caseData.estimated_value != null
+                                                ? <CurrencyAmount amount={caseData.estimated_value} />
                                                 : '-'}
                                         </p>
                                     </div>

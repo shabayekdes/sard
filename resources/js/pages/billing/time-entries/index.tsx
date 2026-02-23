@@ -10,7 +10,7 @@ import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
-import { formatCurrency } from '@/utils/helpers';
+import { CurrencyAmount } from '@/components/currency-amount';
 
 export default function TimeEntries() {
   const { t } = useTranslation();
@@ -282,7 +282,7 @@ export default function TimeEntries() {
       label: t('Amount'),
       render: (value: any, row: any) => {
         if (!row.is_billable || !row.billable_rate) return '-';
-        return (formatCurrency(row.hours * row.billable_rate));
+        return <CurrencyAmount amount={row.hours * row.billable_rate} />;
       }
     }
   ];

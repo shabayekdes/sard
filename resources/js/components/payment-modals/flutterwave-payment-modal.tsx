@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useTranslation } from 'react-i18next';
 import { router } from '@inertiajs/react';
 import { toast } from '@/components/custom-toast';
-import { formatCurrencyForCompany } from '@/utils/helpers';
+import { CurrencyAmount } from '@/components/currency-amount';
 
 interface FlutterwavePaymentModalProps {
   isOpen: boolean;
@@ -118,7 +118,7 @@ export function FlutterwavePaymentModal({ isOpen, onClose, invoice, amount, flut
               {t('Invoice')} #{invoice.invoice_number}
             </div>
             <div className="text-2xl font-bold text-blue-900">
-             {formatCurrencyForCompany(amount.toFixed(2))}
+             <CurrencyAmount amount={amount} />
             </div>
           </div>
 

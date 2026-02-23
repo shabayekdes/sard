@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader } from '@/components/ui/loader';
 import { useTranslation } from 'react-i18next';
-import { formatCurrencyForCompany } from '@/utils/helpers';
+import { CurrencyAmount } from '@/components/currency-amount';
 
 interface SkrillPaymentModalProps {
     isOpen: boolean;
@@ -93,7 +93,7 @@ export function SkrillPaymentModal({ isOpen, onClose, invoice, amount }: SkrillP
                             {t("Invoice")} #{invoice?.invoice_number || 'N/A'}
                         </div>
                         <div className="text-2xl font-bold text-purple-900">
-                            {formatCurrencyForCompany(amount.toFixed(2))}
+                            <CurrencyAmount amount={amount} />
                         </div>
                     </div>
 

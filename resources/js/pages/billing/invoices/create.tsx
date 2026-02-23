@@ -10,7 +10,7 @@ import { Repeater, type RepeaterField } from '@/components/ui/repeater';
 import { Clock, FileText, ArrowLeft } from 'lucide-react';
 import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
-import { formatCurrency } from '@/utils/helpers';
+import { CurrencyAmount } from '@/components/currency-amount';
 
 export default function CreateInvoice() {
   const { t } = useTranslation();
@@ -57,20 +57,6 @@ export default function CreateInvoice() {
     }
     return null;
   })();
-  
-  // Get formatted currency using helper function
-  const formatAmount = (amount) => {
-    if (formData.client_id && clientBillingInfo?.[formData.client_id]?.currency && currencies) {
-      const currencyCode = clientBillingInfo[formData.client_id].currency;
-      const currency = currencies.find(c => c.code === currencyCode);
-      if (currency) {
-        // Use client's currency
-        return `${currency.symbol}${amount.toFixed(2)}`;
-      }
-    }
-    // Fallback to formatCurrency helper from settings
-    return formatCurrency(amount);
-  };
 
   useEffect(() => {
     if (formData.client_id) {
@@ -484,7 +470,7 @@ export default function CreateInvoice() {
               <div className="space-y-4">
                 <div className="flex justify-between">
                   <span>{t('Subtotal')}:</span>
-                  <span>{formatAmount(calculateSubtotal() || 0)}</span>
+                  <span><CurrencyAmount amount={calculateSubtotal() || 0} /></span>
                 </div>
                 
                 <div>
@@ -501,13 +487,13 @@ export default function CreateInvoice() {
                 
                 <div className="flex justify-between">
                   <span>{t('Tax Amount')}:</span>
-                  <span>{formatAmount(calculateTaxAmount() || 0)}</span>
+                  <span><CurrencyAmount amount={calculateTaxAmount() || 0} /></span>
                 </div>
                 
                 <div className="border-t pt-4">
                   <div className="flex justify-between text-lg font-bold">
                     <span>{t('Total')}:</span>
-                    <span>{formatAmount(calculateTotal() || 0)}</span>
+                    <span><CurrencyAmount amount={calculateTotal() || 0} /></span>
                   </div>
                 </div>
               </div>

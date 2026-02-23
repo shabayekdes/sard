@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useTranslation } from 'react-i18next';
 import { router } from '@inertiajs/react';
 import { toast } from '@/components/custom-toast';
-import { formatCurrencyForCompany } from '@/utils/helpers';
+import { CurrencyAmount } from '@/components/currency-amount';
 
 interface StripePaymentModalProps {
   isOpen: boolean;
@@ -142,7 +142,7 @@ export function StripePaymentModal({ isOpen, onClose, invoice, amount }: StripeP
               {t('Cancel')}
             </Button>
             <Button type="submit" disabled={processing} className="flex-1">
-              {processing ? t('Processing...') : `${t('Pay')} ${formatCurrencyForCompany(amount)}`}
+              {processing ? t('Processing...') : <>{t('Pay')} <CurrencyAmount amount={amount} /></>}
             </Button>
           </div>
         </form>

@@ -11,7 +11,8 @@ import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
-import { capitalize, formatCurrency } from '@/utils/helpers';
+import { formatCurrencyAmount } from '@/components/currency-amount';
+import { capitalize } from '@/utils/helpers';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
@@ -243,10 +244,7 @@ export default function Payments() {
     {
       key: 'amount',
       label: t('Amount'),
-      render: (value: any) => {
-        const amount = parseFloat(value);
-        return isNaN(amount) ? formatCurrency(0.00) : formatCurrency(amount.toFixed(2));
-      }
+      type: 'currency' as const
     },
     {
       key: 'payment_method',
@@ -613,7 +611,7 @@ export default function Payments() {
               isOpen={isDeleteModalOpen}
               onClose={() => setIsDeleteModalOpen(false)}
               onConfirm={handleDeleteConfirm}
-              itemName={`${currentItem?.invoice?.invoice_number} - $${currentItem?.amount ? parseFloat(currentItem.amount).toFixed(2) : '0.00'}`}
+              itemName={`${currentItem?.invoice?.invoice_number} - ${formatCurrencyAmount(currentItem?.amount ?? 0, 'company', { showSymbol: true, showCode: false })}`}
               entityName="Payment"
           />
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
+import { CurrencyAmount } from '@/components/currency-amount';
 import { cn } from '@/lib/utils';
 
 // Simple renderers without importing components
@@ -41,16 +42,15 @@ export const columnRenderers = {
     };
   },
   
-  // Price renderer
-  price: (currency = 'USD', locale = 'en-US') => {
+  // Price renderer – uses company settings and CurrencyAmount (SAR icon when applicable)
+  price: () => {
     return (value) => {
       if (value === null || value === undefined) return <span>-</span>;
-      
       const numValue = typeof value === 'string' ? parseFloat(value) : value;
-      
+      if (Number.isNaN(numValue)) return <span>-</span>;
       return (
         <span className="text-sm font-medium">
-          {numValue.toLocaleString(locale, { style: 'currency', currency })}
+          <CurrencyAmount amount={numValue} />
         </span>
       );
     };

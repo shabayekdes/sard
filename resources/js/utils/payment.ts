@@ -126,6 +126,10 @@ export interface PaymentFormData {
   billingCycle: 'monthly' | 'yearly';
 }
 
+/**
+ * Format amount for payment gateway display only; does not use company currency settings.
+ * @deprecated Use formatCurrencyAmount from utils/helpers or <CurrencyAmount /> for app UI.
+ */
 export function formatPaymentAmount(amount: number, currency: string = 'USD'): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',

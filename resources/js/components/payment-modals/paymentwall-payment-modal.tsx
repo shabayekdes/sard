@@ -5,8 +5,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useTranslation } from 'react-i18next';
 import { Loader2, CreditCard, AlertCircle } from 'lucide-react';
 import { toast } from '@/components/custom-toast';
-import { formatCurrencyForCompany } from '@/utils/helpers';
-
+import { CurrencyAmount } from '@/components/currency-amount';
 
 declare global {
     interface Window {
@@ -146,7 +145,7 @@ export function PaymentWallPaymentModal({ isOpen, onClose, invoice, amount }: Pa
                     <div className="bg-muted p-4 rounded-lg">
                         <div className="flex justify-between items-center">
                             <span className="font-medium">{t('Amount to Pay')}</span>
-                            <span className="text-lg font-bold">{formatCurrencyForCompany(amount.toFixed(2))}</span>
+                            <span className="text-lg font-bold"><CurrencyAmount amount={amount} /></span>
                         </div>
                         <div className="text-sm text-muted-foreground mt-1">
                             {t('Invoice')} #{invoice.invoice_number}

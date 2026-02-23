@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tag, Loader2 } from 'lucide-react';
 import { toast } from '@/components/custom-toast';
-import { formatCurrencyForPlansAndReferrals } from '@/utils/helpers';
+import { CurrencyAmount } from '@/components/currency-amount';
 import { StripePaymentForm } from './stripe-payment-form';
 import { PayPalPaymentForm } from './paypal-payment-form';
 import { BankTransferForm } from './bank-transfer-form';
@@ -476,7 +476,7 @@ export function PaymentProcessor({
               </p>
             </div>
             <div className="text-right">
-              <div className="text-lg font-bold">{formatCurrencyForPlansAndReferrals(plan.price)}</div>
+              <div className="text-lg font-bold"><CurrencyAmount amount={plan.price} variant="superadmin" /></div>
               <div className="text-sm text-muted-foreground">
                 /{t(plan.duration.toLowerCase())}
               </div>
@@ -567,7 +567,7 @@ export function PaymentProcessor({
                 {t('Coupon Applied')}: {appliedCoupon.code}
               </span>
               <span className="text-green-600">
-                -{appliedCoupon.type === 'percentage' ? `${appliedCoupon.value}%` : formatCurrencyForPlansAndReferrals(appliedCoupon.value)}
+                -{appliedCoupon.type === 'percentage' ? `${appliedCoupon.value}%` : <CurrencyAmount amount={appliedCoupon.value} variant="superadmin" />}
               </span>
             </div>
           </div>
@@ -580,18 +580,18 @@ export function PaymentProcessor({
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span>{t('Subtotal')}</span>
-              <span>{formatCurrencyForPlansAndReferrals(originalPrice)}</span>
+              <span><CurrencyAmount amount={originalPrice} variant="superadmin" /></span>
             </div>
             {appliedCoupon && (
               <div className="flex justify-between text-sm text-green-600">
                 <span>{t('Discount')}</span>
-                <span>-{formatCurrencyForPlansAndReferrals(discountAmount)}</span>
+                <span>-<CurrencyAmount amount={discountAmount} variant="superadmin" /></span>
               </div>
             )}
             <div className="border-t pt-2">
               <div className="flex justify-between font-medium">
                 <span>{t('Total')}</span>
-                <span>{formatCurrencyForPlansAndReferrals(finalPrice)}</span>
+                <span><CurrencyAmount amount={finalPrice} variant="superadmin" /></span>
               </div>
             </div>
           </div>
@@ -608,7 +608,7 @@ export function PaymentProcessor({
           disabled={enabledPaymentMethods.length === 0}
           className="flex-1"
         >
-          {t('Pay')} {formatCurrencyForPlansAndReferrals(finalPrice)}
+          {t('Pay')} <CurrencyAmount amount={finalPrice} variant="superadmin" />
         </Button>
       </div>
     </div>

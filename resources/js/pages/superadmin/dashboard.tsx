@@ -8,7 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { router } from '@inertiajs/react';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
-import { formatCurrency } from '@/utils/helpers';
+import { CurrencyAmount } from '@/components/currency-amount';
 
 interface SuperAdminDashboardData {
   stats: {
@@ -170,8 +170,8 @@ export default function SuperAdminDashboard({ dashboardData }: { dashboardData: 
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">{t('Monthly Revenue')}</p>
-                  <h3 className="text-3xl font-bold tracking-tight">{formatCurrency(stats?.monthlyRevenue ?? 0)}</h3>
-                  <p className="text-xs text-muted-foreground">{formatCurrency(stats?.totalRevenue ?? 0)} {t('total')}</p>
+                  <h3 className="text-3xl font-bold tracking-tight"><CurrencyAmount amount={stats?.monthlyRevenue ?? 0} iconSize={24} variant="superadmin" /></h3>
+                  <p className="text-xs text-muted-foreground"><span className="inline-flex items-center gap-1 whitespace-nowrap"><CurrencyAmount amount={stats?.totalRevenue ?? 0} variant="superadmin" />{t('total')}</span></p>
                 </div>
                 <div className="rounded-lg bg-emerald-50 p-3 dark:bg-emerald-900/20">
                   <DollarSign className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
@@ -367,11 +367,11 @@ export default function SuperAdminDashboard({ dashboardData }: { dashboardData: 
                         </div>
                         <div>
                           <span className="font-semibold">{plan.name}</span>
-                          <div className="text-xs text-muted-foreground">{formatCurrency(plan.price)}/month</div>
+                          <div className="text-xs text-muted-foreground"><CurrencyAmount amount={plan.price} variant="superadmin" />/month</div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg font-bold text-green-600">{formatCurrency(plan.revenue ?? 0).toLocaleString()}</div>
+                        <div className="text-lg font-bold text-green-600"><CurrencyAmount amount={plan.revenue ?? 0} variant="superadmin" /></div>
                         <div className="text-xs text-muted-foreground">{t('revenue')}</div>
                       </div>
                     </div>

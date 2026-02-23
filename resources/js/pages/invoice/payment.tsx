@@ -37,6 +37,7 @@ import { PayHerePaymentModal } from '@/components/payment-modals/payhere-payment
 import { PayTabsPaymentModal } from '@/components/payment-modals/paytabs-payment-modal';
 import { PayTRPaymentModal } from '@/components/payment-modals/paytr-payment-modal';
 import { PaymentWallPaymentModal } from '@/components/payment-modals/paymentwall-payment-modal';
+import { CurrencyAmount } from '@/components/currency-amount';
 
 import { SSPayPaymentModal } from '@/components/payment-modals/sspay-payment-modal';
 import { ToyyibPayPaymentModal } from '@/components/payment-modals/toyyibpay-payment-modal';
@@ -166,15 +167,6 @@ export default function InvoicePayment() {
 
         checkPaymentStatus();
     }, [invoice?.status, remainingAmount, flash?.success]);
-
-    // Get formatted currency using company settings
-    const formatAmount = (amount) => {
-        if (typeof window !== 'undefined' && window.appSettings?.formatCurrency) {
-            const numericAmount = typeof amount === 'number' ? amount : parseFloat(amount);
-            return window.appSettings.formatCurrency(numericAmount, { showSymbol: true });
-        }
-        return `$${parseFloat(amount).toFixed(2)}`;
-    };
 
     const subtotal = Number(invoice?.subtotal ?? 0);
     const taxAmount = Number(invoice?.tax_amount ?? 0);
@@ -433,7 +425,7 @@ export default function InvoicePayment() {
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <p className="text-sm font-medium text-gray-500">{t('Total Amount')}</p>
-                                        <p className="mt-1 text-xl font-bold text-gray-900">{formatAmount(invoice.total_amount)}</p>
+                                        <p className="mt-1 text-xl font-bold text-gray-900"><CurrencyAmount amount={invoice.total_amount} /></p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -447,7 +439,7 @@ export default function InvoicePayment() {
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <p className="text-sm font-medium text-gray-500">{t('Paid Amount')}</p>
-                                        <p className="mt-1 text-xl font-bold text-gray-900">{formatAmount((invoice.total_amount ?? 0) - (remainingAmount ?? 0))}</p>
+                                        <p className="mt-1 text-xl font-bold text-gray-900"><CurrencyAmount amount={(invoice.total_amount ?? 0) - (remainingAmount ?? 0)} /></p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -461,7 +453,7 @@ export default function InvoicePayment() {
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <p className="text-sm font-medium text-gray-500">{t('Due Amount')}</p>
-                                        <p className="mt-1 text-xl font-bold text-gray-900">{formatAmount(remainingAmount)}</p>
+                                        <p className="mt-1 text-xl font-bold text-gray-900"><CurrencyAmount amount={remainingAmount} /></p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -628,10 +620,10 @@ export default function InvoicePayment() {
                                                                     </span>
                                                                 </td>
                                                                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{item.quantity}</td>
-                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{formatAmount(parseFloat(item.rate || 0))}</td>
-                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{formatAmount(subtotalWithoutTax)}</td>
-                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{formatAmount(tax)}</td>
-                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{formatAmount(total)}</td>
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100"><CurrencyAmount amount={parseFloat(item.rate || 0)} /></td>
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100"><CurrencyAmount amount={subtotalWithoutTax} /></td>
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100"><CurrencyAmount amount={tax} /></td>
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100"><CurrencyAmount amount={total} /></td>
                                                             </tr>
                                                         );
                                                     })}
@@ -649,15 +641,15 @@ export default function InvoicePayment() {
                                         <div className="w-full max-w-sm space-y-2 text-sm">
                                             <div className="flex justify-between">
                                                 <span className="text-muted-foreground">{t('Subtotal')}:</span>
-                                                <span className="font-medium">{formatAmount(invoice?.subtotal ?? 0)}</span>
+                                                <span className="font-medium"><CurrencyAmount amount={invoice?.subtotal ?? 0} /></span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-muted-foreground">{t('Tax Value')}:</span>
-                                                <span className="font-medium">{formatAmount(invoice?.tax_amount ?? 0)}</span>
+                                                <span className="font-medium"><CurrencyAmount amount={invoice?.tax_amount ?? 0} /></span>
                                             </div>
                                             <div className="flex justify-between border-t pt-3 text-lg font-bold">
                                                 <span>{t('Total')}:</span>
-                                                <span>{formatAmount(invoice?.total_amount ?? 0)}</span>
+                                                <span><CurrencyAmount amount={invoice?.total_amount ?? 0} /></span>
                                             </div>
                                         </div>
                                     </div>
@@ -720,11 +712,11 @@ export default function InvoicePayment() {
                                     <span className="text-sm text-blue-700">
                                         {t('Invoice')} #{invoice.invoice_number}
                                     </span>
-                                    <span className="font-bold text-blue-900">{formatAmount(invoice.total_amount)}</span>
+                                    <span className="font-bold text-blue-900"><CurrencyAmount amount={invoice.total_amount} /></span>
                                 </div>
                                 <div className="mt-1 text-xs text-blue-600">{invoice.client?.name}</div>
                                 <div className="mt-1 text-xs text-blue-600">
-                                    {t('Remaining')}: {formatAmount(remainingAmount)}
+                                    {t('Remaining')}: <CurrencyAmount amount={remainingAmount} />
                                 </div>
                             </div>
 
@@ -817,7 +809,7 @@ export default function InvoicePayment() {
                                     }}
                                     disabled={!selectedGateway || !paymentAmount || paymentAmount <= 0}
                                 >
-                                    {t('Pay')} {formatAmount(paymentAmount)}
+                                    {t('Pay')} <CurrencyAmount amount={paymentAmount} />
                                 </Button>
                             </div>
                         </div>

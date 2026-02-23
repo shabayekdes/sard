@@ -11,7 +11,6 @@ import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import LineItemsBuilder from '@/components/LineItemsBuilder';
-import { formatCurrency } from '@/utils/helpers';
 
 export default function Invoices() {
   const { t } = useTranslation();
@@ -65,9 +64,6 @@ export default function Invoices() {
     switch (action) {
       case 'view':
         router.get(route('billing.invoices.show', item.id));
-        break;
-      case 'generate':
-        window.open(route('billing.invoices.generate', item.id), '_blank');
         break;
       case 'edit':
         router.get(route('billing.invoices.edit', item.id));
@@ -244,18 +240,12 @@ export default function Invoices() {
     {
       key: 'total_amount',
       label: t('Total'),
-      render: (value: any) => {
-        const amount = parseFloat(value);
-        return isNaN(amount) ? `${formatCurrency(0.00)}` : `${formatCurrency(amount)}`;
-      }
+      type: 'currency' as const
     },
     {
       key: 'remaining_amount',
       label: t('Due'),
-      render: (value: any) => {
-        const amount = parseFloat(value);
-        return isNaN(amount) ? `${formatCurrency(0.00)}` : `${formatCurrency(amount)}`;
-      }
+      type: 'currency' as const
     },
     {
       key: 'invoice_date',

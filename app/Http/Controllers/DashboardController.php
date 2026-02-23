@@ -233,6 +233,7 @@ class DashboardController extends Controller
         $totalClients = Client::where('created_by', $companyId)->count();
         $activeClients = Client::where('created_by', $companyId)->where('status', 'active')->count();
         $pendingTasks = Task::where('created_by', $companyId)->where('status', 1)->count();
+        $totalTasks = Task::where('created_by', $companyId)->count();
         $upcomingHearings = Hearing::where('created_by', $companyId)
             ->where('hearing_date', '>=', now())
             ->count();
@@ -519,6 +520,7 @@ class DashboardController extends Controller
                 'totalRevenue' => $totalRevenue,
                 'monthlyGrowth' => $monthlyGrowth,
                 'pendingTasks' => $pendingTasks,
+                'totalTasks' => $totalTasks,
                 'upcomingHearings' => $upcomingHearings,
                 'unreadMessages' => $unreadMessages,
                 'successRate' => $successRate,

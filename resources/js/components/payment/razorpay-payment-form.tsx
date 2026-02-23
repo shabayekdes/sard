@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
 import { toast } from '@/components/custom-toast';
-import { formatCurrencyForCompany } from '@/utils/helpers';
 
 import axios from 'axios';
 

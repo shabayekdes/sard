@@ -5,7 +5,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useTranslation } from 'react-i18next';
 import { router } from '@inertiajs/react';
 import { toast } from '@/components/custom-toast';
-import { formatCurrencyForCompany } from '@/utils/helpers';
+import { CurrencyAmount } from '@/components/currency-amount';
 import { Loader2, CreditCard, AlertCircle, ExternalLink } from 'lucide-react';
 
 interface XenditPaymentModalProps {
@@ -72,7 +72,7 @@ export function XenditPaymentModal({ isOpen, onClose, invoice, amount }: XenditP
           <div className="bg-muted p-4 rounded-lg">
             <div className="flex justify-between items-center">
               <span className="font-medium">{t('Amount to Pay')}</span>
-              <span className="text-lg font-bold">{formatCurrencyForCompany(amount.toFixed(2))}</span>
+              <span className="text-lg font-bold"><CurrencyAmount amount={amount} /></span>
             </div>
           </div>
 

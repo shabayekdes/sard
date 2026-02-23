@@ -41,8 +41,8 @@ export const planOrdersConfig: CrudConfig = {
       },
       { 
         key: 'original_price', 
-        label: t('Original Price'), 
-        render: (value) => `${window.appSettings.formatCurrency(value)}`
+        label: t('Original Price'),
+        type: 'currency' as const,
       },
       { 
         key: 'coupon_code', 
@@ -56,8 +56,8 @@ export const planOrdersConfig: CrudConfig = {
       },
       { 
         key: 'final_price', 
-        label: t('Final Price'), 
-        render: (value) => `${window.appSettings.formatCurrency(value)}`
+        label: t('Final Price'),
+        type: 'currency' as const,
       },
       { 
         key: 'status', 

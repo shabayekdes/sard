@@ -1,6 +1,8 @@
 import { usePage, router } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 
+import { CurrencyAmount } from '@/components/currency-amount';
+
 export default function InvoiceGenerate() {
     const { t } = useTranslation();
     const { invoice, companyProfile, timeEntries, invoiceItems, clientBillingInfo, currencies } = usePage().props as any;
@@ -12,18 +14,6 @@ export default function InvoiceGenerate() {
             amount: invoice.total_amount,
             auto_open: 'true'
         }));
-    };
-
-    const formatCurrency = (amount: number | string) => {
-        // Get formatted currency using client billing info
-        if (invoice.client_id && clientBillingInfo?.[invoice.client_id]?.currency && currencies) {
-            const currencyCode = clientBillingInfo[invoice.client_id].currency;
-            const currency = currencies.find(c => c.code === currencyCode);
-            if (currency) {
-                return `${currency.symbol}${parseFloat(amount.toString()).toFixed(2)}`;
-            }
-        }
-        return window.appSettings?.formatCurrency ? window.appSettings.formatCurrency(amount) : `$${parseFloat(amount.toString()).toFixed(2)}`;
     };
 
     return (
@@ -111,8 +101,8 @@ export default function InvoiceGenerate() {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-4 text-sm text-gray-900 text-center">{item.quantity}</td>
-                                            <td className="px-4 py-4 text-sm text-gray-900 text-right">{formatCurrency(item.rate)}</td>
-                                            <td className="px-4 py-4 text-sm text-gray-900 text-right">{formatCurrency(item.amount)}</td>
+                                            <td className="px-4 py-4 text-sm text-gray-900 text-right"><CurrencyAmount amount={item.rate} /></td>
+                                            <td className="px-4 py-4 text-sm text-gray-900 text-right"><CurrencyAmount amount={item.amount} /></td>
                                         </tr>
                                     ))
                                 ) : (
@@ -131,17 +121,17 @@ export default function InvoiceGenerate() {
                         <div className="w-64">
                             <div className="flex justify-between py-2 border-b">
                                 <span className="text-gray-700">{t('Subtotal')}:</span>
-                                <span className="text-gray-900">{formatCurrency(invoice.subtotal)}</span>
+                                <span className="text-gray-900"><CurrencyAmount amount={invoice.subtotal} /></span>
                             </div>
                             {invoice.tax_amount > 0 && (
                                 <div className="flex justify-between py-2 border-b">
                                     <span className="text-gray-700">{t('Tax')}:</span>
-                                    <span className="text-gray-900">{formatCurrency(invoice.tax_amount)}</span>
+                                    <span className="text-gray-900"><CurrencyAmount amount={invoice.tax_amount} /></span>
                                 </div>
                             )}
                             <div className="flex justify-between py-3 border-b-2 border-gray-300 font-bold text-lg">
                                 <span className="text-gray-900">{t('Total')}:</span>
-                                <span className="text-gray-900">{formatCurrency(invoice.total_amount)}</span>
+                                <span className="text-gray-900"><CurrencyAmount amount={invoice.total_amount} /></span>
                             </div>
                         </div>
                     </div>

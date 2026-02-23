@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Loader } from '@/components/ui/loader';
 import { useTranslation } from 'react-i18next';
 import { toast } from '@/components/custom-toast';
-import { formatCurrencyForCompany } from '@/utils/helpers';
+import { CurrencyAmount } from '@/components/currency-amount';
 
 interface AuthorizeNetPaymentModalProps {
   isOpen: boolean;
@@ -105,7 +105,7 @@ export function AuthorizeNetPaymentModal({ isOpen, onClose, invoice, amount }: A
               {t('Invoice')} #{invoice.invoice_number}
             </div>
             <div className="text-2xl font-bold text-blue-900">
-               {formatCurrencyForCompany(amount.toFixed(2))}
+               <CurrencyAmount amount={amount} />
             </div>
           </div>
 

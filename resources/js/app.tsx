@@ -112,6 +112,12 @@ createInertiaApp({
             try {
                 (window as any).page = event.detail.page;
 
+                // Re-initialize global settings so currency/date settings reflect latest backend (e.g. after user changes settings)
+                const nextGlobalSettings = event.detail.page?.props?.globalSettings || {};
+                if (Object.keys(nextGlobalSettings).length > 0) {
+                    initializeGlobalSettings(nextGlobalSettings);
+                }
+
                 // Optional: keep theme synced in demo mode
                 const savedTheme = isDemoMode() ? getCookie('themeSettings') : null;
                 if (savedTheme) {

@@ -2,7 +2,7 @@ import { Link } from '@inertiajs/react';
 import { ArrowRight, Check } from 'lucide-react';
 import { useState } from 'react';
 import { useScrollAnimation } from '../../../hooks/useScrollAnimation';
-import { formatCurrency } from '@/utils/helpers';
+import { CurrencyAmount } from '@/components/currency-amount';
 
 // Simple encryption function for plan ID
 const encryptPlanId = (planId: number): string => {
@@ -214,7 +214,7 @@ function PlansSection({ plans, settings, sectionData, brandColor = '#3b82f6' }: 
                                     </h3>
                                     <div className="mb-3 flex items-baseline gap-1.5">
                                         <span className="text-3xl font-extrabold" style={{ color: plan.is_popular ? brandColor : 'inherit' }}>
-                                            {getPrice(plan) === 0 ? '$0' : formatCurrency(getPrice(plan))}
+                                            {getPrice(plan) === 0 ? <CurrencyAmount amount={0} variant="superadmin" /> : <CurrencyAmount amount={getPrice(plan)} variant="superadmin" />}
                                         </span>
                                         <span className="text-muted-foreground text-sm">/{billingCycle === 'yearly' ? 'year' : 'month'}</span>
                                     </div>
@@ -228,7 +228,7 @@ function PlansSection({ plans, settings, sectionData, brandColor = '#3b82f6' }: 
                                     {billingCycle === 'yearly' && getPrice(plan) > 0 && (
                                         <div className="flex items-center gap-1.5 text-sm" style={{ color: brandColor }}>
                                             <Check className="h-3.5 w-3.5" />
-                                            Save {formatCurrency(Math.round((plan.price * 12 - getPrice(plan)) * 100) / 100)} annually
+                                            Save <CurrencyAmount amount={Math.round((plan.price * 12 - getPrice(plan)) * 100) / 100} variant="superadmin" /> annually
                                         </div>
                                     )}
                                 </div>

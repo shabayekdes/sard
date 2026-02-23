@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CurrencyAmount } from '@/components/currency-amount';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
@@ -302,10 +303,9 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                 return <div className="rounded-md border bg-gray-50 p-2">{formattedTime || '-'}</div>;
             }
 
-            // For currency fields - use appSettings formatting
+            // For currency fields - use CurrencyAmount for consistent display and SAR icon
             if (field.type === 'currency' && formData[field.name]) {
-                const formattedCurrency = window.appSettings?.formatCurrency(formData[field.name]) || formData[field.name];
-                return <div className="rounded-md border bg-gray-50 p-2">{formattedCurrency || '-'}</div>;
+                return <div className="rounded-md border bg-gray-50 p-2"><CurrencyAmount amount={formData[field.name]} /></div>;
             }
 
             // For datetime fields (created_at, updated_at, etc.) - use appSettings formatting

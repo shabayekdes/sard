@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { router } from '@inertiajs/react';
 import { toast } from '@/components/custom-toast';
-import { formatCurrencyForCompany } from '@/utils/helpers';
+import { CurrencyAmount } from '@/components/currency-amount';
 
 interface PayPalPaymentModalProps {
   isOpen: boolean;
@@ -170,7 +170,7 @@ export function PayPalPaymentModal({ isOpen, onClose, invoice, amount, paypalCli
           <div className="text-center p-4">
             <div className="text-4xl mb-2">🅿️</div>
             <h3 className="text-lg font-semibold mb-2">{t('Pay with PayPal')}</h3>
-            <p className="text-xl font-bold text-blue-600">              {formatCurrencyForCompany(amount.toFixed(2))}</p>
+            <p className="text-xl font-bold text-blue-600"><CurrencyAmount amount={amount} /></p>
           </div>
 
           {paypalClientId ? (

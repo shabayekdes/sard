@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Coins, Info } from 'lucide-react';
 import { router } from '@inertiajs/react';
-import { formatCurrencyForCompany } from '@/utils/helpers';
+import { CurrencyAmount } from '@/components/currency-amount';
 
 
 interface CoinGatePaymentModalProps {
@@ -87,7 +87,7 @@ export function CoinGatePaymentModal({
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">{t('Amount')}</span>
-              <span className="text-lg font-bold">{formatCurrencyForCompany(amount.toFixed(2))}</span>
+              <span className="text-lg font-bold"><CurrencyAmount amount={amount} /></span>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
               {t('Final cryptocurrency amount will be calculated at checkout based on current exchange rates')}

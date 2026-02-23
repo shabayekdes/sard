@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Loader2, CreditCard, ExternalLink } from 'lucide-react';
 import { toast } from '@/components/custom-toast';
-import { formatCurrencyForCompany } from '@/utils/helpers';
+import { CurrencyAmount } from '@/components/currency-amount';
 import axios from 'axios';
 
 interface PayTabsPaymentModalProps {
@@ -108,7 +108,7 @@ export function PayTabsPaymentModal({
           <div className="border rounded-lg p-4 bg-gray-50">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium text-gray-600">{t('Amount')}:</span>
-              <span className="text-lg font-bold text-gray-900"> {formatCurrencyForCompany(amount.toFixed(2))}</span>
+              <span className="text-lg font-bold text-gray-900"><CurrencyAmount amount={amount} /></span>
             </div>
           </div>
 
@@ -136,7 +136,7 @@ export function PayTabsPaymentModal({
               ) : (
                 <>
                   <ExternalLink className="mr-2 h-4 w-4" />
-                  {t('Pay {{amount}}', { amount: `${currency} ${typeof window !== "undefined" && window.appSettings?.formatCurrency ? window.appSettings.formatCurrency(amount, { showSymbol: true }) : `formatCurrencyForCompany(amount)`}` })}
+                  {t('Pay')} <CurrencyAmount amount={amount} />
                 </>
               )}
             </Button>

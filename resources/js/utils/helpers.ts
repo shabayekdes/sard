@@ -8,7 +8,10 @@ export function getBaseUrl(baseUrl?: string) {
     return '';
 }
 
-// Currency formatting: uses globalSettings.formatCurrency (decimal/thousands/symbol from app settings)
+/**
+ * For plain-string currency formatting; for JSX use CurrencyAmount. Uses globalSettings.formatCurrency (decimal/thousands/symbol from app settings).
+ * @deprecated Use formatCurrencyAmount from @/components/currency-amount with variant 'company' or 'superadmin', or <CurrencyAmount /> for JSX.
+ */
 export const formatCurrency = (
   amount: string | number,
   optionsOrUseSuperAdmin?: boolean | { showSymbol?: boolean; showCode?: boolean }
@@ -104,7 +107,10 @@ export const getStatusAction = (item: any, t: (key: string) => string, permissio
   };
 };
 
-// Format currency using super admin settings for plans and referrals
+/**
+ * For plain-string formatting with super-admin settings (plans/referrals); for JSX use <CurrencyAmount variant="superadmin" />.
+ * @deprecated Use formatCurrencyAmount from @/components/currency-amount with variant 'superadmin' instead.
+ */
 export const formatCurrencyForPlansAndReferrals = (amount: string | number) => {
   if (typeof window !== 'undefined' && window.appSettings?.formatCurrencyWithSuperAdminSettings) {
     const numericAmount = typeof amount === 'number' ? amount : parseFloat(amount);
@@ -114,7 +120,10 @@ export const formatCurrencyForPlansAndReferrals = (amount: string | number) => {
 };
 
 
-// Format currency using company settings (globalSettings.formatCurrency: decimal/thousands/symbol)
+/**
+ * For plain-string currency formatting using company settings; for JSX use CurrencyAmount.
+ * @deprecated Use formatCurrencyAmount from @/components/currency-amount with variant 'company', or <CurrencyAmount /> for JSX.
+ */
 export const formatCurrencyForCompany = (
   amount: string | number,
   options: { showSymbol?: boolean; showCode?: boolean } = { showSymbol: true, showCode: false }

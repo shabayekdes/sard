@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { Copy, Check, Users, DollarSign, FileText, TrendingUp, Award, Clock } from 'lucide-react';
 import { toast } from '@/components/custom-toast';
-import { formatCurrencyForPlansAndReferrals } from '@/utils/helpers';
+import { formatCurrencyAmount } from '@/components/currency-amount';
 
 interface ReferralDashboardProps {
   userType: string;
@@ -59,7 +59,7 @@ export default function ReferralDashboard({ userType, stats, referralLink, recen
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrencyForPlansAndReferrals(stats.totalCommissionPaid)}</div>
+              <div className="text-2xl font-bold">{formatCurrencyAmount(stats.totalCommissionPaid, 'superadmin', { showSymbol: true, showCode: false })}</div>
             </CardContent>
           </Card>
 
@@ -94,7 +94,7 @@ export default function ReferralDashboard({ userType, stats, referralLink, recen
                     </div>
                     <div className="text-right">
                       <p className="font-medium">{company.referral_count} referrals</p>
-                      <p className="text-sm text-muted-foreground">{formatCurrencyForPlansAndReferrals(company.total_earned)}</p>
+                      <p className="text-sm text-muted-foreground">{formatCurrencyAmount(company.total_earned, 'superadmin', { showSymbol: true, showCode: false })}</p>
                     </div>
                   </div>
                 ))}
@@ -118,7 +118,7 @@ export default function ReferralDashboard({ userType, stats, referralLink, recen
                 <div>
                   <h4 className="font-medium mb-2">{t('Payouts Processed')}</h4>
                   <div className="text-2xl font-bold">
-                    {formatCurrencyForPlansAndReferrals(Object.values(stats.monthlyPayouts || {}).reduce((a: any, b: any) => a + b, 0))}
+                    {formatCurrencyAmount(Object.values(stats.monthlyPayouts || {}).reduce((a: any, b: any) => a + b, 0), 'superadmin', { showSymbol: true, showCode: false })}
                   </div>
                   <p className="text-sm text-muted-foreground">{t('This year')}</p>
                 </div>
@@ -166,7 +166,7 @@ export default function ReferralDashboard({ userType, stats, referralLink, recen
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">{t('Total Earned')}</p>
-                <h3 className="mt-2 text-2xl font-bold">{formatCurrencyForPlansAndReferrals(stats.totalEarned)}</h3>
+                <h3 className="mt-2 text-2xl font-bold">{formatCurrencyAmount(stats.totalEarned, 'superadmin', { showSymbol: true, showCode: false })}</h3>
               </div>
               <div className="rounded-full bg-yellow-100 p-3 dark:bg-yellow-900">
                 <DollarSign className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
@@ -180,7 +180,7 @@ export default function ReferralDashboard({ userType, stats, referralLink, recen
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">{t('Available Balance')}</p>
-                <h3 className="mt-2 text-2xl font-bold">{formatCurrencyForPlansAndReferrals(stats.availableBalance)}</h3>
+                <h3 className="mt-2 text-2xl font-bold">{formatCurrencyAmount(stats.availableBalance, 'superadmin', { showSymbol: true, showCode: false })}</h3>
               </div>
               <div className="rounded-full bg-purple-100 p-3 dark:bg-purple-900">
                 <Award className="h-5 w-5 text-purple-600 dark:text-purple-400" />

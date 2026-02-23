@@ -348,6 +348,11 @@ class InvoiceController extends BaseController
         return redirect()->back()->with('success', __('Invoice sent successfully.'));
     }
 
+    /**
+     * @param Invoice $invoice
+     * @return \Inertia\Response
+     * @deprecated use invoices/{invoice}/pdf API
+     */
     public function generate(Invoice $invoice)
     {
         $this->authorize('view', $invoice);

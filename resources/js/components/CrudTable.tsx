@@ -6,7 +6,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/lib/utils';
 import { TableAction, TableColumn } from '@/types/crud';
 import { hasPermission } from '@/utils/authorization';
-import { capitalize, formatCurrency, getStatusIcon, getStatusLabel } from '@/utils/helpers';
+import { CurrencyAmount } from '@/components/currency-amount';
+import { capitalize, getStatusIcon, getStatusLabel } from '@/utils/helpers';
 import { Link } from '@inertiajs/react';
 import * as LucidIcons from 'lucide-react';
 import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react';
@@ -235,11 +236,7 @@ export function CrudTable({
                 return value ? <span className="text-sm">{window.appSettings?.formatDateTime(value, false)}</span> : <span>-</span>;
 
             case 'currency':
-                const currencyDisplay = typeof value === 'number' ? formatCurrency(value)
-                    : typeof value === 'object' && value !== null && ('en' in value || 'ar' in value)
-                        ? resolveTranslatable(value, locale)
-                        : value;
-                return <span className="text-sm">{currencyDisplay}</span>;
+                return <span className="text-sm"><CurrencyAmount amount={value ?? 0} /></span>;
 
             case 'boolean':
                 return <span className="text-sm">{value ? 'Yes' : 'No'}</span>;

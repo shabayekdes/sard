@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useTranslation } from 'react-i18next';
 import { toast } from '@/components/custom-toast';
-import { formatCurrencyForCompany } from '@/utils/helpers';
+import { CurrencyAmount } from '@/components/currency-amount';
 import { Loader2, CreditCard, AlertCircle } from 'lucide-react';
 
 interface PaiementPaymentModalProps {
@@ -75,7 +75,7 @@ export function PaiementPaymentModal({ isOpen, onClose, invoice, amount }: Paiem
           <div className="bg-muted p-4 rounded-lg">
             <div className="flex justify-between items-center">
               <span className="font-medium">{t('Amount to Pay')}</span>
-              <span className="text-lg font-bold">{formatCurrencyForCompany(amount.toFixed(2))}</span>
+              <span className="text-lg font-bold"><CurrencyAmount amount={amount} /></span>
             </div>
           </div>
 

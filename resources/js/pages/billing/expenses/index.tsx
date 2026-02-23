@@ -10,7 +10,7 @@ import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
-import { formatCurrency } from '@/utils/helpers';
+import { CurrencyAmount } from '@/components/currency-amount';
 
 export default function Expenses() {
   const { t, i18n } = useTranslation();
@@ -299,10 +299,7 @@ export default function Expenses() {
     {
       key: 'amount',
       label: t('Amount'),
-      render: (value: any) => {
-        const amount = parseFloat(value);
-        return isNaN(amount) ? formatCurrency(0.00) : formatCurrency(amount);
-      }
+      type: 'currency' as const
     },
     {
       key: 'expense_date',
@@ -565,7 +562,7 @@ export default function Expenses() {
                               const amount = parseFloat(currentItem?.amount);
                               return (
                                   <div className="rounded-md border bg-gray-50 p-2">
-                                      {isNaN(amount) ? formatCurrency(0.0) : formatCurrency(amount)}
+                                      {isNaN(amount) ? <CurrencyAmount amount={0} /> : <CurrencyAmount amount={amount} />}
                                   </div>
                               );
                           },

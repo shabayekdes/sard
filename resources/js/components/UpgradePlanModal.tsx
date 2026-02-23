@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { CurrencyAmount } from '@/components/currency-amount';
 import { CheckCircle2, CreditCard, Circle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -113,7 +114,7 @@ export function UpgradePlanModal({
                       <div className="flex items-center">
                         <CreditCard className="mr-1.5 h-4 w-4 text-muted-foreground" />
                         <p className="text-sm font-medium">
-                          {window.appSettings.formatCurrency(plan.price)} / {plan.duration.toLowerCase()}
+                          <CurrencyAmount amount={plan.price} variant="superadmin" /> / {plan.duration.toLowerCase()}
                         </p>
                       </div>
                       {plan.description && (

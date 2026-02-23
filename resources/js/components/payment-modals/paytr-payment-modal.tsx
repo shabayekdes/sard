@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
 import { useTranslation } from 'react-i18next';
 import { toast } from '@/components/custom-toast';
-import { formatCurrencyForCompany } from '@/utils/helpers';
+import { CurrencyAmount } from '@/components/currency-amount';
 
 interface PayTRPaymentModalProps {
   isOpen: boolean;
@@ -62,7 +62,7 @@ export function PayTRPaymentModal({ isOpen, onClose, invoice, amount }: PayTRPay
               {t('Invoice')} #{invoice.invoice_number}
             </div>
             <div className="text-2xl font-bold text-blue-900">
-              {formatCurrencyForCompany(amount)}
+              <CurrencyAmount amount={amount} />
             </div>
           </div>
 
