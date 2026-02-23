@@ -20,6 +20,17 @@ import DependentDropdown from './DependentDropdown';
 import { log } from 'node:console';
 import { useLayout } from '@/contexts/LayoutContext';
 
+/** Resolve API value (string or translatable { en, ar }) to a string so it is never rendered as object (React error #31). */
+function resolveDisplayValue(value: unknown, locale?: string): string {
+    if (value == null) return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'object' && value !== null && ('en' in value || 'ar' in value)) {
+        const o = value as Record<string, string>;
+        return o[locale || 'en'] || o.en || o.ar || '';
+    }
+    return String(value);
+}
+
 interface CrudFormModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -45,7 +56,8 @@ interface CrudFormModalProps {
 }
 
 export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialData = {}, title, mode, description, externalErrors = {} }: CrudFormModalProps) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const locale = i18n.language || 'en';
     const [formData, setFormData] = useState<Record<string, any>>({});
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [relationOptions, setRelationOptions] = useState<Record<string, any[]>>({});
@@ -267,7 +279,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                 const selectedLabels = selectedValues
                     .map((value: string) => {
                         const option = field.options?.find((opt) => opt.value === value);
-                        return option ? option.label : value;
+                        return option ? resolveDisplayValue(option.label, locale) : resolveDisplayValue(value, locale);
                     })
                     .join(', ');
 
@@ -334,12 +346,16 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                 );
             }
 
-            // For other field types
+            // For other field types (never render objects - resolve translatable { en, ar } to string)
+            const rawSelectLabel = field.type === 'select' && field.options
+                ? field.options.find((opt) => opt.value === String(formData[field.name]))?.label
+                : null;
+            const displayVal = field.type === 'select' && field.options
+                ? resolveDisplayValue(rawSelectLabel ?? formData[field.name], locale) || '-'
+                : resolveDisplayValue(formData[field.name], locale) || '-';
             return (
                 <div className="rounded-md border bg-gray-50 p-2">
-                    {field.type === 'select' && field.options
-                        ? field.options.find((opt) => opt.value === String(formData[field.name]))?.label || formData[field.name] || '-'
-                        : formData[field.name] || '-'}
+                    {displayVal}
                 </div>
             );
         }
@@ -515,7 +531,9 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                     : options.findIndex((opt) => String(opt.value) === String(formData[field.name] || ''));
 
                 const selectedOption = selectedOptionIndex >= 0 ? options[selectedOptionIndex] : null;
-                const displayText = selectedOption ? (field.relation ? selectedOption[field.relation!.labelField] : selectedOption.label) : '';
+                const displayText = selectedOption
+                    ? resolveDisplayValue(field.relation ? selectedOption[field.relation!.labelField] : selectedOption.label, locale)
+                    : '';
 
                 // Get the current value with prefix and index for this select instance
                 const currentValue = formData[field.name] && selectedOptionIndex >= 0
@@ -547,20 +565,18 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                         <SelectContent className="z-[60000]">
                             {field.relation
                                 ? options.map((option: any, index: number) => {
-                                    // Include index in value to ensure uniqueness even if option values are duplicated
                                     const uniqueValue = `${valuePrefix}${option[field.relation!.valueField]}_idx${index}`;
                                     return (
                                         <SelectItem key={`${field.name}_${option[field.relation!.valueField]}_${index}`} value={uniqueValue}>
-                                            {option[field.relation!.labelField]}
+                                            {resolveDisplayValue(option[field.relation!.labelField], locale)}
                                         </SelectItem>
                                     );
                                 })
                                 : options.map((option, index) => {
-                                    // Include index in value to ensure uniqueness even if option values are duplicated
                                     const uniqueValue = `${valuePrefix}${option.value}_idx${index}`;
                                     return (
                                         <SelectItem key={`${field.name}_${option.value}_${index}`} value={uniqueValue}>
-                                            {option.label}
+                                            {resolveDisplayValue(option.label, locale)}
                                         </SelectItem>
                                     );
                                 })}
@@ -579,10 +595,12 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                     : comboOptions.findIndex((opt) => String(opt.value) === String(formData[field.name] || ''));
 
                 const comboSelectedOption = comboSelectedOptionIndex >= 0 ? comboOptions[comboSelectedOptionIndex] : null;
-                const comboDisplayText = comboSelectedOption ? (field.relation ? comboSelectedOption[field.relation!.labelField] : comboSelectedOption.label) : '';
+                const comboDisplayText = comboSelectedOption
+                    ? resolveDisplayValue(field.relation ? comboSelectedOption[field.relation!.labelField] : comboSelectedOption.label, locale)
+                    : '';
 
                 const filteredOptions = comboOptions.filter((option: any) => {
-                    const label = field.relation ? option[field.relation!.labelField] : option.label;
+                    const label = resolveDisplayValue(field.relation ? option[field.relation!.labelField] : option.label, locale);
                     return label.toLowerCase().includes(searchTerm.toLowerCase());
                 });
 
@@ -632,20 +650,18 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                             </div>
                             {field.relation
                                 ? filteredOptions.map((option: any, index: number) => {
-                                    // Include index in value to ensure uniqueness even if option values are duplicated
                                     const uniqueValue = `${comboValuePrefix}${option[field.relation!.valueField]}_idx${index}`;
                                     return (
                                         <SelectItem key={`${field.name}_combo_${option[field.relation!.valueField]}_${index}`} value={uniqueValue}>
-                                            {option[field.relation!.labelField]}
+                                            {resolveDisplayValue(option[field.relation!.labelField], locale)}
                                         </SelectItem>
                                     );
                                 })
                                 : filteredOptions.map((option, index) => {
-                                    // Include index in value to ensure uniqueness even if option values are duplicated
                                     const uniqueValue = `${comboValuePrefix}${option.value}_idx${index}`;
                                     return (
                                         <SelectItem key={`${field.name}_combo_${option.value}_${index}`} value={uniqueValue}>
-                                            {option.label}
+                                            {resolveDisplayValue(option.label, locale)}
                                         </SelectItem>
                                     );
                                 })}
@@ -665,7 +681,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                         {field.options?.map((option) => (
                             <div key={option.value} className="flex items-center space-x-2">
                                 <RadioGroupItem value={option.value} id={`${field.name}-${option.value}`} />
-                                <Label htmlFor={`${field.name}-${option.value}`}>{option.label}</Label>
+                                <Label htmlFor={`${field.name}-${option.value}`}>{resolveDisplayValue(option.label, locale)}</Label>
                             </div>
                         ))}
                     </RadioGroup>

@@ -39,7 +39,8 @@ export function PageCrudWrapper({
   buttons = [],
   breadcrumbs
 }: PageCrudWrapperProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language || 'en';
   const { entity, table, filters = [], form, hooks } = config;
   const { auth, ...pageProps } = usePage().props as any;
   const permissions = auth?.permissions || [];
@@ -241,6 +242,20 @@ export function PageCrudWrapper({
         transformedItem['nationality_name.en'] = item.nationality_name_translations.en || '';
         transformedItem['nationality_name.ar'] = item.nationality_name_translations.ar || '';
       }
+    }
+    if (entity.name === 'roles') {
+      // Resolve translatable label/description to string for form display (avoid React error #31)
+      const resolve = (v: unknown): string => {
+        if (v == null) return '';
+        if (typeof v === 'string') return v;
+        if (typeof v === 'object' && v !== null && ('en' in v || 'ar' in v)) {
+          const o = v as Record<string, string>;
+          return o[locale] || o.en || o.ar || '';
+        }
+        return String(v);
+      };
+      if (transformedItem.label != null) transformedItem.label = resolve(transformedItem.label);
+      if (transformedItem.description != null) transformedItem.description = resolve(transformedItem.description);
     }
 
     setCurrentItem(transformedItem);

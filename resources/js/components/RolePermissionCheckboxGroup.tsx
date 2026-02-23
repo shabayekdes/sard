@@ -11,7 +11,17 @@ import { Input } from './ui/input';
 interface Permission {
     id: string | number;
     name: string;
-    label: string;
+    label: string | Record<string, string>;
+}
+
+function getPermissionLabel(p: Permission, locale?: string): string {
+    const label = p?.label ?? p?.name ?? '';
+    if (typeof label === 'string') return label;
+    if (typeof label === 'object' && label !== null && ('en' in label || 'ar' in label)) {
+        const o = label as Record<string, string>;
+        return o[locale || 'en'] || o.en || o.ar || String(p?.name ?? '');
+    }
+    return String(p?.name ?? '');
 }
 
 interface RolePermissionCheckboxGroupProps {
@@ -21,7 +31,8 @@ interface RolePermissionCheckboxGroupProps {
 }
 
 export function RolePermissionCheckboxGroup({ permissions, selectedPermissions, onChange }: RolePermissionCheckboxGroupProps) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const locale = i18n.language || 'en';
     const [selected, setSelected] = useState<string[]>([]);
     const [searchTerm, setSearchTerm] = useState<string>('');
 
@@ -32,12 +43,12 @@ export function RolePermissionCheckboxGroup({ permissions, selectedPermissions, 
                   .filter(
                       ([module, modulePermissions]) =>
                           module.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          modulePermissions.some((p) => p.label.toLowerCase().includes(searchTerm.toLowerCase())),
+                          modulePermissions.some((p) => getPermissionLabel(p, locale).toLowerCase().includes(searchTerm.toLowerCase())),
                   )
                   .map(([module, modulePermissions]) => [
                       module,
                       modulePermissions.filter(
-                          (p) => module.toLowerCase().includes(searchTerm.toLowerCase()) || p.label.toLowerCase().includes(searchTerm.toLowerCase()),
+                          (p) => module.toLowerCase().includes(searchTerm.toLowerCase()) || getPermissionLabel(p, locale).toLowerCase().includes(searchTerm.toLowerCase()),
                       ),
                   ]),
           )
@@ -434,7 +445,7 @@ export function RolePermissionCheckboxGroup({ permissions, selectedPermissions, 
                                                 htmlFor={`permission-checkbox-${permission.id.toString().replace(/\s+/g, '-').toLowerCase()}`}
                                                 className="truncate text-sm"
                                             >
-                                                {t(permission.label, { defaultValue: permission.label })}
+                                                {getPermissionLabel(permission, locale)}
                                             </Label>
                                         </div>
                                     ))}

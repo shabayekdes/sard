@@ -21,8 +21,21 @@ import { toast } from '@/components/custom-toast';
 import { useInitials } from '@/hooks/use-initials';
 import { useTranslation } from 'react-i18next';
 
+/** Resolve role label (string or translatable { en, ar }) to a string for display. */
+function getRoleLabel(role: { label?: string | Record<string, string>; name?: string }, locale?: string): string {
+  if (!role) return '';
+  const label = role.label ?? role.name ?? '';
+  if (typeof label === 'string') return label;
+  if (typeof label === 'object' && label !== null && ('en' in label || 'ar' in label)) {
+    const o = label as Record<string, string>;
+    return o[locale || 'en'] || o.en || o.ar || String(role.name ?? '');
+  }
+  return String(role.name ?? '');
+}
+
 export default function Users() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLocale = i18n.language || 'en';
   const { auth, users, roles, planLimits, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
   const getInitials = useInitials();
@@ -312,7 +325,7 @@ export default function Users() {
         if (!value || !value.length) return <span className="text-muted-foreground">No roles assigned</span>;
 
         return value.map((role: any) => {
-          return <span key={role.id} className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10 mr-1">{role.label || role.name}</span>;
+          return <span key={role.id} className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10 mr-1">{getRoleLabel(role, currentLocale)}</span>;
         });
       }
     },
@@ -395,7 +408,7 @@ export default function Users() {
                               { value: 'all', label: t('All Roles') },
                               ...(roles || []).map((role: any) => ({
                                   value: role.id.toString(),
-                                  label: role.label || role.name,
+                                  label: getRoleLabel(role, currentLocale),
                               })),
                           ],
                       },
@@ -561,7 +574,7 @@ export default function Users() {
                                                       key={role.id}
                                                       className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-700/10 ring-inset dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-700/30"
                                                   >
-                                                      {role.label || role.name}
+                                                      {getRoleLabel(role, currentLocale)}
                                                   </span>
                                               ))
                                           ) : (
@@ -665,7 +678,7 @@ export default function Users() {
                                     .filter((role: any) => role.name !== 'client')
                                     .map((role: any) => ({
                                         value: role.id.toString(),
-                                        label: role.label || role.name,
+                                        label: getRoleLabel(role, currentLocale),
                                     }))
                               : [],
                           required: true,

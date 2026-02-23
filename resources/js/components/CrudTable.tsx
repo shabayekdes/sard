@@ -194,7 +194,7 @@ export function CrudTable({
                                         </Link>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        <p>{actionLabel}</p>
+                                        <p>{resolveTranslatable(actionLabel, locale)}</p>
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
@@ -220,7 +220,7 @@ export function CrudTable({
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p>{actionLabel}</p>
+                                    <p>{resolveTranslatable(actionLabel, locale)}</p>
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
@@ -329,7 +329,7 @@ export function CrudTable({
                                 onClick={() => handleSort(column)}
                             >
                                 <div className={cn('flex items-center gap-1', isRtl ? 'justify-end text-right flex-row-reverse' : 'justify-start text-left')}>
-                                    {column.label}
+                                    {resolveTranslatable(column.label, locale)}
                                     {renderSortIcon(column)}
                                 </div>
                             </TableHead>
