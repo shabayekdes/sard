@@ -1,5 +1,4 @@
 import { LucideIcon } from 'lucide-react';
-import * as LucidIcons from 'lucide-react';
 
 export interface NavItem {
   title: string;
@@ -30,7 +29,7 @@ export interface TableColumn {
 
 export interface ActionConfig {
   label: string;
-  icon: keyof typeof LucidIcons;
+  icon: string;
   action: string;
   className: string;
   permission?: string;

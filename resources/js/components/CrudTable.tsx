@@ -9,9 +9,51 @@ import { hasPermission } from '@/utils/authorization';
 import { CurrencyAmount } from '@/components/currency-amount';
 import { capitalize, getStatusIcon, getStatusLabel } from '@/utils/helpers';
 import { Link } from '@inertiajs/react';
-import * as LucidIcons from 'lucide-react';
-import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react';
+import {
+    ChevronDown,
+    ChevronUp,
+    ChevronsUpDown,
+    Check,
+    CheckCircle,
+    DollarSign,
+    Download,
+    Edit,
+    Eye,
+    Globe,
+    Key,
+    KeyRound,
+    Link as LinkIcon,
+    Lock,
+    RotateCcw,
+    Send,
+    Trash2,
+    ToggleLeft,
+    Unlock,
+    X,
+    XCircle,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+
+const CRUD_ICONS: Record<string, React.ComponentType<{ size?: number }>> = {
+    Check,
+    CheckCircle,
+    DollarSign,
+    Download,
+    Edit,
+    Eye,
+    Globe,
+    Key,
+    KeyRound,
+    Link: LinkIcon,
+    Lock,
+    RotateCcw,
+    Send,
+    Trash2,
+    ToggleLeft,
+    Unlock,
+    X,
+    XCircle,
+};
 
 /** Resolve translatable API value (e.g. { en: '...', ar: '...' }) to a string for display. */
 function resolveTranslatable(value: unknown, locale: string): string {
@@ -135,7 +177,7 @@ export function CrudTable({
                             : typeof action.label === 'function'
                                 ? action.label(row)
                                 : action.label;
-                    const IconComponent = (LucidIcons as any)[iconName] as React.ElementType;
+                    const IconComponent = CRUD_ICONS[iconName] ?? Eye;
 
                     // Handle link actions
                     if (action.href) {

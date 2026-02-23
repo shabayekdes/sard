@@ -62,13 +62,21 @@ export default defineConfig({
     build: {
         rollupOptions: {
             output: {
-                manualChunks: {
-                    vendor: ['react', 'react-dom'],
-                    ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
-                    utils: ['date-fns', 'clsx']
-                }
+                manualChunks(id) {
+                    if (id.includes('node_modules')) {
+                        if (id.includes('recharts')) return 'recharts';
+                        if (id.includes('@tiptap')) return 'tiptap';
+                        if (id.includes('@hello-pangea/dnd')) return 'dnd';
+                        if (id.includes('@radix-ui')) return 'radix-ui';
+                        if (id.includes('lucide-react')) return 'lucide';
+                        if (id.includes('@inertiajs')) return 'inertia';
+                        if (id.includes('date-fns') || id.includes('clsx') || id.includes('tailwind-merge')) return 'utils';
+                        if (!id.includes('recharts') && !id.includes('@tiptap') && (id.includes('node_modules/react-dom/') || id.includes('node_modules/react/'))) return 'vendor';
+                    }
+                },
             },
         },
         assetsDir: 'assets',
+        chunkSizeWarningLimit: 600,
     }
 });
