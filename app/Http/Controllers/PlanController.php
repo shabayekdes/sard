@@ -55,7 +55,7 @@ class PlanController extends Controller
             $price = $billingCycle === 'yearly' ? $plan->yearly_price : $plan->price;
             
             // Format price with super admin currency settings
-            $formattedPrice = formatCurrencyForPlansAndReferrals($price);
+            $formattedPrice = formatCurrency($price, ['variant' => 'superadmin']);
             
             // Set duration based on billing cycle
             $duration = $billingCycle === 'yearly' ? 'Yearly' : 'Monthly';
@@ -319,7 +319,7 @@ class PlanController extends Controller
                 'id' => $plan->id,
                 'name' => $plan->name,
                 'price' => $price,
-                'formatted_price' => formatCurrencyForPlansAndReferrals($price),
+                'formatted_price' => formatCurrency($price, ['variant' => 'superadmin']),
                 'duration' => $billingCycle === 'yearly' ? 'Yearly' : 'Monthly',
                 'description' => $plan->description,
                 'billing_cycle' => $plan->billing_cycle ?: 'both',

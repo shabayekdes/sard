@@ -1287,123 +1287,57 @@ if (! function_exists('createDefaultSettings')) {
 }
 
 
-if (! function_exists('formatCurrencyForPlansAndReferrals')) {
+if (! function_exists('formatCurrency')) {
     /**
-     * Format currency using super admin settings for plans and referrals
-     *
-     * @param float $amount
-     * @return string
+     * Format amount with company/superadmin currency settings. Options: variant, userId, useCode, currencyCode, html, rtl.
      */
-    function formatCurrencyForPlansAndReferrals($amount)
-    {
-        $superAdmin = User::where('type', 'superadmin')->first();
-        if (!$superAdmin) {
-            return '$' . number_format($amount, 2);
-        }
-
-        $superAdminSettings = settings($superAdmin->id);
-        $currencyCode = $superAdminSettings['defaultCurrency'] ?? 'USD';
-
-        // Get currency symbol from database
-        $currency = \App\Models\Currency::where('code', $currencyCode)->first();
-        $symbol = $currency ? $currency->symbol : '$';
-
-        $decimalPlaces = (int)($superAdminSettings['decimalFormat'] ?? 2);
-        $thousandsSeparator = $superAdminSettings['thousandsSeparator'] ?? ',';
-        $symbolSpace = ($superAdminSettings['currencySymbolSpace'] ?? false) === '1';
-        $symbolPosition = $superAdminSettings['currencySymbolPosition'] ?? 'before';
-
-        $formattedAmount = number_format($amount, $decimalPlaces, '.', $thousandsSeparator);
-        $space = $symbolSpace ? ' ' : '';
-
-        return $symbolPosition === 'after' ? $formattedAmount . $space . $symbol : $symbol . $space . $formattedAmount;
-    }
-}
-
-if (! function_exists('formatCurrencyForCompany')) {
-    /**
-     * Format currency using company settings (same logic as frontend formatCurrency).
-     *
-     * @param float|string $amount
-     * @param int|null $userId Optional: use this user's settings (e.g. invoice created_by for PDF).
-     * @return string
-     */
-    function formatCurrencyForCompany($amount, $userId = null)
+    function formatCurrency($amount, array $options = [])
     {
         $amount = (float) $amount;
+        $html = ! empty($options['html']);
+        $rtl = ! empty($options['rtl']);
+        $fallback = '$' . number_format($amount, 2);
 
-        if ($userId === null && ! auth()->check()) {
-            return '$' . number_format($amount, 2);
-        }
-
-        if ($userId === null) {
+        $userId = $options['userId'] ?? null;
+        if (($options['variant'] ?? 'company') === 'superadmin') {
+            $superAdmin = User::where('type', 'superadmin')->first();
+            $userId = $superAdmin?->id;
+        } elseif ($userId === null && auth()->check()) {
             $userId = auth()->user()->type === 'company' ? auth()->id() : auth()->user()->created_by;
         }
-
-        // Same source as frontend (HandleInertiaRequests): Setting.defaultCurrency + formatting
-        $userSettings = settings($userId);
-        $userSettings = is_array($userSettings) ? $userSettings : [];
-
-        $currencyCode = $userSettings['defaultCurrency'] ?? null;
-        if (empty($currencyCode)) {
-            $companySetting = \App\Models\CompanySetting::where('created_by', $userId)
-                ->where('setting_key', 'currency')
-                ->first();
-            $currencyCode = $companySetting ? $companySetting->setting_value : 'USD';
+        if ($userId === null) {
+            return $html ? '<span class="pdf-currency-wrap">' . $fallback . '</span>' : $fallback;
         }
 
-        $currency = \App\Models\Currency::where('code', $currencyCode)->first();
-        $symbol = $currency ? $currency->symbol : '$';
+        $s = (array) settings($userId);
+        $currencyCode = $options['currencyCode'] ?? $s['defaultCurrency']
+            ?? \App\Models\CompanySetting::where('created_by', $userId)->where('setting_key', 'currency')->value('setting_value')
+            ?? 'USD';
 
-        // Formatting (match globalSettings.formatCurrency)
-        $decimalPlaces = (int)($userSettings['decimalFormat'] ?? 2);
-        $thousandsSeparator = $userSettings['thousandsSeparator'] ?? ',';
-        $symbolSpace = ($userSettings['currencySymbolSpace'] ?? false) === '1';
-        $symbolPosition = $userSettings['currencySymbolPosition'] ?? 'before';
-        $floatNumber = ($userSettings['floatNumber'] ?? '1') !== '0';
+        $position = strtolower(trim((string) ($s['currencySymbolPosition'] ?? 'before')));
+        $position = in_array($position, ['before', 'after'], true) ? $position : 'before';
+        if ($rtl) {
+            $position = $position === 'before' ? 'after' : 'before';
+        }
 
-        if (! $floatNumber) {
+        $space = in_array($s['currencySymbolSpace'] ?? false, [true, '1', 1], true) ? ' ' : '';
+        if (($s['floatNumber'] ?? '1') === '0') {
             $amount = floor($amount);
         }
+        $num = number_format($amount, (int) ($s['decimalFormat'] ?? 2), '.', $s['thousandsSeparator'] ?? ',');
 
-        $formattedAmount = number_format($amount, $decimalPlaces, '.', $thousandsSeparator);
-        $space = $symbolSpace ? ' ' : '';
+        $isSar = strtoupper((string) $currencyCode) === 'SAR';
+        $symbolPart = ($html && $isSar)
+            ? '<svg class="pdf-sar-icon" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 19.5-5.5 1.2"/><path d="M14.5 4v11.22a1 1 0 0 0 1.242.97L20 15.2"/><path d="m2.978 19.351 5.549-1.363A2 2 0 0 0 10 16V2"/><path d="M20 10 4 13.5"/></svg>'
+            : ($options['useCode'] ? $currencyCode : (\App\Models\Currency::where('code', $currencyCode)->first()?->symbol ?? '$'));
 
-        return $symbolPosition === 'after' ? $formattedAmount . $space . $symbol : $symbol . $space . $formattedAmount;
-    }
-}
+        $text = $position === 'after' ? $num . $space . $symbolPart : $symbolPart . $space . $num;
 
-if (! function_exists('formatCurrencyForPdf')) {
-    /**
-     * Format currency for PDF output using currency code instead of symbol.
-     * Use this for invoice PDFs so that symbols like ﷼ (Rial) that may not render
-     * in PDF fonts on some servers (e.g. production) are replaced by the code (e.g. SAR).
-     *
-     * @param float|string $amount
-     * @param int|null $userId Company/user ID for decimal/thousands settings (e.g. invoice created_by).
-     * @param string $currencyCode Currency code to display (e.g. SAR, USD). Never use DB symbol in PDF.
-     * @return string
-     */
-    function formatCurrencyForPdf($amount, $userId, $currencyCode)
-    {
-        $amount = (float) $amount;
-        $userSettings = settings($userId);
-        $userSettings = is_array($userSettings) ? $userSettings : [];
-
-        $decimalPlaces = (int) ($userSettings['decimalFormat'] ?? 2);
-        $thousandsSeparator = $userSettings['thousandsSeparator'] ?? ',';
-        $symbolSpace = ($userSettings['currencySymbolSpace'] ?? false) === '1';
-        $symbolPosition = $userSettings['currencySymbolPosition'] ?? 'before';
-        $floatNumber = ($userSettings['floatNumber'] ?? '1') !== '0';
-
-        if (! $floatNumber) {
-            $amount = floor($amount);
+        if ($html) {
+            $class = $isSar ? 'pdf-currency-wrap pdf-currency-sar' : 'pdf-currency-wrap';
+            return '<span class="' . $class . '">' . ($isSar ? $text : e($text)) . '</span>';
         }
-
-        $formattedAmount = number_format($amount, $decimalPlaces, '.', $thousandsSeparator);
-        $space = $symbolSpace ? ' ' : '';
-
-        return $symbolPosition === 'after' ? $formattedAmount . $space . $currencyCode : $currencyCode . $space . $formattedAmount;
+        return $text;
     }
 }
 

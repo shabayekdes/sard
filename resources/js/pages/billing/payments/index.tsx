@@ -38,14 +38,14 @@ export default function Payments() {
 
   // Auto-open modal from invoice page
   const [isAutoOpen, setIsAutoOpen] = useState(false);
-  
+
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('auto_open') === 'true') {
       const invoiceNumber = urlParams.get('invoice_number');
       const amount = urlParams.get('amount');
       const invoiceId = urlParams.get('invoice_id');
-      
+
       setIsAutoOpen(true);
       setCurrentItem({
         invoice_id: invoiceId,
@@ -55,7 +55,7 @@ export default function Payments() {
       });
       setFormMode('create');
       setIsFormModalOpen(true);
-      
+
       // Clean URL
       window.history.replaceState({}, '', route('billing.payments.index'));
     }
@@ -353,295 +353,295 @@ export default function Payments() {
   ];
 
   return (
-      <PageTemplate title={t('Payments')} url="/billing/payments" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
-          {/* Search and filters section */}
-          <div className="mb-4 rounded-lg bg-white">
-              <SearchAndFilterBar
-                  searchTerm={searchTerm}
-                  onSearchChange={setSearchTerm}
-                  onSearch={handleSearch}
-                  filters={[
-                      {
-                          name: 'invoice_id',
-                          label: t('Invoice'),
-                          type: 'select',
-                          value: selectedInvoice,
-                          onChange: setSelectedInvoice,
-                          options: invoiceOptions,
-                      },
-                      {
-                          name: 'payment_method',
-                          label: t('Payment Method'),
-                          type: 'select',
-                          value: selectedPaymentMethod,
-                          onChange: setSelectedPaymentMethod,
-                          options: paymentMethodOptions,
-                      },
-                      {
-                          name: 'approval_status',
-                          label: t('Approval Status'),
-                          type: 'select',
-                          value: selectedApprovalStatus,
-                          onChange: setSelectedApprovalStatus,
-                          options: approvalStatusOptions,
-                      },
-                  ]}
-                  showFilters={showFilters}
-                  setShowFilters={setShowFilters}
-                  hasActiveFilters={hasActiveFilters}
-                  activeFilterCount={activeFilterCount}
-                  onResetFilters={handleResetFilters}
-                  onApplyFilters={applyFilters}
-              />
-          </div>
+    <PageTemplate title={t('Payments')} url="/billing/payments" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+      {/* Search and filters section */}
+      <div className="mb-4 rounded-lg bg-white">
+        <SearchAndFilterBar
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          onSearch={handleSearch}
+          filters={[
+            {
+              name: 'invoice_id',
+              label: t('Invoice'),
+              type: 'select',
+              value: selectedInvoice,
+              onChange: setSelectedInvoice,
+              options: invoiceOptions,
+            },
+            {
+              name: 'payment_method',
+              label: t('Payment Method'),
+              type: 'select',
+              value: selectedPaymentMethod,
+              onChange: setSelectedPaymentMethod,
+              options: paymentMethodOptions,
+            },
+            {
+              name: 'approval_status',
+              label: t('Approval Status'),
+              type: 'select',
+              value: selectedApprovalStatus,
+              onChange: setSelectedApprovalStatus,
+              options: approvalStatusOptions,
+            },
+          ]}
+          showFilters={showFilters}
+          setShowFilters={setShowFilters}
+          hasActiveFilters={hasActiveFilters}
+          activeFilterCount={activeFilterCount}
+          onResetFilters={handleResetFilters}
+          onApplyFilters={applyFilters}
+        />
+      </div>
 
-          {/* Content section */}
-          <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
-              <CrudTable
-                  columns={columns}
-                  actions={actions}
-                  data={payments?.data || []}
-                  from={payments?.from || 1}
-                  onAction={handleAction}
-                  permissions={permissions}
-                  entityPermissions={{
-                      view: 'view-payments',
-                      create: 'create-payments',
-                      edit: 'edit-payments',
-                      delete: 'delete-payments',
-                  }}
-              />
+      {/* Content section */}
+      <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-900">
+        <CrudTable
+          columns={columns}
+          actions={actions}
+          data={payments?.data || []}
+          from={payments?.from || 1}
+          onAction={handleAction}
+          permissions={permissions}
+          entityPermissions={{
+            view: 'view-payments',
+            create: 'create-payments',
+            edit: 'edit-payments',
+            delete: 'delete-payments',
+          }}
+        />
 
-              {/* Pagination section */}
-              <Pagination
-                  from={payments?.from || 0}
-                  to={payments?.to || 0}
-                  total={payments?.total || 0}
-                  links={payments?.links}
-                  entityName={t('payments')}
-                  onPageChange={(url) => router.get(url)}
-                  currentPerPage={pageFilters.per_page?.toString() || '10'}
-                  onPerPageChange={(value) => {
-                      router.get(
-                          route('billing.payments.index'),
-                          {
-                              page: 1,
-                              per_page: parseInt(value),
-                              search: searchTerm || undefined,
-                              invoice_id: selectedInvoice !== 'all' ? selectedInvoice : undefined,
-                              payment_method: selectedPaymentMethod !== 'all' ? selectedPaymentMethod : undefined,
-                              approval_status: selectedApprovalStatus !== 'all' ? selectedApprovalStatus : undefined,
-                          },
-                          { preserveState: true, preserveScroll: true },
-                      );
-                  }}
-              />
-          </div>
+        {/* Pagination section */}
+        <Pagination
+          from={payments?.from || 0}
+          to={payments?.to || 0}
+          total={payments?.total || 0}
+          links={payments?.links}
+          entityName={t('payments')}
+          onPageChange={(url) => router.get(url)}
+          currentPerPage={pageFilters.per_page?.toString() || '10'}
+          onPerPageChange={(value) => {
+            router.get(
+              route('billing.payments.index'),
+              {
+                page: 1,
+                per_page: parseInt(value),
+                search: searchTerm || undefined,
+                invoice_id: selectedInvoice !== 'all' ? selectedInvoice : undefined,
+                payment_method: selectedPaymentMethod !== 'all' ? selectedPaymentMethod : undefined,
+                approval_status: selectedApprovalStatus !== 'all' ? selectedApprovalStatus : undefined,
+              },
+              { preserveState: true, preserveScroll: true },
+            );
+          }}
+        />
+      </div>
 
-          {/* Form Modal */}
-          <CrudFormModal
-              isOpen={isFormModalOpen}
-              onClose={() => setIsFormModalOpen(false)}
-              onSubmit={handleFormSubmit}
-              formConfig={{
-                  fields: [
-                      {
-                          name: 'approval_status',
-                          label: t('Approval Status'),
-                          type: 'custom',
-                          conditional: (mode) => mode === 'view',
-                          render: (field, formData) => {
-                              const status = formData?.approval_status || 'approved';
-                              const statusClasses: Record<string, string> = {
-                                  pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                                  approved: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-                                  rejected: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-                              };
-                              return (
-                                  <div className="space-y-2">
-                                      <div className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium">
-                                          <span className={`rounded-md px-2 py-1 text-xs font-medium ${statusClasses[status] || 'bg-gray-100 text-gray-800'}`}>
-                                              {t(capitalize(status))}
-                                          </span>
-                                      </div>
-                                      {status === 'rejected' && formData?.rejection_reason && (
-                                          <div className="rounded-md border bg-gray-50 p-2 text-sm">
-                                              {formData.rejection_reason}
-                                          </div>
-                                      )}
-                                  </div>
-                              );
-                          },
-                      },
-                      {
-                          name: 'invoice_id',
-                          label: t('Invoice'),
-                          type: 'select',
-                          required: true,
-                          disabled: isAutoOpen,
-                          options: (invoices || []).map((invoice: any) => ({
-                              value: invoice.id.toString(),
-                              label: `${invoice.invoice_number} - ${invoice.client?.name}`,
-                          })),
-                      },
-                      {
-                          name: 'payment_method',
-                          label: t('Payment Method'),
-                          type: 'select',
-                          required: true,
-                          options: [
-                              { value: 'cash', label: t('Cash') },
-                              { value: 'check', label: t('Check') },
-                              { value: 'credit_card', label: t('Credit Card') },
-                              { value: 'bank_transfer', label: t('Bank Transfer') },
-                              { value: 'online', label: t('Online Payment') },
-                          ],
-                      },
-                      { name: 'amount', label: t('Amount'), type: 'number', step: '0.01', required: true, min: '0', disabled: isAutoOpen },
-                      { name: 'payment_date', label: t('Payment Date'), type: 'date', required: true, disabled: isAutoOpen },
-                      { name: 'notes', label: t('Notes'), type: 'textarea' },
-                      {
-                          name: 'attachment',
-                          label: t('Attachment'),
-                          type: formMode === 'view' ? 'custom' : 'media-picker',
-                          multiple: true,
-                          placeholder: t('Select files...'),
-                          render:
-                              formMode === 'view'
-                                  ? (field, formData) => {
-                                        const files = formData[field.name];
-                                        if (!files) {
-                                            return <div className="rounded-md border bg-gray-50 p-2">-</div>;
-                                        }
-
-                                        // Handle both comma-separated string and array
-                                        const fileList =
-                                            typeof files === 'string'
-                                                ? files
-                                                      .split(',')
-                                                      .filter(Boolean)
-                                                      .map((f) => f.trim())
-                                                : Array.isArray(files)
-                                                  ? files.filter(Boolean)
-                                                  : [];
-
-                                        if (fileList.length === 0) {
-                                            return <div className="rounded-md border bg-gray-50 p-2">-</div>;
-                                        }
-
-                                        // Get display URL helper
-                                        const getDisplayUrl = (url: string) => {
-                                            if (!url) return '';
-                                            if (url.startsWith('http')) return url;
-                                            if (url.startsWith('/')) {
-                                                return `${window.appSettings?.imageUrl || window.location.origin}${url}`;
-                                            }
-                                            return `${window.appSettings?.imageUrl || window.location.origin}/${url}`;
-                                        };
-
-                                        // Get file extension
-                                        const getFileExtension = (path: string) => {
-                                            const filename = path.split('/').pop() || path;
-                                            return filename.split('.').pop()?.toLowerCase() || '';
-                                        };
-
-                                        // Check file type
-                                        const isImage = (path: string) => {
-                                            const ext = getFileExtension(path);
-                                            return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext);
-                                        };
-
-                                        return (
-                                            <div className="space-y-2" dir="auto">
-                                                {fileList.map((file, index) => {
-                                                    const displayUrl = getDisplayUrl(file);
-                                                    const isImg = isImage(file);
-                                                    const fileName = file.split('/').pop() || file;
-
-                                                    return (
-                                                        <div
-                                                            key={index}
-                                                            className="flex items-center gap-2 rounded-md border bg-gray-50 p-2 rtl:flex-row-reverse"
-                                                        >
-                                                            {isImg ? (
-                                                                <img
-                                                                    src={displayUrl}
-                                                                    alt={fileName}
-                                                                    className="h-16 w-16 shrink-0 rounded object-cover"
-                                                                    onError={(e) => {
-                                                                        (e.target as HTMLImageElement).style.display = 'none';
-                                                                    }}
-                                                                />
-                                                            ) : (
-                                                                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded bg-gray-200">
-                                                                    <span className="text-xs text-gray-500">
-                                                                        {getFileExtension(file).toUpperCase()}
-                                                                    </span>
-                                                                </div>
-                                                            )}
-                                                            <div className="min-w-0 flex-1 text-start">
-                                                                <p className="truncate text-sm font-medium text-gray-900">{fileName}</p>
-                                                                <a
-                                                                    href={displayUrl}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="text-xs text-blue-600 hover:text-blue-800"
-                                                                >
-                                                                    {t('View')}
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        );
-                                    }
-                                  : undefined,
-                      },
-                  ],
-                  modalSize: 'lg',
-              }}
-              initialData={currentItem}
-              title={formMode === 'create' ? t('Record New Payment') : formMode === 'edit' ? t('Edit Payment') : t('View Payment')}
-              mode={formMode}
-          />
-
-          {/* Delete Modal */}
-          <CrudDeleteModal
-              isOpen={isDeleteModalOpen}
-              onClose={() => setIsDeleteModalOpen(false)}
-              onConfirm={handleDeleteConfirm}
-              itemName={`${currentItem?.invoice?.invoice_number} - ${formatCurrencyAmount(currentItem?.amount ?? 0, 'company', { showSymbol: true, showCode: false })}`}
-              entityName="Payment"
-          />
-
-          <Dialog open={isRejectModalOpen} onOpenChange={setIsRejectModalOpen}>
-              <DialogContent>
-                  <DialogHeader>
-                      <DialogTitle>{t('Reject Payment')}</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                      <div>
-                          <Label htmlFor="payment-rejection-reason">{t('Rejection Reason (Optional)')}</Label>
-                          <Textarea
-                              id="payment-rejection-reason"
-                              value={rejectionReason}
-                              onChange={(e) => setRejectionReason(e.target.value)}
-                              placeholder={t('Enter reason for rejection...')}
-                              rows={4}
-                          />
+      {/* Form Modal */}
+      <CrudFormModal
+        isOpen={isFormModalOpen}
+        onClose={() => setIsFormModalOpen(false)}
+        onSubmit={handleFormSubmit}
+        formConfig={{
+          fields: [
+            {
+              name: 'approval_status',
+              label: t('Approval Status'),
+              type: 'custom',
+              conditional: (mode) => mode === 'view',
+              render: (field, formData) => {
+                const status = formData?.approval_status || 'approved';
+                const statusClasses: Record<string, string> = {
+                  pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                  approved: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                  rejected: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                };
+                return (
+                  <div className="space-y-2">
+                    <div className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium">
+                      <span className={`rounded-md px-2 py-1 text-xs font-medium ${statusClasses[status] || 'bg-gray-100 text-gray-800'}`}>
+                        {t(capitalize(status))}
+                      </span>
+                    </div>
+                    {status === 'rejected' && formData?.rejection_reason && (
+                      <div className="rounded-md border bg-gray-50 p-2 text-sm">
+                        {formData.rejection_reason}
                       </div>
+                    )}
                   </div>
-                  <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsRejectModalOpen(false)}>
-                          {t('Cancel')}
-                      </Button>
-                      <Button variant="destructive" onClick={handleRejectConfirm}>
-                          {t('Reject Payment')}
-                      </Button>
-                  </DialogFooter>
-              </DialogContent>
-          </Dialog>
-      </PageTemplate>
+                );
+              },
+            },
+            {
+              name: 'invoice_id',
+              label: t('Invoice'),
+              type: 'select',
+              required: true,
+              disabled: isAutoOpen,
+              options: (invoices || []).map((invoice: any) => ({
+                value: invoice.id.toString(),
+                label: `${invoice.invoice_number} - ${invoice.client?.name}`,
+              })),
+            },
+            {
+              name: 'payment_method',
+              label: t('Payment Method'),
+              type: 'select',
+              required: true,
+              options: [
+                { value: 'cash', label: t('Cash') },
+                { value: 'check', label: t('Check') },
+                { value: 'credit_card', label: t('Credit Card') },
+                { value: 'bank_transfer', label: t('Bank Transfer') },
+                { value: 'online', label: t('Online Payment') },
+              ],
+            },
+            { name: 'amount', label: t('Amount'), type: 'number', step: '0.01', required: true, min: '0', disabled: isAutoOpen },
+            { name: 'payment_date', label: t('Payment Date'), type: 'date', required: true, disabled: isAutoOpen },
+            { name: 'notes', label: t('Notes'), type: 'textarea' },
+            {
+              name: 'attachment',
+              label: t('Attachment'),
+              type: formMode === 'view' ? 'custom' : 'media-picker',
+              multiple: true,
+              placeholder: t('Select files...'),
+              render:
+                formMode === 'view'
+                  ? (field, formData) => {
+                    const files = formData[field.name];
+                    if (!files) {
+                      return <div className="rounded-md border bg-gray-50 p-2">-</div>;
+                    }
+
+                    // Handle both comma-separated string and array
+                    const fileList =
+                      typeof files === 'string'
+                        ? files
+                          .split(',')
+                          .filter(Boolean)
+                          .map((f) => f.trim())
+                        : Array.isArray(files)
+                          ? files.filter(Boolean)
+                          : [];
+
+                    if (fileList.length === 0) {
+                      return <div className="rounded-md border bg-gray-50 p-2">-</div>;
+                    }
+
+                    // Get display URL helper
+                    const getDisplayUrl = (url: string) => {
+                      if (!url) return '';
+                      if (url.startsWith('http')) return url;
+                      if (url.startsWith('/')) {
+                        return `${window.appSettings?.imageUrl || window.location.origin}${url}`;
+                      }
+                      return `${window.appSettings?.imageUrl || window.location.origin}/${url}`;
+                    };
+
+                    // Get file extension
+                    const getFileExtension = (path: string) => {
+                      const filename = path.split('/').pop() || path;
+                      return filename.split('.').pop()?.toLowerCase() || '';
+                    };
+
+                    // Check file type
+                    const isImage = (path: string) => {
+                      const ext = getFileExtension(path);
+                      return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext);
+                    };
+
+                    return (
+                      <div className="space-y-2" dir="auto">
+                        {fileList.map((file, index) => {
+                          const displayUrl = getDisplayUrl(file);
+                          const isImg = isImage(file);
+                          const fileName = file.split('/').pop() || file;
+
+                          return (
+                            <div
+                              key={index}
+                              className="flex items-center gap-2 rounded-md border bg-gray-50 p-2 rtl:flex-row-reverse"
+                            >
+                              {isImg ? (
+                                <img
+                                  src={displayUrl}
+                                  alt={fileName}
+                                  className="h-16 w-16 shrink-0 rounded object-cover"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).style.display = 'none';
+                                  }}
+                                />
+                              ) : (
+                                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded bg-gray-200">
+                                  <span className="text-xs text-gray-500">
+                                    {getFileExtension(file).toUpperCase()}
+                                  </span>
+                                </div>
+                              )}
+                              <div className="min-w-0 flex-1 text-start">
+                                <p className="truncate text-sm font-medium text-gray-900">{fileName}</p>
+                                <a
+                                  href={displayUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-blue-600 hover:text-blue-800"
+                                >
+                                  {t('View')}
+                                </a>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  }
+                  : undefined,
+            },
+          ],
+          modalSize: 'lg',
+        }}
+        initialData={currentItem}
+        title={formMode === 'create' ? t('Record New Payment') : formMode === 'edit' ? t('Edit Payment') : t('View Payment')}
+        mode={formMode}
+      />
+
+      {/* Delete Modal */}
+      <CrudDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        itemName={`${currentItem?.invoice?.invoice_number} - ${formatCurrencyAmount(currentItem?.amount ?? 0, 'company', { showSymbol: true, showCode: false })}`}
+        entityName="Payment"
+      />
+
+      <Dialog open={isRejectModalOpen} onOpenChange={setIsRejectModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('Reject Payment')}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="payment-rejection-reason">{t('Rejection Reason (Optional)')}</Label>
+              <Textarea
+                id="payment-rejection-reason"
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                placeholder={t('Enter reason for rejection...')}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsRejectModalOpen(false)}>
+              {t('Cancel')}
+            </Button>
+            <Button variant="destructive" onClick={handleRejectConfirm}>
+              {t('Reject Payment')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </PageTemplate>
   );
 }

@@ -15,7 +15,7 @@ import { CurrencyAmount } from '@/components/currency-amount';
 export default function CreateInvoice() {
   const { t } = useTranslation();
   const { clients, cases, timeEntries, clientBillingInfo, currencies } = usePage().props as any;
-  
+
   const [formData, setFormData] = useState({
     client_id: '',
     case_id: '',
@@ -72,15 +72,15 @@ export default function CreateInvoice() {
           console.error('Error fetching cases:', err);
           setFilteredCases([]);
         });
-      
+
       // Set client's tax rate and auto-calculate due date
       const selectedClient = clients?.find(c => c.id == formData.client_id);
       const billing = clientBillingInfo?.[formData.client_id];
-      
+
       let dueDate = '';
       if (billing?.payment_terms && formData.invoice_date) {
         const invoiceDate = new Date(formData.invoice_date);
-        switch(billing.payment_terms) {
+        switch (billing.payment_terms) {
           case 'net_15':
             dueDate = new Date(invoiceDate.getTime() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
             break;
@@ -100,7 +100,7 @@ export default function CreateInvoice() {
             dueDate = new Date(invoiceDate.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
         }
       }
-      
+
       setFormData(prev => ({
         ...prev,
         tax_rate: selectedClient?.tax_rate || 0,
@@ -235,7 +235,7 @@ export default function CreateInvoice() {
       rate: entry.billable_rate,
       amount: entry.hours * entry.billable_rate
     }));
-    
+
     setFormData(prev => ({
       ...prev,
       line_items: [...prev.line_items, ...timeLineItems]
@@ -254,18 +254,18 @@ export default function CreateInvoice() {
   const calculateTotal = () => {
     return calculateSubtotal() + calculateTaxAmount();
   };
-  
+
 
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setFormErrors({});
-    
+
     if (!formData.client_id) {
       toast.error('Please select a client');
       return;
     }
-    
+
     if (!formData.case_id) {
       toast.error('Please select a case');
       return;
@@ -274,12 +274,12 @@ export default function CreateInvoice() {
     // Get currency ID from client billing info
     const clientBilling = clientBillingInfo?.[formData.client_id];
     let currency_id = null;
-    
+
     if (clientBilling?.currency && currencies) {
       const currency = currencies.find(c => c.code === clientBilling.currency);
       currency_id = currency ? currency.id : null;
     }
-    
+
     const submitData = {
       ...formData,
       currency_id: currency_id,
@@ -289,7 +289,7 @@ export default function CreateInvoice() {
     };
 
     toast.loading('Creating invoice...');
-    
+
     router.post(route('billing.invoices.store'), submitData, {
       onSuccess: () => {
         toast.dismiss();
@@ -370,7 +370,7 @@ export default function CreateInvoice() {
                       </p>
                     )}
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="case_id">{t('Case')} *</Label>
                     <Select value={formData.case_id} onValueChange={(value) => updateFormData('case_id', value)}>
@@ -410,7 +410,7 @@ export default function CreateInvoice() {
                       <p className="text-xs text-red-600 mt-1">{formErrors.invoice_date}</p>
                     )}
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="due_date">{t('Due Date')} *</Label>
                     <Input
@@ -472,7 +472,7 @@ export default function CreateInvoice() {
                   <span>{t('Subtotal')}:</span>
                   <span><CurrencyAmount amount={calculateSubtotal() || 0} /></span>
                 </div>
-                
+
                 <div>
                   <Label htmlFor="tax_rate">{t('Tax Rate')} (%)</Label>
                   <Input
@@ -484,12 +484,12 @@ export default function CreateInvoice() {
                     step="0.01"
                   />
                 </div>
-                
+
                 <div className="flex justify-between">
                   <span>{t('Tax Amount')}:</span>
                   <span><CurrencyAmount amount={calculateTaxAmount() || 0} /></span>
                 </div>
-                
+
                 <div className="border-t pt-4">
                   <div className="flex justify-between text-lg font-bold">
                     <span>{t('Total')}:</span>
@@ -506,10 +506,10 @@ export default function CreateInvoice() {
                   <FileText className="h-4 w-4 mr-2" />
                   {t('Create Invoice')}
                 </Button>
-                
-                <Button 
-                  type="button" 
-                  variant="outline" 
+
+                <Button
+                  type="button"
+                  variant="outline"
                   className="w-full"
                   onClick={() => router.get(route('billing.invoices.index'))}
                 >

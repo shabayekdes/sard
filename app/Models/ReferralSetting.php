@@ -36,6 +36,6 @@ class ReferralSetting extends Model
      */
     public function getFormattedThresholdAmount()
     {
-        return formatCurrencyForPlansAndReferrals($this->threshold_amount);
+        return formatCurrency($this->threshold_amount, ['variant' => 'superadmin']);
     }
 }

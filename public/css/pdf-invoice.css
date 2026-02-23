@@ -58,6 +58,21 @@ img {
   max-width: 100%;
 }
 
+/* SAR currency: Lucide Saudi Riyal icon (inline SVG) */
+.pdf-currency-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15em;
+  white-space: nowrap;
+}
+.pdf-sar-icon {
+  display: inline-block;
+  vertical-align: middle;
+  width: 1em;
+  height: 1em;
+  stroke: currentColor;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;

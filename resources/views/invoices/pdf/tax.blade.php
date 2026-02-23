@@ -14,7 +14,6 @@
 <body>
 @php
     $formatNum = fn ($value) => number_format((float) $value, 2);
-    $formatMoney = fn ($value) => formatCurrencyForCompany((float) $value, $invoice->created_by);
     $paymentsTotal = $invoice->payments?->sum('amount') ?? 0;
     $amountDue = ($totals['grand_total'] ?? 0) - $paymentsTotal;
     $dueDateFormatted = $invoice->due_date ? $invoice->due_date->format('Y-m-d') : $issued_at->format('Y-m-d');
@@ -104,10 +103,10 @@
                     <tr class="pdf-tr">
                         <td class="pdf-td pdf-td-desc">{{ $item['description'] }}</td>
                         <td class="pdf-td pdf-td-num">{{ $formatNum($item['quantity']) }}</td>
-                        <td class="pdf-td pdf-td-num">{{ $formatMoney($item['unit_price']) }}</td>
-                        <td class="pdf-td pdf-td-num">{{ $formatMoney($item['taxable_amount']) }}</td>
-                        <td class="pdf-td pdf-td-num">{{ $formatMoney($item['vat_amount']) }}</td>
-                        <td class="pdf-td pdf-td-num">{{ $formatMoney($item['line_total']) }}</td>
+                        <td class="pdf-td pdf-td-num">@money($item['unit_price'], $invoice->created_by, true)</td>
+                        <td class="pdf-td pdf-td-num">@money($item['taxable_amount'], $invoice->created_by, true)</td>
+                        <td class="pdf-td pdf-td-num">@money($item['vat_amount'], $invoice->created_by, true)</td>
+                        <td class="pdf-td pdf-td-num">@money($item['line_total'], $invoice->created_by, true)</td>
                     </tr>
                 @endforeach
             @else
@@ -128,25 +127,25 @@
             <div class="pdf-totals-wrap pdf-totals-rtl">
                 <div class="pdf-totals-row">
                     <span class="pdf-totals-label">المجموع الفرعي</span>
-                    <span class="pdf-totals-value">{{ $formatMoney($totals['subtotal']) }}</span>
+                    <span class="pdf-totals-value">@money($totals['subtotal'], $invoice->created_by, true)</span>
                 </div>
                 <div class="pdf-totals-row">
                     <span class="pdf-totals-label">قيمة الضريبة ({{ (int) $taxRate }}%)</span>
-                    <span class="pdf-totals-value">{{ $formatMoney($totals['vat_total']) }}</span>
+                    <span class="pdf-totals-value">@money($totals['vat_total'], $invoice->created_by, true)</span>
                 </div>
                 <div class="pdf-totals-divider"></div>
                 <div class="pdf-totals-row pdf-totals-row-main">
                     <span class="pdf-totals-label">إجمالي الفاتورة (شامل الضريبة)</span>
-                    <span class="pdf-totals-value">{{ $formatMoney($totals['grand_total']) }}</span>
+                    <span class="pdf-totals-value">@money($totals['grand_total'], $invoice->created_by, true)</span>
                 </div>
                 <div class="pdf-totals-divider"></div>
                 <div class="pdf-totals-row">
                     <span class="pdf-totals-label">المبلغ المدفوع</span>
-                    <span class="pdf-totals-value">{{ $formatMoney($paymentsTotal) }}</span>
+                    <span class="pdf-totals-value">@money($paymentsTotal, $invoice->created_by, true)</span>
                 </div>
                 <div class="pdf-totals-row">
                     <span class="pdf-totals-label">المبلغ المتبقي</span>
-                    <span class="pdf-totals-value">{{ $formatMoney($amountDue) }}</span>
+                    <span class="pdf-totals-value">@money($amountDue, $invoice->created_by, true)</span>
                 </div>
             </div>
         </div>

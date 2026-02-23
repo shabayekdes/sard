@@ -36,15 +36,15 @@ export default function TimeEntries() {
 
   // Check if any filters are active
   const hasActiveFilters = () => {
-    return searchTerm !== '' || selectedCase !== 'all' || selectedUser !== 'all' || 
-           selectedStatus !== 'all' || selectedBillable !== 'all' || dateFrom !== '' || dateTo !== '';
+    return searchTerm !== '' || selectedCase !== 'all' || selectedUser !== 'all' ||
+      selectedStatus !== 'all' || selectedBillable !== 'all' || dateFrom !== '' || dateTo !== '';
   };
 
   // Count active filters
   const activeFilterCount = () => {
-    return (searchTerm ? 1 : 0) + (selectedCase !== 'all' ? 1 : 0) + (selectedUser !== 'all' ? 1 : 0) + 
-           (selectedStatus !== 'all' ? 1 : 0) + (selectedBillable !== 'all' ? 1 : 0) + 
-           (dateFrom ? 1 : 0) + (dateTo ? 1 : 0);
+    return (searchTerm ? 1 : 0) + (selectedCase !== 'all' ? 1 : 0) + (selectedUser !== 'all' ? 1 : 0) +
+      (selectedStatus !== 'all' ? 1 : 0) + (selectedBillable !== 'all' ? 1 : 0) +
+      (dateFrom ? 1 : 0) + (dateTo ? 1 : 0);
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -169,7 +169,7 @@ export default function TimeEntries() {
     const newDirection = sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
     setSortField(field);
     setSortDirection(newDirection);
-    
+
     router.get(route('billing.time-entries.index'), {
       page: 1,
       search: searchTerm || undefined,
@@ -250,11 +250,10 @@ export default function TimeEntries() {
       key: 'is_billable',
       label: t('Billable'),
       render: (value: boolean) => (
-        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${
-          value 
+        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value
             ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
             : 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20'
-        }`}>
+          }`}>
           {value ? t('Yes') : t('No')}
         </span>
       )
@@ -269,7 +268,7 @@ export default function TimeEntries() {
           approved: 'bg-green-50 text-green-700 ring-green-600/20',
           billed: 'bg-purple-50 text-purple-700 ring-purple-600/20'
         };
-        
+
         return (
           <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${statusColors[value as keyof typeof statusColors] || statusColors.draft}`}>
             {t(value?.charAt(0).toUpperCase() + value?.slice(1))}
@@ -547,7 +546,7 @@ export default function TimeEntries() {
       <CrudFormModal
         isOpen={isFormModalOpen && formMode === 'view'}
         onClose={() => setIsFormModalOpen(false)}
-        onSubmit={() => {}}
+        onSubmit={() => { }}
         formConfig={{
           fields: [
             { name: 'entry_id', label: t('Entry ID'), type: 'text' },
