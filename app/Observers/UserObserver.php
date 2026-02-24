@@ -40,8 +40,8 @@ class UserObserver
         // Create default settings for new users
         if ($user->type === 'superadmin') {
             createDefaultSettings($user->tenant_id);
-        } elseif ($user->type === 'company') {
-            \App\Jobs\SeedCompanySettings::dispatchSync($user->id);
+        } elseif ($user->type === 'company' && $user->tenant_id) {
+            \App\Jobs\SeedCompanySettings::dispatchSync($user->tenant_id);
         }
     }
 }

@@ -14,15 +14,8 @@ class MailConfigService
         if (!$user) {
             return;
         }
-        if ($user->type == 'superadmin') {
-            $user = User::where('type', 'superadmin')->first();
-        } else if ($user->type == 'company') {
-            $user = User::where('id', $user->created_by)->first();
-        } else {
-            $user = User::where('id', $user->created_by)->first();
-        }
 
-        $getSettings = settings($user->id);
+        $getSettings = settings($user->tenant_id);
 
         $settings = [
             'driver' => $getSettings['email_driver'] ?? config('mail.default', 'smtp'),

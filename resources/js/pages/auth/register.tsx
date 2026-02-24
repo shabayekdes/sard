@@ -19,6 +19,7 @@ import { PhoneInput, defaultCountries } from 'react-international-phone';
 
 type RegisterForm = {
     name: string;
+    domain: string;
     phone: string;
     email: string;
     city: string;
@@ -51,6 +52,7 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
 
     const { data, setData, post, processing, errors, reset } = useForm<RegisterForm>({
         name: '',
+        domain: '',
         phone: '',
         email: '',
         city: '',
@@ -111,6 +113,29 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
                             style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
                         />
                         <InputError message={errors.name} />
+                    </div>
+                    <div className="relative">
+                        <Label htmlFor="domain" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            {t('Domain')} <span className="text-red-500">*</span>
+                        </Label>
+                        <div dir="ltr" className="flex h-10 w-full overflow-hidden rounded-md border border-slate-200 bg-white transition-all duration-200 dark:border-gray-600 dark:bg-gray-700">
+                            <input
+                                id="domain"
+                                type="text"
+                                required
+                                tabIndex={2}
+                                autoComplete="off"
+                                value={data.domain}
+                                onChange={(e) => setData('domain', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                                placeholder={t('Enter Domain')}
+                                className="min-w-0 flex-1 border-0 bg-transparent px-3 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:ring-0 dark:text-gray-300"
+                                style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
+                            />
+                            <span className="flex shrink-0 items-center border-l border-slate-200 bg-slate-50 px-3 text-sm text-slate-600 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                                .sard.app
+                            </span>
+                        </div>
+                        <InputError message={errors.domain} />
                     </div>
                     <div className="relative">
                         <Label htmlFor="phone" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">

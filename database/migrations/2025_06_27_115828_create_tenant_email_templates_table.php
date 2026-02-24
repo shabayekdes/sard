@@ -11,14 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_email_templates', function (Blueprint $table) {
+        Schema::create('tenant_email_templates', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('template_id');
-            $table->unsignedBigInteger('user_id');
+            $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->boolean('is_active')->default(1);
             $table->timestamps();
-            
+
             $table->foreign('template_id')->references('id')->on('email_templates')->onDelete('cascade');
+            $table->unique(['tenant_id', 'template_id']);
         });
     }
 
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_email_templates');
+        Schema::dropIfExists('tenant_email_templates');
     }
 };

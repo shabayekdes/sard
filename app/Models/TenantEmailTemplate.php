@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class UserEmailTemplate extends BaseModel
+class TenantEmailTemplate extends BaseModel
 {
+    protected $table = 'tenant_email_templates';
+
     protected $fillable = [
         'template_id',
-        'user_id',
+        'tenant_id',
         'is_active',
     ];
 
@@ -22,8 +23,8 @@ class UserEmailTemplate extends BaseModel
         return $this->belongsTo(EmailTemplate::class, 'template_id');
     }
 
-    public function user(): BelongsTo
+    public function tenant(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Tenant::class);
     }
 }

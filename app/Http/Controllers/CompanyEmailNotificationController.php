@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\UserEmailTemplate;
+use App\Models\TenantEmailTemplate;
 use App\Models\EmailTemplate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,20 +13,28 @@ class CompanyEmailNotificationController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
+        $tenantId = $user->tenant_id ?? tenant('id');
+        if (!$tenantId) {
+            $templates = [];
+            if ($request->expectsJson()) {
+                return response()->json(['templates' => $templates]);
+            }
+            return Inertia::render('settings/email-notification-settings', ['templates' => $templates]);
+        }
 
         $emailTemplates = EmailTemplate::get();
 
-        // Get user's notification settings
-        $userSettings = UserEmailTemplate::where('user_id', $user->id)
+        // Get tenant's notification settings
+        $tenantSettings = TenantEmailTemplate::where('tenant_id', $tenantId)
             ->pluck('is_active', 'template_id')
             ->toArray();
 
         // Format templates with settings
-        $templates = $emailTemplates->map(function ($template) use ($userSettings) {
+        $templates = $emailTemplates->map(function ($template) use ($tenantSettings) {
             return [
                 'id' => $template->id,
                 'name' => $template->name,
-                'is_active' => $userSettings[$template->id] ?? true,
+                'is_active' => $tenantSettings[$template->id] ?? true,
                 'template' => [
                     'id' => $template->id,
                     'name' => $template->name,
@@ -50,14 +58,21 @@ class CompanyEmailNotificationController extends Controller
     public function update(Request $request)
     {
         $user = Auth::user();
+        $tenantId = $user->tenant_id ?? tenant('id');
+        if (!$tenantId) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Tenant context required.'], 422);
+            }
+            return redirect()->back()->withErrors(['error' => __('Tenant context required.')]);
+        }
         $settings = $request->input('settings', []);
 
         foreach ($settings as $setting) {
             $template = EmailTemplate::find($setting['template_id'] ?? null);
 
-            UserEmailTemplate::updateOrCreate(
+            TenantEmailTemplate::updateOrCreate(
                 [
-                    'user_id' => $user->id,
+                    'tenant_id' => $tenantId,
                     'template_id' => $setting['template_id']
                 ],
                 [

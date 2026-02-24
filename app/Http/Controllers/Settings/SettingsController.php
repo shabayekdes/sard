@@ -14,7 +14,7 @@ use App\Models\Country;
 use App\Models\EmailTemplate;
 use App\Models\NotificationTemplate;
 use App\Models\User;
-use App\Models\UserEmailTemplate;
+use App\Models\TenantEmailTemplate;
 use App\Models\TaxRate;
 use App\Http\Resources\CurrencyResource;
 use Illuminate\Http\Request;
@@ -59,26 +59,26 @@ class SettingsController extends Controller
         $notificationTemplates = NotificationTemplate::select('id', 'name')->get();
 
         $emailTemplates = [];
-        if (Auth::user()->type === 'company') {
+        if (Auth::user()->type === 'company' && Auth::user()->tenant_id) {
             $locale = app()->getLocale();
             $emailTemplatesQuery = EmailTemplate::get();
-            $userSettings = UserEmailTemplate::where('user_id', Auth::id())->get()->keyBy('template_id');
+            $tenantSettings = TenantEmailTemplate::where('tenant_id', Auth::user()->tenant_id)->get()->keyBy('template_id');
 
-            $emailTemplates = $emailTemplatesQuery->map(function (EmailTemplate $template) use ($userSettings) {
+            $emailTemplates = $emailTemplatesQuery->map(function (EmailTemplate $template) use ($tenantSettings) {
                 $locale = app()->getLocale();
                 $name = $template->getTranslation('name', $locale, false)
                     ?: $template->getTranslation('name', 'en', false);
                 $from = $template->getTranslation('from', $locale, false)
                     ?: $template->getTranslation('from', 'en', false);
 
-                // Get or create user setting for this template
-                $userSetting = $userSettings->get($template->id);
+                // Get or create tenant setting for this template
+                $tenantSetting = $tenantSettings->get($template->id);
 
                 // If no record exists, create one as disabled
-                if (!$userSetting) {
-                    $userSetting = UserEmailTemplate::create([
+                if (!$tenantSetting) {
+                    $tenantSetting = TenantEmailTemplate::create([
                         'template_id' => $template->id,
-                        'user_id' => Auth::id(),
+                        'tenant_id' => Auth::user()->tenant_id,
                         'is_active' => 0
                     ]);
                 }
@@ -86,7 +86,7 @@ class SettingsController extends Controller
                 return [
                     'id' => $template->id,
                     'name' => $name,
-                    'is_active' => $userSetting->is_active,
+                    'is_active' => $tenantSetting->is_active,
                     'template' => [
                         'id' => $template->id,
                         'name' => $name,

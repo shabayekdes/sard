@@ -61,9 +61,9 @@ class SeedNotificationTemplates implements ShouldQueue
 
         foreach ($templates as $template) {
             foreach ($types as $type) {
-                \App\Models\UserNotificationTemplate::updateOrCreate(
+                \App\Models\TenantNotificationTemplate::updateOrCreate(
                     [
-                        'user_id' => $this->tenant_id,
+                        'tenant_id' => $this->tenant_id,
                         'template_id' => $template->id,
                         'type' => $type
                     ],

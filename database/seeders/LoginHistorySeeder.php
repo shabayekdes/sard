@@ -73,7 +73,7 @@ class LoginHistorySeeder extends Seeder
                     'date' => Carbon::now()->subDays(rand(0, 30))->toDateString(),
                     'details' => $details,
                     'type' => 'superadmin',
-                    'tenant_id' => $user->id,
+                    'tenant_id' => $user->tenant_id,
                     'created_at' => Carbon::now()->subDays(rand(0, 30))->subHours(rand(0, 23)),
                     'updated_at' => Carbon::now()
                 ]);
@@ -104,7 +104,7 @@ class LoginHistorySeeder extends Seeder
                     'date' => Carbon::now()->subDays(rand(0, 30))->toDateString(),
                     'details' => $details,
                     'type' => 'company',
-                    'tenant_id' => $user->id,
+                    'tenant_id' => $user->tenant_id,
                     'created_at' => Carbon::now()->subDays(rand(0, 30))->subHours(rand(0, 23)),
                     'updated_at' => Carbon::now()
                 ]);
@@ -128,7 +128,7 @@ class LoginHistorySeeder extends Seeder
             ]);
 
             $roleType = $user->getRoleNames()->first() ?? $user->type;
-            $createdBy = in_array($user->type, ['superadmin', 'company']) ? $user->id : ($user->created_by ?? $user->id);
+            $createdBy = in_array($user->type, ['superadmin', 'company']) ? $user->tenant_id : ($user->tenant_id ?? $user->tenant_id);
 
             LoginHistory::create([
                 'user_id' => $user->id,

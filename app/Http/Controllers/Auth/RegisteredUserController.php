@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Country;
+use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Plan;
 use App\Models\Referral;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
+use Stancl\Tenancy\Database\Models\Domain;
 
 class RegisteredUserController extends Controller
 {
@@ -26,8 +28,8 @@ class RegisteredUserController extends Controller
      */
     public function create(Request $request): Response
     {
-        $referralCode = $request->get('ref');
-        $encryptedPlanId = $request->get('plan');
+        $referralCode = $request->input('ref');
+        $encryptedPlanId = $request->input('plan');
         $planId = null;
         $referrer = null;
 
@@ -76,11 +78,29 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'domain' => [
+                'required',
+                'string',
+                'max:63',
+                'regex:/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/',
+            ],
             'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'phone' => 'nullable|string|max:20',
             'city' => 'nullable|string|max:100',
         ]);
+
+        $subdomain = strtolower(trim($request->domain));
+        $fullDomain = $subdomain . '.sard.app';
+
+        if (Domain::where('domain', $fullDomain)->exists()) {
+            return redirect()->back()
+                ->withInput($request->except('password', 'password_confirmation'))
+                ->withErrors(['domain' => __('This domain is already taken.')]);
+        }
+
+        $tenant = Tenant::create();
+        $tenant->domains()->create(['domain' => $fullDomain]);
 
         $userData = [
             'name' => $request->name,
@@ -93,6 +113,7 @@ class RegisteredUserController extends Controller
             'is_enable_login' => 1,
             'created_by' => 1,
             'plan_is_active' => 0,
+            'tenant_id' => $tenant->id,
         ];
 
         // Handle referral code

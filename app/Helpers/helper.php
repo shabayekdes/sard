@@ -33,26 +33,9 @@ if (!function_exists('getCacheSize')) {
 }
 
 if (! function_exists('settings')) {
-    function settings($user_id = null)
+    function settings($tenant = null)
     {
-        if (is_null($user_id)) {
-            if (auth()->user()) {
-                if (!in_array(auth()->user()->type, ['superadmin', 'company'])) {
-                    $user_id = auth()->user()->created_by;
-                } else {
-                    $user_id = auth()->id();
-                }
-            } else {
-                $user = User::where('type', 'superadmin')->first();
-                $user_id = $user ? $user->id : null;
-            }
-        }
-
-        if (!$user_id) {
-            return collect();
-        }
-
-        $userSettings = Setting::where('tenant_id', tenant('id'))->pluck('value', 'key')->toArray();
+        $userSettings = Setting::where('tenant_id', $tenant ?: tenant('id'))->pluck('value', 'key')->toArray();
 
         // If user is not superadmin, merge with superadmin settings for specific keys
         if (auth()->check() && auth()->user()->type !== 'superadmin') {
@@ -216,9 +199,9 @@ if (! function_exists('formatDateTime')) {
 }
 
 if (! function_exists('getSetting')) {
-    function getSetting($key, $default = null, $user_id = null)
+    function getSetting($key, $default = null, $tenant_id = null)
     {
-        $settings = settings($user_id);
+        $settings = settings($tenant_id);
 
         // If no value found and no default provided, try to get from defaultSettings
         if (!isset($settings[$key]) && $default === null) {
@@ -298,11 +281,11 @@ if (! function_exists('defaultRoleAndSetting')) {
         // Create default settings for the user
         if ($user->type === 'superadmin') {
             createDefaultSettings($user->id);
-        } elseif ($user->type === 'company') {
+        } elseif ($user->type === 'company' && $user->tenant_id) {
             // Dispatch all seeding jobs in parallel
             // This prevents blocking the HTTP request and improves user experience
             // SeedDefaultCompanyData will dispatch all individual seeding jobs
-            \App\Jobs\SeedDefaultCompanyData::dispatch($user->id);
+            \App\Jobs\SeedDefaultCompanyData::dispatch($user->tenant_id);
         }
 
         return true;
@@ -1301,9 +1284,9 @@ if (! function_exists('formatCurrency')) {
         $userId = $options['userId'] ?? null;
         if (($options['variant'] ?? 'company') === 'superadmin') {
             $superAdmin = User::where('type', 'superadmin')->first();
-            $userId = $superAdmin?->id;
+            $userId = $superAdmin?->tenant_id;
         } elseif ($userId === null && auth()->check()) {
-            $userId = auth()->user()->type === 'company' ? auth()->id() : auth()->user()->created_by;
+            $userId = auth()->user()->type === 'company' ? auth()->id() : auth()->user()->tenant_id;
         }
         if ($userId === null) {
             return $html ? '<span class="pdf-currency-wrap">' . $fallback . '</span>' : $fallback;
@@ -1311,7 +1294,7 @@ if (! function_exists('formatCurrency')) {
 
         $s = (array) settings($userId);
         $currencyCode = $options['currencyCode'] ?? $s['defaultCurrency']
-            ?? \App\Models\CompanySetting::where('created_by', $userId)->where('setting_key', 'currency')->value('setting_value')
+            ?? \App\Models\CompanySetting::where('tenant_id', $userId)->where('setting_key', 'currency')->value('setting_value')
             ?? 'USD';
 
         $position = strtolower(trim((string) ($s['currencySymbolPosition'] ?? 'before')));
@@ -1344,13 +1327,7 @@ if (! function_exists('formatCurrency')) {
 if (! function_exists('createdBy')) {
     function createdBy()
     {
-        if (Auth::user()->type == 'superadmin') {
-            return Auth::user()->id;
-        } else if (Auth::user()->type == 'company') {
-            return Auth::user()->id;
-        } else {
-            return Auth::user()->created_by;
-        }
+        return Auth::user()->tenant_id;
     }
 }
 if (! function_exists('getCompanyOwnerId')) {
@@ -1377,7 +1354,7 @@ if (! function_exists('getCompanyOwnerId')) {
 
 if (! function_exists('isEmailTemplateEnabled')) {
     /**
-     * Check if an email template is enabled for a user
+     * Check if an email template is enabled for a tenant
      *
      * @param EmailTemplateName $templateName
      * @param null $userId
@@ -1385,8 +1362,9 @@ if (! function_exists('isEmailTemplateEnabled')) {
      */
     function isEmailTemplateEnabled(EmailTemplateName $templateName, $userId = null): bool
     {
-        if (is_null($userId)) {
-            $userId = createdBy();
+        $tenantId = $userId ? \App\Models\User::find($userId)?->tenant_id : tenant('id');
+        if (!$tenantId) {
+            return false;
         }
 
         $template = \App\Models\EmailTemplate::where('type', $templateName->value)->first();
@@ -1394,11 +1372,11 @@ if (! function_exists('isEmailTemplateEnabled')) {
             return false;
         }
 
-        $userTemplate = \App\Models\UserEmailTemplate::where('user_id', $userId)
+        $tenantTemplate = \App\Models\TenantEmailTemplate::where('tenant_id', $tenantId)
             ->where('template_id', $template->id)
             ->first();
 
-        return $userTemplate ? $userTemplate->is_active : false;
+        return $tenantTemplate ? $tenantTemplate->is_active : false;
     }
 }
 
@@ -1491,7 +1469,7 @@ if (! function_exists('isTwilioEnabled')) {
 
 if (! function_exists('isNotificationTemplateEnabled')) {
     /**
-     * Check if a notification template is enabled for a user and specific type
+     * Check if a notification template is enabled for a tenant and specific type
      *
      * @param EmailTemplateName $templateName
      * @param null $userId
@@ -1500,8 +1478,9 @@ if (! function_exists('isNotificationTemplateEnabled')) {
      */
     function isNotificationTemplateEnabled(\App\Enum\EmailTemplateName $templateName, $userId = null, $type = null)
     {
-        if (is_null($userId)) {
-            $userId = createdBy();
+        $tenantId = $userId ? \App\Models\User::find($userId)?->tenant_id : tenant('id');
+        if (!$tenantId) {
+            return false;
         }
 
         $templateQuery = \App\Models\NotificationTemplate::where('name', $templateName->value);
@@ -1516,23 +1495,23 @@ if (! function_exists('isNotificationTemplateEnabled')) {
             return false;
         }
 
-        $query = \App\Models\UserNotificationTemplate::where('user_id', $userId)
+        $query = \App\Models\TenantNotificationTemplate::where('tenant_id', $tenantId)
             ->where('template_id', $template->id);
 
-        // If type is specified, also filter by type in user template
+        // If type is specified, also filter by type in tenant template
         if ($type) {
             $query->where('type', $type);
         }
 
-        $userTemplate = $query->first();
+        $tenantTemplate = $query->first();
 
-        return $userTemplate ? (bool) $userTemplate->is_active : false;
+        return $tenantTemplate ? (bool) $tenantTemplate->is_active : false;
     }
 }
 
 if (! function_exists('isNotificationTypeEnabled')) {
     /**
-     * Check if a specific notification type (twilio/slack) is enabled for a template and user
+     * Check if a specific notification type (twilio/slack) is enabled for a template and tenant
      *
      * @param string $templateName
      * @param string $type (twilio, slack, email)
@@ -1541,17 +1520,18 @@ if (! function_exists('isNotificationTypeEnabled')) {
      */
     function isNotificationTypeEnabled($templateName, $type, $userId = null)
     {
-        if (is_null($userId)) {
-            $userId = createdBy();
+        $tenantId = $userId ? \App\Models\User::find($userId)?->tenant_id : tenant('id');
+        if (!$tenantId) {
+            return false;
         }
 
-        return \App\Models\UserNotificationTemplate::isNotificationActive($templateName, $userId, $type);
+        return \App\Models\TenantNotificationTemplate::isNotificationActive($templateName, $tenantId, $type);
     }
 }
 
 if (! function_exists('setNotificationTypeStatus')) {
     /**
-     * Set notification type status for a template and user
+     * Set notification type status for a template and tenant
      *
      * @param string $templateName
      * @param string $type (twilio, slack, email)
@@ -1561,31 +1541,32 @@ if (! function_exists('setNotificationTypeStatus')) {
      */
     function setNotificationTypeStatus($templateName, $type, $isActive, $userId = null)
     {
-        if (is_null($userId)) {
-            $userId = createdBy();
+        $tenantId = $userId ? \App\Models\User::find($userId)?->tenant_id : tenant('id');
+        if (!$tenantId) {
+            return false;
         }
 
-        return \App\Models\UserNotificationTemplate::setNotificationStatus($templateName, $userId, $type, $isActive);
+        return \App\Models\TenantNotificationTemplate::setNotificationStatus($templateName, $tenantId, $type, $isActive);
     }
 }
 
 if (! function_exists('createDefaultNotificationSettings')) {
     /**
-     * Create default notification settings for a new company
+     * Create default notification settings for a new tenant (company)
      *
-     * @param int $companyId
+     * @param string $tenantId
      * @return void
      */
-    function createDefaultNotificationSettings($companyId)
+    function createDefaultNotificationSettings($tenantId)
     {
         $templates = \App\Models\NotificationTemplate::all();
         $types = ['email', 'twilio', 'slack'];
 
         foreach ($templates as $template) {
             foreach ($types as $type) {
-                \App\Models\UserNotificationTemplate::updateOrCreate(
+                \App\Models\TenantNotificationTemplate::updateOrCreate(
                     [
-                        'user_id' => $companyId,
+                        'tenant_id' => $tenantId,
                         'template_id' => $template->id,
                         'type' => $type
                     ],
@@ -1604,10 +1585,10 @@ if (! function_exists('syncNotificationTemplatesForAllCompanies')) {
      */
     function syncNotificationTemplatesForAllCompanies()
     {
-        $companies = \App\Models\User::where('type', 'company')->get();
+        $companies = \App\Models\User::where('type', 'company')->whereNotNull('tenant_id')->get();
 
         foreach ($companies as $company) {
-            \App\Jobs\SeedNotificationTemplates::dispatchSync($company->id);
+            \App\Jobs\SeedNotificationTemplates::dispatchSync($company->tenant_id);
         }
     }
 }

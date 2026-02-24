@@ -26,8 +26,8 @@ class EmailTemplate extends BaseModel
         'type' => EmailTemplateName::class
     ];
 
-    public function userEmailTemplates(): HasMany
+    public function tenantEmailTemplates(): HasMany
     {
-        return $this->hasMany(UserEmailTemplate::class, 'template_id');
+        return $this->hasMany(TenantEmailTemplate::class, 'template_id');
     }
 }

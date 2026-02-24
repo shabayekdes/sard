@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Models\EmailTemplate;
-use App\Models\UserEmailTemplate;
+use App\Models\TenantEmailTemplate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,34 +13,38 @@ class EmailNotificationController extends Controller
     public function getNotificationSettings()
     {
         $user = Auth::user();
+        $tenantId = $user->tenant_id ?? tenant('id');
+        if (!$tenantId) {
+            return response()->json(['templates' => []]);
+        }
 
         $emailTemplates = EmailTemplate::get();
 
-        $userSettings = UserEmailTemplate::where('user_id', $user->id)
+        $tenantSettings = TenantEmailTemplate::where('tenant_id', $tenantId)
             ->get()
             ->keyBy('template_id');
 
-        $templates = $emailTemplates->map(function (EmailTemplate $template) use ($userSettings, $user) {
+        $templates = $emailTemplates->map(function (EmailTemplate $template) use ($tenantSettings, $tenantId) {
             $locale = app()->getLocale();
             $name = $template->getTranslation('name', $locale, false)
                 ?: $template->getTranslation('name', 'en', false);
             $from = $template->getTranslation('from', $locale, false)
                 ?: $template->getTranslation('from', 'en', false);
 
-            // Get or create user setting for this template
-            $userSetting = $userSettings->get($template->id);
+            // Get or create tenant setting for this template
+            $tenantSetting = $tenantSettings->get($template->id);
 
             // If no record exists, create one as disabled
-            if (!$userSetting) {
-                $userSetting = UserEmailTemplate::create([
+            if (!$tenantSetting) {
+                $tenantSetting = TenantEmailTemplate::create([
                     'template_id' => $template->id,
-                    'user_id' => $user->id,
+                    'tenant_id' => $tenantId,
                     'is_active' => 0
                 ]);
             }
 
             // Switch ON only if is_active = 1
-            $isEnabled = $userSetting->is_active == 1;
+            $isEnabled = $tenantSetting->is_active == 1;
 
             return [
                 'id' => $template->id,
@@ -63,14 +67,18 @@ class EmailNotificationController extends Controller
     {
         try {
             $user = Auth::user();
+            $tenantId = $user->tenant_id ?? tenant('id');
+            if (!$tenantId) {
+                return back()->withErrors(['error' => __('Tenant context required.')]);
+            }
             $settings = $request->input('settings', []);
 
             foreach ($settings as $setting) {
                 $template = EmailTemplate::find($setting['template_id'] ?? null);
 
-                UserEmailTemplate::updateOrCreate(
+                TenantEmailTemplate::updateOrCreate(
                     [
-                        'user_id' => $user->id,
+                        'tenant_id' => $tenantId,
                         'template_id' => $setting['template_id']
                     ],
                     [

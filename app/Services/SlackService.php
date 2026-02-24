@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Enum\EmailTemplateName;
-use App\Models\UserNotificationTemplate;
+use App\Models\TenantNotificationTemplate;
 
 class SlackService
 {
@@ -24,7 +24,8 @@ class SlackService
             return false;
         }
 
-        if (!UserNotificationTemplate::isNotificationActive($templateName, $userId, 'slack')) {
+        $tenantId = $userId ? \App\Models\User::find($userId)?->tenant_id : (auth()->user()?->tenant_id ?? tenant('id'));
+        if (!$tenantId || !TenantNotificationTemplate::isNotificationActive($templateName, $tenantId, 'slack')) {
             return false;
         }
 

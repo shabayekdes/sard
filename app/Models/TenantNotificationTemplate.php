@@ -5,11 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class UserNotificationTemplate extends Model
+class TenantNotificationTemplate extends Model
 {
+    protected $table = 'tenant_notification_templates';
+
     protected $fillable = [
         'template_id',
-        'user_id',
+        'tenant_id',
         'is_active',
         'type',
     ];
@@ -23,30 +25,35 @@ class UserNotificationTemplate extends Model
         return $this->belongsTo(NotificationTemplate::class, 'template_id');
     }
 
-    public static function getUserNotificationTemplateSettings($userId)
+    public function tenant(): BelongsTo
     {
-        return self::where('user_id', $userId)
+        return $this->belongsTo(Tenant::class);
+    }
+
+    public static function getTenantNotificationTemplateSettings($tenantId)
+    {
+        return self::where('tenant_id', $tenantId)
             ->with('notificationTemplate')
             ->get()
             ->pluck('is_active', 'notificationTemplate.name')
             ->toArray();
     }
 
-    public static function isNotificationActive($templateName, $userId, $type = 'email')
+    public static function isNotificationActive($templateName, $tenantId, $type = 'email')
     {
         $template = NotificationTemplate::where('name', $templateName)->first();
         if (!$template) {
             return false;
         }
 
-        return self::where('user_id', $userId)
+        return self::where('tenant_id', $tenantId)
             ->where('template_id', $template->id)
             ->where('type', $type)
             ->where('is_active', true)
             ->exists();
     }
 
-    public static function setNotificationStatus($templateName, $userId, $type, $isActive)
+    public static function setNotificationStatus($templateName, $tenantId, $type, $isActive)
     {
         $template = NotificationTemplate::where('name', $templateName)->first();
         if (!$template) {
@@ -55,7 +62,7 @@ class UserNotificationTemplate extends Model
 
         return self::updateOrCreate(
             [
-                'user_id' => $userId,
+                'tenant_id' => $tenantId,
                 'template_id' => $template->id,
                 'type' => $type
             ],

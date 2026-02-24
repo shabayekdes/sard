@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use App\Models\NotificationTemplate;
-use App\Models\UserNotificationTemplate;
+use App\Models\TenantNotificationTemplate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -531,16 +531,19 @@ class SystemSettingsController extends Controller
             updateSetting('slack_webhook_url', $validated['slack_webhook_url'] ?? '', $userId);
 
             // Update notification settings
-            foreach ($availableTemplates as $templateId => $templateName) {
-                if (isset($validated[$templateName])) {
-                    \App\Models\UserNotificationTemplate::updateOrCreate(
-                        [
-                            'user_id' => $userId,
-                            'template_id' => $templateId,
-                            'type' => 'slack'
-                        ],
-                        ['is_active' => $validated[$templateName]]
-                    );
+            $tenantId = \Illuminate\Support\Facades\Auth::user()?->tenant_id;
+            if ($tenantId) {
+                foreach ($availableTemplates as $templateId => $templateName) {
+                    if (isset($validated[$templateName])) {
+                        TenantNotificationTemplate::updateOrCreate(
+                            [
+                                'tenant_id' => $tenantId,
+                                'template_id' => $templateId,
+                                'type' => 'slack'
+                            ],
+                            ['is_active' => $validated[$templateName]]
+                        );
+                    }
                 }
             }
 
@@ -557,7 +560,7 @@ class SystemSettingsController extends Controller
     //     $settings = [];
 
     //     foreach ($templates as $template) {
-    //         $userTemplate = \App\Models\UserNotificationTemplate::where('user_id', $userId)
+    //         $tenantTemplate = \App\Models\TenantNotificationTemplate::where('tenant_id', $tenantId)
     //             ->where('template_id', $template->id)
     //             ->where('type', 'slack')
     //             ->first();
@@ -614,16 +617,19 @@ class SystemSettingsController extends Controller
             updateSetting('slack_webhook_url', $validated['slack_webhook_url'] ?? '', $userId);
 
             // Update notification settings
-            foreach ($availableTemplates as $templateId => $templateName) {
-                if (isset($validated[$templateName])) {
-                    \App\Models\UserNotificationTemplate::updateOrCreate(
-                        [
-                            'user_id' => $userId,
-                            'template_id' => $templateId,
-                            'type' => 'slack'
-                        ],
-                        ['is_active' => $validated[$templateName]]
-                    );
+            $tenantId = \Illuminate\Support\Facades\Auth::user()?->tenant_id;
+            if ($tenantId) {
+                foreach ($availableTemplates as $templateId => $templateName) {
+                    if (isset($validated[$templateName])) {
+                        TenantNotificationTemplate::updateOrCreate(
+                            [
+                                'tenant_id' => $tenantId,
+                                'template_id' => $templateId,
+                                'type' => 'slack'
+                            ],
+                            ['is_active' => $validated[$templateName]]
+                        );
+                    }
                 }
             }
 
@@ -635,17 +641,20 @@ class SystemSettingsController extends Controller
 
      public function getSlackNotifications()
     {
-        $userId = createdBy();
+        $tenantId = tenant('id');
+        if (!$tenantId) {
+            return response()->json([]);
+        }
         $templates = \App\Models\NotificationTemplate::where('type', 'slack')->select(['id', 'name'])->get();
         $settings = [];
 
         foreach ($templates as $template) {
-            $userTemplate = \App\Models\UserNotificationTemplate::where('user_id', $userId)
+            $tenantTemplate = TenantNotificationTemplate::where('tenant_id', $tenantId)
                 ->where('template_id', $template->id)
                 ->where('type', 'slack')
-                ->first();
+            ->first();
 
-            $settings[$template->name] = $userTemplate ? $userTemplate->is_active : false;
+            $settings[$template->name] = $tenantTemplate ? $tenantTemplate->is_active : false;
         }
 
         return response()->json($settings);
@@ -666,17 +675,20 @@ class SystemSettingsController extends Controller
     }
     public function getTwilioNotifications()
     {
-        $userId = createdBy();
+        $tenantId = tenant('id');
+        if (!$tenantId) {
+            return response()->json([]);
+        }
         $templates = \App\Models\NotificationTemplate::where('type', 'twilio')->select(['id', 'name'])->get();
         $settings = [];
 
         foreach ($templates as $template) {
-            $userTemplate = \App\Models\UserNotificationTemplate::where('user_id', $userId)
+            $tenantTemplate = TenantNotificationTemplate::where('tenant_id', $tenantId)
                 ->where('template_id', $template->id)
                 ->where('type', 'twilio')
                 ->first();
 
-            $settings[$template->name] = $userTemplate ? $userTemplate->is_active : false;
+            $settings[$template->name] = $tenantTemplate ? $tenantTemplate->is_active : false;
         }
 
         return response()->json($settings);
@@ -712,17 +724,20 @@ public function updateTwilioNotifications(Request $request)
             updateSetting('twilio_token', $validated['twilio_token'] ?? '');
             updateSetting('twilio_from', $validated['twilio_from'] ?? '');
 
-            // Update notification settings in user_notification_templates
-            foreach ($availableTemplates as $templateId => $templateName) {
-                if (isset($validated[$templateName])) {
-                    \App\Models\UserNotificationTemplate::updateOrCreate(
-                        [
-                            'user_id' => $userId,
-                            'template_id' => $templateId,
-                            'type' => 'twilio'
-                        ],
-                        ['is_active' => $validated[$templateName]]
-                    );
+            // Update notification settings in tenant_notification_templates
+            $tenantId = \Illuminate\Support\Facades\Auth::user()?->tenant_id;
+            if ($tenantId) {
+                foreach ($availableTemplates as $templateId => $templateName) {
+                    if (isset($validated[$templateName])) {
+                        TenantNotificationTemplate::updateOrCreate(
+                            [
+                                'tenant_id' => $tenantId,
+                                'template_id' => $templateId,
+                                'type' => 'twilio'
+                            ],
+                            ['is_active' => $validated[$templateName]]
+                        );
+                    }
                 }
             }
 

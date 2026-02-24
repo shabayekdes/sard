@@ -11,22 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if(!Schema::hasTable('login_histories'))
-        {
-            Schema::create('login_histories', function (Blueprint $table) {
-                $table->id();
-                $table->foreignId('user_id')->nullable()->index();
-                $table->string('ip', 45);
-                $table->date('date');
-                $table->json('details');
-                $table->string('type', 50)->default('login');
-                $table->foreignId('tenant_id')->nullable()->index();
-                $table->timestamps();
-
-                $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
-                $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
-            });
-        }
+        Schema::create('login_histories', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('ip', 45);
+            $table->date('date');
+            $table->json('details');
+            $table->string('type', 50)->default('login');
+            $table->foreignUuid('tenant_id')->nullable()->constrained()->cascadeOnUpdate()->cascadeOnDelete();
+            $table->timestamps();
+        });
     }
 
     /**
