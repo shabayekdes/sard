@@ -104,7 +104,7 @@ class CaseCategoryFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'parent_id' => $parent->id,
-            'tenant_id' => $parent->created_by,
+            'tenant_id' => $parent->tenant_id,
         ]);
     }
 }

@@ -8,15 +8,15 @@ use Illuminate\Support\Facades\Crypt;
 
 class PaymentSetting extends Model
 {
-    protected $fillable = ['user_id', 'key', 'value'];
+    protected $fillable = ['tenant_id', 'key', 'value'];
 
     protected $casts = [
-        'user_id' => 'integer',
+        'tenant_id' => 'string',
     ];
 
-    public function user(): BelongsTo
+    public function tenant(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(\App\Models\Tenant::class, 'tenant_id');
     }
 
     public function setValueAttribute($value)
@@ -161,43 +161,27 @@ class PaymentSetting extends Model
         return $value;
     }
 
-    public static function updateOrCreateSetting($userId, $key, $value)
+    public static function updateOrCreateSetting($tenantId, $key, $value)
     {
         return self::updateOrCreate(
-            ['user_id' => $userId, 'key' => $key],
+            ['tenant_id' => $tenantId, 'key' => $key],
             ['value' => $value]
         );
     }
 
-    public static function getUserSettings($userId): array
+    public static function getUserSettings($tenantId): array
     {
-        if (!$userId) {
-            return [];
-        }
+        $settings = $tenantId !== null
+            ? self::where('tenant_id', $tenantId)->pluck('value', 'key')->toArray()
+            : [];
         
-        $settings = self::where('user_id', $userId)->pluck('value', 'key')->toArray();
-        
-        // If no settings found for this user and it's not a superadmin, try to get from superadmin
+        // If no settings found or tenant is not superadmin, try global (SAAS) settings as fallback
         if (empty($settings)) {
-            $user = \App\Models\User::find($userId);
-            if ($user && $user->type !== 'superadmin') {
-                $superAdmin = \App\Models\User::where('type', 'superadmin')->first();
-                if ($superAdmin) {
-                    $superAdminSettings = self::where('user_id', $superAdmin->id)->pluck('value', 'key')->toArray();
-                    $settings = $superAdminSettings;
-                }
-            }
+            $globalSettings = self::whereNull('tenant_id')->pluck('value', 'key')->toArray();
+            $settings = $globalSettings;
         } else {
-            // If user has some settings but might be missing some, merge with superadmin as fallback
-            $user = \App\Models\User::find($userId);
-            if ($user && $user->type !== 'superadmin') {
-                $superAdmin = \App\Models\User::where('type', 'superadmin')->first();
-                if ($superAdmin) {
-                    $superAdminSettings = self::where('user_id', $superAdmin->id)->pluck('value', 'key')->toArray();
-                    // Merge settings, prioritizing user settings over superadmin settings
-                    $settings = array_merge($superAdminSettings, $settings);
-                }
-            }
+            $globalSettings = self::whereNull('tenant_id')->pluck('value', 'key')->toArray();
+            $settings = array_merge($globalSettings, $settings);
         }
         
         return $settings;

@@ -31,7 +31,7 @@ class DocumentVersionController extends Controller
         $query->orderBy('created_at', 'desc');
         $versions = $query->paginate($request->per_page ?? 10);
 
-        $documents = Document::where('created_by', createdBy())
+        $documents = Document::where('tenant_id', createdBy())
             ->get(['id', 'name']);
 
         return Inertia::render('document-management/versions/index', [
@@ -50,7 +50,7 @@ class DocumentVersionController extends Controller
         ]);
 
         $document = Document::where('id', $validated['document_id'])
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$document) {
@@ -84,7 +84,7 @@ class DocumentVersionController extends Controller
                 'file_path' => $validated['file_path'],
                 'changes_description' => $validated['changes_description'] ?? null,
                 'is_current' => true,
-                'created_by' => createdBy(),
+                'tenant_id' => createdBy(),
             ]);
 
             // Update document with new version info

@@ -13,7 +13,7 @@ class AuditTypeController extends Controller
         $query = AuditType::withPermissionCheck()
             ->with(['creator'])
             ->where(function ($q) {
-                $q->where('created_by', createdBy());
+                $q->where('tenant_id', createdBy());
             });
 
         if ($request->has('search') && !empty($request->search)) {
@@ -44,7 +44,7 @@ class AuditTypeController extends Controller
             'status' => 'nullable|in:active,inactive',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         AuditType::create($validated);
@@ -54,7 +54,7 @@ class AuditTypeController extends Controller
 
     public function update(Request $request, $id)
     {
-        $auditType = AuditType::where('created_by', createdBy())->findOrFail($id);
+        $auditType = AuditType::where('tenant_id', createdBy())->findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -70,7 +70,7 @@ class AuditTypeController extends Controller
 
     public function destroy($id)
     {
-        $auditType = AuditType::where('created_by', createdBy())->findOrFail($id);
+        $auditType = AuditType::where('tenant_id', createdBy())->findOrFail($id);
         $auditType->delete();
 
         return redirect()->back()->with('success', 'Audit type deleted successfully.');
@@ -78,7 +78,7 @@ class AuditTypeController extends Controller
 
     public function toggleStatus($id)
     {
-        $auditType = AuditType::where('created_by', createdBy())->findOrFail($id);
+        $auditType = AuditType::where('tenant_id', createdBy())->findOrFail($id);
         $auditType->update(['status' => $auditType->status === 'active' ? 'inactive' : 'active']);
 
         return redirect()->back()->with('success', 'Audit type status updated successfully.');

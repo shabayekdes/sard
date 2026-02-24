@@ -31,8 +31,7 @@ class LoginHistory extends Model
     {
         if ($this->type == 'superadmin' || $this->type == 'super admin' || $this->type == 'admin') {
             return $this->id;
-        } else {
-            return $this->created_by;
         }
+        return $this->tenant_id;
     }
 }

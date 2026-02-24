@@ -68,7 +68,7 @@ class FeeStructureController extends Controller
         }
 
         FeeStructure::create([
-            'created_by' => createdBy(),
+            'tenant_id' => createdBy(),
             'client_id' => $validated['client_id'],
             'case_id' => $validated['case_id'] ?? null,
             'fee_type_id' => $validated['fee_type_id'],

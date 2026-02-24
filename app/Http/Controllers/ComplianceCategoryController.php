@@ -48,7 +48,7 @@ class ComplianceCategoryController extends Controller
             'status' => 'nullable|in:active,inactive',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         ComplianceCategory::create($validated);

@@ -220,7 +220,7 @@ class SSPayPaymentController extends Controller
             $invoice = \App\Models\Invoice::where('payment_token', $request->invoice_token)->firstOrFail();
             
             // Check if SSPay is configured for this user
-            $paymentSettings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['sspay_secret_key', 'sspay_category_code', 'is_sspay_enabled'])
                 ->pluck('value', 'key')
                 ->toArray();

@@ -415,7 +415,7 @@ class BenefitPaymentController extends Controller
         try {
             $invoice = \App\Models\Invoice::where('payment_token', $validated['invoice_token'])->firstOrFail();
 
-            $paymentSettings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['benefit_secret_key', 'is_benefit_enabled'])
                 ->pluck('value', 'key')
                 ->toArray();

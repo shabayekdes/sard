@@ -162,7 +162,7 @@ class KhaltiPaymentController extends Controller
 
             $invoice = \App\Models\Invoice::where('payment_token', $request->invoice_token)->firstOrFail();
 
-            $paymentSettings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['khalti_public_key', 'khalti_secret_key', 'is_khalti_enabled'])
                 ->pluck('value', 'key')
                 ->toArray();
@@ -197,7 +197,7 @@ class KhaltiPaymentController extends Controller
 
                 if ($invoice) {
                     // Get payment settings for verification
-                    $paymentSettings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+                    $paymentSettings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                         ->whereIn('key', ['khalti_secret_key'])
                         ->pluck('value', 'key')
                         ->toArray();

@@ -23,7 +23,7 @@ class Task extends BaseModel
         'task_type_id',
         'task_status_id',
         'notes',
-        'created_by',
+        'tenant_id',
         'google_calendar_event_id'
     ];
 
@@ -88,6 +88,6 @@ class Task extends BaseModel
      */
     public function creator()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->hasOne(User::class, 'tenant_id', 'tenant_id')->where('type', 'company');
     }
 }

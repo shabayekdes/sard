@@ -14,7 +14,7 @@ class CourtController extends Controller
     {
         $query = Court::withPermissionCheck()
             ->with(['creator', 'courtType', 'circleType'])
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         // Handle search
         if ($request->has('search') && !empty($request->search)) {
@@ -73,7 +73,7 @@ class CourtController extends Controller
 
         // Get court types for dropdown
         $courtTypes = \App\Models\CourtType::where(function($q) {
-                $q->where('created_by', createdBy());
+                $q->where('tenant_id', createdBy());
             })
             ->where('status', 'active')
             ->get(['id', 'name', 'color'])
@@ -88,7 +88,7 @@ class CourtController extends Controller
 
         // Get circle types for dropdown
         $circleTypes = \App\Models\CircleType::where(function($q) {
-                $q->where('created_by', createdBy());
+                $q->where('tenant_id', createdBy());
             })
             ->where('status', 'active')
             ->get(['id', 'name', 'color'])
@@ -121,12 +121,12 @@ class CourtController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         // Check if court with same name already exists for this company
         $exists = Court::where('name', $validated['name'])
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->exists();
 
         if ($exists) {
@@ -161,7 +161,7 @@ class CourtController extends Controller
     public function update(Request $request, $courtId)
     {
         $court = Court::where('id', $courtId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($court) {
@@ -178,7 +178,7 @@ class CourtController extends Controller
 
                 // Check if court with same name already exists for this company (excluding current)
                 $exists = Court::where('name', $validated['name'])
-                    ->where('created_by', createdBy())
+                    ->where('tenant_id', createdBy())
                     ->where('id', '!=', $courtId)
                     ->exists();
 
@@ -201,7 +201,7 @@ class CourtController extends Controller
     {
         $court = Court::with(['creator'])
             ->where('id', $courtId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$court) {
@@ -216,7 +216,7 @@ class CourtController extends Controller
     public function destroy($courtId)
     {
         $court = Court::where('id', $courtId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($court) {
@@ -234,7 +234,7 @@ class CourtController extends Controller
     public function toggleStatus($courtId)
     {
         $court = Court::where('id', $courtId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($court) {

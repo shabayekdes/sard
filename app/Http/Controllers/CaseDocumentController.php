@@ -14,7 +14,7 @@ class CaseDocumentController extends Controller
     {
         $query = CaseDocument::query()
             ->with(['creator', 'case', 'documentType'])
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         // Filter by case_id if provided
         if ($request->has('case_id') && !empty($request->case_id)) {
@@ -53,7 +53,7 @@ class CaseDocumentController extends Controller
         }
 
         $caseDocuments = $query->paginate($request->per_page ?? 10);
-        $documentTypes = DocumentType::where('created_by', createdBy())
+        $documentTypes = DocumentType::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name', 'color']);
 
@@ -95,7 +95,7 @@ class CaseDocumentController extends Controller
             'case_id' => $validated['case_id'],
             'status' => $validated['status'] ?? 'active',
             'file_path' => $validated['file'],
-            'created_by' => createdBy(),
+            'tenant_id' => createdBy(),
         ]);
 
         return redirect()->back()->with('success', 'Case document created successfully.');
@@ -121,7 +121,7 @@ class CaseDocumentController extends Controller
     public function update(Request $request, $documentId)
     {
         $document = CaseDocument::where('id', $documentId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($document) {
@@ -157,7 +157,7 @@ class CaseDocumentController extends Controller
     public function destroy($documentId)
     {
         $document = CaseDocument::where('id', $documentId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($document) {
@@ -176,7 +176,7 @@ class CaseDocumentController extends Controller
   public function download($documentId)
     {
         $document = CaseDocument::whereHas('case', function ($q) {
-                $q->where('created_by', createdBy());
+                $q->where('tenant_id', createdBy());
             })
             ->where('id', $documentId)
             ->first();

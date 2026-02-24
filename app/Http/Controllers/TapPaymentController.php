@@ -136,7 +136,7 @@ class TapPaymentController extends Controller
                 return response()->json(['error' => 'Amount exceeds remaining balance'], 400);
             }
 
-            $paymentSettings = PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['tap_secret_key', 'is_tap_enabled'])
                 ->pluck('value', 'key')
                 ->toArray();
@@ -210,7 +210,7 @@ class TapPaymentController extends Controller
                     $actualAmount = floatval($amount);
                 } else {
                     // Get the actual payment amount from Tap API
-                    $paymentSettings = PaymentSetting::where('user_id', $invoice->created_by)
+                    $paymentSettings = PaymentSetting::where('tenant_id', $invoice->tenant_id)
                         ->where('key', 'tap_secret_key')
                         ->value('value');
                     
@@ -258,7 +258,7 @@ class TapPaymentController extends Controller
 
             $invoice = Invoice::where('payment_token', $request->invoice_token)->firstOrFail();
 
-            $paymentSettings = PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['tap_secret_key', 'is_tap_enabled'])
                 ->pluck('value', 'key')
                 ->toArray();

@@ -34,7 +34,7 @@ class CouponSeeder extends Seeder
                 'code' => 'NEWLAW20',
                 'code_type' => 'manual',
                 'status' => true,
-                'created_by' => $user->id,
+                'tenant_id' => $user->tenant_id,
             ],
             [
                 'name' => 'Legal Practice Welcome',
@@ -48,7 +48,7 @@ class CouponSeeder extends Seeder
                 'code' => 'LEGAL10',
                 'code_type' => 'manual',
                 'status' => true,
-                'created_by' => $user->id,
+                'tenant_id' => $user->tenant_id,
             ],
             [
                 'name' => 'Flash Sale',
@@ -62,7 +62,7 @@ class CouponSeeder extends Seeder
                 'code' => 'FLASH15',
                 'code_type' => 'manual',
                 'status' => true,
-                'created_by' => $user->id,
+                'tenant_id' => $user->tenant_id,
             ],
             [
                 'name' => 'Auto Generated Coupon',
@@ -76,7 +76,7 @@ class CouponSeeder extends Seeder
                 'code' => 'AUTO5OFF',
                 'code_type' => 'auto',
                 'status' => false,
-                'created_by' => $user->id,
+                'tenant_id' => $user->tenant_id,
             ]
         ];
 
@@ -94,7 +94,7 @@ class CouponSeeder extends Seeder
                 'code' => 'BLACKFRI30',
                 'code_type' => 'manual',
                 'status' => true,
-                'created_by' => $user->id,
+                'tenant_id' => $user->tenant_id,
             ],
             [
                 'name' => 'Holiday Special',
@@ -108,7 +108,7 @@ class CouponSeeder extends Seeder
                 'code' => 'HOLIDAY25',
                 'code_type' => 'manual',
                 'status' => true,
-                'created_by' => $user->id,
+                'tenant_id' => $user->tenant_id,
             ],
             [
                 'name' => 'Student Discount',
@@ -122,7 +122,7 @@ class CouponSeeder extends Seeder
                 'code' => 'STUDENT10',
                 'code_type' => 'manual',
                 'status' => true,
-                'created_by' => $user->id,
+                'tenant_id' => $user->tenant_id,
             ],
             [
                 'name' => 'VIP Member Bonus',
@@ -136,7 +136,7 @@ class CouponSeeder extends Seeder
                 'code' => 'VIP50BONUS',
                 'code_type' => 'manual',
                 'status' => false,
-                'created_by' => $user->id,
+                'tenant_id' => $user->tenant_id,
             ],
             [
                 'name' => 'Weekend Sale',
@@ -150,7 +150,7 @@ class CouponSeeder extends Seeder
                 'code' => 'WEEKEND12',
                 'code_type' => 'manual',
                 'status' => true,
-                'created_by' => $user->id,
+                'tenant_id' => $user->tenant_id,
             ]
         ];
 

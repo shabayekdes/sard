@@ -12,7 +12,7 @@ class CaseStatusController extends Controller
     {
         $query = CaseStatus::withPermissionCheck()
             ->with(['creator'])
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         // Handle search - search in translatable fields
         if ($request->has('search') && !empty($request->search)) {
@@ -52,7 +52,7 @@ class CaseStatusController extends Controller
                 'is_default' => $caseStatus->is_default,
                 'is_closed' => $caseStatus->is_closed,
                 'status' => $caseStatus->status,
-                'created_by' => $caseStatus->created_by,
+                'tenant_id' => $caseStatus->tenant_id,
                 'creator' => $caseStatus->creator,
                 'created_at' => $caseStatus->created_at,
                 'updated_at' => $caseStatus->updated_at,
@@ -80,7 +80,7 @@ class CaseStatusController extends Controller
             'status' => 'nullable|in:active,inactive',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
         $validated['color'] = $validated['color'] ?? '#10B981';
         $validated['is_default'] = $validated['is_default'] ?? false;
@@ -88,7 +88,7 @@ class CaseStatusController extends Controller
 
         // If setting as default, remove default from others
         if ($validated['is_default']) {
-            CaseStatus::where('created_by', createdBy())->update(['is_default' => false]);
+            CaseStatus::where('tenant_id', createdBy())->update(['is_default' => false]);
         }
 
         CaseStatus::create($validated);
@@ -98,7 +98,7 @@ class CaseStatusController extends Controller
 
     public function update(Request $request, $caseStatusId)
     {
-        $caseStatus = CaseStatus::where('id', $caseStatusId)->where('created_by', createdBy())->first();
+        $caseStatus = CaseStatus::where('id', $caseStatusId)->where('tenant_id', createdBy())->first();
 
         if (!$caseStatus) {
             return redirect()->back()->with('error', 'Case status not found.');
@@ -123,7 +123,7 @@ class CaseStatusController extends Controller
 
         // If setting as default, remove default from others
         if ($validated['is_default']) {
-            CaseStatus::where('created_by', createdBy())->where('id', '!=', $caseStatusId)->update(['is_default' => false]);
+            CaseStatus::where('tenant_id', createdBy())->where('id', '!=', $caseStatusId)->update(['is_default' => false]);
         }
 
         $caseStatus->update($validated);
@@ -133,7 +133,7 @@ class CaseStatusController extends Controller
 
     public function destroy($caseStatusId)
     {
-        $caseStatus = CaseStatus::where('id', $caseStatusId)->where('created_by', createdBy())->first();
+        $caseStatus = CaseStatus::where('id', $caseStatusId)->where('tenant_id', createdBy())->first();
 
         if (!$caseStatus) {
             return redirect()->back()->with('error', 'Case status not found.');
@@ -150,7 +150,7 @@ class CaseStatusController extends Controller
 
     public function toggleStatus($caseStatusId)
     {
-        $caseStatus = CaseStatus::where('id', $caseStatusId)->where('created_by', createdBy())->first();
+        $caseStatus = CaseStatus::where('id', $caseStatusId)->where('tenant_id', createdBy())->first();
 
         if (!$caseStatus) {
             return redirect()->back()->with('error', 'Case status not found.');

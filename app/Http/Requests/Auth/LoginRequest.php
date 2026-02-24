@@ -61,7 +61,7 @@ class LoginRequest extends FormRequest
         // Check if client account is inactive (for client users)
         if ($user->type === 'client') {
             $client = \App\Models\Client::where('email', $user->email)
-                ->where('created_by', $user->created_by)
+                ->where('tenant_id', $user->tenant_id)
                 ->first();
             if ($client && $client->status === 'inactive') {
                 Auth::logout();

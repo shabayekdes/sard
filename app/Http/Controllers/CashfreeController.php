@@ -20,7 +20,7 @@ class CashfreeController extends Controller
     {
         if ($userId) {
             // For invoice payments - get user-specific settings
-            $paymentSettings = PaymentSetting::where('user_id', $userId)
+            $paymentSettings = PaymentSetting::where('tenant_id', $userId)
                 ->whereIn('key', ['cashfree_public_key', 'cashfree_secret_key', 'cashfree_mode', 'is_cashfree_enabled'])
                 ->pluck('value', 'key')
                 ->toArray();
@@ -244,7 +244,7 @@ class CashfreeController extends Controller
             $invoice = Invoice::where('payment_token', $request->invoice_token)->firstOrFail();
 
             // Try company credentials first, fallback to global
-            $credentials = $this->getCashfreeCredentials($invoice->created_by);
+            $credentials = $this->getCashfreeCredentials($invoice->tenant_id);
             $usingGlobal = false;
 
             if (!$credentials['app_id'] || !$credentials['secret_key']) {
@@ -261,7 +261,7 @@ class CashfreeController extends Controller
 
             Log::info('Invoice payment credentials', [
                 'invoice_id' => $invoice->id,
-                'user_id' => $invoice->created_by,
+                'user_id' => $invoice->tenant_id,
                 'using_global' => $usingGlobal,
                 'mode' => $credentials['mode']
             ]);
@@ -329,7 +329,7 @@ class CashfreeController extends Controller
             $invoice = Invoice::where('payment_token', $request->invoice_token)->firstOrFail();
 
             // Try company credentials first, fallback to global
-            $credentials = $this->getCashfreeCredentials($invoice->created_by);
+            $credentials = $this->getCashfreeCredentials($invoice->tenant_id);
             if (!$credentials['app_id'] || !$credentials['secret_key']) {
                 Log::info('Company credentials missing, using global credentials for verification');
                 $credentials = $this->getCashfreeCredentials(); // Global credentials
@@ -467,7 +467,7 @@ class CashfreeController extends Controller
             }
 
             // Verify payment with Cashfree API
-            $credentials = $this->getCashfreeCredentials($invoice->created_by);
+            $credentials = $this->getCashfreeCredentials($invoice->tenant_id);
 
             if (!$credentials['app_id'] || !$credentials['secret_key']) {
                 return redirect()->back()->with('error', 'Payment verification failed');

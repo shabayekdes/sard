@@ -20,12 +20,12 @@ class RegulatoryBody extends BaseModel
         'address',
         'website',
         'status',
-        'created_by'
+        'tenant_id'
     ];
 
     public function creator()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->hasOne(User::class, 'tenant_id', 'tenant_id')->where('type', 'company');
     }
 
     public function complianceRequirements()
@@ -35,6 +35,6 @@ class RegulatoryBody extends BaseModel
 
     // public function scopeWithPermissionCheck($query)
     // {
-    //     return $query->where('created_by', createdBy());
+    //     return $query->where('tenant_id', createdBy());
     // }
 }

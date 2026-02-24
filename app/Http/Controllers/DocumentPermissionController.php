@@ -38,8 +38,8 @@ class DocumentPermissionController extends Controller
         $query->orderBy('created_at', 'desc');
         $permissions = $query->paginate($request->per_page ?? 10);
 
-        $documents = Document::where('created_by', createdBy())->get(['id', 'name']);
-        $users = User::where('created_by', createdBy())->get(['id', 'name']);
+        $documents = Document::where('tenant_id', createdBy())->get(['id', 'name']);
+        $users = User::where('tenant_id', createdBy())->get(['id', 'name']);
 
         return Inertia::render('document-management/permissions/index', [
             'permissions' => $permissions,
@@ -59,12 +59,12 @@ class DocumentPermissionController extends Controller
         ]);
 
         $document = Document::where('id', $validated['document_id'])
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         $user = User::where('id', $validated['user_id'])
             ->where(function($query) {
-                $query->where('created_by', createdBy())
+                $query->where('tenant_id', createdBy())
                       ->orWhere('id', createdBy());
             })
             ->first();
@@ -73,7 +73,7 @@ class DocumentPermissionController extends Controller
             return redirect()->back()->with('error', __('Invalid document or user selection.'));
         }
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
 
         $existing = DocumentPermission::where([
             'document_id' => $validated['document_id'],

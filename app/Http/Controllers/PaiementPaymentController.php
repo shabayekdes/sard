@@ -226,7 +226,7 @@ class PaiementPaymentController extends Controller
             $invoice = \App\Models\Invoice::where('payment_token', $request->invoice_token)->firstOrFail();
 
             // Check if Paiement Pro is configured for this user
-            $paymentSettings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['paiement_merchant_id', 'is_paiement_enabled'])
                 ->pluck('value', 'key')
                 ->toArray();
@@ -242,7 +242,7 @@ class PaiementPaymentController extends Controller
                     'payment_method' => 'paiement',
                     'payment_date' => now(),
                     'transaction_id' => $request->transaction_id,
-                    'created_by' => $invoice->created_by,
+                    'tenant_id' => $invoice->tenant_id,
                     'approval_status' => 'approved',
                     'approved_at' => now(),
                 ]);
@@ -277,7 +277,7 @@ class PaiementPaymentController extends Controller
         try {
             $invoice = \App\Models\Invoice::where('payment_token', $request->invoice_token)->firstOrFail();
 
-            $paymentSettings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['paiement_merchant_id', 'is_paiement_enabled'])
                 ->pluck('value', 'key')
                 ->toArray();

@@ -111,7 +111,6 @@ class RegisteredUserController extends Controller
             'type' => 'company',
             'is_active' => 1,
             'is_enable_login' => 1,
-            'created_by' => 1,
             'plan_is_active' => 0,
             'tenant_id' => $tenant->id,
         ];

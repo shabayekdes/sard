@@ -77,7 +77,7 @@ class StripePaymentController extends Controller
             ]);
 
             $invoice = Invoice::where('payment_token', $request->invoice_token)->firstOrFail();
-            $settings = getPaymentGatewaySettings($invoice->created_by);
+            $settings = getPaymentGatewaySettings($invoice->tenant_id);
 
             if (!isset($settings['payment_settings']['stripe_secret']) || !isset($settings['payment_settings']['stripe_key'])) {
                 return back()->withErrors(['error' => __('Payment method not available. Please contact support.')]);

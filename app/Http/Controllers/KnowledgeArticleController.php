@@ -41,7 +41,7 @@ class KnowledgeArticleController extends Controller
 
         $articles = $query->paginate($request->per_page ?? 10);
 
-        $categories = ResearchCategory::where('created_by', createdBy())
+        $categories = ResearchCategory::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 
@@ -65,14 +65,14 @@ class KnowledgeArticleController extends Controller
 
         if ($validated['category_id']) {
             $category = ResearchCategory::where('id', $validated['category_id'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->first();
             if (!$category) {
                 return redirect()->back()->with('error', 'Invalid category selection.');
             }
         }
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'draft';
         $validated['is_public'] = $validated['is_public'] ?? false;
 
@@ -83,7 +83,7 @@ class KnowledgeArticleController extends Controller
 
     public function update(Request $request, $articleId)
     {
-        $article = KnowledgeArticle::where('id', $articleId)->where('created_by', createdBy())->first();
+        $article = KnowledgeArticle::where('id', $articleId)->where('tenant_id', createdBy())->first();
 
         if (!$article) {
             return redirect()->back()->with('error', 'Knowledge article not found.');
@@ -100,7 +100,7 @@ class KnowledgeArticleController extends Controller
 
         if ($validated['category_id']) {
             $category = ResearchCategory::where('id', $validated['category_id'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->first();
             if (!$category) {
                 return redirect()->back()->with('error', 'Invalid category selection.');
@@ -114,7 +114,7 @@ class KnowledgeArticleController extends Controller
 
     public function destroy($articleId)
     {
-        $article = KnowledgeArticle::where('id', $articleId)->where('created_by', createdBy())->first();
+        $article = KnowledgeArticle::where('id', $articleId)->where('tenant_id', createdBy())->first();
 
         if (!$article) {
             return redirect()->back()->with('error', 'Knowledge article not found.');
@@ -127,7 +127,7 @@ class KnowledgeArticleController extends Controller
 
     public function publish($articleId)
     {
-        $article = KnowledgeArticle::where('id', $articleId)->where('created_by', createdBy())->first();
+        $article = KnowledgeArticle::where('id', $articleId)->where('tenant_id', createdBy())->first();
 
         if (!$article) {
             return redirect()->back()->with('error', 'Knowledge article not found.');

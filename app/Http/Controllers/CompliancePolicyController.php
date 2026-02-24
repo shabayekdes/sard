@@ -11,7 +11,7 @@ class CompliancePolicyController extends Controller
     public function index(Request $request)
     {
         $query = CompliancePolicy::query()
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         if ($request->has('search') && !empty($request->search)) {
             $query->where(function ($q) use ($request) {
@@ -53,7 +53,7 @@ class CompliancePolicyController extends Controller
             'status' => 'nullable|in:active,inactive',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         CompliancePolicy::create($validated);
@@ -63,7 +63,7 @@ class CompliancePolicyController extends Controller
 
     public function show(CompliancePolicy $policy)
     {
-        if ($policy->created_by !== createdBy()) {
+        if ($policy->tenant_id !== createdBy()) {
             abort(403);
         }
 
@@ -74,7 +74,7 @@ class CompliancePolicyController extends Controller
 
     public function edit(CompliancePolicy $policy)
     {
-        if ($policy->created_by !== createdBy()) {
+        if ($policy->tenant_id !== createdBy()) {
             abort(403);
         }
 
@@ -85,7 +85,7 @@ class CompliancePolicyController extends Controller
 
     public function update(Request $request, CompliancePolicy $policy)
     {
-        if ($policy->created_by !== createdBy()) {
+        if ($policy->tenant_id !== createdBy()) {
             abort(403);
         }
 
@@ -104,7 +104,7 @@ class CompliancePolicyController extends Controller
 
     public function destroy(CompliancePolicy $policy)
     {
-        if ($policy->created_by !== createdBy()) {
+        if ($policy->tenant_id !== createdBy()) {
             abort(403);
         }
 
@@ -115,7 +115,7 @@ class CompliancePolicyController extends Controller
 
     public function toggleStatus(CompliancePolicy $policy)
     {
-        if ($policy->created_by !== createdBy()) {
+        if ($policy->tenant_id !== createdBy()) {
             abort(403);
         }
 

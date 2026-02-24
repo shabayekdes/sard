@@ -16,14 +16,17 @@ class Role extends BaseSpatieRole
         'description',
         'is_active',
         'guard_name',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $appends = ['is_system_role'];
 
+    /**
+     * Get the company user for this tenant (for backward-compat creator display).
+     */
     public function creator()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->hasOne(User::class, 'tenant_id', 'tenant_id')->where('type', 'company');
     }
 
     /**

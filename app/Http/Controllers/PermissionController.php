@@ -42,7 +42,7 @@ class PermissionController extends BaseController
             'label'       => $request->label,
             'name'        => Str::slug($request->label),
             'description' => $request->description,
-            'created_by'  => Auth::id(),
+            'tenant_id'  => createdBy(),
         ]);
 
         if ($permission) {

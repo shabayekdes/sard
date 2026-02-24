@@ -32,13 +32,13 @@ class ResearchNote extends BaseModel
 
     public function creator()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->hasOne(User::class, 'tenant_id', 'tenant_id')->where('type', 'company');
     }
 
     public function scopeWithPermissionCheck($query)
     {
         return $query->whereHas('researchProject', function ($q) {
-            $q->where('created_by', createdBy());
+            $q->where('tenant_id', createdBy());
         });
     }
 }

@@ -34,11 +34,11 @@ class SettingsController extends Controller
             Currency::where('status', true)->get()
         )->resolve();
         $paymentSettings = sanitizeSettingsForUi(
-            PaymentSetting::getUserSettings(auth()->id()),
-            auth()->id()
+            PaymentSetting::getUserSettings(createdBy()),
+            createdBy()
         );
         $webhooks = Webhook::where('user_id', auth()->id())->get();
-        $companySettings = CompanySetting::where('created_by', createdBy())->get();
+        $companySettings = CompanySetting::where('tenant_id', createdBy())->get();
         $taxRates = TaxRate::where('is_active', true)
             ->orderByRaw("JSON_EXTRACT(name, '$.en')")
             ->get(['id', 'name', 'rate']);
@@ -130,7 +130,7 @@ class SettingsController extends Controller
             'setting_value' => $validated['value'],
             'description' => $validated['description'],
             'category' => $validated['category'] ?? 'General',
-            'created_by' => createdBy()
+            'tenant_id' => createdBy()
         ]);
 
         return redirect()->back()->with('success', 'Company setting created successfully.');
@@ -146,7 +146,7 @@ class SettingsController extends Controller
         ]);
 
         $setting = CompanySetting::where('id', $id)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->firstOrFail();
 
         $setting->update([
@@ -162,7 +162,7 @@ class SettingsController extends Controller
     public function destroyCompanySetting($id)
     {
         $setting = CompanySetting::where('id', $id)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->firstOrFail();
 
         $setting->delete();

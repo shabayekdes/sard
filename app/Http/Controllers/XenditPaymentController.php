@@ -177,7 +177,7 @@ class XenditPaymentController extends Controller
 
         try {
             $invoice = \App\Models\Invoice::where('payment_token', $validated['invoice_token'])->firstOrFail();
-            $settings = getPaymentMethodConfig('xendit', $invoice->created_by);
+            $settings = getPaymentMethodConfig('xendit', $invoice->tenant_id);
 
 
 
@@ -268,7 +268,7 @@ class XenditPaymentController extends Controller
                         if (!$paymentAmount) {
                             // Fallback: try to get from Xendit API
                             try {
-                                $settings = getPaymentMethodConfig('xendit', $invoice->created_by);
+                                $settings = getPaymentMethodConfig('xendit', $invoice->tenant_id);
                                 if ($settings['api_key']) {
                                     $response = \Http::withHeaders([
                                         'Authorization' => 'Basic ' . base64_encode($settings['api_key'] . ':'),
@@ -312,7 +312,7 @@ class XenditPaymentController extends Controller
             if (!$paymentAmount && $externalId) {
                 // Try to get from Xendit API as fallback
                 try {
-                    $settings = getPaymentMethodConfig('xendit', $invoice->created_by);
+                    $settings = getPaymentMethodConfig('xendit', $invoice->tenant_id);
                     if ($settings['api_key']) {
                         $response = \Http::withHeaders([
                             'Authorization' => 'Basic ' . base64_encode($settings['api_key'] . ':'),

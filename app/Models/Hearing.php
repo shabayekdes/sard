@@ -26,7 +26,7 @@ class Hearing extends BaseModel
         'notes',
         'outcome',
         'attendees',
-        'created_by',
+        'tenant_id',
         'google_calendar_event_id'
     ];
 
@@ -69,6 +69,6 @@ class Hearing extends BaseModel
 
     public function creator()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->hasOne(User::class, 'tenant_id', 'tenant_id')->where('type', 'company');
     }
 }

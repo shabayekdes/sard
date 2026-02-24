@@ -225,7 +225,7 @@ class PaymentWallPaymentController extends Controller
             $invoice = \App\Models\Invoice::where('payment_token', $request->invoice_token)->firstOrFail();
 
             // Get PaymentWall settings for this invoice creator
-            $settings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+            $settings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->pluck('value', 'key')
                 ->toArray();
 

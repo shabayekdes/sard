@@ -199,7 +199,7 @@ class ToyyibPayPaymentController extends Controller
         try {
             $invoice = \App\Models\Invoice::where('payment_token', $validated['invoice_token'])->firstOrFail();
 
-            $paymentSettings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['toyyibpay_secret_key', 'toyyibpay_category_code', 'is_toyyibpay_enabled'])
                 ->pluck('value', 'key')
                 ->toArray();

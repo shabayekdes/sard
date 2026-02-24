@@ -67,7 +67,7 @@ class PaystackPaymentController extends Controller
             ]);
 
             $invoice = \App\Models\Invoice::where('payment_token', $validated['invoice_token'])->firstOrFail();
-            $paymentSettings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->pluck('value', 'key')
                 ->toArray();
 

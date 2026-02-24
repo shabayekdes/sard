@@ -13,7 +13,7 @@ class CaseNoteController extends Controller
     {
         $query = CaseNote::query()
             ->with(['creator'])
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         // Handle search
         if ($request->has('search') && !empty($request->search)) {
@@ -47,7 +47,7 @@ class CaseNoteController extends Controller
         }
 
         $caseNotes = $query->paginate($request->per_page ?? 10);
-        $cases = CaseModel::where('created_by', createdBy())
+        $cases = CaseModel::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->select('id', 'case_id', 'title')
             ->get();
@@ -83,7 +83,7 @@ class CaseNoteController extends Controller
             $validated['tags'] = [];
         }
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
         $validated['is_private'] = $validated['is_private'] ?? false;
 
@@ -95,7 +95,7 @@ class CaseNoteController extends Controller
     public function update(Request $request, $noteId)
     {
         $note = CaseNote::where('id', $noteId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($note) {
@@ -136,7 +136,7 @@ class CaseNoteController extends Controller
     public function destroy($noteId)
     {
         $note = CaseNote::where('id', $noteId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($note) {

@@ -39,7 +39,7 @@ class ResearchNoteController extends Controller
 
         $notes = $query->paginate($request->per_page ?? 10);
 
-        $projects = ResearchProject::where('created_by', createdBy())
+        $projects = ResearchProject::where('tenant_id', createdBy())
             ->get(['id', 'title']);
 
         return Inertia::render('legal-research/notes/index', [
@@ -61,14 +61,14 @@ class ResearchNoteController extends Controller
         ]);
 
         $project = ResearchProject::where('id', $validated['research_project_id'])
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$project) {
             return redirect()->back()->with('error', 'Invalid research project selection.');
         }
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['is_private'] = $validated['is_private'] ?? false;
 
         ResearchNote::create($validated);
@@ -96,7 +96,7 @@ class ResearchNoteController extends Controller
         ]);
 
         $project = ResearchProject::where('id', $validated['research_project_id'])
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$project) {

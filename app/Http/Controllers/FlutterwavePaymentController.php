@@ -99,7 +99,7 @@ class FlutterwavePaymentController extends Controller
             $invoice = Invoice::where('payment_token', $request->invoice_token)->firstOrFail();
             
             // Get Flutterwave settings for this invoice creator
-            $settings = PaymentSetting::where('user_id', $invoice->created_by)
+            $settings = PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->pluck('value', 'key')
                 ->toArray();
 

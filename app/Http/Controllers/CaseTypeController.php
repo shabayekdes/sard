@@ -13,7 +13,7 @@ class CaseTypeController extends Controller
     {
         $query = CaseType::withPermissionCheck()
             ->with(['creator', 'caseCategory.parent'])
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         // Handle search - search in translatable fields
         if ($request->has('search') && !empty($request->search)) {
@@ -64,7 +64,7 @@ class CaseTypeController extends Controller
                 ] : null,
                 'color' => $caseType->color,
                 'status' => $caseType->status,
-                'created_by' => $caseType->created_by,
+                'tenant_id' => $caseType->tenant_id,
                 'creator' => $caseType->creator,
                 'created_at' => $caseType->created_at,
                 'updated_at' => $caseType->updated_at,
@@ -72,7 +72,7 @@ class CaseTypeController extends Controller
         });
         
         // Get case categories for dropdown
-        $caseCategories = CaseCategory::where('created_by', createdBy())
+        $caseCategories = CaseCategory::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->whereNull('parent_id')
             ->get(['id', 'name']);
@@ -109,7 +109,7 @@ class CaseTypeController extends Controller
 
         // Validate that category is a subcategory (has parent) and belongs to the same user
         $category = CaseCategory::where('id', $validated['case_category_id'])
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
         
         if (!$category) {
@@ -121,7 +121,7 @@ class CaseTypeController extends Controller
             return redirect()->back()->with('error', 'Please select a subcategory (child category), not a parent category.');
         }
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
         $validated['color'] = $validated['color'] ?? '#3B82F6';
 
@@ -132,7 +132,7 @@ class CaseTypeController extends Controller
 
     public function update(Request $request, $caseTypeId)
     {
-        $caseType = CaseType::where('id', $caseTypeId)->where('created_by', createdBy())->first();
+        $caseType = CaseType::where('id', $caseTypeId)->where('tenant_id', createdBy())->first();
 
         if (!$caseType) {
             return redirect()->back()->with('error', 'Case type not found.');
@@ -152,7 +152,7 @@ class CaseTypeController extends Controller
 
         // Validate that category is a subcategory (has parent) and belongs to the same user
         $category = CaseCategory::where('id', $validated['case_category_id'])
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
         
         if (!$category) {
@@ -173,7 +173,7 @@ class CaseTypeController extends Controller
 
     public function destroy($caseTypeId)
     {
-        $caseType = CaseType::where('id', $caseTypeId)->where('created_by', createdBy())->first();
+        $caseType = CaseType::where('id', $caseTypeId)->where('tenant_id', createdBy())->first();
 
         if (!$caseType) {
             return redirect()->back()->with('error', 'Case type not found.');
@@ -190,7 +190,7 @@ class CaseTypeController extends Controller
 
     public function toggleStatus($caseTypeId)
     {
-        $caseType = CaseType::where('id', $caseTypeId)->where('created_by', createdBy())->first();
+        $caseType = CaseType::where('id', $caseTypeId)->where('tenant_id', createdBy())->first();
 
         if (!$caseType) {
             return redirect()->back()->with('error', 'Case type not found.');

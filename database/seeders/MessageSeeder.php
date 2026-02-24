@@ -53,10 +53,9 @@ class MessageSeeder extends Seeder
                 $conversation = null;
                 try {
                     $conversation = Conversation::firstOrCreate([
-                        'user_id' => $companyUser->id,
+                        'tenant_id' => $companyUser->tenant_id,
                         'type' => 'direct',
                         'participants' => [$sender->id, $recipient->id],
-                        'tenant_id' => $companyUser->tenant_id
                     ], [
                         'title' => null,
                         'last_message_at' => now(),

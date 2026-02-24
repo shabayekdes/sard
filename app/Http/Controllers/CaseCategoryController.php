@@ -13,7 +13,7 @@ class CaseCategoryController extends Controller
     {
         $query = CaseCategory::withPermissionCheck()
             ->with(['creator', 'parent'])
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         // Handle search - search in JSON fields
         if ($request->has('search') && !empty($request->search)) {
@@ -69,7 +69,7 @@ class CaseCategoryController extends Controller
                 ] : null,
                 'color' => $caseCategory->color,
                 'status' => $caseCategory->status,
-                'created_by' => $caseCategory->created_by,
+                'tenant_id' => $caseCategory->tenant_id,
                 'creator' => $caseCategory->creator,
                 'created_at' => $caseCategory->created_at,
                 'updated_at' => $caseCategory->updated_at,
@@ -78,7 +78,7 @@ class CaseCategoryController extends Controller
         
         // Get all categories for parent dropdown (excluding current item when editing)
         $locale = app()->getLocale();
-        $parentCategories = CaseCategory::where('created_by', createdBy())
+        $parentCategories = CaseCategory::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->whereNull('parent_id')
             ->orderByRaw("JSON_EXTRACT(name, '$.{$locale}')")
@@ -117,7 +117,7 @@ class CaseCategoryController extends Controller
         // Validate that parent belongs to the same user
         if ($validated['parent_id'] ?? null) {
             $parent = CaseCategory::where('id', $validated['parent_id'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->first();
             
             if (!$parent) {
@@ -125,7 +125,7 @@ class CaseCategoryController extends Controller
             }
         }
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
         $validated['color'] = $validated['color'] ?? '#3B82F6';
 
@@ -136,7 +136,7 @@ class CaseCategoryController extends Controller
 
     public function update(Request $request, $caseCategoryId)
     {
-        $caseCategory = CaseCategory::where('id', $caseCategoryId)->where('created_by', createdBy())->first();
+        $caseCategory = CaseCategory::where('id', $caseCategoryId)->where('tenant_id', createdBy())->first();
 
         if (!$caseCategory) {
             return redirect()->back()->with('error', 'Case category not found.');
@@ -162,7 +162,7 @@ class CaseCategoryController extends Controller
         // Validate that parent belongs to the same user
         if ($validated['parent_id'] ?? null) {
             $parent = CaseCategory::where('id', $validated['parent_id'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->first();
             
             if (!$parent) {
@@ -185,7 +185,7 @@ class CaseCategoryController extends Controller
 
     public function destroy($caseCategoryId)
     {
-        $caseCategory = CaseCategory::where('id', $caseCategoryId)->where('created_by', createdBy())->first();
+        $caseCategory = CaseCategory::where('id', $caseCategoryId)->where('tenant_id', createdBy())->first();
 
         if (!$caseCategory) {
             return redirect()->back()->with('error', 'Case category not found.');
@@ -209,7 +209,7 @@ class CaseCategoryController extends Controller
 
     public function toggleStatus($caseCategoryId)
     {
-        $caseCategory = CaseCategory::where('id', $caseCategoryId)->where('created_by', createdBy())->first();
+        $caseCategory = CaseCategory::where('id', $caseCategoryId)->where('tenant_id', createdBy())->first();
 
         if (!$caseCategory) {
             return redirect()->back()->with('error', 'Case category not found.');
@@ -240,7 +240,7 @@ class CaseCategoryController extends Controller
     public function getSubcategories(Request $request, $categoryId)
     {
         $category = CaseCategory::where('id', $categoryId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$category) {
@@ -248,7 +248,7 @@ class CaseCategoryController extends Controller
         }
 
         $subcategories = CaseCategory::where('parent_id', $categoryId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 
@@ -271,7 +271,7 @@ class CaseCategoryController extends Controller
     public function getCaseTypes(Request $request, $subcategoryId)
     {
         $caseTypes = CaseType::where('case_category_id', $subcategoryId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 

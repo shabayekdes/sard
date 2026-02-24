@@ -22,7 +22,7 @@ class CleTracking extends BaseModel
         'certificate_file',
         'status',
         'description',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $casts = [
@@ -45,7 +45,7 @@ class CleTracking extends BaseModel
      */
     public function creator()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->hasOne(User::class, 'tenant_id', 'tenant_id')->where('type', 'company');
     }
 
     /**

@@ -13,7 +13,7 @@ class ResearchTypeController extends Controller
     {
         $query = ResearchType::withPermissionCheck()
             ->with(['creator'])
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         // Handle search - search in code and translatable fields
         if ($request->has('search') && ! empty($request->search)) {
@@ -62,7 +62,7 @@ class ResearchTypeController extends Controller
                 'description' => $researchType->description,
                 'description_translations' => $researchType->getTranslations('description'),
                 'status' => $researchType->status,
-                'created_by' => $researchType->created_by,
+                'tenant_id' => $researchType->tenant_id,
                 'creator' => $researchType->creator,
                 'created_at' => $researchType->created_at,
                 'updated_at' => $researchType->updated_at,
@@ -88,10 +88,10 @@ class ResearchTypeController extends Controller
             'status' => 'nullable|in:active,inactive',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
-        $exists = ResearchType::where('created_by', createdBy())->where('code', $validated['code'])->exists();
+        $exists = ResearchType::where('tenant_id', createdBy())->where('code', $validated['code'])->exists();
         if ($exists) {
             return redirect()->back()->with('error', __('Research type with this code already exists.'));
         }
@@ -104,7 +104,7 @@ class ResearchTypeController extends Controller
     public function update(Request $request, $researchTypeId)
     {
         $researchType = ResearchType::where('id', $researchTypeId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($researchType) {
@@ -120,7 +120,7 @@ class ResearchTypeController extends Controller
                     'status' => 'nullable|in:active,inactive',
                 ]);
 
-                $exists = ResearchType::where('created_by', createdBy())
+                $exists = ResearchType::where('tenant_id', createdBy())
                     ->where('id', '!=', $researchTypeId)
                     ->where('code', $validated['code'])
                     ->exists();
@@ -142,7 +142,7 @@ class ResearchTypeController extends Controller
     public function destroy($researchTypeId)
     {
         $researchType = ResearchType::where('id', $researchTypeId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($researchType) {
@@ -166,7 +166,7 @@ class ResearchTypeController extends Controller
     public function toggleStatus($researchTypeId)
     {
         $researchType = ResearchType::where('id', $researchTypeId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($researchType) {

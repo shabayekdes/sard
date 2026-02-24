@@ -12,7 +12,7 @@ class WorkflowController extends BaseController
     {
         $query = Workflow::withPermissionCheck()
             ->with(['creator'])
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         if ($request->has('search') && !empty($request->search)) {
             $query->where(function ($q) use ($request) {
@@ -48,7 +48,7 @@ class WorkflowController extends BaseController
             'is_active' => 'nullable|boolean',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['is_active'] = $validated['is_active'] ?? true;
 
         Workflow::create($validated);
@@ -59,7 +59,7 @@ class WorkflowController extends BaseController
     public function update(Request $request, $workflowId)
     {
         $workflow = Workflow::where('id', $workflowId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$workflow) {
@@ -81,7 +81,7 @@ class WorkflowController extends BaseController
     public function destroy($workflowId)
     {
         $workflow = Workflow::where('id', $workflowId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$workflow) {
@@ -99,7 +99,7 @@ class WorkflowController extends BaseController
     public function toggleStatus($workflowId)
     {
         $workflow = Workflow::where('id', $workflowId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$workflow) {

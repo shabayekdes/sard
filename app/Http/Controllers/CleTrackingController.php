@@ -47,7 +47,7 @@ class CleTrackingController extends BaseController
         $cleRecords = $query->paginate($request->per_page ?? 10);
 
         // Get users for filter dropdown
-        $users = User::where('created_by', createdBy())
+        $users = User::where('tenant_id', createdBy())
             ->whereDoesntHave('roles', function ($q) {
                 $q->where('name', 'client');
             })
@@ -77,7 +77,7 @@ class CleTrackingController extends BaseController
             'description' => 'nullable|string',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'completed';
 
         if (!empty($validated['certificate_file'])) {
@@ -86,7 +86,7 @@ class CleTrackingController extends BaseController
         // Check if user belongs to the current company or is the current user
         $user = User::where('id', $validated['user_id'])
             ->where(function ($q) {
-                $q->where('created_by', createdBy())
+                $q->where('tenant_id', createdBy())
                     ->orWhere('id', auth()->id());
             })
             ->first();
@@ -157,7 +157,7 @@ class CleTrackingController extends BaseController
         // Check if user belongs to the current company or is the current user
         $user = User::where('id', $validated['user_id'])
             ->where(function ($q) {
-                $q->where('created_by', createdBy())
+                $q->where('tenant_id', createdBy())
                     ->orWhere('id', auth()->id());
             })
             ->first();

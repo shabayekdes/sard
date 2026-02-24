@@ -55,7 +55,7 @@ class MessageController extends Controller
         });
 
         // Get users who already have conversations with auth user
-        $existingConversationUserIds = Conversation::where('company_id', createdBy())
+        $existingConversationUserIds = Conversation::where('tenant_id', createdBy())
             ->whereJsonContains('participants', auth()->id())
             ->where('type', 'direct')
             ->get('participants')
@@ -70,7 +70,8 @@ class MessageController extends Controller
         if (auth()->user()->hasRole('client')) {
             // For clients, show only the company user who created them
             $client = \App\Models\Client::where('email', auth()->user()->email)->first();
-            $users = User::where('id', $client->created_by)
+            $companyUser = User::where('tenant_id', $client->tenant_id)->where('type', 'company')->first();
+            $users = User::where('id', $companyUser?->id ?? 0)
                 ->where('status', 'active')
                 ->whereNotIn('id', $existingConversationUserIds)
                 ->get(['id', 'name', 'email'])
@@ -103,7 +104,7 @@ class MessageController extends Controller
         $clients = collect();
         if (auth()->user()->hasRole('company')) {
             $existingUserEmails = $users->pluck('email')->toArray();
-            $clients = \App\Models\Client::where('created_by', createdBy())
+            $clients = \App\Models\Client::where('tenant_id', createdBy())
                 ->where('status', 'active')
                 ->whereNotIn('email', $existingUserEmails)
                 ->whereNotIn('id', $existingConversationUserIds)
@@ -187,23 +188,21 @@ class MessageController extends Controller
                 'case_id' => 'nullable|exists:cases,id'
             ]);
 
-            $companyId = createdBy() ?: auth()->user()->created_by ?: auth()->id();
+            $companyId = createdBy();
             
-            $validated['company_id'] = $companyId;
+            $validated['tenant_id'] = $companyId;
             $validated['sender_id'] = auth()->id();
             $validated['message_type'] = 'direct';
             $validated['priority'] = $validated['priority'] ?? 'normal';
-            $validated['created_by'] = $companyId;
 
             // Create or find conversation
             if (!isset($validated['conversation_id'])) {
                 $conversation = Conversation::create([
-                    'company_id' => $companyId,
+                    'tenant_id' => $companyId,
                     'type' => 'direct',
                     'participants' => [auth()->id(), (int)$validated['recipient_id']],
                     'case_id' => $validated['case_id'] ?? null,
                     'last_message_at' => now(),
-                    'created_by' => $companyId
                 ]);
                 $validated['conversation_id'] = $conversation->id;
             } else {

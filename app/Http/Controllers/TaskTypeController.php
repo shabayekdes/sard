@@ -12,7 +12,7 @@ class TaskTypeController extends BaseController
     {
         $query = TaskType::withPermissionCheck()
             ->with(['creator'])
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         // Handle search - search in translatable fields
         if ($request->has('search') && !empty($request->search)) {
@@ -61,7 +61,7 @@ class TaskTypeController extends BaseController
                 'color' => $taskType->color,
                 'default_duration' => $taskType->default_duration,
                 'status' => $taskType->status,
-                'created_by' => $taskType->created_by,
+                'tenant_id' => $taskType->tenant_id,
                 'creator' => $taskType->creator,
                 'created_at' => $taskType->created_at,
                 'updated_at' => $taskType->updated_at,
@@ -88,14 +88,14 @@ class TaskTypeController extends BaseController
             'status' => 'nullable|in:active,inactive',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         $nameEn = $validated['name']['en'] ?? '';
         $nameAr = $validated['name']['ar'] ?? '';
 
         // Check if task type with same name already exists for this company
-        $exists = TaskType::where('created_by', createdBy())
+        $exists = TaskType::where('tenant_id', createdBy())
             ->where(function ($q) use ($nameEn, $nameAr) {
                 $q->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = ?", [$nameEn])
                     ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = ?", [$nameAr]);
@@ -114,7 +114,7 @@ class TaskTypeController extends BaseController
     public function update(Request $request, $taskTypeId)
     {
         $taskType = TaskType::where('id', $taskTypeId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$taskType) {
@@ -137,7 +137,7 @@ class TaskTypeController extends BaseController
         $nameAr = $validated['name']['ar'] ?? '';
 
         // Check if task type with same name already exists for this company (excluding current)
-        $exists = TaskType::where('created_by', createdBy())
+        $exists = TaskType::where('tenant_id', createdBy())
             ->where('id', '!=', $taskTypeId)
             ->where(function ($q) use ($nameEn, $nameAr) {
                 $q->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = ?", [$nameEn])
@@ -157,7 +157,7 @@ class TaskTypeController extends BaseController
     public function destroy($taskTypeId)
     {
         $taskType = TaskType::where('id', $taskTypeId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$taskType) {
@@ -175,7 +175,7 @@ class TaskTypeController extends BaseController
     public function toggleStatus($taskTypeId)
     {
         $taskType = TaskType::where('id', $taskTypeId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$taskType) {

@@ -243,7 +243,7 @@ class EasebuzzPaymentController extends Controller
 
             $invoice = \App\Models\Invoice::where('payment_token', $request->invoice_token)->firstOrFail();
 
-            $settings = getPaymentGatewaySettings($invoice->created_by);
+            $settings = getPaymentGatewaySettings($invoice->tenant_id);
 
             if (!isset($settings['payment_settings']['easebuzz_merchant_key']) || !isset($settings['payment_settings']['easebuzz_salt_key'])) {
                 return response()->json(['error' => __('Easebuzz not configured')], 400);
@@ -328,7 +328,7 @@ class EasebuzzPaymentController extends Controller
             // Include Easebuzz library
             require_once app_path('Libraries/Easebuzz/easebuzz_payment_gateway.php');
 
-            $settings = getPaymentGatewaySettings($invoice->created_by);
+            $settings = getPaymentGatewaySettings($invoice->tenant_id);
             $environment = $settings['payment_settings']['easebuzz_environment'] === 'prod' ? 'prod' : 'test';
 
             $easebuzz = new \Easebuzz(
@@ -349,7 +349,7 @@ class EasebuzzPaymentController extends Controller
                     'payment_method' => 'easebuzz',
                     'payment_date' => now(),
                     'transaction_id' => $easepayid,
-                    'created_by' => $invoice->created_by,
+                    'tenant_id' => $invoice->tenant_id,
                     'approval_status' => 'approved',
                     'approved_at' => now(),
                 ]);

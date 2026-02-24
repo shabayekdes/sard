@@ -20,7 +20,7 @@ class SendNewCaseTwilioNotification
     {
         $case = $event->case;
 
-        $userId = $case->created_by ?? auth()->id();
+        $userId = $case->tenant_id ?? auth()->id();
         $client = $case->client;
         $contact = $case->client->phone;
 

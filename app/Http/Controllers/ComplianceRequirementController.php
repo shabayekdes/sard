@@ -84,7 +84,7 @@ class ComplianceRequirementController extends Controller
             'priority' => 'nullable|in:low,medium,high,critical',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'pending';
         $validated['priority'] = $validated['priority'] ?? 'medium';
 

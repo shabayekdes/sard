@@ -168,7 +168,7 @@ class PayHerePaymentController extends Controller
         try {
             $invoice = Invoice::where('payment_token', $validated['invoice_token'])->firstOrFail();
 
-            $paymentSettings = PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['payhere_merchant_id', 'payhere_merchant_secret', 'payhere_mode', 'is_payhere_enabled'])
                 ->pluck('value', 'key')
                 ->toArray();
@@ -324,7 +324,7 @@ class PayHerePaymentController extends Controller
     private function verifyPayHerePayment($request, $invoice)
     {
         try {
-            $paymentSettings = PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['payhere_merchant_id', 'payhere_merchant_secret'])
                 ->pluck('value', 'key')
                 ->toArray();

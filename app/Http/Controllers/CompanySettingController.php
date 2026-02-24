@@ -13,7 +13,7 @@ class CompanySettingController extends Controller
     {
         $query = CompanySetting::query()
             ->with(['creator'])
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         // Handle search
         if ($request->has('search') && !empty($request->search)) {
@@ -52,7 +52,7 @@ class CompanySettingController extends Controller
     public function update(Request $request, $settingId)
     {
         $setting = CompanySetting::where('id', $settingId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($setting) {

@@ -83,14 +83,14 @@ class LegalPrecedentController extends BaseController
 
         if ($validated['category_id']) {
             $category = ResearchCategory::where('id', $validated['category_id'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->first();
             if (!$category) {
                 return redirect()->back()->with('error', 'Invalid category selection.');
             }
         }
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         LegalPrecedent::create($validated);
@@ -121,7 +121,7 @@ class LegalPrecedentController extends BaseController
 
         if ($validated['category_id']) {
             $category = ResearchCategory::where('id', $validated['category_id'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->first();
             if (!$category) {
                 return redirect()->back()->with('error', 'Invalid category selection.');

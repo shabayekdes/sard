@@ -71,7 +71,7 @@ class CaseController extends BaseController
         
         $cases = $query->paginate($request->per_page ?? 10);
 
-        $caseTypes = CaseType::where('created_by', createdBy())->where('status', 'active')->get(['id', 'name']);
+        $caseTypes = CaseType::where('tenant_id', createdBy())->where('status', 'active')->get(['id', 'name']);
         // Transform case types to include translations
         $caseTypes->transform(function ($caseType) {
             return [
@@ -80,13 +80,13 @@ class CaseController extends BaseController
                 'name_translations' => $caseType->getTranslations('name'), // Full translations for editing
             ];
         });
-        $caseCategories = CaseCategory::where('created_by', createdBy())
+        $caseCategories = CaseCategory::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->whereNull('parent_id')
             ->get(['id', 'name']);
-        $caseStatuses = CaseStatus::where('created_by', createdBy())->where('status', 'active')->get(['id', 'name']);
-        $clients = Client::where('created_by', createdBy())->where('status', 'active')->get(['id', 'name']);
-        $courts = Court::where('created_by', createdBy())->where('status', 'active')->get(['id', 'name']);
+        $caseStatuses = CaseStatus::where('tenant_id', createdBy())->where('status', 'active')->get(['id', 'name']);
+        $clients = Client::where('tenant_id', createdBy())->where('status', 'active')->get(['id', 'name']);
+        $courts = Court::where('tenant_id', createdBy())->where('status', 'active')->get(['id', 'name']);
         
         // Get countries for nationality dropdown - ordered by nationality_name
         $locale = app()->getLocale();
@@ -114,15 +114,14 @@ class CaseController extends BaseController
             ->values()
             ->toArray();
 
-        $googleCalendarEnabled = Setting::where('user_id', createdBy())
-            ->where('key', 'googleCalendarEnabled')
-            ->value('value') == '1';
+        // TODO: Enable when ready integration with Google Calendar is done
+        $googleCalendarEnabled = false; //Setting::where('tenant_id', createdBy())->where('key', 'googleCalendarEnabled')->value('value') == '1';
 
         // Get plan limits for cases (same pattern as UserController)
         $authUser = auth()->user();
         $planLimits = null;
         if ($authUser->type === 'company' && $authUser->plan) {
-            $currentCases = CaseModel::where('created_by', $authUser->id)->count();
+            $currentCases = CaseModel::where('tenant_id', $authUser->tenant_id)->count();
             $maxCases = $authUser->plan->max_cases;
             $isUnlimited = $authUser->plan->isUnlimitedLimit($maxCases);
             $planLimits = [
@@ -131,11 +130,11 @@ class CaseController extends BaseController
                 'can_create' => $isUnlimited ? true : $currentCases < $maxCases
             ];
         }
-        elseif ($authUser->type !== 'superadmin' && $authUser->created_by) {
-            $companyUser = User::find($authUser->created_by);
+        elseif ($authUser->type !== 'superadmin' && $authUser->tenant_id) {
+            $companyUser = User::where('tenant_id', $authUser->tenant_id)->where('type', 'company')->first();
             if ($companyUser && $companyUser->type === 'company' && $companyUser->plan) {
 
-                $currentCases = CaseModel::where('created_by', $companyUser->id)->count();
+                $currentCases = CaseModel::where('tenant_id', $companyUser->tenant_id)->count();
                 $maxCases = $companyUser->plan->max_cases;
                 $isUnlimited = $companyUser->plan->isUnlimitedLimit($maxCases);
                 $planLimits = [
@@ -209,7 +208,7 @@ class CaseController extends BaseController
         // Team members query with filters
         $teamQuery = CaseTeamMember::with('user')
             ->where('case_id', $case->id)
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         if ($request->has('team_search') && !empty($request->team_search)) {
             $teamQuery->whereHas('user', function ($q) use ($request) {
@@ -275,7 +274,7 @@ class CaseController extends BaseController
         $eventTypes = EventType::withPermissionCheck()
             ->where('status', 'active')
             ->get(['id', 'name', 'color']);
-        $roles = \Spatie\Permission\Models\Role::where('created_by', createdBy())
+        $roles = \Spatie\Permission\Models\Role::where('tenant_id', createdBy())
             ->where('name', '!=', 'superadmin')
             ->get(['id', 'name', 'label']);
 
@@ -331,14 +330,14 @@ class CaseController extends BaseController
         $tasks = $tasksQuery->paginate($request->task_per_page ?? 10, ['*'], 'task_page');
 
         // Get task types and statuses for filters
-        $taskTypes = TaskType::where('created_by', createdBy())
+        $taskTypes = TaskType::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
-        $taskStatuses = TaskStatus::where('created_by', createdBy())
+        $taskStatuses = TaskStatus::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 
-        $googleCalendarEnabled = Setting::where('user_id', createdBy())
+        $googleCalendarEnabled = Setting::where('tenant_id', createdBy())
             ->where('key', 'googleCalendarEnabled')
             ->value('value') == '1';
 
@@ -453,11 +452,11 @@ class CaseController extends BaseController
 
     public function create()
     {
-        $clients = Client::where('created_by', createdBy())
+        $clients = Client::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 
-        $caseTypes = CaseType::where('created_by', createdBy())
+        $caseTypes = CaseType::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
         $caseTypes->transform(function ($caseType) {
@@ -468,7 +467,7 @@ class CaseController extends BaseController
             ];
         });
 
-        $caseCategories = CaseCategory::where('created_by', createdBy())
+        $caseCategories = CaseCategory::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->whereNull('parent_id')
             ->get(['id', 'name']);
@@ -480,11 +479,11 @@ class CaseController extends BaseController
             ];
         });
 
-        $caseStatuses = CaseStatus::where('created_by', createdBy())
+        $caseStatuses = CaseStatus::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 
-        $courts = Court::where('created_by', createdBy())
+        $courts = Court::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 
@@ -521,14 +520,14 @@ class CaseController extends BaseController
             ];
         });
 
-        $googleCalendarEnabled = Setting::where('user_id', createdBy())
+        $googleCalendarEnabled = Setting::where('tenant_id', createdBy())
             ->where('key', 'googleCalendarEnabled')
             ->value('value') == '1';
 
         $authUser = auth()->user();
         $planLimits = null;
         if ($authUser->type === 'company' && $authUser->plan) {
-            $currentCases = CaseModel::where('created_by', $authUser->id)->count();
+            $currentCases = CaseModel::where('tenant_id', $authUser->tenant_id)->count();
             $maxCases = $authUser->plan->max_cases;
             $isUnlimited = $authUser->plan->isUnlimitedLimit($maxCases);
             $planLimits = [
@@ -537,10 +536,10 @@ class CaseController extends BaseController
                 'can_create' => $isUnlimited ? true : $currentCases < $maxCases
             ];
         }
-        elseif ($authUser->type !== 'superadmin' && $authUser->created_by) {
-            $companyUser = User::find($authUser->created_by);
+        elseif ($authUser->type !== 'superadmin' && $authUser->tenant_id) {
+            $companyUser = User::where('tenant_id', $authUser->tenant_id)->where('type', 'company')->first();
             if ($companyUser && $companyUser->type === 'company' && $companyUser->plan) {
-                $currentCases = CaseModel::where('created_by', $companyUser->id)->count();
+                $currentCases = CaseModel::where('tenant_id', $companyUser->tenant_id)->count();
                 $maxCases = $companyUser->plan->max_cases;
                 $isUnlimited = $companyUser->plan->isUnlimitedLimit($maxCases);
                 $planLimits = [
@@ -569,11 +568,11 @@ class CaseController extends BaseController
         $this->authorize('update', $case);
         $case->load(['oppositeParties']);
 
-        $clients = Client::where('created_by', createdBy())
+        $clients = Client::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 
-        $caseTypes = CaseType::where('created_by', createdBy())
+        $caseTypes = CaseType::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
         $caseTypes->transform(function ($caseType) {
@@ -584,7 +583,7 @@ class CaseController extends BaseController
             ];
         });
 
-        $caseCategories = CaseCategory::where('created_by', createdBy())
+        $caseCategories = CaseCategory::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->whereNull('parent_id')
             ->get(['id', 'name']);
@@ -596,11 +595,11 @@ class CaseController extends BaseController
             ];
         });
 
-        $caseStatuses = CaseStatus::where('created_by', createdBy())
+        $caseStatuses = CaseStatus::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 
-        $courts = Court::where('created_by', createdBy())
+        $courts = Court::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 
@@ -624,7 +623,7 @@ class CaseController extends BaseController
             ->values()
             ->toArray();
 
-        $googleCalendarEnabled = Setting::where('user_id', createdBy())
+        $googleCalendarEnabled = Setting::where('tenant_id', createdBy())
             ->where('key', 'googleCalendarEnabled')
             ->value('value') == '1';
 
@@ -689,7 +688,7 @@ class CaseController extends BaseController
         // Check case limit (same pattern as UserController)
         $authUser = auth()->user();
         if ($authUser->type === 'company' && $authUser->plan) {
-            $currentCases = CaseModel::where('created_by', $authUser->id)->count();
+            $currentCases = CaseModel::where('tenant_id', $authUser->tenant_id)->count();
             $maxCases = $authUser->plan->max_cases;
             $isUnlimited = $authUser->plan->isUnlimitedLimit($maxCases);
 
@@ -697,10 +696,10 @@ class CaseController extends BaseController
                 return redirect()->back()->with('error', __('Case limit exceeded. Your plan allows maximum :max cases. Please upgrade your plan.', ['max' => $maxCases]));
             }
         }
-        elseif ($authUser->type !== 'superadmin' && $authUser->created_by) {
-            $companyUser = User::find($authUser->created_by);
+        elseif ($authUser->type !== 'superadmin' && $authUser->tenant_id) {
+            $companyUser = User::where('tenant_id', $authUser->tenant_id)->where('type', 'company')->first();
             if ($companyUser && $companyUser->type === 'company' && $companyUser->plan) {
-                $currentCases = CaseModel::where('created_by', $companyUser->id)->count();
+                $currentCases = CaseModel::where('tenant_id', $companyUser->tenant_id)->count();
                 $maxCases = $companyUser->plan->max_cases;
                 $isUnlimited = $companyUser->plan->isUnlimitedLimit($maxCases);
 
@@ -743,14 +742,14 @@ class CaseController extends BaseController
             'documents.*.file' => 'required_with:documents|string',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         // Verify related records belong to current company
-        $client = Client::where('id', $validated['client_id'])->where('created_by', createdBy())->first();
-        $caseType = CaseType::where('id', $validated['case_type_id'])->where('created_by', createdBy())->first();
-        $caseStatus = CaseStatus::where('id', $validated['case_status_id'])->where('created_by', createdBy())->first();
-        $court = Court::where('id', $validated['court_id'])->where('created_by', createdBy())->first();
+        $client = Client::where('id', $validated['client_id'])->where('tenant_id', createdBy())->first();
+        $caseType = CaseType::where('id', $validated['case_type_id'])->where('tenant_id', createdBy())->first();
+        $caseStatus = CaseStatus::where('id', $validated['case_status_id'])->where('tenant_id', createdBy())->first();
+        $court = Court::where('id', $validated['court_id'])->where('tenant_id', createdBy())->first();
 
         if (!$client || !$caseType || !$caseStatus || !$court) {
             return redirect()->back()->with('error', __('Invalid selection. Please try again.'));
@@ -772,7 +771,7 @@ class CaseController extends BaseController
                     'id_number' => $party['id_number'] ?? null,
                     'nationality_id' => $party['nationality_id'] ?? null,
                     'lawyer_name' => $party['lawyer_name'] ?? null,
-                    'created_by' => createdBy(),
+                    'tenant_id' => createdBy(),
                 ]);
             }
         }
@@ -789,7 +788,7 @@ class CaseController extends BaseController
                         'confidentiality' => $doc['confidentiality'],
                         'file_path' => $filePath,
                         'status' => 'active',
-                        'created_by' => createdBy(),
+                        'tenant_id' => createdBy(),
                     ]);
                 }
             }
@@ -867,10 +866,10 @@ class CaseController extends BaseController
         ]);
 
         // Verify related records belong to current company
-        $client = Client::where('id', $validated['client_id'])->where('created_by', createdBy())->first();
-        $caseType = CaseType::where('id', $validated['case_type_id'])->where('created_by', createdBy())->first();
-        $caseStatus = CaseStatus::where('id', $validated['case_status_id'])->where('created_by', createdBy())->first();
-        $court = Court::where('id', $validated['court_id'])->where('created_by', createdBy())->first();
+        $client = Client::where('id', $validated['client_id'])->where('tenant_id', createdBy())->first();
+        $caseType = CaseType::where('id', $validated['case_type_id'])->where('tenant_id', createdBy())->first();
+        $caseStatus = CaseStatus::where('id', $validated['case_status_id'])->where('tenant_id', createdBy())->first();
+        $court = Court::where('id', $validated['court_id'])->where('tenant_id', createdBy())->first();
 
         if (!$client || !$caseType || !$caseStatus || !$court) {
             return redirect()->back()->with('error', __('Invalid selection. Please try again.'));
@@ -893,7 +892,7 @@ class CaseController extends BaseController
                     'id_number' => $party['id_number'] ?? null,
                     'nationality_id' => $party['nationality_id'] ?? null,
                     'lawyer_name' => $party['lawyer_name'] ?? null,
-                    'created_by' => createdBy(),
+                    'tenant_id' => createdBy(),
                 ]);
             }
         }
@@ -911,7 +910,7 @@ class CaseController extends BaseController
                         'confidentiality' => $doc['confidentiality'],
                         'file_path' => $filePath,
                         'status' => 'active',
-                        'created_by' => createdBy(),
+                        'tenant_id' => createdBy(),
                     ]);
                 }
             }

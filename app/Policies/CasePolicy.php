@@ -57,7 +57,7 @@ class CasePolicy
         }
 
         if ($user->hasRole(['company'])) {
-            return in_array((int) $case->created_by, getCompanyAndUsersId(), true);
+            return $case->tenant_id && $user->tenant_id && $case->tenant_id === $user->tenant_id;
         }
 
         if ($user->hasRole(['team_member']) || $user->type === 'team_member') {
@@ -72,7 +72,7 @@ class CasePolicy
 
         // Users with view-cases permission (e.g. custom roles) can view cases in their company
         if ($user->can('view-cases')) {
-            return in_array((int) $case->created_by, getCompanyAndUsersId(), true);
+            return $case->tenant_id && $user->tenant_id && $case->tenant_id === $user->tenant_id;
         }
 
         return false;

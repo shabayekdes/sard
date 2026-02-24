@@ -33,7 +33,7 @@ class InvoicePdfService
     private function buildViewData(Invoice $invoice, string $type): array
     {
         $companyProfile = CompanyProfile::withPermissionCheck()
-            ->where('created_by', $invoice->created_by)
+            ->where('tenant_id', $invoice->tenant_id)
             ->first();
 
         $client = $invoice->client;
@@ -74,8 +74,8 @@ class InvoicePdfService
         $sellerVatNumber = config('invoice_pdf.seller_vat_number')
             ?: ($companyProfile?->registration_number ?? '');
 
-        $logoPath = getSetting('logoDark', null, $invoice->created_by)
-            ?: getSetting('logoLight', null, $invoice->created_by);
+        $logoPath = getSetting('logoDark', null, $invoice->tenant_id)
+            ?: getSetting('logoLight', null, $invoice->tenant_id);
         $logoUrl = $this->buildLogoDataUri($logoPath);
 
         $qrCode = $this->buildQrCodeDataUri(

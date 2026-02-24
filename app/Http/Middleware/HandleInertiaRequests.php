@@ -98,7 +98,7 @@ class HandleInertiaRequests extends Middleware
             try {
                 $superAdmin = User::where('type', 'superadmin')->first();
                 if ($superAdmin) {
-                    $superAdminSettings = Setting::where('user_id', $superAdmin->id)
+                    $superAdminSettings = Setting::whereNull('tenant_id')
                         ->whereIn('key', ['decimalFormat', 'defaultCurrency', 'thousandsSeparator', 'currencySymbolSpace', 'currencySymbolPosition'])
                         ->pluck('value', 'key')
                         ->toArray();

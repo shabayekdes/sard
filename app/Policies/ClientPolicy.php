@@ -57,7 +57,7 @@ class ClientPolicy
         }
 
         if ($user->hasRole(['company'])) {
-            return (int) $client->created_by === (int) $user->id;
+            return $client->tenant_id && $user->tenant_id && $client->tenant_id === $user->tenant_id;
         }
 
         if ($user->hasRole(['team_member']) || $user->type === 'team_member') {

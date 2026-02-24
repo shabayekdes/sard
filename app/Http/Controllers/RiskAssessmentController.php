@@ -12,7 +12,7 @@ class RiskAssessmentController extends Controller
     {
         $query = RiskAssessment::withPermissionCheck()
             ->with(['creator', 'riskCategory'])
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         // Handle search
         if ($request->has('search') && !empty($request->search)) {
@@ -107,7 +107,7 @@ class RiskAssessmentController extends Controller
         $riskAssessments = $query->paginate($request->per_page ?? 10);
         
         // Get risk categories for filter dropdown
-        $riskCategories = \App\Models\RiskCategory::where('created_by', createdBy())
+        $riskCategories = \App\Models\RiskCategory::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name', 'color']);
 
@@ -134,7 +134,7 @@ class RiskAssessmentController extends Controller
             'responsible_person' => 'nullable|string|max:255',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'identified';
 
         RiskAssessment::create($validated);
@@ -144,7 +144,7 @@ class RiskAssessmentController extends Controller
 
     public function update(Request $request, $riskAssessmentId)
     {
-        $riskAssessment = RiskAssessment::where('created_by', createdBy())
+        $riskAssessment = RiskAssessment::where('tenant_id', createdBy())
             ->where('id', $riskAssessmentId)
             ->first();
 
@@ -173,7 +173,7 @@ class RiskAssessmentController extends Controller
 
     public function destroy($riskAssessmentId)
     {
-        $riskAssessment = RiskAssessment::where('created_by', createdBy())
+        $riskAssessment = RiskAssessment::where('tenant_id', createdBy())
             ->where('id', $riskAssessmentId)
             ->first();
 

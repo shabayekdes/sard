@@ -91,15 +91,14 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     }
 
     /**
-     * Get the creator ID based on user type
+     * Get the creator ID based on user type (tenant_id for tenant-scoped users, can be null for SAAS)
      */
     public function creatorId()
     {
         if ($this->type == 'superadmin' || $this->type == 'super admin' || $this->type == 'admin') {
             return $this->id;
-        } else {
-            return $this->created_by;
         }
+        return $this->tenant_id;
     }
 
     /**
@@ -251,14 +250,6 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     public function payoutRequests()
     {
         return $this->hasMany(PayoutRequest::class, 'company_id');
-    }
-
-    /**
-     * Get the user who created this user
-     */
-    public function creator()
-    {
-        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**

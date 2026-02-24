@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\AutoApplyPermissionCheck;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,9 +12,31 @@ use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 class Conversation extends BaseModel
 {
     use BelongsToTenant, AutoApplyPermissionCheck;
-    
+
+    /** @var string Use tenant_id only (table has no company_id) */
+    public static $tenantIdColumn = 'tenant_id';
+
+    public static function bootBelongsToTenant(): void
+    {
+        // Use our own scope with tenant_id instead of trait's TenantScope (which uses shared static that may be company_id)
+        static::addGlobalScope('conversation_tenant', function (Builder $builder) {
+            if (! tenancy()->initialized) {
+                return;
+            }
+            $builder->where($builder->getModel()->qualifyColumn('tenant_id'), tenant()->getTenantKey());
+        });
+
+        static::creating(function ($model) {
+            if (! $model->getAttribute('tenant_id') && ! $model->relationLoaded('tenant')) {
+                if (tenancy()->initialized) {
+                    $model->setAttribute('tenant_id', tenant()->getTenantKey());
+                    $model->setRelation('tenant', tenant());
+                }
+            }
+        });
+    }
+
     protected $fillable = [
-        'company_id',
         'title',
         'type',
         'participants',
@@ -41,6 +64,11 @@ class Conversation extends BaseModel
     public function case(): BelongsTo
     {
         return $this->belongsTo(CaseModel::class, 'case_id');
+    }
+
+    public function tenant()
+    {
+        return $this->belongsTo(config('tenancy.tenant_model'), 'tenant_id');
     }
 
     public function getParticipantUsersAttribute()

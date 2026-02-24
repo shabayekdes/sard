@@ -30,7 +30,7 @@ class ClientBillingInfo extends BaseModel
         'currency',
         'billing_notes',
         'status',
-        'created_by'
+        'tenant_id'
     ];
 
 
@@ -48,7 +48,7 @@ class ClientBillingInfo extends BaseModel
      */
     public function creator()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->hasOne(User::class, 'tenant_id', 'tenant_id')->where('type', 'company');
     }
 
     /**

@@ -13,7 +13,7 @@ class Payment extends BaseModel
     use BelongsToTenant, HasFactory, AutoApplyPermissionCheck;
 
     protected $fillable = [
-        'created_by',
+        'tenant_id',
         'invoice_id',
         'payment_method',
         'approval_status',
@@ -81,7 +81,7 @@ class Payment extends BaseModel
 
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->hasOne(User::class, 'tenant_id', 'tenant_id')->where('type', 'company');
     }
 
     public function invoice(): BelongsTo

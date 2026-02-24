@@ -14,7 +14,7 @@ class BillingRateController extends Controller
     {
         $query = BillingRate::withPermissionCheck()
             ->with(['user', 'client', 'creator'])
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         // Handle search
         if ($request->has('search') && !empty($request->search)) {
@@ -63,7 +63,7 @@ class BillingRateController extends Controller
         $billingRates = $query->paginate($request->per_page ?? 10);
 
         // Get users for filter dropdown
-        $users = User::where('created_by', createdBy())
+        $users = User::where('tenant_id', createdBy())
             ->whereDoesntHave('roles', function ($q) {
                 $q->where('name', 'client');
             })
@@ -71,7 +71,7 @@ class BillingRateController extends Controller
             ->get(['id', 'name']);
 
         // Get clients for filter dropdown
-        $clients = Client::where('created_by', createdBy())
+        $clients = Client::where('tenant_id', createdBy())
             ->get(['id', 'name']);
 
         return Inertia::render('billing/billing-rates/index', [
@@ -102,13 +102,13 @@ class BillingRateController extends Controller
             $validated['client_id'] = null;
         }
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         // Verify user belongs to the current user's company
         $user = User::where('id', $validated['user_id'])
             ->where(function ($q) {
-                $q->where('created_by', createdBy())
+                $q->where('tenant_id', createdBy())
                     ->orWhere('id', createdBy());
             })
             ->first();
@@ -120,7 +120,7 @@ class BillingRateController extends Controller
         // Verify client belongs to the current user's company if provided
         if (!empty($validated['client_id'])) {
             $client = Client::where('id', $validated['client_id'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->first();
 
             if (!$client) {
@@ -136,7 +136,7 @@ class BillingRateController extends Controller
     public function update(Request $request, $billingRateId)
     {
         $billingRate = BillingRate::where('id', $billingRateId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$billingRate) {
@@ -164,7 +164,7 @@ class BillingRateController extends Controller
         // Verify user belongs to the current user's company
         $user = User::where('id', $validated['user_id'])
             ->where(function ($q) {
-                $q->where('created_by', createdBy())
+                $q->where('tenant_id', createdBy())
                     ->orWhere('id', createdBy());
             })
             ->first();
@@ -176,7 +176,7 @@ class BillingRateController extends Controller
         // Verify client belongs to the current user's company if provided
         if (!empty($validated['client_id'])) {
             $client = Client::where('id', $validated['client_id'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->first();
 
             if (!$client) {
@@ -192,7 +192,7 @@ class BillingRateController extends Controller
     public function destroy($billingRateId)
     {
         $billingRate = BillingRate::where('id', $billingRateId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$billingRate) {
@@ -207,7 +207,7 @@ class BillingRateController extends Controller
     public function toggleStatus($billingRateId)
     {
         $billingRate = BillingRate::where('id', $billingRateId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$billingRate) {

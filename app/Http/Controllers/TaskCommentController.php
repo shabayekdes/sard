@@ -13,7 +13,7 @@ class TaskCommentController extends BaseController
     {
         $query = TaskComment::withPermissionCheck()
             ->with(['task', 'creator'])
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         if ($request->has('search') && !empty($request->search)) {
             $query->where(function ($q) use ($request) {
@@ -40,7 +40,7 @@ class TaskCommentController extends BaseController
 
         $comments = $query->paginate($request->per_page ?? 10);
 
-        $tasks = Task::where('created_by', createdBy())
+        $tasks = Task::where('tenant_id', createdBy())
             ->get(['id', 'task_id', 'title']);
 
         return Inertia::render('tasks/task-comments/index', [
@@ -58,12 +58,12 @@ class TaskCommentController extends BaseController
             'is_internal' => 'nullable|boolean',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['is_internal'] = $validated['is_internal'] ?? false;
 
         // Validate that task belongs to the current user's company
         $task = Task::where('id', $validated['task_id'])
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$task) {
@@ -78,7 +78,7 @@ class TaskCommentController extends BaseController
     public function update(Request $request, $commentId)
     {
         $comment = TaskComment::where('id', $commentId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$comment) {
@@ -93,7 +93,7 @@ class TaskCommentController extends BaseController
 
         // Validate that task belongs to the current user's company
         $task = Task::where('id', $validated['task_id'])
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$task) {
@@ -108,7 +108,7 @@ class TaskCommentController extends BaseController
     public function destroy($commentId)
     {
         $comment = TaskComment::where('id', $commentId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$comment) {

@@ -22,7 +22,7 @@ class Coupon extends Model
         'code',
         'code_type',
         'status',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $casts = [
@@ -33,8 +33,8 @@ class Coupon extends Model
         'status' => 'boolean'
     ];
 
-    public function creator(): BelongsTo
+    public function creator()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->hasOne(User::class, 'tenant_id', 'tenant_id')->where('type', 'company');
     }
 }

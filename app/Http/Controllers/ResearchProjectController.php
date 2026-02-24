@@ -73,18 +73,18 @@ class ResearchProjectController extends Controller
         ]);
 
         if ($validated['case_id']) {
-            $case = CaseModel::where('id', $validated['case_id'])->where('created_by', createdBy())->first();
+            $case = CaseModel::where('id', $validated['case_id'])->where('tenant_id', createdBy())->first();
             if (!$case) {
                 return redirect()->back()->with('error', __('Invalid case selection.'));
             }
         }
 
-        $researchType = ResearchType::where('id', $validated['research_type_id'])->where('created_by', createdBy())->first();
+        $researchType = ResearchType::where('id', $validated['research_type_id'])->where('tenant_id', createdBy())->first();
         if (!$researchType) {
             return redirect()->back()->with('error', __('Invalid research type selection.'));
         }
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         ResearchProject::create($validated);
@@ -107,13 +107,13 @@ class ResearchProjectController extends Controller
         ]);
 
         if ($validated['case_id']) {
-            $case = CaseModel::where('id', $validated['case_id'])->where('created_by', createdBy())->first();
+            $case = CaseModel::where('id', $validated['case_id'])->where('tenant_id', createdBy())->first();
             if (!$case) {
                 return redirect()->back()->with('error', __('Invalid case selection.'));
             }
         }
 
-        $researchType = ResearchType::where('id', $validated['research_type_id'])->where('created_by', createdBy())->first();
+        $researchType = ResearchType::where('id', $validated['research_type_id'])->where('tenant_id', createdBy())->first();
         if (!$researchType) {
             return redirect()->back()->with('error', __('Invalid research type selection.'));
         }

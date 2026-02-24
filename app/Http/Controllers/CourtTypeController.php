@@ -13,7 +13,7 @@ class CourtTypeController extends Controller
         $query = CourtType::withPermissionCheck()
             ->with(['creator'])
             ->where(function($q) {
-                $q->where('created_by', createdBy());
+                $q->where('tenant_id', createdBy());
             });
 
         if ($request->has('search') && !empty($request->search)) {
@@ -47,7 +47,7 @@ class CourtTypeController extends Controller
                 'description_translations' => $courtType->getTranslations('description'), // Full translations for editing
                 'color' => $courtType->color,
                 'status' => $courtType->status,
-                'created_by' => $courtType->created_by,
+                'tenant_id' => $courtType->tenant_id,
                 'created_at' => $courtType->created_at,
                 'updated_at' => $courtType->updated_at,
                 'creator' => $courtType->creator,
@@ -73,7 +73,7 @@ class CourtTypeController extends Controller
             'status' => 'nullable|in:active,inactive',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         CourtType::create($validated);
@@ -84,7 +84,7 @@ class CourtTypeController extends Controller
     public function update(Request $request, $id)
     {
         $courtType = CourtType::where('id', $id)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$courtType) {
@@ -110,7 +110,7 @@ class CourtTypeController extends Controller
     public function destroy($id)
     {
         $courtType = CourtType::where('id', $id)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$courtType) {
@@ -125,7 +125,7 @@ class CourtTypeController extends Controller
     public function toggleStatus($id)
     {
         $courtType = CourtType::where('id', $id)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$courtType) {

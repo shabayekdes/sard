@@ -146,7 +146,7 @@ class FedaPayPaymentController extends Controller
             $invoice = \App\Models\Invoice::where('payment_token', $request->invoice_token)->firstOrFail();
 
             // Get FedaPay settings for this invoice creator
-            $settings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+            $settings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->pluck('value', 'key')
                 ->toArray();
 
@@ -187,7 +187,7 @@ class FedaPayPaymentController extends Controller
 
             $invoice = \App\Models\Invoice::where('payment_token', $request->invoice_token)->firstOrFail();
 
-            $paymentSettings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['fedapay_secret_key', 'fedapay_mode', 'is_fedapay_enabled'])
                 ->pluck('value', 'key')
                 ->toArray();

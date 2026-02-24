@@ -54,7 +54,7 @@ class SendUserCreatedEmail
             );
             
             // Trigger webhooks for New User
-            $this->webhookService->triggerWebhooks('New User', $user->toArray(), $user->created_by ?? $user->id);
+            $this->webhookService->triggerWebhooks('New User', $user->toArray(), $user->tenant_id ?? $user->id);
 
         } catch (Exception $e) {
             // Store error in session for frontend notification

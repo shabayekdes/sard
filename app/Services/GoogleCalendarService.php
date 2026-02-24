@@ -32,7 +32,7 @@ class GoogleCalendarService
 
     private function setupClient($userId)
     {
-        $settings = Setting::where('user_id', $userId)
+        $settings = Setting::where('tenant_id', $userId)
             ->whereIn('key', ['googleCalendarJsonPath', 'googleCalendarId'])
             ->pluck('value', 'key');
 
@@ -157,7 +157,7 @@ class GoogleCalendarService
             }
 
             // Get calendar ID from settings
-            $calendarId = Setting::where('user_id', $userId)
+            $calendarId = Setting::where('tenant_id', $userId)
                 ->where('key', 'googleCalendarId')
                 ->value('value') ?: 'primary';
                 
@@ -207,7 +207,7 @@ class GoogleCalendarService
             $this->setupClient($userId);
 
             // Get calendar ID from settings
-            $calendarId = Setting::where('user_id', $userId)
+            $calendarId = Setting::where('tenant_id', $userId)
                 ->where('key', 'googleCalendarId')
                 ->value('value') ?: 'primary';
                 
@@ -293,7 +293,7 @@ class GoogleCalendarService
         try {
             $this->setupClient($userId);
             // Get calendar ID from settings
-            $calendarId = Setting::where('user_id', $userId)
+            $calendarId = Setting::where('tenant_id', $userId)
                 ->where('key', 'googleCalendarId')
                 ->value('value') ?: 'primary';
                 
@@ -318,7 +318,7 @@ class GoogleCalendarService
             $this->setupClient($settingsUserId);
             
             // Get calendar ID from settings
-            $calendarId = Setting::where('user_id', $settingsUserId)
+            $calendarId = Setting::where('tenant_id', $settingsUserId)
                 ->where('key', 'googleCalendarId')
                 ->value('value') ?: 'primary';
             
@@ -451,7 +451,7 @@ class GoogleCalendarService
 
     public function isAuthorized($userId)
     {
-        $jsonPath = Setting::where('user_id', $userId)
+        $jsonPath = Setting::where('tenant_id', $userId)
             ->where('key', 'googleCalendarJsonPath')
             ->first();
         
@@ -788,7 +788,7 @@ class GoogleCalendarService
     public function getAuthorizationUrl($userId)
     {
         try {
-            $settings = Setting::where('user_id', $userId)
+            $settings = Setting::where('tenant_id', $userId)
                 ->whereIn('key', ['googleCalendarClientId', 'googleCalendarSecret', 'googleCalendarRedirectUri'])
                 ->pluck('value', 'key');
 

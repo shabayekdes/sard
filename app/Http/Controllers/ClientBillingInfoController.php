@@ -52,7 +52,7 @@ class ClientBillingInfoController extends Controller
         $billingInfo = $query->paginate($request->per_page ?? 10);
 
         // Get clients for filter dropdown
-        $clients = Client::where('created_by', createdBy())
+        $clients = Client::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 
@@ -88,7 +88,7 @@ class ClientBillingInfoController extends Controller
             'status' => 'nullable|in:active,suspended,closed',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
         $defaultCurrency = getSetting('defaultCurrency')
             ?: Currency::where('status', true)->value('code');
@@ -96,7 +96,7 @@ class ClientBillingInfoController extends Controller
 
         // Check if client belongs to the current user's company
         $client = Client::where('id', $validated['client_id'])
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$client) {
@@ -111,7 +111,7 @@ class ClientBillingInfoController extends Controller
     public function update(Request $request, $billingId)
     {
         $billing = ClientBillingInfo::whereHas('client', function ($q) {
-                $q->where('created_by', createdBy());
+                $q->where('tenant_id', createdBy());
             })
             ->where('id', $billingId)
             ->first();
@@ -137,7 +137,7 @@ class ClientBillingInfoController extends Controller
 
                 // Check if client belongs to the current user's company
                 $client = Client::where('id', $validated['client_id'])
-                    ->where('created_by', createdBy())
+                    ->where('tenant_id', createdBy())
                     ->first();
 
                 if (!$client) {
@@ -158,7 +158,7 @@ class ClientBillingInfoController extends Controller
     public function destroy($billingId)
     {
         $billing = ClientBillingInfo::whereHas('client', function ($q) {
-                $q->where('created_by', createdBy());
+                $q->where('tenant_id', createdBy());
             })
             ->where('id', $billingId)
             ->first();

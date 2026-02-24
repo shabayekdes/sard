@@ -11,7 +11,7 @@ class DocumentCategoryController extends Controller
     public function index(Request $request)
     {
         $query = DocumentCategory::withPermissionCheck()
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         if ($request->has('search') && ! empty($request->search)) {
             $searchTerm = $request->search;
@@ -58,7 +58,7 @@ class DocumentCategoryController extends Controller
                 'description_translations' => $category->getTranslations('description'),
                 'color' => $category->color,
                 'status' => $category->status,
-                'created_by' => $category->created_by,
+                'tenant_id' => $category->tenant_id,
                 'created_at' => $category->created_at,
                 'updated_at' => $category->updated_at,
             ];
@@ -83,7 +83,7 @@ class DocumentCategoryController extends Controller
             'status' => 'nullable|in:active,inactive',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         DocumentCategory::create($validated);
@@ -93,7 +93,7 @@ class DocumentCategoryController extends Controller
 
     public function update(Request $request, $id)
     {
-        $category = DocumentCategory::where('id', $id)->where('created_by', createdBy())->first();
+        $category = DocumentCategory::where('id', $id)->where('tenant_id', createdBy())->first();
 
         if (!$category) {
             return redirect()->back()->with('error', 'Document category not found.');
@@ -117,7 +117,7 @@ class DocumentCategoryController extends Controller
 
     public function destroy($id)
     {
-        $category = DocumentCategory::where('id', $id)->where('created_by', createdBy())->first();
+        $category = DocumentCategory::where('id', $id)->where('tenant_id', createdBy())->first();
 
         if (!$category) {
             return redirect()->back()->with('error', 'Document category not found.');
@@ -130,7 +130,7 @@ class DocumentCategoryController extends Controller
 
     public function toggleStatus($id)
     {
-        $category = DocumentCategory::where('id', $id)->where('created_by', createdBy())->first();
+        $category = DocumentCategory::where('id', $id)->where('tenant_id', createdBy())->first();
 
         if (!$category) {
             return redirect()->back()->with('error', 'Document category not found.');

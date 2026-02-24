@@ -237,7 +237,7 @@ class DashboardController extends Controller
         $upcomingHearings = Hearing::where('tenant_id', $companyId)
             ->where('hearing_date', '>=', now())
             ->count();
-        $unreadMessages = Message::where('company_id', $companyId)
+        $unreadMessages = Message::where('tenant_id', $companyId)
             ->where('recipient_id', auth()->id())
             ->where('is_read', false)
             ->count();
@@ -308,7 +308,7 @@ class DashboardController extends Controller
                     'status' => 'success'
                 ];
             }))
-            ->merge(Message::where('company_id', $companyId)->where('recipient_id', auth()->id())->latest()->take(2)->get()->map(function ($message) {
+            ->merge(Message::where('tenant_id', $companyId)->where('recipient_id', auth()->id())->latest()->take(2)->get()->map(function ($message) {
                 return [
                     'id' => $message->id,
                     'type' => 'message',

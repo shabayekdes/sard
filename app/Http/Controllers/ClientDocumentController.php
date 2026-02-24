@@ -80,7 +80,7 @@ class ClientDocumentController extends BaseController
             'status' => 'nullable|in:active,archived',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
         $validated['file_path'] = $validated['file'];
 
@@ -91,7 +91,7 @@ class ClientDocumentController extends BaseController
 
         // Check if client belongs to the current user's company
         $client = Client::where('id', $validated['client_id'])
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$client) {
@@ -124,7 +124,7 @@ class ClientDocumentController extends BaseController
     public function update(Request $request, $documentId)
     {
         $document = ClientDocument::whereHas('client', function ($q) {
-            $q->where('created_by', createdBy());
+            $q->where('tenant_id', createdBy());
         })
             ->where('id', $documentId)
             ->first();
@@ -142,7 +142,7 @@ class ClientDocumentController extends BaseController
 
                 // Check if client belongs to the current user's company
                 $client = Client::where('id', $validated['client_id'])
-                    ->where('created_by', createdBy())
+                    ->where('tenant_id', createdBy())
                     ->first();
 
                 if (!$client) {
@@ -169,7 +169,7 @@ class ClientDocumentController extends BaseController
     public function destroy($documentId)
     {
         $document = ClientDocument::whereHas('client', function ($q) {
-            $q->where('created_by', createdBy());
+            $q->where('tenant_id', createdBy());
         })
             ->where('id', $documentId)
             ->first();
@@ -194,7 +194,7 @@ class ClientDocumentController extends BaseController
     public function download($documentId)
     {
         $document = ClientDocument::whereHas('client', function ($q) {
-            $q->where('created_by', createdBy());
+            $q->where('tenant_id', createdBy());
         })
             ->where('id', $documentId)
             ->first();

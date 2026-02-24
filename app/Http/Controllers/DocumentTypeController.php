@@ -12,7 +12,7 @@ class DocumentTypeController extends Controller
     {
         $query = DocumentType::withPermissionCheck()
             ->with(['creator'])
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         // Handle search - search in translatable fields
         if ($request->has('search') && ! empty($request->search)) {
@@ -68,7 +68,7 @@ class DocumentTypeController extends Controller
                 'description_translations' => $documentType->getTranslations('description'), // Full translations for editing
                 'color' => $documentType->color,
                 'status' => $documentType->status,
-                'created_by' => $documentType->created_by,
+                'tenant_id' => $documentType->tenant_id,
                 'creator' => $documentType->creator,
                 'created_at' => $documentType->created_at,
                 'updated_at' => $documentType->updated_at,
@@ -94,7 +94,7 @@ class DocumentTypeController extends Controller
             'status' => 'nullable|in:active,inactive',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         DocumentType::create($validated);
@@ -105,7 +105,7 @@ class DocumentTypeController extends Controller
     public function update(Request $request, $id)
     {
         $documentType = DocumentType::where('id', $id)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (! $documentType) {
@@ -131,7 +131,7 @@ class DocumentTypeController extends Controller
     public function destroy($id)
     {
         $documentType = DocumentType::where('id', $id)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (! $documentType) {
@@ -146,7 +146,7 @@ class DocumentTypeController extends Controller
     public function toggleStatus($id)
     {
         $documentType = DocumentType::where('id', $id)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (! $documentType) {

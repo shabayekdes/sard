@@ -117,7 +117,7 @@ class InvoiceController extends BaseController
         $amountPaid = (float) $invoice->payments()->where('approval_status', 'approved')->sum('amount');
         $remainingAmount = max(0, (float) $invoice->total_amount - $amountPaid);
 
-        $companyProfile = \App\Models\CompanyProfile::where('created_by', $invoice->created_by)->first();
+        $companyProfile = \App\Models\CompanyProfile::where('tenant_id', $invoice->tenant_id)->first();
 
         $invoiceItems = $this->mapLineItemsToArray($invoice->lineItems);
 
@@ -203,7 +203,7 @@ class InvoiceController extends BaseController
         $totalAmount = $subtotal + $taxAmount;
 
         $invoice = Invoice::create([
-            'created_by' => createdBy(),
+            'tenant_id' => createdBy(),
             'client_id' => $request->client_id,
             'case_id' => $request->case_id,
             'currency_id' => $request->currency_id,
@@ -358,7 +358,7 @@ class InvoiceController extends BaseController
         $this->authorize('view', $invoice);
         $invoice->load(['client', 'case', 'creator', 'lineItems']);
 
-        $companyProfile = \App\Models\CompanyProfile::where('created_by', createdBy())->first();
+        $companyProfile = \App\Models\CompanyProfile::where('tenant_id', createdBy())->first();
 
         $invoiceItems = $this->mapLineItemsToArray($invoice->lineItems);
 
@@ -402,7 +402,7 @@ class InvoiceController extends BaseController
         $subtotal = $timeEntries->sum('total_amount');
 
         $invoice = Invoice::create([
-            'created_by' => createdBy(),
+            'tenant_id' => createdBy(),
             'client_id' => $request->client_id,
             'case_id' => $request->case_id,
             'subtotal' => $subtotal,
@@ -468,7 +468,7 @@ class InvoiceController extends BaseController
         }
 
         $invoice = Invoice::create([
-            'created_by' => createdBy(),
+            'tenant_id' => createdBy(),
             'client_id' => $request->client_id,
             'case_id' => $request->case_id,
             'subtotal' => $subtotal,

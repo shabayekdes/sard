@@ -21,7 +21,7 @@ class HearingType extends BaseModel
         'status',
         'requirements',
         'notes',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $casts = [
@@ -52,7 +52,7 @@ class HearingType extends BaseModel
      */
     public function creator()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->hasOne(User::class, 'tenant_id', 'tenant_id')->where('type', 'company');
     }
 
     /**

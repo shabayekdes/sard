@@ -55,7 +55,7 @@ class DocumentCommentController extends Controller
             return redirect()->back()->with('error', __(':model not found.', ['model' => __('Document')]));
         }
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
 
         DocumentComment::create($validated);
 

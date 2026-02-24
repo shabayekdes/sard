@@ -46,7 +46,7 @@ class CaseTimelineController extends Controller
         $timelines = $query->paginate($request->per_page ?? 10);
         $cases = CaseModel::withPermissionCheck()->where('status', 'active')->get(['id', 'title', 'case_id']);
 
-        $googleCalendarEnabled = Setting::where('user_id', createdBy())
+        $googleCalendarEnabled = Setting::where('tenant_id', createdBy())
             ->where('key', 'googleCalendarEnabled')
             ->value('value') == '1';
 
@@ -71,7 +71,7 @@ class CaseTimelineController extends Controller
             'sync_with_google_calendar' => 'nullable|boolean',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
         $validated['is_completed'] = $validated['is_completed'] ?? false;
 

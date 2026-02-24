@@ -105,10 +105,10 @@
                     <tr class="pdf-tr">
                         <td class="pdf-td pdf-td-desc">{{ $item['description'] }}</td>
                         <td class="pdf-td pdf-td-num">{{ $formatNum($item['quantity']) }}</td>
-                        <td class="pdf-td pdf-td-num">@money($item['unit_price'], $invoice->created_by, true)</td>
-                        <td class="pdf-td pdf-td-num">@money($item['taxable_amount'], $invoice->created_by, true)</td>
-                        <td class="pdf-td pdf-td-num">@money($item['vat_amount'], $invoice->created_by, true)</td>
-                        <td class="pdf-td pdf-td-num">@money($item['line_total'], $invoice->created_by, true)</td>
+                        <td class="pdf-td pdf-td-num">@money($item['unit_price'], $invoice->tenant_id, true)</td>
+                        <td class="pdf-td pdf-td-num">@money($item['taxable_amount'], $invoice->tenant_id, true)</td>
+                        <td class="pdf-td pdf-td-num">@money($item['vat_amount'], $invoice->tenant_id, true)</td>
+                        <td class="pdf-td pdf-td-num">@money($item['line_total'], $invoice->tenant_id, true)</td>
                     </tr>
                 @endforeach
             @else
@@ -129,25 +129,25 @@
             <div class="pdf-totals-wrap pdf-totals-rtl">
                 <div class="pdf-totals-row">
                     <span class="pdf-totals-label">المجموع الفرعي</span>
-                    <span class="pdf-totals-value">@money($totals['subtotal'], $invoice->created_by, true)</span>
+                    <span class="pdf-totals-value">@money($totals['subtotal'], $invoice->tenant_id, true)</span>
                 </div>
                 <div class="pdf-totals-row">
                     <span class="pdf-totals-label">قيمة الضريبة ({{ (int) $taxRate }}%)</span>
-                    <span class="pdf-totals-value">@money($totals['vat_total'], $invoice->created_by, true)</span>
+                    <span class="pdf-totals-value">@money($totals['vat_total'], $invoice->tenant_id, true)</span>
                 </div>
                 <div class="pdf-totals-divider"></div>
                 <div class="pdf-totals-row pdf-totals-row-main">
                     <span class="pdf-totals-label">إجمالي الفاتورة (شامل الضريبة)</span>
-                    <span class="pdf-totals-value">@money($totals['grand_total'], $invoice->created_by, true)</span>
+                    <span class="pdf-totals-value">@money($totals['grand_total'], $invoice->tenant_id, true)</span>
                 </div>
                 <div class="pdf-totals-divider"></div>
                 <div class="pdf-totals-row">
                     <span class="pdf-totals-label">المبلغ المدفوع</span>
-                    <span class="pdf-totals-value">@money($paymentsTotal, $invoice->created_by, true)</span>
+                    <span class="pdf-totals-value">@money($paymentsTotal, $invoice->tenant_id, true)</span>
                 </div>
                 <div class="pdf-totals-row">
                     <span class="pdf-totals-label">المبلغ المتبقي</span>
-                    <span class="pdf-totals-value">@money($amountDue, $invoice->created_by, true)</span>
+                    <span class="pdf-totals-value">@money($amountDue, $invoice->tenant_id, true)</span>
                 </div>
             </div>
         </div>

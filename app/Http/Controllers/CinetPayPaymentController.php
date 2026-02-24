@@ -192,7 +192,7 @@ class CinetPayPaymentController extends Controller
                     'payment_method' => 'cinetpay',
                     'payment_date' => now(),
                     'transaction_id' => $request->cpm_trans_id,
-                    'created_by' => $invoice->created_by,
+                    'tenant_id' => $invoice->tenant_id,
                     'approval_status' => 'approved',
                     'approved_at' => now(),
                 ]);
@@ -223,7 +223,7 @@ class CinetPayPaymentController extends Controller
 
             $invoice = \App\Models\Invoice::where('payment_token', $request->invoice_token)->firstOrFail();
 
-            $paymentSettings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['cinetpay_site_id', 'cinetpay_api_key', 'is_cinetpay_enabled'])
                 ->pluck('value', 'key')
                 ->toArray();

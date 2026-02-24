@@ -44,10 +44,10 @@ class ResearchCitationController extends Controller
 
         $citations = $query->paginate($request->per_page ?? 10);
 
-        $projects = ResearchProject::where('created_by', createdBy())
+        $projects = ResearchProject::where('tenant_id', createdBy())
             ->get(['id', 'title']);
 
-        $sources = ResearchSource::where('created_by', createdBy())
+        $sources = ResearchSource::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'source_name']);
 
@@ -71,7 +71,7 @@ class ResearchCitationController extends Controller
         ]);
 
         $project = ResearchProject::where('id', $validated['research_project_id'])
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$project) {
@@ -80,14 +80,14 @@ class ResearchCitationController extends Controller
 
         if ($validated['source_id'] ?? null) {
             $source = ResearchSource::where('id', $validated['source_id'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->first();
             if (!$source) {
                 return redirect()->back()->with('error', __('Invalid source selection.'));
             }
         }
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
 
         ResearchCitation::create($validated);
 
@@ -114,7 +114,7 @@ class ResearchCitationController extends Controller
         ]);
 
         $project = ResearchProject::where('id', $validated['research_project_id'])
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$project) {
@@ -123,7 +123,7 @@ class ResearchCitationController extends Controller
 
         if ($validated['source_id']) {
             $source = ResearchSource::where('id', $validated['source_id'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->first();
             if (!$source) {
                 return redirect()->back()->with('error', __('Invalid source selection.'));

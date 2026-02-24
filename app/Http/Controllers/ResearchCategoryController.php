@@ -13,7 +13,7 @@ class ResearchCategoryController extends Controller
     {
         $query = ResearchCategory::withPermissionCheck()
             ->with(['practiceArea', 'creator'])
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         if ($request->has('search') && !empty($request->search)) {
             $query->where(function ($q) use ($request) {
@@ -38,7 +38,7 @@ class ResearchCategoryController extends Controller
 
         $categories = $query->paginate($request->per_page ?? 10);
 
-        $practiceAreas = PracticeArea::where('created_by', createdBy())
+        $practiceAreas = PracticeArea::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 
@@ -61,14 +61,14 @@ class ResearchCategoryController extends Controller
 
         if ($validated['practice_area_id']) {
             $practiceArea = PracticeArea::where('id', $validated['practice_area_id'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->first();
             if (!$practiceArea) {
                 return redirect()->back()->with('error', 'Invalid practice area selection.');
             }
         }
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
         $validated['color'] = $validated['color'] ?? '#3b82f6';
 
@@ -79,7 +79,7 @@ class ResearchCategoryController extends Controller
 
     public function update(Request $request, $categoryId)
     {
-        $category = ResearchCategory::where('id', $categoryId)->where('created_by', createdBy())->first();
+        $category = ResearchCategory::where('id', $categoryId)->where('tenant_id', createdBy())->first();
 
         if (!$category) {
             return redirect()->back()->with('error', 'Research category not found.');
@@ -95,7 +95,7 @@ class ResearchCategoryController extends Controller
 
         if ($validated['practice_area_id']) {
             $practiceArea = PracticeArea::where('id', $validated['practice_area_id'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->first();
             if (!$practiceArea) {
                 return redirect()->back()->with('error', 'Invalid practice area selection.');
@@ -109,7 +109,7 @@ class ResearchCategoryController extends Controller
 
     public function destroy($categoryId)
     {
-        $category = ResearchCategory::where('id', $categoryId)->where('created_by', createdBy())->first();
+        $category = ResearchCategory::where('id', $categoryId)->where('tenant_id', createdBy())->first();
 
         if (!$category) {
             return redirect()->back()->with('error', 'Research category not found.');
@@ -122,7 +122,7 @@ class ResearchCategoryController extends Controller
 
     public function toggleStatus($categoryId)
     {
-        $category = ResearchCategory::where('id', $categoryId)->where('created_by', createdBy())->first();
+        $category = ResearchCategory::where('id', $categoryId)->where('tenant_id', createdBy())->first();
 
         if (!$category) {
             return redirect()->back()->with('error', 'Research category not found.');

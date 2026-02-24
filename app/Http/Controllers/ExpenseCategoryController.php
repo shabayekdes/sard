@@ -65,7 +65,7 @@ class ExpenseCategoryController extends Controller
                 'description' => $expenseCategory->description, // Spatie will automatically return translated value for display
                 'description_translations' => $expenseCategory->getTranslations('description'), // Full translations for editing
                 'status' => $expenseCategory->status,
-                'created_by' => $expenseCategory->created_by,
+                'tenant_id' => $expenseCategory->tenant_id,
                 'creator' => $expenseCategory->creator,
                 'created_at' => $expenseCategory->created_at,
                 'updated_at' => $expenseCategory->updated_at,
@@ -90,11 +90,11 @@ class ExpenseCategoryController extends Controller
             'status' => 'nullable|in:active,inactive',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         // Check if expense category with same name already exists for this company
-        $exists = ExpenseCategory::where('created_by', createdBy())
+        $exists = ExpenseCategory::where('tenant_id', createdBy())
             ->whereRaw("JSON_EXTRACT(name, '$.ar') = ?", [$validated['name']['ar']])
             ->exists();
 
@@ -110,7 +110,7 @@ class ExpenseCategoryController extends Controller
     public function update(Request $request, $expenseCategoryId)
     {
         $expenseCategory = ExpenseCategory::where('id', $expenseCategoryId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($expenseCategory) {
@@ -126,7 +126,7 @@ class ExpenseCategoryController extends Controller
                 ]);
 
                 // Check if expense category with same name already exists for this company (excluding current)
-                $exists = ExpenseCategory::where('created_by', createdBy())
+                $exists = ExpenseCategory::where('tenant_id', createdBy())
                     ->whereRaw("JSON_EXTRACT(name, '$.ar') = ?", [$validated['name']['ar']])
                     ->where('id', '!=', $expenseCategoryId)
                     ->exists();
@@ -149,7 +149,7 @@ class ExpenseCategoryController extends Controller
     public function destroy($expenseCategoryId)
     {
         $expenseCategory = ExpenseCategory::where('id', $expenseCategoryId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($expenseCategory) {
@@ -167,7 +167,7 @@ class ExpenseCategoryController extends Controller
     public function toggleStatus($expenseCategoryId)
     {
         $expenseCategory = ExpenseCategory::where('id', $expenseCategoryId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($expenseCategory) {

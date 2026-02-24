@@ -26,7 +26,7 @@ class Message extends BaseModel
         'attachments',
         'case_id',
         'status',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $casts = [

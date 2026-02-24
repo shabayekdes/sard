@@ -15,7 +15,7 @@ class OppositeParty extends Model
         'id_number',
         'nationality_id',
         'lawyer_name',
-        'created_by',
+        'tenant_id',
     ];
 
     public function case(): BelongsTo
@@ -30,6 +30,6 @@ class OppositeParty extends Model
 
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->hasOne(User::class, 'tenant_id', 'tenant_id')->where('type', 'company');
     }
 }

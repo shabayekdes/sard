@@ -45,12 +45,10 @@ trait AutoApplyPermissionCheck
         // For company users, show only their created records
         if ($user->hasRole(['company'])) {
             if (get_class($query->getModel()) === 'App\Models\CaseNote') {
-                $teamMemberIds = \App\Models\User::where('created_by', $user->id)->where('type', 'team_member')->pluck('id')->toArray();
-                $allowedCreators = array_merge([$user->id], $teamMemberIds);
-                return $query->whereIn('created_by', $allowedCreators);
+                return $query->where('tenant_id', $user->tenant_id);
             }
-            if (Schema::hasColumn($query->getModel()->getTable(), 'created_by')) {
-                return $query->where('created_by', $user->id);
+            if (Schema::hasColumn($query->getModel()->getTable(), 'tenant_id')) {
+                return $query->where('tenant_id', $user->tenant_id);
             }
         }
         // For clients, apply client-specific filtering
@@ -65,32 +63,32 @@ trait AutoApplyPermissionCheck
 
         try {
             if ($user->hasPermissionTo("manage-own-{$module}")) {
-                if (Schema::hasColumn($query->getModel()->getTable(), 'created_by')) {
-                    return $query->where('created_by', $user->id);
+                if (Schema::hasColumn($query->getModel()->getTable(), 'tenant_id')) {
+                    return $query->where('tenant_id', $user->tenant_id);
                 }
                 return $query;
             }
             // If user has permission to list all items, return the query without filtering
             if ($user->hasPermissionTo("manage-any-{$module}") ||  $user->hasPermissionTo("manage-{$module}")) {
-                if (Schema::hasColumn($query->getModel()->getTable(), 'created_by')) {
-                    return $query->whereIn('created_by', getCompanyAndUsersId());
+                if (Schema::hasColumn($query->getModel()->getTable(), 'tenant_id')) {
+                    return $query->where('tenant_id', $user->tenant_id);
                 }
             }
         } catch (PermissionDoesNotExist $e) {
             if ($user->hasPermissionTo("view-{$module}")) {
                 // Default to showing only own records if they have view permission
-                if (Schema::hasColumn($query->getModel()->getTable(), 'created_by')) {
-                    return $query->where('created_by', $user->id);
+                if (Schema::hasColumn($query->getModel()->getTable(), 'tenant_id')) {
+                    return $query->where('tenant_id', $user->tenant_id);
                 }
                 return $query;
             }
         }
 
         // try {
-        //     // If user has permission to list only their own items, filter by created_by
+        //     // If user has permission to list only their own items, filter by tenant_id
         //     if ($user->hasPermissionTo("manage-own-{$module}")) {
-        //         if (Schema::hasColumn($query->getModel()->getTable(), 'created_by')) {
-        //             return $query->where('created_by', $user->id);
+        //         if (Schema::hasColumn($query->getModel()->getTable(), 'tenant_id')) {
+        //             return $query->where('tenant_id', $user->id);
         //         }
         //         return $query;
         //     }
@@ -98,8 +96,8 @@ trait AutoApplyPermissionCheck
         //     // Permission doesn't exist, check for view permission instead
         //     if ($user->hasPermissionTo("view-{$module}")) {
         //         // Default to showing only own records if they have view permission
-        //         if (Schema::hasColumn($query->getModel()->getTable(), 'created_by')) {
-        //             return $query->where('created_by', $user->id);
+        //         if (Schema::hasColumn($query->getModel()->getTable(), 'tenant_id')) {
+        //             return $query->where('tenant_id', $user->id);
         //         }
         //         return $query;
         //     }
@@ -129,7 +127,7 @@ trait AutoApplyPermissionCheck
             case 'App\Models\CalendarEvent':
             case 'App\Models\Event':
                 return $query->where(function ($q) use ($user) {
-                    $q->where('created_by', $user->id)
+                    $q->where('tenant_id', $user->tenant_id)
                         ->orWhere('assigned_to', $user->id)
                         ->orWhereHas('attendees', function ($subQ) use ($user) {
                             $subQ->where('user_id', $user->id);
@@ -155,10 +153,9 @@ trait AutoApplyPermissionCheck
                 });
 
             case 'App\Models\CaseNote':
-                $companyId = $user->created_by;
-                $teamMemberIds = \App\Models\User::where('created_by', $companyId)->where('type', 'team_member')->pluck('id')->toArray();
-                $allowedCreators = array_merge([$companyId], $teamMemberIds);
-                return $query->whereIn('created_by', $allowedCreators);
+                $companyId = $user->tenant_id;
+                $teamMemberIds = \App\Models\User::where('tenant_id', $companyId)->where('type', 'team_member')->pluck('id')->toArray();
+                return $query->where('tenant_id', $companyId);
 
             case 'App\Models\CaseTimeline':
                 return $query->whereHas('case.teamMembers', function ($q) use ($user) {
@@ -180,9 +177,9 @@ trait AutoApplyPermissionCheck
 
                 // Document related modules
             case 'App\Models\Document':
-                $companyId = $user->created_by;
+                $companyId = $user->tenant_id;
                 return $query->where(function ($q) use ($user, $companyId) {
-                    $q->where('created_by', $companyId)
+                    $q->where('tenant_id', $companyId)
                         ->orWhereExists(function ($subQuery) use ($user) {
                             $subQuery->select('id')
                                 ->from('document_permissions')
@@ -196,10 +193,10 @@ trait AutoApplyPermissionCheck
                 });
 
             case 'App\Models\DocumentComment':
-                $companyId = $user->created_by;
+                $companyId = $user->tenant_id;
                 return $query->whereHas('document', function ($q) use ($user, $companyId) {
                     $q->where(function ($subQ) use ($user, $companyId) {
-                        $subQ->where('created_by', $companyId)
+                        $subQ->where('tenant_id', $companyId)
                             ->orWhereExists(function ($subQuery) use ($user) {
                                 $subQuery->select('id')
                                     ->from('document_permissions')
@@ -222,7 +219,7 @@ trait AutoApplyPermissionCheck
 
                 // Billing module (view only)
             case 'App\Models\BillingRate':
-                return $query->where('created_by', createdBy());
+                return $query->where('tenant_id', createdBy());
 
                 // Court related
             case 'App\Models\Hearing':
@@ -238,14 +235,14 @@ trait AutoApplyPermissionCheck
 
             case 'App\Models\KnowledgeArticle':
                 // For team members, get the company ID that created them
-                $companyId = $user->created_by;
+                $companyId = $user->tenant_id;
                 return $query->where('status', 'published')
                     ->where('is_public', 1)
-                    ->where('created_by', $companyId);
+                    ->where('tenant_id', $companyId);
 
             case 'App\Models\LegalPrecedent':
-                $companyId = $user->created_by;
-                return $query->where('created_by', $companyId);
+                $companyId = $user->tenant_id;
+                return $query->where('tenant_id', $companyId);
 
             case 'App\Models\HearingNotification':
                 return $query->whereHas('hearing.case.teamMembers', function ($q) use ($user) {
@@ -254,27 +251,27 @@ trait AutoApplyPermissionCheck
 
                 // Communication
             case 'App\Models\Message':
-                $companyId = $user->created_by;
+                $companyId = $user->tenant_id;
                 return $query->where(function ($q) use ($user, $companyId) {
                     $q->where('sender_id', $user->id)
                         ->orWhere('recipient_id', $user->id)
-                        ->orWhere('company_id', $companyId);
+                        ->orWhere('tenant_id', $companyId);
                 });
 
             case 'App\Models\Conversation':
-                $companyId = $user->created_by;
+                $companyId = $user->tenant_id;
                 return $query->where(function ($q) use ($user, $companyId) {
                     $q->whereJsonContains('participants', $user->id)
-                        ->orWhere('company_id', $companyId);
+                        ->orWhere('tenant_id', $companyId);
                 });
 
             case 'App\Models\User':
-                return $query->where('created_by', $user->created_by);
+                return $query->where('tenant_id', $user->tenant_id);
 
             default:
                 // For other models, show only user's created records or company records
-                if (Schema::hasColumn($query->getModel()->getTable(), 'created_by')) {
-                    return $query->where('created_by', createdBy());
+                if (Schema::hasColumn($query->getModel()->getTable(), 'tenant_id')) {
+                    return $query->where('tenant_id', createdBy());
                 }
                 return $query;
         }
@@ -300,13 +297,11 @@ trait AutoApplyPermissionCheck
                 });
 
             case 'App\Models\CaseNote':
-                $companyId = $client->created_by;
-                $teamMemberIds = \App\Models\User::where('created_by', $companyId)->where('type', 'team_member')->pluck('id')->toArray();
-                $allowedCreators = array_merge([$companyId], $teamMemberIds);
+                $companyId = $client->tenant_id;
                 $clientCaseIds = \App\Models\CaseModel::where('client_id', $client->id)->pluck('id')->toArray();
                 
                 return $query->where('is_private', 0)
-                    ->whereIn('created_by', $allowedCreators)
+                    ->where('tenant_id', $companyId)
                     ->where(function ($q) use ($clientCaseIds) {
                         foreach ($clientCaseIds as $caseId) {
                             $q->orWhereJsonContains('case_ids', (string)$caseId);
@@ -337,7 +332,7 @@ trait AutoApplyPermissionCheck
 
             case 'App\Models\Expense':
                 return $query->withoutGlobalScope('company')
-                    ->where('created_by', $client->created_by)
+                    ->where('tenant_id', $client->tenant_id)
                     ->whereExists(function ($subQuery) use ($client) {
                         $subQuery->select('id')
                             ->from('cases')
@@ -359,20 +354,20 @@ trait AutoApplyPermissionCheck
                 });
 
             case 'App\Models\Conversation':
-                return $query->where('company_id', $client->created_by)
+                return $query->where('tenant_id', $client->tenant_id)
                     ->whereJsonContains('participants', $user->id);
 
             case 'App\Models\KnowledgeArticle':
                 return $query->where('status', 'published')
                     ->where('is_public', 1)
-                    ->where('created_by', $client->created_by);
+                    ->where('tenant_id', $client->tenant_id);
 
             case 'App\Models\LegalPrecedent':
                 return $query->where('status', true);
 
             case 'App\Models\Document':
                 return $query->where(function ($q) use ($user, $client) {
-                    $q->where('created_by', $client->created_by)
+                    $q->where('tenant_id', $client->tenant_id)
                         ->whereExists(function ($subQuery) use ($user) {
                             $subQuery->select('id')
                                 ->from('document_permissions')
@@ -387,7 +382,7 @@ trait AutoApplyPermissionCheck
 
             case 'App\Models\DocumentComment':
                 return $query->whereHas('document', function ($q) use ($user, $client) {
-                    $q->where('created_by', $client->created_by)
+                    $q->where('tenant_id', $client->tenant_id)
                         ->whereExists(function ($subQuery) use ($user) {
                             $subQuery->select('id')
                                 ->from('document_permissions')
@@ -410,7 +405,7 @@ trait AutoApplyPermissionCheck
                 });
 
             default:
-                return $query->where('created_by', createdBy());
+                return $query->where('tenant_id', createdBy());
         }
     }
 }

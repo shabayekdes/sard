@@ -16,7 +16,7 @@ class DocumentPermission extends BaseModel
         'user_id',
         'permission_type',
         'expires_at',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $casts = [
@@ -35,7 +35,7 @@ class DocumentPermission extends BaseModel
 
     public function creator()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->hasOne(User::class, 'tenant_id', 'tenant_id')->where('type', 'company');
     }
 
     // public function scopeWithPermissionCheck($query)

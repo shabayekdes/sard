@@ -12,7 +12,7 @@ class TaskStatusController extends BaseController
     {
         $query = TaskStatus::withPermissionCheck()
             ->with(['creator'])
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         // Handle search - search in translatable name
         if ($request->has('search') && !empty($request->search)) {
@@ -54,7 +54,7 @@ class TaskStatusController extends BaseController
                 'color' => $taskStatus->color,
                 'is_completed' => $taskStatus->is_completed,
                 'status' => $taskStatus->status,
-                'created_by' => $taskStatus->created_by,
+                'tenant_id' => $taskStatus->tenant_id,
                 'creator' => $taskStatus->creator,
                 'created_at' => $taskStatus->created_at,
                 'updated_at' => $taskStatus->updated_at,
@@ -78,7 +78,7 @@ class TaskStatusController extends BaseController
             'status' => 'nullable|in:active,inactive',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
         $validated['is_completed'] = $validated['is_completed'] ?? false;
 
@@ -86,7 +86,7 @@ class TaskStatusController extends BaseController
         $nameAr = $validated['name']['ar'] ?? '';
 
         // Check if task status with same name already exists for this company
-        $exists = TaskStatus::where('created_by', createdBy())
+        $exists = TaskStatus::where('tenant_id', createdBy())
             ->where(function ($q) use ($nameEn, $nameAr) {
                 $q->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = ?", [$nameEn])
                     ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = ?", [$nameAr]);
@@ -105,7 +105,7 @@ class TaskStatusController extends BaseController
     public function update(Request $request, $taskStatusId)
     {
         $taskStatus = TaskStatus::where('id', $taskStatusId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$taskStatus) {
@@ -125,7 +125,7 @@ class TaskStatusController extends BaseController
         $nameAr = $validated['name']['ar'] ?? '';
 
         // Check if task status with same name already exists for this company (excluding current)
-        $exists = TaskStatus::where('created_by', createdBy())
+        $exists = TaskStatus::where('tenant_id', createdBy())
             ->where('id', '!=', $taskStatusId)
             ->where(function ($q) use ($nameEn, $nameAr) {
                 $q->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = ?", [$nameEn])
@@ -145,7 +145,7 @@ class TaskStatusController extends BaseController
     public function destroy($taskStatusId)
     {
         $taskStatus = TaskStatus::where('id', $taskStatusId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$taskStatus) {
@@ -163,7 +163,7 @@ class TaskStatusController extends BaseController
     public function toggleStatus($taskStatusId)
     {
         $taskStatus = TaskStatus::where('id', $taskStatusId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$taskStatus) {

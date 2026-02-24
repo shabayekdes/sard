@@ -13,7 +13,7 @@ class HearingTypeController extends Controller
     {
         $query = HearingType::query()
             ->with(['creator'])
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         // Handle search
         if ($request->has('search') && !empty($request->search)) {
@@ -63,12 +63,12 @@ class HearingTypeController extends Controller
             'notes.ar' => 'nullable|string',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         // Check if hearing type with same name already exists for this company
         $exists = HearingType::whereJsonContains('name->en', $validated['name']['en'])
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->exists();
 
         if ($exists) {
@@ -83,7 +83,7 @@ class HearingTypeController extends Controller
     public function update(Request $request, $hearingTypeId)
     {
         $hearingType = HearingType::where('id', $hearingTypeId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($hearingType) {
@@ -105,7 +105,7 @@ class HearingTypeController extends Controller
 
                 // Check if hearing type with same name already exists for this company (excluding current)
                 $exists = HearingType::whereJsonContains('name->en', $validated['name']['en'])
-                    ->where('created_by', createdBy())
+                    ->where('tenant_id', createdBy())
                     ->where('id', '!=', $hearingTypeId)
                     ->exists();
 
@@ -128,7 +128,7 @@ class HearingTypeController extends Controller
     {
         $hearingType = HearingType::with(['creator'])
             ->where('id', $hearingTypeId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$hearingType) {
@@ -143,7 +143,7 @@ class HearingTypeController extends Controller
     public function destroy($hearingTypeId)
     {
         $hearingType = HearingType::where('id', $hearingTypeId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($hearingType) {
@@ -161,7 +161,7 @@ class HearingTypeController extends Controller
     public function toggleStatus($hearingTypeId)
     {
         $hearingType = HearingType::where('id', $hearingTypeId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($hearingType) {

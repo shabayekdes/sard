@@ -41,7 +41,7 @@ class ProfessionalLicenseController extends Controller
 
         $licenses = $query->paginate($request->per_page ?? 10);
 
-        $users = User::where('created_by', createdBy())
+        $users = User::where('tenant_id', createdBy())
             ->whereDoesntHave('roles', function ($q) {
                 $q->where('name', 'client');
             })
@@ -69,7 +69,7 @@ class ProfessionalLicenseController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         $license = ProfessionalLicense::create($validated);

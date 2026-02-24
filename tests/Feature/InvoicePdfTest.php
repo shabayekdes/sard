@@ -10,18 +10,18 @@ function createInvoiceFor(User $user): Invoice
 {
     $client = Client::create([
         'name' => 'Test Client',
-        'created_by' => $user->id,
+        'tenant_id' => $user->tenant_id,
     ]);
 
     CompanyProfile::create([
         'name' => 'Test Seller',
         'registration_number' => 'VAT-123456789',
         'address' => 'Riyadh, KSA',
-        'created_by' => $user->id,
+        'tenant_id' => $user->tenant_id,
     ]);
 
     $invoice = Invoice::create([
-        'created_by' => $user->id,
+        'tenant_id' => $user->tenant_id,
         'client_id' => $client->id,
         'subtotal' => 100,
         'tax_amount' => 15,

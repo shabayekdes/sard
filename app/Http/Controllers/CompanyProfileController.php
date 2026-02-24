@@ -12,7 +12,7 @@ class CompanyProfileController extends Controller
     public function index(Request $request)
     {
         // Get single advocate profile for current user
-        $companyProfile = CompanyProfile::withPermissionCheck()->where('created_by', createdBy())->first();
+        $companyProfile = CompanyProfile::withPermissionCheck()->where('tenant_id', createdBy())->first();
 
         return Inertia::render('advocate/company-profiles/index', [
             'companyProfile' => $companyProfile,
@@ -47,10 +47,10 @@ class CompanyProfileController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
 
         // Check if company profile already exists for this user
-        $exists = CompanyProfile::where('created_by', createdBy())->exists();
+        $exists = CompanyProfile::where('tenant_id', createdBy())->exists();
 
         if ($exists) {
             return redirect()->back()->with('error', 'Company profile already exists for this user.');
@@ -64,7 +64,7 @@ class CompanyProfileController extends Controller
     public function update(Request $request, $profileId = null)
     {
         // Get existing profile or prepare for creation
-        $profile = CompanyProfile::where('created_by', createdBy())->first();
+        $profile = CompanyProfile::where('tenant_id', createdBy())->first();
         
         $validated = $request->validate([
             // Contact Details
@@ -92,7 +92,7 @@ class CompanyProfileController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
 
         if ($profile) {
             $profile->update($validated);
@@ -106,7 +106,7 @@ class CompanyProfileController extends Controller
     public function destroy($profileId)
     {
         $profile = CompanyProfile::where('id', $profileId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($profile) {

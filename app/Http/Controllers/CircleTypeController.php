@@ -14,7 +14,7 @@ class CircleTypeController extends Controller
         $query = CircleType::withPermissionCheck()
             ->with(['creator'])
             ->where(function($q) {
-                $q->where('created_by', createdBy());
+                $q->where('tenant_id', createdBy());
             });
 
         if ($request->has('search') && !empty($request->search)) {
@@ -48,7 +48,7 @@ class CircleTypeController extends Controller
                 'description_translations' => $circleType->getTranslations('description'), // Full translations for editing
                 'color' => $circleType->color,
                 'status' => $circleType->status,
-                'created_by' => $circleType->created_by,
+                'tenant_id' => $circleType->tenant_id,
                 'created_at' => $circleType->created_at,
                 'updated_at' => $circleType->updated_at,
                 'creator' => $circleType->creator,
@@ -74,7 +74,7 @@ class CircleTypeController extends Controller
             'status' => 'nullable|in:active,inactive',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         CircleType::create($validated);
@@ -85,7 +85,7 @@ class CircleTypeController extends Controller
     public function update(Request $request, $id)
     {
         $circleType = CircleType::where('id', $id)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$circleType) {
@@ -111,7 +111,7 @@ class CircleTypeController extends Controller
     public function destroy($id)
     {
         $circleType = CircleType::where('id', $id)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$circleType) {
@@ -120,7 +120,7 @@ class CircleTypeController extends Controller
 
         // Check if any court is mapped with this circle type (only check courts created by the same user/company)
         $courtsCount = Court::where('circle_type_id', $id)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->count();
 
         if ($courtsCount > 0) {
@@ -136,7 +136,7 @@ class CircleTypeController extends Controller
     public function toggleStatus($id)
     {
         $circleType = CircleType::where('id', $id)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$circleType) {

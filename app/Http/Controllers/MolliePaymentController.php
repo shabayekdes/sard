@@ -275,7 +275,7 @@ class MolliePaymentController extends Controller
             if (!$invoice) {
                 return response()->json(['error' => 'Invoice not found'], 404);
             }
-            $paymentSettings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['mollie_api_key', 'is_mollie_enabled'])
                 ->pluck('value', 'key')
                 ->toArray();
@@ -337,7 +337,7 @@ class MolliePaymentController extends Controller
             $invoice = \App\Models\Invoice::where('payment_token', $token)->firstOrFail();
 
             // Get Mollie credentials for this specific invoice creator
-            $paymentSettings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['mollie_api_key'])
                 ->pluck('value', 'key')
                 ->toArray();

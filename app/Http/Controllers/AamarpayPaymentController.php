@@ -273,7 +273,7 @@ class AamarpayPaymentController extends Controller
             ]);
 
             // Get company currency settings
-            $companySettings = \App\Models\Setting::where('user_id', $invoice->created_by)
+            $companySettings = \App\Models\Setting::where('tenant_id', $invoice->tenant_id)
                 ->where('key', 'defaultCurrency')
                 ->first();
             $currency = $companySettings ? $companySettings->value : 'BDT';

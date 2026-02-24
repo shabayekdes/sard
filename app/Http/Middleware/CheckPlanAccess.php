@@ -24,7 +24,7 @@ class CheckPlanAccess
 
         // Only company users need plan checks
         if ($user->type !== 'company') {
-            $company = User::find($user->created_by);
+            $company = User::where('tenant_id', $user->tenant_id)->where('type', 'company')->first();
             if ($company && $company->type === 'company' && $company->isPlanExpired()) {
                 auth()->logout();
                 return redirect()->route('login')->with('error', __('Access denied. Only company users can access this area.'));

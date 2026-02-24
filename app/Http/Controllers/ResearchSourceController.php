@@ -13,7 +13,7 @@ class ResearchSourceController extends Controller
     {
         $query = ResearchSource::withPermissionCheck()
             ->with(['creator'])
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         if ($request->has('search') && !empty($request->search)) {
             $searchTerm = $request->search;
@@ -65,7 +65,7 @@ class ResearchSourceController extends Controller
                 'access_info' => $source->access_info,
                 'credentials' => $source->credentials,
                 'status' => $source->status,
-                'created_by' => $source->created_by,
+                'tenant_id' => $source->tenant_id,
                 'creator' => $source->creator,
                 'created_at' => $source->created_at,
                 'updated_at' => $source->updated_at,
@@ -95,7 +95,7 @@ class ResearchSourceController extends Controller
             'status' => 'nullable|in:active,inactive',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         ResearchSource::create($validated);
@@ -105,7 +105,7 @@ class ResearchSourceController extends Controller
 
     public function update(Request $request, $sourceId)
     {
-        $source = ResearchSource::where('id', $sourceId)->where('created_by', createdBy())->first();
+        $source = ResearchSource::where('id', $sourceId)->where('tenant_id', createdBy())->first();
 
         if (!$source) {
             return redirect()->back()->with('error', 'Research source not found.');
@@ -132,7 +132,7 @@ class ResearchSourceController extends Controller
 
     public function destroy($sourceId)
     {
-        $source = ResearchSource::where('id', $sourceId)->where('created_by', createdBy())->first();
+        $source = ResearchSource::where('id', $sourceId)->where('tenant_id', createdBy())->first();
 
         if (!$source) {
             return redirect()->back()->with('error', 'Research source not found.');
@@ -145,7 +145,7 @@ class ResearchSourceController extends Controller
 
     public function toggleStatus($sourceId)
     {
-        $source = ResearchSource::where('id', $sourceId)->where('created_by', createdBy())->first();
+        $source = ResearchSource::where('id', $sourceId)->where('tenant_id', createdBy())->first();
 
         if (!$source) {
             return redirect()->back()->with('error', 'Research source not found.');

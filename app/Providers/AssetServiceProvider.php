@@ -32,7 +32,7 @@ class AssetServiceProvider extends ServiceProvider
         });
 
         // Format money using company currency; for SAR uses Lucide Saudi Riyal icon (HTML). Output is unescaped.
-        // Usage: @money($amount) or @money($amount, $invoice->created_by) or @money($amount, $invoice->created_by, true) for RTL.
+        // Usage: @money($amount) or @money($amount, $invoice->tenant_id) or @money($amount, $invoice->tenant_id, true) for RTL.
         Blade::directive('money', function ($expression) {
             return "<?php \$__e = [{$expression}]; echo formatCurrency(\$__e[0], array_merge(['html' => true], isset(\$__e[1]) ? ['userId' => \$__e[1]] : [], isset(\$__e[2]) ? ['rtl' => (bool)\$__e[2]] : [])); ?>";
         });

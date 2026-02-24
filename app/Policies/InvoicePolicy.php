@@ -66,11 +66,11 @@ class InvoicePolicy
         }
 
         if ($user->hasRole(['company'])) {
-            return (int) $invoice->created_by === (int) $user->id;
+            return $invoice->tenant_id && $user->tenant_id && $invoice->tenant_id === $user->tenant_id;
         }
 
         if ($user->hasRole(['team_member']) || $user->type === 'team_member') {
-            return in_array((int) $invoice->created_by, getCompanyAndUsersId(), true);
+            return $invoice->tenant_id && $user->tenant_id && $invoice->tenant_id === $user->tenant_id;
         }
 
         if ($user->hasRole(['client'])) {

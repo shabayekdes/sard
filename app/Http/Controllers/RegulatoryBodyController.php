@@ -58,7 +58,7 @@ class RegulatoryBodyController extends Controller
             'status' => 'nullable|in:active,inactive',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         $regulatoryBody = RegulatoryBody::create($validated);

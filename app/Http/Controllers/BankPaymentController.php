@@ -62,7 +62,7 @@ class BankPaymentController extends Controller
                 'amount' => $request->amount,
                 'payment_method' => 'bank_transfer',
                 'payment_date' => now(),
-                'created_by' => $invoice->created_by,
+                'tenant_id' => $invoice->tenant_id,
                 'approval_status' => 'pending',
                 'attachment' => $attachmentPaths,
             ]);

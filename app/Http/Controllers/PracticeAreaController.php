@@ -13,7 +13,7 @@ class PracticeAreaController extends Controller
     {
         $query = PracticeArea::withPermissionCheck()
             ->with(['creator'])
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         // Handle search
         if ($request->has('search') && !empty($request->search)) {
@@ -71,13 +71,13 @@ class PracticeAreaController extends Controller
             $validated['is_primary'] = filter_var($validated['is_primary'], FILTER_VALIDATE_BOOLEAN);
         }
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
         $validated['is_primary'] = $validated['is_primary'] ?? false;
 
         // Check if practice area with same name already exists for this company
         $exists = PracticeArea::where('name', $validated['name'])
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->exists();
 
         if ($exists) {
@@ -92,7 +92,7 @@ class PracticeAreaController extends Controller
     public function update(Request $request, $areaId)
     {
         $area = PracticeArea::where('id', $areaId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($area) {
@@ -113,7 +113,7 @@ class PracticeAreaController extends Controller
 
                 // Check if practice area with same name already exists for this company (excluding current)
                 $exists = PracticeArea::where('name', $validated['name'])
-                    ->where('created_by', createdBy())
+                    ->where('tenant_id', createdBy())
                     ->where('id', '!=', $areaId)
                     ->exists();
 
@@ -135,7 +135,7 @@ class PracticeAreaController extends Controller
     public function destroy($areaId)
     {
         $area = PracticeArea::where('id', $areaId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($area) {
@@ -153,7 +153,7 @@ class PracticeAreaController extends Controller
     public function toggleStatus($areaId)
     {
         $area = PracticeArea::where('id', $areaId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($area) {

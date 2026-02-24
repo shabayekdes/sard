@@ -24,10 +24,10 @@ return new class extends Migration
             $table->string('code')->unique();
             $table->enum('code_type', ['manual', 'auto'])->default('manual');
             $table->boolean('status')->default(true);
-            $table->unsignedBigInteger('created_by');
+            $table->foreignUuid('tenant_id')->constrained()->onDelete('cascade');
             $table->timestamps();
 
-            $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
+            $table->index(['tenant_id', 'status']);
         });
     }
 

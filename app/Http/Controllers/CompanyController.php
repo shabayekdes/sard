@@ -103,7 +103,7 @@ class CompanyController extends Controller
 
         $company->type = 'company';
         $company->status = $validated['status'];
-        $company->created_by = auth()->id(); // Set creator ID
+        $company->tenant_id = createdBy(); // Set tenant ID
         // Set company language same as creator (superadmin)
         $creator = auth()->user();
         if ($creator && $creator->lang) {

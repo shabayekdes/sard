@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Traits\AutoApplyPermissionCheck;
 use App\Models\Currency;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
@@ -58,9 +59,12 @@ class Invoice extends BaseModel
         });
     }
 
-    public function creator(): BelongsTo
+    /**
+     * Get the company user for this tenant (for backward-compat creator display).
+     */
+    public function creator(): HasOne
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->hasOne(User::class, 'tenant_id', 'tenant_id')->where('type', 'company');
     }
 
     public function client(): BelongsTo
@@ -215,7 +219,7 @@ class Invoice extends BaseModel
             throw new \Exception('Unsupported payment gateway: ' . $gateway);
         }
 
-        return \App\Models\PaymentSetting::where('user_id', $this->created_by)
+        return \App\Models\PaymentSetting::where('tenant_id', $this->tenant_id)
             ->whereIn('key', $keyMap[$gateway])
             ->pluck('value', 'key')
             ->toArray();
@@ -249,7 +253,7 @@ class Invoice extends BaseModel
                 'payment_method' => $paymentMethod,
                 'transaction_id' => $transactionId,
                 'payment_date' => now(),
-                'created_by' => $this->created_by,
+                'tenant_id' => $this->tenant_id,
                 'approval_status' => $isBankTransfer ? 'pending' : 'approved',
                 'approved_at' => $isBankTransfer ? null : now(),
             ]);

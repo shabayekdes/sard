@@ -371,8 +371,8 @@ class MediaController extends BaseController
             return $user->plan->storage_limit * 1024 * 1024;
         }
 
-        if ($user->created_by) {
-            $company = User::find($user->created_by);
+        if ($user->tenant_id) {
+            $company = User::where('tenant_id', $user->tenant_id)->where('type', 'company')->first();
             if ($company && $company->plan) {
                 if ($company->plan->isUnlimitedLimit($company->plan->storage_limit)) {
                     return null;
@@ -387,15 +387,15 @@ class MediaController extends BaseController
     private function getUserStorageUsage($user)
     {
         if ($user->type === 'company') {
-            return User::where('created_by', $user->id)
+            return User::where('tenant_id', $user->tenant_id)
                 ->orWhere('id', $user->id)
                 ->sum('storage_limit');
         }
 
-        if ($user->created_by) {
-            $company = User::find($user->created_by);
+        if ($user->tenant_id) {
+            $company = User::where('tenant_id', $user->tenant_id)->where('type', 'company')->first();
             if ($company) {
-                return User::where('created_by', $company->id)
+                return User::where('tenant_id', $company->tenant_id)
                     ->orWhere('id', $company->id)
                     ->sum('storage_limit');
             }

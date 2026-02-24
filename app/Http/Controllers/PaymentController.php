@@ -98,7 +98,7 @@ class PaymentController extends Controller
         $isBankTransfer = $request->payment_method === 'bank_transfer';
 
         Payment::create([
-            'created_by' => createdBy(),
+            'tenant_id' => createdBy(),
             'invoice_id' => $request->invoice_id,
             'payment_method' => $request->payment_method,
             'amount' => $request->amount,

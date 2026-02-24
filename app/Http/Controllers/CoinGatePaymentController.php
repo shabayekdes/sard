@@ -101,7 +101,7 @@ class CoinGatePaymentController extends Controller
 
         try {
             $invoice = \App\Models\Invoice::where('payment_token', $token)->firstOrFail();
-            $paymentSettings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->pluck('value', 'key')
                 ->toArray();
 
@@ -179,7 +179,7 @@ class CoinGatePaymentController extends Controller
         try {
             $invoice = \App\Models\Invoice::where('payment_token', $request->invoice_token)->firstOrFail();
 
-            $paymentSettings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['coingate_api_token', 'is_coingate_enabled'])
                 ->pluck('value', 'key')
                 ->toArray();

@@ -34,7 +34,7 @@ class BranchRequest extends FormRequest
     public function rules(): array
     {
         $user = Auth::user();
-        $createdBy = $user->type === 'company' ? $user->id : $user->created_by;
+        $tenantId = $user->tenant_id;
         
         $rules = [
             'name' => 'required|string|max:255',
@@ -51,8 +51,8 @@ class BranchRequest extends FormRequest
                 'required',
                 'string',
                 'max:50',
-                Rule::unique('branches')->where(function ($query) use ($createdBy) {
-                    return $query->where('created_by', $createdBy);
+                Rule::unique('branches')->where(function ($query) use ($tenantId) {
+                    return $query->where('tenant_id', $tenantId);
                 })
             ];
         }
@@ -63,8 +63,8 @@ class BranchRequest extends FormRequest
                 'required',
                 'string',
                 'max:50',
-                Rule::unique('branches')->where(function ($query) use ($createdBy) {
-                    return $query->where('created_by', $createdBy);
+                Rule::unique('branches')->where(function ($query) use ($tenantId) {
+                    return $query->where('tenant_id', $tenantId);
                 })->ignore($this->branch->id)
             ];
         }

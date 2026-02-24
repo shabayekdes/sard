@@ -17,15 +17,15 @@ class ClientType extends BaseModel
         'name',
         'description',
         'status',
-        'created_by'
+        'tenant_id'
     ];
 
     /**
-     * Get the user who created the client type.
+     * Get the company user for this tenant (for backward-compat creator display).
      */
     public function creator()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->hasOne(User::class, 'tenant_id', 'tenant_id')->where('type', 'company');
     }
 
     /**

@@ -125,7 +125,7 @@ class RoleController extends BaseController
         $role->label = $request->label;
         $role->name = Str::slug($request->label);
         $role->description = $request->description;
-        $role->created_by = Auth::id();
+        $role->tenant_id = createdBy();
         $role->guard_name = 'web';
         $role->save();
 

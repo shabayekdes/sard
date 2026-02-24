@@ -60,27 +60,26 @@ class TaskController extends BaseController
         $tasks = $query->paginate($request->per_page ?? 10);
 
         // Get filter options
-        $taskTypes = TaskType::where('created_by', createdBy())
+        $taskTypes = TaskType::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 
-        $users = User::where('created_by', createdBy())
+        $users = User::where('tenant_id', createdBy())
             ->whereDoesntHave('roles', function ($q) {
                 $q->where('name', 'client');
             })
             ->orWhere('id', createdBy())
             ->get(['id', 'name']);
 
-        $cases = CaseModel::where('created_by', createdBy())
+        $cases = CaseModel::where('tenant_id', createdBy())
             ->get(['id', 'case_id', 'title']);
 
-        $taskStatuses = TaskStatus::where('created_by', createdBy())
+        $taskStatuses = TaskStatus::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 
-        $googleCalendarEnabled = Setting::where('user_id', createdBy())
-            ->where('key', 'googleCalendarEnabled')
-            ->value('value') == '1';
+        // TODO: Enable when ready integration with Google Calendar is done
+        $googleCalendarEnabled = false; //Setting::where('tenant_id', createdBy())->where('key', 'googleCalendarEnabled')->value('value') == '1';
 
         return Inertia::render('tasks/index', [
             'tasks' => $tasks,
@@ -110,13 +109,13 @@ class TaskController extends BaseController
             'sync_with_google_calendar' => 'nullable|boolean',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'not_started';
 
         // Validate that related records belong to the current user's company
         if (!empty($validated['case_id'])) {
             $case = CaseModel::where('id', $validated['case_id'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->first();
             if (!$case) {
                 return redirect()->back()->with('error', __('Invalid case selected.'));
@@ -126,7 +125,7 @@ class TaskController extends BaseController
         if (!empty($validated['assigned_to'])) {
             $user = User::where('id', $validated['assigned_to'])
                 ->where(function ($q) {
-                    $q->where('created_by', createdBy())
+                    $q->where('tenant_id', createdBy())
                         ->orWhere('id', createdBy());
                 })
                 ->first();
@@ -137,7 +136,7 @@ class TaskController extends BaseController
 
         if (!empty($validated['task_type_id'])) {
             $taskType = TaskType::where('id', $validated['task_type_id'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->first();
             if (!$taskType) {
                 return redirect()->back()->with('error', __('Invalid task type selected.'));
@@ -146,7 +145,7 @@ class TaskController extends BaseController
 
         if (!empty($validated['task_status_id'])) {
             $taskStatus = TaskStatus::where('id', $validated['task_status_id'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->first();
             if (!$taskStatus) {
                 return redirect()->back()->with('error', __('Invalid task status selected.'));
@@ -190,7 +189,7 @@ class TaskController extends BaseController
     public function update(Request $request, $taskId)
     {
         $task = Task::where('id', $taskId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         $validated = $request->validate([
@@ -211,7 +210,7 @@ class TaskController extends BaseController
         // Validate that related records belong to the current user's company
         if (!empty($validated['case_id'])) {
             $case = CaseModel::where('id', $validated['case_id'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->first();
             if (!$case) {
                 return redirect()->back()->with('error', __('Invalid case selected.'));
@@ -221,7 +220,7 @@ class TaskController extends BaseController
         if (!empty($validated['assigned_to'])) {
             $user = User::where('id', $validated['assigned_to'])
                 ->where(function ($q) {
-                    $q->where('created_by', createdBy())
+                    $q->where('tenant_id', createdBy())
                         ->orWhere('id', createdBy());
                 })
                 ->first();
@@ -232,7 +231,7 @@ class TaskController extends BaseController
 
         if (!empty($validated['task_type_id'])) {
             $taskType = TaskType::where('id', $validated['task_type_id'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->first();
             if (!$taskType) {
                 return redirect()->back()->with('error', __('Invalid task type selected.'));
@@ -241,7 +240,7 @@ class TaskController extends BaseController
 
         if (!empty($validated['task_status_id'])) {
             $taskStatus = TaskStatus::where('id', $validated['task_status_id'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->first();
             if (!$taskStatus) {
                 return redirect()->back()->with('error', __('Invalid task status selected.'));
@@ -283,7 +282,7 @@ class TaskController extends BaseController
     public function destroy($taskId)
     {
         $task = Task::where('id', $taskId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         try {
@@ -303,7 +302,7 @@ class TaskController extends BaseController
     public function toggleStatus($taskId)
     {
         $task = Task::where('id', $taskId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         try {
@@ -320,7 +319,7 @@ class TaskController extends BaseController
     public function getCaseUsers($caseId)
     {
         $case = CaseModel::where('id', $caseId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->with('teamMembers.user')
             ->first();
 

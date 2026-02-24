@@ -108,7 +108,7 @@ class DocumentController extends Controller
 
         // Verify category belongs to current company
         $category = DocumentCategory::where('id', $validated['category_id'])
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$category) {
@@ -119,7 +119,7 @@ class DocumentController extends Controller
         if (!empty($validated['file_path'])) {
             $validated['file_path'] = $this->convertToRelativePath($validated['file_path']);
         }
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'draft';
         $validated['confidentiality'] = $validated['confidentiality'] ?? 'internal';
         unset($validated['file']);
@@ -150,7 +150,7 @@ class DocumentController extends Controller
 
         // Verify category belongs to current company
         $category = DocumentCategory::where('id', $validated['category_id'])
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$category) {

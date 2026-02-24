@@ -32,14 +32,14 @@ class ExpenseCategory extends BaseModel
         static::addGlobalScope('company', function ($builder) {
             if (auth()->check() && auth()->user()->type !== 'super admin') {
                 $companyId = createdBy();
-                $builder->where('created_by', $companyId);
+                $builder->where('tenant_id', $companyId);
             }
         });
     }
 
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->hasOne(User::class, 'tenant_id', 'tenant_id')->where('type', 'company');
     }
 
     public function expenses(): HasMany

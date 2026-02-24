@@ -62,7 +62,7 @@ class ClientTypeController extends Controller
                 'description' => $clientType->description, // Spatie will automatically return translated value for display
                 'description_translations' => $clientType->getTranslations('description'), // Full translations for editing
                 'status' => $clientType->status,
-                'created_by' => $clientType->created_by,
+                'tenant_id' => $clientType->tenant_id,
                 'creator' => $clientType->creator,
                 'created_at' => $clientType->created_at,
                 'updated_at' => $clientType->updated_at,
@@ -87,11 +87,11 @@ class ClientTypeController extends Controller
             'status' => 'nullable|in:active,inactive',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         // Check if client type with same name already exists for this company
-        $exists = ClientType::where('created_by', createdBy())
+        $exists = ClientType::where('tenant_id', createdBy())
             ->whereRaw("JSON_EXTRACT(name, '$.ar') = ?", [$validated['name']['ar']])
             ->exists();
 
@@ -107,7 +107,7 @@ class ClientTypeController extends Controller
     public function update(Request $request, $clientTypeId)
     {
         $clientType = ClientType::where('id', $clientTypeId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($clientType) {
@@ -123,7 +123,7 @@ class ClientTypeController extends Controller
                 ]);
 
                 // Check if client type with same name already exists for this company (excluding current)
-                $exists = ClientType::where('created_by', createdBy())
+                $exists = ClientType::where('tenant_id', createdBy())
                     ->whereRaw("JSON_EXTRACT(name, '$.ar') = ?", [$validated['name']['ar']])
                     ->where('id', '!=', $clientTypeId)
                     ->exists();
@@ -146,7 +146,7 @@ class ClientTypeController extends Controller
     public function destroy($clientTypeId)
     {
         $clientType = ClientType::where('id', $clientTypeId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($clientType) {
@@ -171,7 +171,7 @@ class ClientTypeController extends Controller
     public function toggleStatus($clientTypeId)
     {
         $clientType = ClientType::where('id', $clientTypeId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($clientType) {

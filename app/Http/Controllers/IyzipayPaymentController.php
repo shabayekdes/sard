@@ -238,7 +238,7 @@ class IyzipayPaymentController extends Controller
         try {
             $invoice = \App\Models\Invoice::where('payment_token', $validated['invoice_token'])->firstOrFail();
 
-            $paymentSettings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['iyzipay_public_key', 'iyzipay_secret_key', 'iyzipay_mode', 'is_iyzipay_enabled'])
                 ->pluck('value', 'key')
                 ->toArray();
@@ -330,7 +330,7 @@ class IyzipayPaymentController extends Controller
                 return response('Invoice not found', 404);
             }
 
-            $paymentSettings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['iyzipay_public_key', 'iyzipay_secret_key', 'iyzipay_mode'])
                 ->pluck('value', 'key')
                 ->toArray();
@@ -358,7 +358,7 @@ class IyzipayPaymentController extends Controller
 
             if ($requestToken) {
                 // Verify payment with Iyzipay before creating payment record
-                $paymentSettings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+                $paymentSettings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                     ->whereIn('key', ['iyzipay_public_key', 'iyzipay_secret_key', 'iyzipay_mode'])
                     ->pluck('value', 'key')
                     ->toArray();

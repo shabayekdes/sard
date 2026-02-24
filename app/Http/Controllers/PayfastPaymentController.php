@@ -259,7 +259,7 @@ class PayfastPaymentController extends Controller
         try {
             $invoice = \App\Models\Invoice::where('payment_token', $request->invoice_token)->firstOrFail();
 
-            $paymentSettings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['payfast_merchant_id', 'payfast_merchant_key', 'payfast_passphrase', 'payfast_mode', 'is_payfast_enabled'])
                 ->pluck('value', 'key')
                 ->toArray();
@@ -399,7 +399,7 @@ class PayfastPaymentController extends Controller
             }
 
             // Get payment settings for verification
-            $paymentSettings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['payfast_passphrase'])
                 ->pluck('value', 'key')
                 ->toArray();

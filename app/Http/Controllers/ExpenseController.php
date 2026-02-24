@@ -121,7 +121,7 @@ class ExpenseController extends BaseController
         }
 
         Expense::create([
-            'created_by' => createdBy(),
+            'tenant_id' => createdBy(),
             'case_id' => $request->case_id,
             'expense_category_id' => $request->expense_category_id,
             'description' => $request->description,

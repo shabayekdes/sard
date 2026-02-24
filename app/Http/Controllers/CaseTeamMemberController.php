@@ -16,7 +16,7 @@ class CaseTeamMemberController extends Controller
         $query = CaseTeamMember::query()
             ->with(['case', 'user', 'creator'])
             ->whereHas('case', function ($q) {
-                $q->where('created_by', createdBy());
+                $q->where('tenant_id', createdBy());
             });
 
         if ($request->has('search') && !empty($request->search)) {
@@ -47,8 +47,8 @@ class CaseTeamMemberController extends Controller
         }
 
         $teamMembers = $query->paginate($request->per_page ?? 10);
-        $cases = CaseModel::where('created_by', createdBy())->where('status', 'active')->get(['id', 'title', 'case_id']);
-        $users = User::where('created_by', createdBy())->orWhere('id', createdBy())->where('status', 'active')->get(['id', 'name']);
+        $cases = CaseModel::where('tenant_id', createdBy())->where('status', 'active')->get(['id', 'title', 'case_id']);
+        $users = User::where('tenant_id', createdBy())->orWhere('id', createdBy())->where('status', 'active')->get(['id', 'name']);
 
         return Inertia::render('cases/case-team-members/index', [
             'teamMembers' => $teamMembers,
@@ -68,17 +68,17 @@ class CaseTeamMemberController extends Controller
             'sync_with_google_calendar' => 'nullable|boolean',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
-        $case = CaseModel::where('id', $validated['case_id'])->where('created_by', createdBy())->first();
+        $case = CaseModel::where('id', $validated['case_id'])->where('tenant_id', createdBy())->first();
         if (!$case) {
             return redirect()->back()->with('error', 'Invalid case selected.');
         }
 
         $user = User::where('id', $validated['user_id'])
             ->where(function ($q) {
-                $q->where('created_by', createdBy())->orWhere('id', createdBy());
+                $q->where('tenant_id', createdBy())->orWhere('id', createdBy());
             })->first();
         if (!$user) {
             return redirect()->back()->with('error', 'Invalid user selected.');
@@ -109,7 +109,7 @@ class CaseTeamMemberController extends Controller
     public function update(Request $request, $teamMemberId)
     {
         $teamMember = CaseTeamMember::whereHas('case', function ($q) {
-            $q->where('created_by', createdBy());
+            $q->where('tenant_id', createdBy());
         })->where('id', $teamMemberId)->first();
 
         if (!$teamMember) {
@@ -124,14 +124,14 @@ class CaseTeamMemberController extends Controller
             'sync_with_google_calendar' => 'nullable|boolean',
         ]);
 
-        $case = CaseModel::where('id', $validated['case_id'])->where('created_by', createdBy())->first();
+        $case = CaseModel::where('id', $validated['case_id'])->where('tenant_id', createdBy())->first();
         if (!$case) {
             return redirect()->back()->with('error', 'Invalid case selected.');
         }
 
         $user = User::where('id', $validated['user_id'])
             ->where(function ($q) {
-                $q->where('created_by', createdBy())->orWhere('id', createdBy());
+                $q->where('tenant_id', createdBy())->orWhere('id', createdBy());
             })->first();
         if (!$user) {
             return redirect()->back()->with('error', 'Invalid user selected.');
@@ -171,7 +171,7 @@ class CaseTeamMemberController extends Controller
     public function destroy($teamMemberId)
     {
         $teamMember = CaseTeamMember::whereHas('case', function ($q) {
-            $q->where('created_by', createdBy());
+            $q->where('tenant_id', createdBy());
         })->where('id', $teamMemberId)->first();
 
         if (!$teamMember) {
@@ -192,7 +192,7 @@ class CaseTeamMemberController extends Controller
     public function toggleStatus($teamMemberId)
     {
         $teamMember = CaseTeamMember::whereHas('case', function ($q) {
-            $q->where('created_by', createdBy());
+            $q->where('tenant_id', createdBy());
         })->where('id', $teamMemberId)->first();
 
         if (!$teamMember) {

@@ -39,14 +39,14 @@ class FeeStructure extends BaseModel
     {
         static::addGlobalScope('company', function ($builder) {
             if (auth()->check() && auth()->user()->type !== 'super admin') {
-                $builder->where('created_by', createdBy());
+                $builder->where('tenant_id', createdBy());
             }
         });
     }
 
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->hasOne(User::class, 'tenant_id', 'tenant_id')->where('type', 'company');
     }
 
     public function client(): BelongsTo

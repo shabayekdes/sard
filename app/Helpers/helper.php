@@ -230,27 +230,19 @@ if (! function_exists('IsDemo')) {
 }
 
 if (! function_exists('updateSetting')) {
-    function updateSetting($key, $value, $user_id = null)
+    function updateSetting($key, $value, $tenant_id = null)
     {
-        if (is_null($user_id)) {
+        if (is_null($tenant_id)) {
             if (auth()->user()) {
-                if (!in_array(auth()->user()->type, ['superadmin', 'company'])) {
-                    $user_id = auth()->user()->created_by;
-                } else {
-                    $user_id = auth()->id();
-                }
+                $tenant_id = auth()->user()->tenant_id;
             } else {
                 $user = User::where('type', 'superadmin')->first();
-                $user_id = $user ? $user->id : null;
+                $tenant_id = $user ? $user->tenant_id : null;
             }
         }
 
-        if (!$user_id) {
-            return false;
-        }
-
         return Setting::updateOrCreate(
-            ['user_id' => $user_id, 'key' => $key],
+            ['tenant_id' => $tenant_id, 'key' => $key],
             ['value' => $value]
         );
     }
@@ -295,23 +287,20 @@ if (! function_exists('defaultRoleAndSetting')) {
 
 if (! function_exists('getPaymentSettings')) {
     /**
-     * Get payment settings for a user
+     * Get payment settings for a tenant
      *
-     * @param int|null $userId
+     * @param string|int|null $tenantIdOrUserId Tenant ID (UUID), or user ID for backward compat (resolved to tenant_id)
      * @return array
      */
-    function getPaymentSettings($userId = null)
+    function getPaymentSettings($tenantIdOrUserId = null)
     {
-        if (is_null($userId)) {
-            if (auth()->check() && in_array(auth()->user()->type, ['superadmin', 'company'])) {
-                $userId = auth()->id();
-            } else {
-                $user = User::where('type', 'superadmin')->first();
-                $userId = $user ? $user->id : null;
-            }
+        $tenantId = $tenantIdOrUserId;
+        if (is_null($tenantId)) {
+            $tenantId = createdBy();
+        } elseif (is_numeric($tenantId)) {
+            $tenantId = User::find($tenantId)?->tenant_id ?? $tenantId;
         }
-
-        return PaymentSetting::getUserSettings($userId);
+        return PaymentSetting::getUserSettings($tenantId);
     }
 }
 
@@ -321,16 +310,18 @@ if (! function_exists('updatePaymentSetting')) {
      *
      * @param string $key
      * @param mixed $value
-     * @param int|null $userId
+     * @param string|int|null $tenantIdOrUserId Tenant ID (UUID), or user ID for backward compat (resolved to tenant_id)
      * @return \App\Models\PaymentSetting
      */
-    function updatePaymentSetting($key, $value, $userId = null)
+    function updatePaymentSetting($key, $value, $tenantIdOrUserId = null)
     {
-        if (is_null($userId)) {
-            $userId = auth()->id();
+        $tenantId = $tenantIdOrUserId;
+        if (is_null($tenantId)) {
+            $tenantId = createdBy();
+        } elseif (is_numeric($tenantId)) {
+            $tenantId = User::find($tenantId)?->tenant_id ?? $tenantId;
         }
-
-        return PaymentSetting::updateOrCreateSetting($userId, $key, $value);
+        return PaymentSetting::updateOrCreateSetting($tenantId, $key, $value);
     }
 }
 
@@ -1045,17 +1036,18 @@ if (! function_exists('processPaymentSuccess')) {
 }
 
 if (! function_exists('getPaymentGatewaySettings')) {
-    function getPaymentGatewaySettings($userId = null)
+    function getPaymentGatewaySettings($tenantId = null)
     {
-        // If no user ID provided, try to get from current context or fallback to superadmin
-        if (!$userId) {
-            $userId = User::where('type', 'superadmin')->first()?->id;
+        if (is_null($tenantId)) {
+            $tenantId = createdBy();
+        } elseif (is_numeric($tenantId)) {
+            $tenantId = User::find($tenantId)?->tenant_id ?? $tenantId;
         }
 
         return [
-            'payment_settings' => PaymentSetting::getUserSettings($userId),
-            'general_settings' => Setting::getUserSettings($userId),
-            'user_id' => $userId
+            'payment_settings' => PaymentSetting::getUserSettings($tenantId),
+            'general_settings' => Setting::getUserSettings($tenantId),
+            'tenant_id' => $tenantId
         ];
     }
 }
@@ -1114,11 +1106,8 @@ if (! function_exists('getPaymentMethodConfig')) {
      */
     function getPaymentMethodConfig($method, $userId = null)
     {
-        $userId = $userId ?: getPaymentSettingsUserId();
-
-        $settings = \App\Models\PaymentSetting::where('user_id', $userId)
-            ->pluck('value', 'key')
-            ->toArray();
+        $tenantIdOrUserId = $userId ?: getPaymentSettingsUserId();
+        $settings = getPaymentSettings($tenantIdOrUserId);
 
         // Handle specific method configurations
         if ($method === 'skrill') {
@@ -1346,8 +1335,9 @@ if (! function_exists('getCompanyOwnerId')) {
         } elseif ($user->type === 'company') {
             return $user->id;
         } else {
-            // For employees, advocates, staff - return the company owner ID
-            return $user->created_by;
+            // For employees, advocates, staff - return the company owner ID for this tenant
+            $company = \App\Models\User::where('tenant_id', $user->tenant_id)->where('type', 'company')->first();
+            return $company ? $company->id : $user->id;
         }
     }
 }
@@ -1426,16 +1416,18 @@ if (! function_exists('getCompanyAndUsersId')) {
     function getCompanyAndUsersId()
     {
         $user = Auth::user();
+        if ($user->tenant_id === null) {
+            return [$user->id];
+        }
         if ($user->hasRole(['company'])) {
-            $companyUserIds = User::where('created_by', $user->id)->pluck('id')->toArray();
-            $companyUserIds[] = $user->id;
-            return $companyUserIds;
-        }else{
-            $userCreatedBy = User::where('id',Auth::user()->created_by)->value('id');
-            $companyUserIds = User::where('created_by', $userCreatedBy)->pluck('id')->toArray();
-            $companyUserIds[] = $userCreatedBy;
+            $companyUserIds = User::where('tenant_id', $user->tenant_id)->pluck('id')->toArray();
+            if (!in_array($user->id, $companyUserIds)) {
+                $companyUserIds[] = $user->id;
+            }
             return $companyUserIds;
         }
+        $companyUserIds = User::where('tenant_id', $user->tenant_id)->pluck('id')->toArray();
+        return $companyUserIds;
     }
 }
 

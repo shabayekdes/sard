@@ -21,11 +21,11 @@ class QuickActionController extends Controller
 {
     public function caseFormData(Request $request)
     {
-        $caseTypes = CaseType::where('created_by', createdBy())
+        $caseTypes = CaseType::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 
-        $caseCategories = CaseCategory::where('created_by', createdBy())
+        $caseCategories = CaseCategory::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->whereNull('parent_id')
             ->get(['id', 'name'])
@@ -37,15 +37,15 @@ class QuickActionController extends Controller
                 ];
             });
 
-        $caseStatuses = CaseStatus::where('created_by', createdBy())
+        $caseStatuses = CaseStatus::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 
-        $clients = Client::where('created_by', createdBy())
+        $clients = Client::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 
-        $courts = Court::where('created_by', createdBy())
+        $courts = Court::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 
@@ -69,7 +69,7 @@ class QuickActionController extends Controller
             })
             ->values();
 
-        $googleCalendarEnabled = Setting::where('user_id', createdBy())
+        $googleCalendarEnabled = Setting::where('tenant_id', createdBy())
             ->where('key', 'googleCalendarEnabled')
             ->value('value') == '1';
 
@@ -92,7 +92,7 @@ class QuickActionController extends Controller
 
     public function clientFormData(Request $request)
     {
-        $clientTypes = ClientType::where('created_by', createdBy())
+        $clientTypes = ClientType::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get()
             ->map(function ($type) {
@@ -145,25 +145,25 @@ class QuickActionController extends Controller
 
     public function taskFormData(Request $request)
     {
-        $taskTypes = TaskType::where('created_by', createdBy())
+        $taskTypes = TaskType::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 
-        $taskStatuses = TaskStatus::where('created_by', createdBy())
+        $taskStatuses = TaskStatus::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 
-        $users = User::where('created_by', createdBy())
+        $users = User::where('tenant_id', createdBy())
             ->whereDoesntHave('roles', function ($q) {
                 $q->where('name', 'client');
             })
             ->orWhere('id', createdBy())
             ->get(['id', 'name']);
 
-        $cases = CaseModel::where('created_by', createdBy())
+        $cases = CaseModel::where('tenant_id', createdBy())
             ->get(['id', 'case_id', 'title']);
 
-        $googleCalendarEnabled = Setting::where('user_id', createdBy())
+        $googleCalendarEnabled = Setting::where('tenant_id', createdBy())
             ->where('key', 'googleCalendarEnabled')
             ->value('value') == '1';
 
@@ -190,7 +190,7 @@ class QuickActionController extends Controller
             ->where('status', 'active')
             ->get(['id', 'name']);
 
-        $googleCalendarEnabled = Setting::where('user_id', createdBy())
+        $googleCalendarEnabled = Setting::where('tenant_id', createdBy())
             ->where('key', 'googleCalendarEnabled')
             ->value('value') == '1';
 

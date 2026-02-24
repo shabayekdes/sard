@@ -12,7 +12,7 @@ class PayTRPaymentController extends Controller
     private function getPayTRCredentials($userId = null)
     {
         if ($userId) {
-            $settings = \App\Models\PaymentSetting::where('user_id', $userId)
+            $settings = \App\Models\PaymentSetting::where('tenant_id', $userId)
                 ->whereIn('key', ['paytr_merchant_id', 'paytr_merchant_key', 'paytr_merchant_salt'])
                 ->pluck('value', 'key')
                 ->toArray();
@@ -223,9 +223,9 @@ class PayTRPaymentController extends Controller
         try {
             $invoice = \App\Models\Invoice::where('payment_token', $validated['invoice_token'])->firstOrFail();
 
-            $credentials = $this->getPayTRCredentials($invoice->created_by);
+            $credentials = $this->getPayTRCredentials($invoice->tenant_id);
 
-            $paymentSettings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['is_paytr_enabled'])
                 ->pluck('value', 'key')
                 ->toArray();

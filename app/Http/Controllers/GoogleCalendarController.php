@@ -80,7 +80,7 @@ class GoogleCalendarController extends Controller
     {
         try {
             $client = new Google_Client();
-            $settings = Setting::where('user_id', createdBy())
+            $settings = Setting::where('tenant_id', createdBy())
                 ->whereIn('key', ['googleCalendarClientId', 'googleCalendarSecret', 'googleCalendarRedirectUri'])
                 ->pluck('value', 'key');
 
@@ -106,7 +106,7 @@ class GoogleCalendarController extends Controller
     {
         try {
             $client = new Google_Client();
-            $settings = Setting::where('user_id', createdBy())
+            $settings = Setting::where('tenant_id', createdBy())
                 ->whereIn('key', ['googleCalendarClientId', 'googleCalendarSecret', 'googleCalendarRedirectUri'])
                 ->pluck('value', 'key');
 

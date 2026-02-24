@@ -12,11 +12,11 @@ class ComplianceAuditController extends Controller
     {
         $query = ComplianceAudit::withPermissionCheck()
             ->with(['creator', 'auditType'])
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         // Load audit types for filters
         $auditTypes = \App\Models\AuditType::where(function ($q) {
-            $q->where('created_by', createdBy());
+            $q->where('tenant_id', createdBy());
         })->where('status', 'active')->orderBy('name')->get();
 
         // Handle search
@@ -79,7 +79,7 @@ class ComplianceAuditController extends Controller
             'follow_up_date' => 'nullable|date|after:audit_date',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'planned';
         $validated['risk_level'] = $validated['risk_level'] ?? 'medium';
 
@@ -90,7 +90,7 @@ class ComplianceAuditController extends Controller
 
     public function update(Request $request, $auditId)
     {
-        $audit = ComplianceAudit::where('created_by', createdBy())
+        $audit = ComplianceAudit::where('tenant_id', createdBy())
             ->where('id', $auditId)
             ->first();
 
@@ -122,7 +122,7 @@ class ComplianceAuditController extends Controller
 
     public function destroy($auditId)
     {
-        $audit = ComplianceAudit::where('created_by', createdBy())
+        $audit = ComplianceAudit::where('tenant_id', createdBy())
             ->where('id', $auditId)
             ->first();
 

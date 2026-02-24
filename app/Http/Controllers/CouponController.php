@@ -104,7 +104,7 @@ class CouponController extends BaseController
     {
 
         $data = $request->all();
-        $data['created_by'] = Auth::id();
+        $data['tenant_id'] = createdBy();
 
         // Generate code if auto-generate is selected
         if ($request->code_type === 'auto') {

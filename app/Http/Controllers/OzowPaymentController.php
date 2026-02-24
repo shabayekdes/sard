@@ -198,7 +198,7 @@ class OzowPaymentController extends Controller
         try {
             $invoice = \App\Models\Invoice::where('payment_token', $request->invoice_token)->firstOrFail();
 
-            $paymentSettings = \App\Models\PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = \App\Models\PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['ozow_site_key', 'ozow_private_key', 'ozow_api_key', 'ozow_mode', 'is_ozow_enabled'])
                 ->pluck('value', 'key')
                 ->toArray();

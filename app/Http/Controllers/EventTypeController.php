@@ -13,7 +13,7 @@ class EventTypeController extends Controller
         $query = EventType::withPermissionCheck()
             ->with(['creator'])
             ->where(function($q) {
-                $q->where('created_by', createdBy());
+                $q->where('tenant_id', createdBy());
             });
 
         if ($request->has('search') && !empty($request->search)) {
@@ -50,7 +50,7 @@ class EventTypeController extends Controller
             'status' => 'nullable|in:active,inactive',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         EventType::create($validated);
@@ -61,7 +61,7 @@ class EventTypeController extends Controller
     public function update(Request $request, $id)
     {
         $eventType = EventType::where('id', $id)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$eventType) {
@@ -83,7 +83,7 @@ class EventTypeController extends Controller
     public function destroy($id)
     {
         $eventType = EventType::where('id', $id)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$eventType) {
@@ -98,7 +98,7 @@ class EventTypeController extends Controller
     public function toggleStatus($id)
     {
         $eventType = EventType::where('id', $id)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$eventType) {

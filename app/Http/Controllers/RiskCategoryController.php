@@ -11,7 +11,7 @@ class RiskCategoryController extends Controller
     public function index(Request $request)
     {
         $query = RiskCategory::withPermissionCheck()->where(function($q) {
-            $q->where('created_by', createdBy());
+            $q->where('tenant_id', createdBy());
         })->latest();
 
         if ($request->has('search') && !empty($request->search)) {
@@ -39,7 +39,7 @@ class RiskCategoryController extends Controller
             'status' => 'nullable|in:active,inactive',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         RiskCategory::create($validated);
@@ -49,7 +49,7 @@ class RiskCategoryController extends Controller
 
     public function update(Request $request, $id)
     {
-        $category = RiskCategory::where('created_by', createdBy())->findOrFail($id);
+        $category = RiskCategory::where('tenant_id', createdBy())->findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -65,7 +65,7 @@ class RiskCategoryController extends Controller
 
     public function destroy($id)
     {
-        $category = RiskCategory::where('created_by', createdBy())->findOrFail($id);
+        $category = RiskCategory::where('tenant_id', createdBy())->findOrFail($id);
         $category->delete();
 
         return redirect()->back()->with('success', 'Risk category deleted successfully.');
@@ -73,7 +73,7 @@ class RiskCategoryController extends Controller
 
     public function toggleStatus($id)
     {
-        $category = RiskCategory::where('created_by', createdBy())->findOrFail($id);
+        $category = RiskCategory::where('tenant_id', createdBy())->findOrFail($id);
         $category->update(['status' => $category->status === 'active' ? 'inactive' : 'active']);
 
         return redirect()->back()->with('success', 'Risk category status updated successfully.');

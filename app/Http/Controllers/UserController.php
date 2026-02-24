@@ -60,7 +60,7 @@ class UserController extends BaseController
 
         # Roles listing - Get all roles without filtering
         if ($authUserRole == 'company') {
-            $roles = Role::where('created_by', $authUser->id)->get();
+            $roles = Role::where('tenant_id', $authUser->tenant_id)->get();
         } else {
             $roles = Role::get();
         }
@@ -68,7 +68,7 @@ class UserController extends BaseController
         // Get plan limits for company users and staff users
         $planLimits = null;
         if ($authUser->type === 'company' && $authUser->plan) {
-            $currentUserCount = User::where('created_by', $authUser->id)
+            $currentUserCount = User::where('tenant_id', $authUser->tenant_id)
                 ->whereDoesntHave('roles', function($q) {
                     $q->where('name', 'client');
                 })->count();
@@ -81,10 +81,10 @@ class UserController extends BaseController
             ];
         }
         // Check for staff users (created by company users)
-        elseif ($authUser->type !== 'superadmin' && $authUser->created_by) {
-            $companyUser = User::find($authUser->created_by);
+        elseif ($authUser->type !== 'superadmin' && $authUser->tenant_id) {
+            $companyUser = User::where('tenant_id', $authUser->tenant_id)->where('type', 'company')->first();
             if ($companyUser && $companyUser->type === 'company' && $companyUser->plan) {
-                $currentUserCount = User::where('created_by', $companyUser->id)
+                $currentUserCount = User::where('tenant_id', $companyUser->tenant_id)
                     ->whereDoesntHave('roles', function($q) {
                         $q->where('name', 'client');
                     })->count();
@@ -123,7 +123,7 @@ class UserController extends BaseController
         $userLang = ($authUser && $authUser->lang) ? $authUser->lang : 'en';
         // Check plan limits for company users
         if ($authUser->type === 'company' && $authUser->plan) {
-            $currentUserCount = User::where('created_by', $authUser->id)
+            $currentUserCount = User::where('tenant_id', $authUser->tenant_id)
                 ->whereDoesntHave('roles', function($q) {
                     $q->where('name', 'client');
                 })->count();
@@ -135,10 +135,10 @@ class UserController extends BaseController
             }
         }
         // Check plan limits for staff users (created by company users)
-        elseif ($authUser->type !== 'superadmin' && $authUser->created_by) {
-            $companyUser = User::find($authUser->created_by);
+        elseif ($authUser->type !== 'superadmin' && $authUser->tenant_id) {
+            $companyUser = User::where('tenant_id', $authUser->tenant_id)->where('type', 'company')->first();
             if ($companyUser && $companyUser->type === 'company' && $companyUser->plan) {
-                $currentUserCount = User::where('created_by', $companyUser->id)
+                $currentUserCount = User::where('tenant_id', $companyUser->tenant_id)
                     ->whereDoesntHave('roles', function($q) {
                         $q->where('name', 'client');
                     })->count();
@@ -151,24 +151,20 @@ class UserController extends BaseController
             }
         }
 
-        if (!in_array(auth()->user()->type, ['superadmin', 'company'])) {
-            $created_by = auth()->user()->created_by;
-        } else {
-            $created_by = auth()->id();
-        }
+        $tenant_id = createdBy();
 
         $user = User::create([
             'name'       => $request->name,
             'email'      => $request->email,
             'password'   => Hash::make($request->password),
-            'created_by' => $created_by,
+            'tenant_id'  => $tenant_id,
             'lang'       => $userLang,
         ]);
 
         if ($user && $request->roles) {
             // Convert role names to IDs for syncing
             $role = Role::where('id', $request->roles)
-            ->where('created_by', $created_by)->first();
+            ->where('tenant_id', $tenant_id)->first();
 
             $user->roles()->sync([$role->id]);
             $user->type = $role->name;
@@ -212,13 +208,9 @@ class UserController extends BaseController
 
             // find and syncing role
             if ($request->roles) {
-                if (!in_array(auth()->user()->type, ['superadmin', 'company'])) {
-                    $created_by = auth()->user()->created_by;
-                } else {
-                    $created_by = auth()->id();
-                }
+                $tenant_id = createdBy();
                 $role = Role::where('id', $request->roles)
-                ->where('created_by', $created_by)->first();
+                ->where('tenant_id', $tenant_id)->first();
 
                 $user->roles()->sync([$role->id]);
                 $user->type = $role->name;
@@ -303,11 +295,11 @@ class UserController extends BaseController
             });
         } else {
             // Company users see their own and their team members' login history
-            $companyId = $authUser->type === 'company' ? $authUser->id : $authUser->created_by;
+            $companyId = $authUser->type === 'company' ? $authUser->id : $authUser->tenant_id;
             $query->where(function($q) use ($companyId) {
                 $q->where('user_id', $companyId)
                   ->orWhereHas('user', function($userQuery) use ($companyId) {
-                      $userQuery->where('created_by', $companyId);
+                      $userQuery->where('tenant_id', $companyId);
                   });
             });
         }

@@ -91,7 +91,7 @@ class ClientController extends Controller
                 'can_create' => $isUnlimited ? true : $currentClients < $maxClients,
             ];
         } elseif ($authUser->type !== 'superadmin' && $authUser->tenant_id) {
-            $companyUser = User::find($authUser->tenant_id);
+            $companyUser = User::where('tenant_id', $authUser->tenant_id)->where('type', 'company')->first();
             if ($companyUser && $companyUser->type === 'company' && $companyUser->plan) {
                 $currentClients = Client::where('tenant_id', $companyUser->tenant_id)->count();
                 $maxClients = $companyUser->plan->max_clients;
@@ -189,7 +189,7 @@ class ClientController extends Controller
         $authUser = auth()->user();
         $planLimits = null;
         if ($authUser->type === 'company' && $authUser->plan) {
-            $currentClients = Client::where('created_by', $authUser->id)->count();
+            $currentClients = Client::where('tenant_id', $authUser->tenant_id)->count();
             $maxClients = $authUser->plan->max_clients;
             $isUnlimited = $authUser->plan->isUnlimitedLimit($maxClients);
             $planLimits = [
@@ -197,10 +197,10 @@ class ClientController extends Controller
                 'max_clients' => $maxClients,
                 'can_create' => $isUnlimited ? true : $currentClients < $maxClients,
             ];
-        } elseif ($authUser->type !== 'superadmin' && $authUser->created_by) {
-            $companyUser = User::find($authUser->created_by);
-            if ($companyUser && $companyUser->type === 'company' && $companyUser->plan) {
-                $currentClients = Client::where('created_by', $companyUser->id)->count();
+        } elseif ($authUser->type !== 'superadmin' && $authUser->tenant_id) {
+            $companyUser = User::where('tenant_id', $authUser->tenant_id)->where('type', 'company')->first();
+            if ($companyUser && $companyUser->plan) {
+                $currentClients = Client::where('tenant_id', $companyUser->tenant_id)->count();
                 $maxClients = $companyUser->plan->max_clients;
                 $isUnlimited = $companyUser->plan->isUnlimitedLimit($maxClients);
                 $planLimits = [
@@ -231,17 +231,17 @@ class ClientController extends Controller
         // Check client limit (same pattern as UserController)
         $authUser = auth()->user();
         if ($authUser->type === 'company' && $authUser->plan) {
-            $currentClients = Client::where('created_by', $authUser->id)->count();
+            $currentClients = Client::where('tenant_id', $authUser->tenant_id)->count();
             $maxClients = $authUser->plan->max_clients;
             $isUnlimited = $authUser->plan->isUnlimitedLimit($maxClients);
 
             if (!$isUnlimited && $currentClients >= $maxClients) {
                 return redirect()->back()->with('error', __('Client limit exceeded. Your plan allows maximum :max clients. Please upgrade your plan.', ['max' => $maxClients]));
             }
-        } elseif ($authUser->type !== 'superadmin' && $authUser->created_by) {
-            $companyUser = User::find($authUser->created_by);
-            if ($companyUser && $companyUser->type === 'company' && $companyUser->plan) {
-                $currentClients = Client::where('created_by', $companyUser->id)->count();
+        } elseif ($authUser->type !== 'superadmin' && $authUser->tenant_id) {
+            $companyUser = User::where('tenant_id', $authUser->tenant_id)->where('type', 'company')->first();
+            if ($companyUser && $companyUser->plan) {
+                $currentClients = Client::where('tenant_id', $companyUser->tenant_id)->count();
                 $maxClients = $companyUser->plan->max_clients;
                 $isUnlimited = $companyUser->plan->isUnlimitedLimit($maxClients);
 
@@ -301,13 +301,13 @@ class ClientController extends Controller
         $documents = $validated['documents'] ?? [];
         unset($validated['documents']);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         // Check if client type belongs to the current user's company
         if (! empty($validated['client_type_id'])) {
             $clientType = ClientType::where('id', $validated['client_type_id'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->first();
 
             if (! $clientType) {
@@ -318,7 +318,7 @@ class ClientController extends Controller
         // Check if client with same email already exists for this company
         if (! empty($validated['email'])) {
             $exists = Client::where('email', $validated['email'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->exists();
 
             if ($exists) {
@@ -338,7 +338,7 @@ class ClientController extends Controller
                     'description' => $document['description'] ?? null,
                     'status' => $document['status'] ?? 'active',
                     'file_path' => $filePath,
-                    'created_by' => createdBy(),
+                    'tenant_id' => createdBy(),
                 ]);
             }
         }
@@ -350,7 +350,7 @@ class ClientController extends Controller
                 'email' => $validated['email'],
                 'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
                 'type' => 'client',
-                'created_by' => createdBy(),
+                'tenant_id' => createdBy(),
             ]);
 
             // Assign client role
@@ -476,7 +476,7 @@ class ClientController extends Controller
                 // Check if client with same email already exists for this company (excluding current)
                 if (! empty($validated['email'])) {
                     $exists = Client::where('email', $validated['email'])
-                        ->where('created_by', createdBy())
+                        ->where('tenant_id', createdBy())
                         ->where('id', '!=', $client->id)
                         ->exists();
 
@@ -502,7 +502,7 @@ class ClientController extends Controller
                             'description' => $document['description'] ?? null,
                             'status' => $document['status'] ?? 'active',
                             'file_path' => $filePath,
-                            'created_by' => createdBy(),
+                            'tenant_id' => createdBy(),
                         ]);
                     }
                 }
@@ -609,7 +609,7 @@ class ClientController extends Controller
 
         $cases = $casesQuery->paginate($request->per_page ?? 10);
 
-        $caseTypes = CaseType::where('created_by', createdBy())
+        $caseTypes = CaseType::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name'])
             ->map(function (CaseType $caseType) {
@@ -620,11 +620,11 @@ class ClientController extends Controller
                 ];
             });
 
-        $caseStatuses = CaseStatus::where('created_by', createdBy())
+        $caseStatuses = CaseStatus::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 
-        $courts = Court::where('created_by', createdBy())
+        $courts = Court::where('tenant_id', createdBy())
             ->where('status', 'active')
             ->get(['id', 'name']);
 
@@ -805,7 +805,7 @@ class ClientController extends Controller
         // Find the user account associated with this client
         $user = User::where('email', $client->email)
             ->where('type', 'client')
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (! $user) {

@@ -48,7 +48,7 @@ class ResearchProject extends BaseModel
 
     public function creator()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->hasOne(User::class, 'tenant_id', 'tenant_id')->where('type', 'company');
     }
 
     public function researchType()

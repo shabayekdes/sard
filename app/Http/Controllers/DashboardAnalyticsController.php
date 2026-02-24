@@ -42,17 +42,17 @@ class DashboardAnalyticsController extends Controller
     {
         $companyId = createdBy();
 
-        $activeCases = CaseModel::where('created_by', $companyId)
+        $activeCases = CaseModel::where('tenant_id', $companyId)
             ->count();
 
-        $activeClients = Client::where('created_by', $companyId)
+        $activeClients = Client::where('tenant_id', $companyId)
             ->count();
 
-        $totalRevenue = Invoice::where('created_by', $companyId)
+        $totalRevenue = Invoice::where('tenant_id', $companyId)
             ->where('status', 'paid')
             ->sum('total_amount');
 
-        $pendingTasks = Task::where('created_by', $companyId)
+        $pendingTasks = Task::where('tenant_id', $companyId)
             ->count();
 
         $caseSuccessRate = $this->calculateCaseSuccessRate($companyId);
@@ -84,7 +84,7 @@ class DashboardAnalyticsController extends Controller
                 'medium' => 0
             ];
             
-            $tasks = Task::where('created_by', $companyId)
+            $tasks = Task::where('tenant_id', $companyId)
                 ->whereYear('created_at', $year)
                 ->whereMonth('created_at', $month)
                 ->selectRaw('priority, COUNT(*) as count')
@@ -102,12 +102,12 @@ class DashboardAnalyticsController extends Controller
         }
 
         return [
-            'recentCases' => CaseModel::where('created_by', $companyId)
+            'recentCases' => CaseModel::where('tenant_id', $companyId)
                 ->with(['client', 'caseStatus'])
                 ->latest()
                 ->take(5)
                 ->get(),
-            'overdueInvoices' => Invoice::where('created_by', $companyId)
+            'overdueInvoices' => Invoice::where('tenant_id', $companyId)
                 ->where('status', 'overdue')
                 ->with('client')
                 ->take(5)
@@ -123,7 +123,7 @@ class DashboardAnalyticsController extends Controller
         $yearlyRevenue = [];
         for ($year = date('Y') - 4; $year <= date('Y'); $year++) {
             for ($month = 1; $month <= 12; $month++) {
-                $revenue = Invoice::where('created_by', $companyId)
+                $revenue = Invoice::where('tenant_id', $companyId)
                     ->where('status', 'paid')
                     ->whereYear('created_at', $year)
                     ->whereMonth('created_at', $month)
@@ -140,7 +140,7 @@ class DashboardAnalyticsController extends Controller
 
         return [
             'yearlyRevenue' => $yearlyRevenue,
-            'outstandingAmount' => Invoice::where('created_by', $companyId)
+            'outstandingAmount' => Invoice::where('tenant_id', $companyId)
                 ->whereIn('status', ['sent', 'overdue'])
                 ->sum('total_amount')
         ];
@@ -170,7 +170,7 @@ class DashboardAnalyticsController extends Controller
                     'low' => 0
                 ];
                 
-                $cases = CaseModel::where('created_by', $companyId)
+                $cases = CaseModel::where('tenant_id', $companyId)
                     ->whereYear('created_at', $year)
                     ->whereMonth('created_at', $month)
                     ->selectRaw('priority, COUNT(*) as count')
@@ -189,7 +189,7 @@ class DashboardAnalyticsController extends Controller
         }
 
         return [
-            'casesByType' => CaseModel::where('created_by', $companyId)
+            'casesByType' => CaseModel::where('tenant_id', $companyId)
                 ->with('caseType')
                 ->selectRaw('case_type_id, COUNT(*) as count')
                 ->groupBy('case_type_id')
@@ -208,8 +208,8 @@ class DashboardAnalyticsController extends Controller
     // Helper calculation methods
     private function calculateCaseSuccessRate($companyId)
     {
-        $totalCases = CaseModel::where('created_by', $companyId)->count();
-        $successfulCases = CaseModel::where('created_by', $companyId)
+        $totalCases = CaseModel::where('tenant_id', $companyId)->count();
+        $successfulCases = CaseModel::where('tenant_id', $companyId)
             ->where('status', 'closed')
             ->count();
         return $totalCases > 0 ? round(($successfulCases / $totalCases) * 100, 1) : 0;
@@ -217,7 +217,7 @@ class DashboardAnalyticsController extends Controller
 
     private function calculateAvgResolutionTime($companyId)
     {
-        return CaseModel::where('created_by', $companyId)
+        return CaseModel::where('tenant_id', $companyId)
             ->where('status', 'closed')
             ->whereNotNull('expected_completion_date')
             ->selectRaw('AVG(DATEDIFF(updated_at, created_at)) as avg_days')
@@ -226,9 +226,9 @@ class DashboardAnalyticsController extends Controller
 
     private function calculateCollectionRate($companyId)
     {
-        $totalInvoiced = Invoice::where('created_by', $companyId)
+        $totalInvoiced = Invoice::where('tenant_id', $companyId)
             ->sum('total_amount');
-        $totalPaid = Invoice::where('created_by', $companyId)
+        $totalPaid = Invoice::where('tenant_id', $companyId)
             ->where('status', 'paid')
             ->sum('total_amount');
         return $totalInvoiced > 0 ? round(($totalPaid / $totalInvoiced) * 100, 1) : 0;
@@ -237,7 +237,7 @@ class DashboardAnalyticsController extends Controller
     private function calculateBillableHours($companyId)
     {
         // Mock calculation - implement based on time tracking system
-        return Task::where('created_by', $companyId)
+        return Task::where('tenant_id', $companyId)
             ->where('status', 'completed')
             ->sum('estimated_duration') ?? 0;
     }

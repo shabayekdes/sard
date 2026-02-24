@@ -12,7 +12,7 @@ class FeeTypeController extends Controller
     {
         $query = FeeType::withPermissionCheck()
             ->with(['creator'])
-            ->where('created_by', createdBy());
+            ->where('tenant_id', createdBy());
 
         // Handle search
         if ($request->has('search') && !empty($request->search)) {
@@ -50,12 +50,12 @@ class FeeTypeController extends Controller
             'status' => 'nullable|in:active,inactive',
         ]);
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
 
         // Check if fee type with same name already exists for this company
         $exists = FeeType::where('name', $validated['name'])
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->exists();
 
         if ($exists) {
@@ -70,7 +70,7 @@ class FeeTypeController extends Controller
     public function update(Request $request, $feeTypeId)
     {
         $feeType = FeeType::where('id', $feeTypeId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($feeType) {
@@ -83,7 +83,7 @@ class FeeTypeController extends Controller
 
                 // Check if fee type with same name already exists for this company (excluding current)
                 $exists = FeeType::where('name', $validated['name'])
-                    ->where('created_by', createdBy())
+                    ->where('tenant_id', createdBy())
                     ->where('id', '!=', $feeTypeId)
                     ->exists();
 
@@ -105,7 +105,7 @@ class FeeTypeController extends Controller
     public function destroy($feeTypeId)
     {
         $feeType = FeeType::where('id', $feeTypeId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($feeType) {
@@ -123,7 +123,7 @@ class FeeTypeController extends Controller
     public function toggleStatus($feeTypeId)
     {
         $feeType = FeeType::where('id', $feeTypeId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if ($feeType) {

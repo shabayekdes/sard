@@ -75,11 +75,11 @@ class TimeEntryController extends Controller
         $timeEntries = $query->paginate($request->per_page ?? 10);
 
         // Get cases for filter dropdown
-        $cases = CaseModel::where('created_by', createdBy())
+        $cases = CaseModel::where('tenant_id', createdBy())
             ->get(['id', 'case_id', 'title']);
 
         // Get users for filter dropdown
-        $users = User::where('created_by', createdBy())
+        $users = User::where('tenant_id', createdBy())
             ->whereDoesntHave('roles', function ($q) {
                 $q->where('name', 'client');
             })
@@ -115,7 +115,7 @@ class TimeEntryController extends Controller
             $validated['is_billable'] = filter_var($validated['is_billable'], FILTER_VALIDATE_BOOLEAN);
         }
 
-        $validated['created_by'] = createdBy();
+        $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'draft';
         $validated['is_billable'] = $validated['is_billable'] ?? true;
 
@@ -127,7 +127,7 @@ class TimeEntryController extends Controller
         // Verify case belongs to the current user's company if provided and get client_id
         if (!empty($validated['case_id'])) {
             $case = CaseModel::where('id', $validated['case_id'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->first();
 
             if (!$case) {
@@ -141,7 +141,7 @@ class TimeEntryController extends Controller
         // Verify user belongs to the current user's company
         $user = User::where('id', $validated['user_id'])
             ->where(function ($q) {
-                $q->where('created_by', createdBy())
+                $q->where('tenant_id', createdBy())
                     ->orWhere('id', createdBy());
             })
             ->first();
@@ -158,7 +158,7 @@ class TimeEntryController extends Controller
     public function update(Request $request, $timeEntryId)
     {
         $timeEntry = TimeEntry::where('id', $timeEntryId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$timeEntry) {
@@ -192,7 +192,7 @@ class TimeEntryController extends Controller
         // Verify case belongs to the current user's company if provided and get client_id
         if (!empty($validated['case_id'])) {
             $case = CaseModel::where('id', $validated['case_id'])
-                ->where('created_by', createdBy())
+                ->where('tenant_id', createdBy())
                 ->first();
 
             if (!$case) {
@@ -206,7 +206,7 @@ class TimeEntryController extends Controller
         // Verify user belongs to the current user's company
         $user = User::where('id', $validated['user_id'])
             ->where(function ($q) {
-                $q->where('created_by', createdBy())
+                $q->where('tenant_id', createdBy())
                     ->orWhere('id', createdBy());
             })
             ->first();
@@ -223,7 +223,7 @@ class TimeEntryController extends Controller
     public function destroy($timeEntryId)
     {
         $timeEntry = TimeEntry::where('id', $timeEntryId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$timeEntry) {
@@ -243,7 +243,7 @@ class TimeEntryController extends Controller
     public function approve($timeEntryId)
     {
         $timeEntry = TimeEntry::where('id', $timeEntryId)
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->first();
 
         if (!$timeEntry) {
@@ -279,7 +279,7 @@ class TimeEntryController extends Controller
 
         // Check if user already has a running timer
         $runningTimer = TimeEntry::where('user_id', Auth::id())
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->whereNull('end_time')
             ->whereNotNull('start_time')
             ->where('status', 'draft')
@@ -299,7 +299,7 @@ class TimeEntryController extends Controller
             'entry_date' => now()->toDateString(),
             'start_time' => now()->format('H:i'),
             'status' => 'draft',
-            'created_by' => createdBy(),
+            'tenant_id' => createdBy(),
         ]);
 
         return redirect()->back()->with('success', __('Timer started successfully.'));
@@ -309,7 +309,7 @@ class TimeEntryController extends Controller
     {
         $timeEntry = TimeEntry::where('id', $timeEntryId)
             ->where('user_id', Auth::id())
-            ->where('created_by', createdBy())
+            ->where('tenant_id', createdBy())
             ->whereNull('end_time')
             ->whereNotNull('start_time')
             ->first();

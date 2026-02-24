@@ -26,7 +26,7 @@ class CreateTeamMemberRole extends Command
         $teamRole = Role::firstOrCreate([
             'name' => 'team_member',
             'guard_name' => 'web',
-            'created_by' => $companyId
+            'tenant_id' => $companyId
         ], [
             'label' => 'Team Member',
             'description' => 'Team member with limited access to company modules',

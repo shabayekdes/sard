@@ -26,7 +26,7 @@ class InvoicePaymentController extends Controller
             $iyzipayToken = $request->input('token');
             $invoice = Invoice::where('payment_token', $token)->firstOrFail();
 
-            $paymentSettings = PaymentSetting::where('user_id', $invoice->created_by)
+            $paymentSettings = PaymentSetting::where('tenant_id', $invoice->tenant_id)
                 ->whereIn('key', ['iyzipay_public_key', 'iyzipay_secret_key', 'iyzipay_mode'])
                 ->pluck('value', 'key')
                 ->toArray();
@@ -69,16 +69,16 @@ class InvoicePaymentController extends Controller
         })->values()->all());
 
         // Get company information
-        $company = \App\Models\User::where('id', $invoice->created_by)
+        $company = \App\Models\User::where('id', $invoice->tenant_id)
             ->where('type', 'company')
             ->select('id', 'name')
             ->first();
 
-        $companyProfile = \App\Models\CompanyProfile::where('created_by', $invoice->created_by)
+        $companyProfile = \App\Models\CompanyProfile::where('tenant_id', $invoice->tenant_id)
             ->first();
             
         // Get favicon and app name from settings table
-        $settings = \App\Models\Setting::where('user_id', $invoice->created_by)
+        $settings = \App\Models\Setting::where('tenant_id', $invoice->tenant_id)
             ->whereIn('key', ['favicon', 'app_name'])
             ->pluck('value', 'key')
             ->toArray();
@@ -86,7 +86,7 @@ class InvoicePaymentController extends Controller
         $favicon = $settings['favicon'] ?? null;
         $appName = $settings['app_name'] ?? 'Sard App';
 
-        $brandSettings = \App\Models\Setting::where('user_id', $invoice->created_by)
+        $brandSettings = \App\Models\Setting::where('tenant_id', $invoice->tenant_id)
             ->whereIn('key', ['logoLight', 'logoDark'])
             ->pluck('value', 'key')
             ->toArray();
@@ -103,7 +103,7 @@ class InvoicePaymentController extends Controller
 
         // Always show payment page, even if paid (to show updated status)
 
-        $enabledGateways = $this->getEnabledPaymentGateways($invoice->created_by);
+        $enabledGateways = $this->getEnabledPaymentGateways($invoice->tenant_id);
 
         // Load client billing info and currencies (no permission check for public payment page)
         $clientBillingInfo = \App\Models\ClientBillingInfo::select('client_id', 'currency', 'payment_terms', 'custom_payment_terms')
@@ -111,21 +111,21 @@ class InvoicePaymentController extends Controller
             ->keyBy('client_id');
 
         // TODO: Not used currently, remove if not needed
-        // $currencies = \App\Models\Currency::where('created_by', $invoice->created_by)
+        // $currencies = \App\Models\Currency::where('created_by', $invoice->tenant_id)
         //     ->where('status', true)
         //     ->select('id', 'name', 'code', 'symbol')
         //     ->get();
 
         // Get PayPal settings for frontend
-        $paypalSettings = getPaymentMethodConfig('paypal', $invoice->created_by);
+        $paypalSettings = getPaymentMethodConfig('paypal', $invoice->tenant_id);
 
         // Get payment gateway settings for frontend
-        $paymentSettings = PaymentSetting::where('user_id', $invoice->created_by)
+        $paymentSettings = PaymentSetting::where('tenant_id', $invoice->tenant_id)
             ->pluck('value', 'key')
             ->toArray();
 
         // Get company currency setting
-        $companyCurrency = \App\Models\Setting::where('user_id', $invoice->created_by)
+        $companyCurrency = \App\Models\Setting::where('tenant_id', $invoice->tenant_id)
             ->where('key', 'currency')
             ->value('value');
             
@@ -224,7 +224,7 @@ class InvoicePaymentController extends Controller
         }
 
         // Get company-specific payment settings only
-        $settings = PaymentSetting::where('user_id', $invoiceCreatorId)->pluck('value', 'key')->toArray();
+        $settings = PaymentSetting::where('tenant_id', $invoiceCreatorId)->pluck('value', 'key')->toArray();
 
         $gateways = [];
         $paymentGateways = config('payment_methods');
