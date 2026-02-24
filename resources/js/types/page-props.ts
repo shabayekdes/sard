@@ -15,6 +15,13 @@ export type PageProps = {
     image_url: string;
     csrf_token: string;
 
+    /** True when on central domain (e.g. sard.com); false when on tenant subdomain (e.g. acme.sard.com) */
+    isCentralDomain: boolean;
+    /** Current host when on tenant subdomain; null on central */
+    tenantDomain: string | null;
+    /** Current tenant id when in tenant context; null on central */
+    tenantId: string | null;
+
     auth: AuthProps;
     flash: FlashProps;
 

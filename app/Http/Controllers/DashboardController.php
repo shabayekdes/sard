@@ -219,58 +219,58 @@ class DashboardController extends Controller
     private function renderCompanyDashboard()
     {
         $user = auth()->user();
-        $companyId = createdBy();
+        $companyId = tenant('id');
 
-        // Get legal management statistics  
-        $totalCases = CaseModel::where('created_by', $companyId)->count();
-        $activeCases = CaseModel::where('created_by', $companyId)
+        // Get legal management statistics
+        $totalCases = CaseModel::where('tenant_id', $companyId)->count();
+        $activeCases = CaseModel::where('tenant_id', $companyId)
             ->where(function ($query) {
                 $query->whereHas('caseStatus', function ($q) {
                     $q->where('is_closed', false);
                 })->Where('status', 'active');
             })
             ->count();
-        $totalClients = Client::where('created_by', $companyId)->count();
-        $activeClients = Client::where('created_by', $companyId)->where('status', 'active')->count();
-        $pendingTasks = Task::where('created_by', $companyId)->where('status', 1)->count();
-        $totalTasks = Task::where('created_by', $companyId)->count();
-        $upcomingHearings = Hearing::where('created_by', $companyId)
+        $totalClients = Client::where('tenant_id', $companyId)->count();
+        $activeClients = Client::where('tenant_id', $companyId)->where('status', 'active')->count();
+        $pendingTasks = Task::where('tenant_id', $companyId)->where('status', 1)->count();
+        $totalTasks = Task::where('tenant_id', $companyId)->count();
+        $upcomingHearings = Hearing::where('tenant_id', $companyId)
             ->where('hearing_date', '>=', now())
             ->count();
         $unreadMessages = Message::where('company_id', $companyId)
             ->where('recipient_id', auth()->id())
             ->where('is_read', false)
             ->count();
-        $closedCases = CaseModel::where('created_by', $companyId)
+        $closedCases = CaseModel::where('tenant_id', $companyId)
             ->whereHas('caseStatus', function ($q) {
                 $q->where('is_closed', true);
             })
             ->count();
         $successRate = $totalCases > 0 ? round(($closedCases / $totalCases) * 100, 1) : 0;
 
-        $avgResolutionDays = CaseModel::where('created_by', $companyId)
+        $avgResolutionDays = CaseModel::where('tenant_id', $companyId)
             ->whereHas('caseStatus', function ($q) {
                 $q->where('is_closed', true);
             })
             ->selectRaw('AVG(DATEDIFF(updated_at, created_at)) as avg_days')
             ->value('avg_days') ?? 0;
 
-        $totalInvoiced = Invoice::where('created_by', $companyId)
+        $totalInvoiced = Invoice::where('tenant_id', $companyId)
             ->sum('total_amount');
-        $totalPaid = Invoice::where('created_by', $companyId)
+        $totalPaid = Invoice::where('tenant_id', $companyId)
             ->where('status', 'paid')
             ->sum('total_amount');
         $collectionRate = $totalInvoiced > 0 ? round(($totalPaid / $totalInvoiced) * 100, 1) : 0;
 
-        $billableHours = Task::where('created_by', $companyId)
+        $billableHours = Task::where('tenant_id', $companyId)
             ->where('status', 'completed')
             ->sum('estimated_duration') ?? 0;
 
         // Calculate monthly growth
-        $currentMonthClients = Client::where('created_by', $companyId)
+        $currentMonthClients = Client::where('tenant_id', $companyId)
             ->whereMonth('created_at', now()->month)
             ->count();
-        $previousMonthClients = Client::where('created_by', $companyId)
+        $previousMonthClients = Client::where('tenant_id', $companyId)
             ->whereMonth('created_at', now()->subMonth()->month)
             ->count();
         $monthlyGrowth = $previousMonthClients > 0
@@ -278,7 +278,7 @@ class DashboardController extends Controller
             : ($currentMonthClients > 0 ? 100 : 0);
 
         // Cases by status
-        $casesByStatus = CaseModel::where('created_by', $companyId)
+        $casesByStatus = CaseModel::where('tenant_id', $companyId)
             ->with('caseStatus')
             ->get()
             ->groupBy(function ($case) {
@@ -298,7 +298,7 @@ class DashboardController extends Controller
 
         // Recent activity
         $recentActivity = collect()
-            ->merge(CaseModel::where('created_by', $companyId)->latest()->take(3)->get()->map(function ($case) {
+            ->merge(CaseModel::where('tenant_id', $companyId)->latest()->take(3)->get()->map(function ($case) {
                 return [
                     'id' => $case->id,
                     'type' => 'case',
@@ -324,7 +324,7 @@ class DashboardController extends Controller
 
         // Upcoming hearings
         $locale = app()->getLocale();
-        $upcomingHearingsList = Hearing::where('created_by', $companyId)
+        $upcomingHearingsList = Hearing::where('tenant_id', $companyId)
             ->where('hearing_date', '>=', now())
             ->with(['case', 'court.courtType', 'court.circleType', 'hearingType'])
             ->orderBy('hearing_date')
@@ -366,13 +366,13 @@ class DashboardController extends Controller
                 ];
             });
 
-        $recentCases = CaseModel::where('created_by', $companyId)
+        $recentCases = CaseModel::where('tenant_id', $companyId)
             ->with(['client'])
             ->latest()
             ->take(4)
             ->get(['id', 'title', 'case_number', 'client_id', 'created_at']);
 
-        $upcomingTasksList = Task::where('created_by', $companyId)
+        $upcomingTasksList = Task::where('tenant_id', $companyId)
             ->where('status', 1)
             ->whereNotNull('due_date')
             ->with(['assignedUser', 'taskType'])
@@ -409,7 +409,7 @@ class DashboardController extends Controller
                     'low' => 0
                 ];
 
-                $cases = CaseModel::where('created_by', $companyId)
+                $cases = CaseModel::where('tenant_id', $companyId)
                     ->whereYear('created_at', $year)
                     ->whereMonth('created_at', $month)
                     ->selectRaw('priority, COUNT(*) as count')
@@ -430,7 +430,7 @@ class DashboardController extends Controller
         $yearlyRevenue = [];
         for ($year = date('Y') - 4; $year <= date('Y'); $year++) {
             for ($month = 1; $month <= 12; $month++) {
-                $revenue = Invoice::where('created_by', $companyId)
+                $revenue = Invoice::where('tenant_id', $companyId)
                     ->where('status', 'paid')
                     ->whereYear('created_at', $year)
                     ->whereMonth('created_at', $month)
@@ -458,7 +458,7 @@ class DashboardController extends Controller
                     'on_hold' => 0,
                 ];
 
-                $tasks = Task::where('created_by', $companyId)
+                $tasks = Task::where('tenant_id', $companyId)
                     ->whereYear('created_at', $year)
                     ->whereMonth('created_at', $month)
                     ->selectRaw('status, COUNT(*) as count')
@@ -476,7 +476,7 @@ class DashboardController extends Controller
             }
         }
 
-        $overdueInvoices = Invoice::where('created_by', $companyId)
+        $overdueInvoices = Invoice::where('tenant_id', $companyId)
             ->where('status', 'overdue')
             ->with('client')
             ->latest()
@@ -485,10 +485,10 @@ class DashboardController extends Controller
 
         // Tasks by status
         $tasksStatus = [
-            ['status' => 'not_started', 'count' => Task::where('created_by', $companyId)->where('status', 'not_started')->count(), 'color' => '#94a3b8'],
-            ['status' => 'in_progress', 'count' => Task::where('created_by', $companyId)->where('status', 'in_progress')->count(), 'color' => '#3b82f6'],
-            ['status' => 'completed', 'count' => Task::where('created_by', $companyId)->where('status', 'completed')->count(), 'color' => '#10b981'],
-            ['status' => 'on_hold', 'count' => Task::where('created_by', $companyId)->where('status', 'on_hold')->count(), 'color' => '#f59e0b']
+            ['status' => 'not_started', 'count' => Task::where('tenant_id', $companyId)->where('status', 'not_started')->count(), 'color' => '#94a3b8'],
+            ['status' => 'in_progress', 'count' => Task::where('tenant_id', $companyId)->where('status', 'in_progress')->count(), 'color' => '#3b82f6'],
+            ['status' => 'completed', 'count' => Task::where('tenant_id', $companyId)->where('status', 'completed')->count(), 'color' => '#10b981'],
+            ['status' => 'on_hold', 'count' => Task::where('tenant_id', $companyId)->where('status', 'on_hold')->count(), 'color' => '#f59e0b']
         ];
 
         // Get user's current plan with relationship
@@ -504,10 +504,10 @@ class DashboardController extends Controller
         $totalStorageUsed = $documentsStorage + $caseDocumentsStorage + $clientDocumentsStorage;
 
         // Get actual user count for the company
-        $currentUsers = User::where('created_by', $companyId)->where('status', 'active')->count();
+        $currentUsers = User::where('tenant_id', $companyId)->where('status', 'active')->count();
 
         // Calculate actual revenue from payments (most accurate)
-        $totalRevenue = Payment::where('created_by', $companyId)
+        $totalRevenue = Payment::where('tenant_id', $companyId)
             ->sum('amount') ?? 0;
 
         $dashboardData = [

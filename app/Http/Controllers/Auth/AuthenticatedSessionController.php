@@ -79,7 +79,7 @@ class AuthenticatedSessionController extends Controller
         $loginHistory->date       = now()->toDateString();
         $loginHistory->details    = $details;
         $loginHistory->type       = Auth::user()->type;
-        $loginHistory->created_by = Auth::user()->creatorId();
+        $loginHistory->tenant_id = Auth::user()->tenant_id;
         $loginHistory->save();
     }
     private function getLocationData(string $ip): array

@@ -59,7 +59,7 @@ if (! function_exists('settings')) {
             $superAdmin = User::where('type', 'superadmin')->first();
             if ($superAdmin) {
                 $superAdminKeys = ['decimalFormat', 'defaultCurrency', 'thousandsSeparator', 'floatNumber', 'currencySymbolSpace', 'currencySymbolPosition', 'dateFormat', 'timeFormat', 'calendarStartDay', 'defaultTimezone', 'defaultCountry', 'defaultTaxRate'];
-                $superAdminSettings = Setting::where('user_id', $superAdmin->id)
+                $superAdminSettings = Setting::whereNull('tenant_id')
                     ->whereIn('key', $superAdminKeys)
                     ->pluck('value', 'key')
                     ->toArray();

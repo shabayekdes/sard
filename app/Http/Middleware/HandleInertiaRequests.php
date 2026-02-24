@@ -42,13 +42,20 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
+        // Base URL from current request (central or tenant domain) for Inertia/Ziggy/assets
+        $baseUrl = $request->getSchemeAndHttpHost();
+        $centralDomains = config('tenancy.central_domains', []);
+        $isCentralDomain = in_array($request->getHost(), $centralDomains, true);
+        $tenantDomain = $isCentralDomain ? null : $request->getHost();
+        $tenantId = function_exists('tenant') ? (tenant()?->getTenantKey() ?? null) : null;
+
         // Skip database queries during installation
         if ($request->is('install/*') || $request->is('update/*') || !file_exists(storage_path('installed'))) {
             $globalSettings = [
                 'currencySymbol' => '$',
                 'currencyNname' => 'US Dollar',
-                'base_url' => config('app.url'),
-                'image_url' => config('app.url'),
+                'base_url' => $baseUrl,
+                'image_url' => $baseUrl,
                 'is_demo' => false,//config('app.is_demo', false),
             ];
             $storageSettings = [
@@ -120,8 +127,8 @@ class HandleInertiaRequests extends Middleware
 
             // Merge currency settings with other settings
             $globalSettings = array_merge($settings, $currencySettings, $superAdminCurrencySettings);
-            $globalSettings['base_url'] = config('app.url');
-            $globalSettings['image_url'] = config('app.url');
+            $globalSettings['base_url'] = $baseUrl;
+            $globalSettings['image_url'] = $baseUrl;
             $globalSettings['is_demo'] = false; //config('app.is_demo', false);
 
         //     // Add cookie consent setting
@@ -133,8 +140,11 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name'  => config('app.name'),
-            'base_url'  => config('app.url'),
-            'image_url'  => config('app.url'),
+            'base_url'  => $baseUrl,
+            'image_url'  => $baseUrl,
+            'isCentralDomain' => $isCentralDomain,
+            'tenantDomain' => $tenantDomain,
+            'tenantId' => $tenantId,
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'csrf_token' => csrf_token(),
             'auth'  => [

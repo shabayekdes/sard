@@ -57,9 +57,9 @@
         @endif
         @vite(['resources/js/app.tsx'])
         <script>
-            // Ensure base URL is correctly set for assets
+            // Base URL from current request (central or tenant domain) for Inertia/Ziggy/assets
             window.baseUrl = '{{ url('/') }}';
-            window.APP_URL = '{{ config('app.url') }}';
+            window.APP_URL = '{{ url('/') }}';
 
             // Set initial locale for i18next
             {{--fetch('{{ route("initial-locale") }}')--}}

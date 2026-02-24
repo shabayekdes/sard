@@ -56,6 +56,7 @@ class TenancyServiceProvider extends ServiceProvider
             Events\InitializingTenancy::class => [],
             Events\TenancyInitialized::class => [
                 Listeners\BootstrapTenancy::class,
+                \App\Listeners\SetTenantAppUrl::class,
             ],
 
             Events\EndingTenancy::class => [],
