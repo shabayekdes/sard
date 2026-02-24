@@ -18,16 +18,47 @@ class ClientSeeder extends Seeder
      */
     public function run(): void
     {
-
         // Get company users
         $companyUsers = User::where('type', 'company')->get();
+
+
+        // // Create client record
+        // Client::firstOrCreate([
+        //     'email' => 'alaa@sard.app',
+        //     'tenant_id' => $companyUsers->first()->tenant_id
+        // ], [
+        //     'name' => 'Alaa',
+        //     'phone' => '+96655555555',
+        //     'address' => '123 Main St, Riyadh, Saudi Arabia',
+        //     'client_type_id' => ClientType::where('tenant_id', $companyUsers->first()->tenant_id)->first()->id,
+        //     'status' => 'active',
+        //     'company_name' => 'Sard App',
+        //     'tax_id' => 'TAX' . str_pad(2, 6, '0', STR_PAD_LEFT),
+        //     'tax_rate' => 15,
+        //     'date_of_birth' => '1990-01-01',
+        //     'notes' => 'This is a sample client record for Alaa. Alaa is a corporate client representing Sard App, a technology company specializing in legal practice management software. Alaa has been with the company for several years and has a history of successful legal cases. The client prefers communication via email and has a high priority for timely updates on their cases.'
+        // ]);
+        //
+        // // Create client user account
+        // $alaaUser = User::updateOrCreate([
+        //     'email' => 'alaa@sard.app',
+        // ], [
+        //     'name' => 'Alaa',
+        //     'password' => Hash::make('password'),
+        //     'type' => 'client',
+        //     'lang' => 'ar',
+        //     'status' => 'active',
+        //     'referral_code' => 0,
+        //     'tenant_id' => $companyUsers->first()->tenant_id
+        // ]);
+        //
 
         foreach ($companyUsers as $companyUser) {
             // Create client role for this company
             $clientRole = Role::firstOrCreate([
                 'name' => 'client',
                 'guard_name' => 'web',
-                'created_by' => $companyUser->id
+                'tenant_id' => $companyUser->tenant_id
             ], [
                 'label' => 'Client',
                 'description' => 'Client with limited access to their cases and documents'
@@ -115,7 +146,7 @@ class ClientSeeder extends Seeder
             ]);
 
             // Get client types for this company
-            $clientTypes = ClientType::where('created_by', $companyUser->id)->get();
+            $clientTypes = ClientType::where('tenant_id', $companyUser->tenant_id)->get();
 
             // Create 3-5 clients for each company
             $clientCount = rand(3, 5);
@@ -131,38 +162,6 @@ class ClientSeeder extends Seeder
                 'William Garcia',
                 'Mary Rodriguez'
             ];
-
-            // Create client record
-            $client = Client::firstOrCreate([
-                'email' => 'alaa@sard.app',
-                'created_by' => 2
-            ], [
-                'name' => 'Alaa',
-                'phone' => '+96655555555',
-                'address' => '123 Main St, Riyadh, Saudi Arabia',
-                'client_type_id' => $clientTypes->random()->id,
-                'status' => 'active',
-                'company_name' => 'Sard App',
-                'tax_id' => 'TAX' . str_pad(2, 6, '0', STR_PAD_LEFT),
-                'tax_rate' => 15,
-                'date_of_birth' => '1990-01-01',
-                'notes' => 'This is a sample client record for Alaa. Alaa is a corporate client representing Sard App, a technology company specializing in legal practice management software. Alaa has been with the company for several years and has a history of successful legal cases. The client prefers communication via email and has a high priority for timely updates on their cases.'
-            ]);
-
-            // Create client user account
-            $clientUser = User::updateOrCreate([
-                'email' => 'alaa@sard.app',
-            ], [
-                'name' => 'Alaa',
-                'password' => Hash::make('password'),
-                'type' => 'client',
-                'lang' => 'ar',
-                'status' => 'active',
-                'referral_code' => 0,
-                'created_by' => 2
-            ]);
-
-            $clientUser->roles()->sync([$clientRole->id]);
 
             for ($i = 1; $i <= $clientCount; $i++) {
                 $clientType = $clientTypes->random();
@@ -188,10 +187,10 @@ class ClientSeeder extends Seeder
                 // Create client record
                 $client = Client::firstOrCreate([
                     'email' => $clientData['email'],
-                    'created_by' => $companyUser->id
+                    'tenant_id' => $companyUser->tenant_id
                 ], [
                     ...$clientData,
-                    'created_by' => $companyUser->id,
+                    'tenant_id' => $companyUser->tenant_id,
                 ]);
 
                 // Create client user account
@@ -204,7 +203,7 @@ class ClientSeeder extends Seeder
                     'lang' => $companyUser->lang ?? 'en',
                     'status' => 'active',
                     'referral_code' => 0,
-                    'created_by' => $companyUser->id
+                    'tenant_id' => $companyUser->tenant_id
                 ]);
 
                 $clientUser->roles()->sync([$clientRole->id]);

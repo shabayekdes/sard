@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\AutoApplyPermissionCheck;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class BillingRate extends BaseModel
 {
-    use HasFactory, AutoApplyPermissionCheck;
+    use BelongsToTenant, HasFactory, AutoApplyPermissionCheck;
 
     protected $fillable = [
         'user_id',
@@ -20,7 +21,7 @@ class BillingRate extends BaseModel
         'end_date',
         'status',
         'notes',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $casts = [

@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class CaseDocument extends BaseModel
 {
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = [
         'document_id',
@@ -18,7 +19,7 @@ class CaseDocument extends BaseModel
         'confidentiality',
         'document_date',
         'status',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $casts = [

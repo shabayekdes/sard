@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class Client extends BaseModel
 {
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = [
         'client_id',
@@ -23,7 +24,7 @@ class Client extends BaseModel
         'tax_id',
         'date_of_birth',
         'notes',
-        'created_by',
+        'tenant_id',
         'business_type',
         'nationality_id',
         'id_number',

@@ -13,10 +13,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $isDemo = config('app.is_demo', true);
-
         // Create Super Admin User
-        
         $superAdmin = User::firstOrCreate(
             ['email' => 'esmail@sard.app'],
             [
@@ -30,7 +27,5 @@ class UserSeeder extends Seeder
 
         // Assign super admin role
         $superAdmin->assignRole('superadmin');
-
-        // createDefaultSettings($superAdmin->id);
     }
 }

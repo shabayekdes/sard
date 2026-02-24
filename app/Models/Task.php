@@ -4,10 +4,11 @@ namespace App\Models;
 
 use App\Traits\AutoApplyPermissionCheck;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class Task extends BaseModel
 {
-    use HasFactory, AutoApplyPermissionCheck;
+    use BelongsToTenant, HasFactory, AutoApplyPermissionCheck;
 
     protected $fillable = [
         'task_id',

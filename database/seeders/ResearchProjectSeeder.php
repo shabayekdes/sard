@@ -16,8 +16,8 @@ class ResearchProjectSeeder extends Seeder
         $companyUsers = User::where('type', 'company')->get();
         
         foreach ($companyUsers as $companyUser) {
-            $cases = CaseModel::where('created_by', $companyUser->id)->get();
-            $researchTypes = ResearchType::where('created_by', $companyUser->id)->get();
+            $cases = CaseModel::where('tenant_id', $companyUser->tenant_id)->get();
+            $researchTypes = ResearchType::where('tenant_id', $companyUser->tenant_id)->get();
             
             if ($researchTypes->isEmpty()) continue;
             
@@ -59,12 +59,12 @@ class ResearchProjectSeeder extends Seeder
                     'status' => $statuses[rand(0, count($statuses) - 1)],
                     'priority' => $priorities[rand(0, count($priorities) - 1)],
                     'due_date' => $dueDate,
-                    'created_by' => $companyUser->id,
+                    'tenant_id' => $companyUser->tenant_id,
                 ];
                 
                 ResearchProject::firstOrCreate([
                     'title' => $projectData['title'],
-                    'created_by' => $companyUser->id
+                    'tenant_id' => $companyUser->tenant_id
                 ], $projectData);
             }
         }

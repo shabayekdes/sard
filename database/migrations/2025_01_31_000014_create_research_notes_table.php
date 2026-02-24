@@ -16,11 +16,11 @@ return new class extends Migration
             $table->text('source_reference')->nullable();
             $table->json('tags')->nullable();
             $table->boolean('is_private')->default(false);
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
             $table->index(['research_project_id']);
-            $table->index(['created_by']);
+            $table->index(['tenant_id']);
             $table->index(['is_private']);
         });
     }

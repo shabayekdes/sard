@@ -15,8 +15,8 @@ class DocumentPermissionSeeder extends Seeder
         $companyUsers = User::where('type', 'company')->get();
         
         foreach ($companyUsers as $companyUser) {
-            $documents = Document::where('created_by', $companyUser->id)->get();
-            $users = User::where('created_by', $companyUser->id)->get();
+            $documents = Document::where('tenant_id', $companyUser->tenant_id)->get();
+            $users = User::where('tenant_id', $companyUser->tenant_id)->get();
             
             if ($documents->count() > 0 && $users->count() > 0) {
                 // Create 2-3 document permissions per company
@@ -32,13 +32,13 @@ class DocumentPermissionSeeder extends Seeder
                         'document_id' => $document->id,
                         'user_id' => $user->id,
                         'permission_type' => $permissionType,
-                        'created_by' => $companyUser->id
+                        'tenant_id' => $companyUser->tenant_id
                     ], [
                         'document_id' => $document->id,
                         'user_id' => $user->id,
                         'permission_type' => $permissionType,
                         'expires_at' => rand(1, 10) > 7 ? now()->addMonths(rand(3, 12)) : null, // 30% chance of expiration
-                        'created_by' => $companyUser->id
+                        'tenant_id' => $companyUser->tenant_id
                     ]);
                 }
             }

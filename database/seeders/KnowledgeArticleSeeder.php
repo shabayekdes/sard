@@ -15,7 +15,7 @@ class KnowledgeArticleSeeder extends Seeder
         $companyUsers = User::where('type', 'company')->get();
         
         foreach ($companyUsers as $companyUser) {
-            $categories = ResearchCategory::where('created_by', $companyUser->id)->get();
+            $categories = ResearchCategory::where('tenant_id', $companyUser->tenant_id)->get();
             
             // Create 2-3 knowledge articles per company
             $articleCount = rand(8, 10);
@@ -98,14 +98,14 @@ class KnowledgeArticleSeeder extends Seeder
             foreach ($selectedArticles as $articleData) {
                 KnowledgeArticle::firstOrCreate([
                     'title' => $articleData['title'],
-                    'created_by' => $companyUser->id
+                    'tenant_id' => $companyUser->tenant_id
                 ], [
                     'content' => $articleData['content'],
                     'category_id' => $categories->count() > 0 ? $categories->random()->id : null,
                     'tags' => $articleData['tags'],
                     'is_public' => $articleData['is_public'],
                     'status' => $articleData['status'],
-                    'created_by' => $companyUser->id,
+                    'tenant_id' => $companyUser->tenant_id,
                 ]);
             }
         }

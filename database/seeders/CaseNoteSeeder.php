@@ -19,11 +19,11 @@ class CaseNoteSeeder extends Seeder
         
         foreach ($companyUsers as $companyUser) {
             // Get cases for this company
-            $cases = \App\Models\CaseModel::where('created_by', $companyUser->id)->get();
+            $cases = \App\Models\CaseModel::where('tenant_id', $companyUser->tenant_id)->get();
             if ($cases->isEmpty()) continue;
             
             // Get team members for this company
-            $teamMembers = User::where('created_by', $companyUser->id)
+            $teamMembers = User::where('tenant_id', $companyUser->tenant_id)
                 ->where('type', 'team_member')
                 ->get();
             
@@ -103,7 +103,7 @@ class CaseNoteSeeder extends Seeder
                         'case_ids' => [(string)$case->id],
                         'note_date' => now()->subDays(rand(1, 30)),
                         'status' => 'active',
-                        'created_by' => $creator->id,
+                        'tenant_id' => $creator->tenant_id,
                     ]);
                 }
             }

@@ -7,10 +7,11 @@ use App\Traits\AutoApplyPermissionCheck;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class ResearchSource extends BaseModel
 {
-    use HasFactory, HasTranslations, AutoApplyPermissionCheck;
+    use BelongsToTenant, HasFactory, HasTranslations, AutoApplyPermissionCheck;
 
     public array $translatable = ['source_name', 'description'];
 
@@ -22,7 +23,7 @@ class ResearchSource extends BaseModel
         'access_info',
         'credentials',
         'status',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $casts = [

@@ -4,10 +4,11 @@ namespace App\Models;
 
 use App\Traits\AutoApplyPermissionCheck;
 use Illuminate\Database\Eloquent\Model;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class RiskAssessment extends BaseModel
 {
-    use AutoApplyPermissionCheck;
+    use BelongsToTenant, AutoApplyPermissionCheck;
     
     protected $fillable = [
         'risk_title',
@@ -21,7 +22,7 @@ class RiskAssessment extends BaseModel
         'review_date',
         'status',
         'responsible_person',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $casts = [

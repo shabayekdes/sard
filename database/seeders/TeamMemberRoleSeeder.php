@@ -128,7 +128,7 @@ class TeamMemberRoleSeeder extends Seeder
             $teamRole = Role::firstOrCreate([
                 'name' => 'team_member',
                 'guard_name' => 'web',
-                'created_by' => $companyUser->id
+                'tenant_id' => $companyUser->tenant_id
             ], [
                 'label' => 'Team Member',
                 'description' => 'Team member with limited access to company modules'
@@ -166,7 +166,7 @@ class TeamMemberRoleSeeder extends Seeder
                     'type' => 'team_member',
                     'lang' => $companyUser->lang ?? 'en',
                     'status' => $memberInfo['status'],
-                    'created_by' => $companyUser->id
+                    'tenant_id' => $companyUser->tenant_id
                 ]);
 
                 $teamMember->assignRole($teamRole);

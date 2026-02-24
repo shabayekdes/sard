@@ -22,11 +22,11 @@ return new class extends Migration
             $table->boolean('is_public')->default(false);
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->unsignedBigInteger('user_id')->nullable(); // Owner of custom dashboard
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
             // Index for better performance
-            $table->index(['created_by', 'status']);
+            $table->index(['tenant_id', 'status']);
             $table->index(['user_id']);
             $table->index(['dashboard_type']);
         });

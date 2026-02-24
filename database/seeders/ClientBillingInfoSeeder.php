@@ -22,7 +22,7 @@ class ClientBillingInfoSeeder extends Seeder
         
         foreach ($companyUsers as $companyUser) {
             // Get clients for this company
-            $clients = Client::where('created_by', $companyUser->id)->get();
+            $clients = Client::where('tenant_id', $companyUser->tenant_id)->get();
             
             // Get currencies for this company
             $currencies = \App\Models\Currency::where('status', true)->get();
@@ -46,13 +46,13 @@ class ClientBillingInfoSeeder extends Seeder
                             'currency' => !empty($currencyCodes) ? $currencyCodes[($i - 1) % count($currencyCodes)] : $defaultCurrency,
                             'billing_notes' => 'Billing record #' . $i . ' for client ' . $client->name . '. Standard billing terms apply.',
                             'status' => 'active',
-                            'created_by' => $companyUser->id,
+                            'tenant_id' => $companyUser->tenant_id,
                         ];
                         
                         ClientBillingInfo::firstOrCreate([
                             'client_id' => $client->id,
                             'billing_address' => $billingData['billing_address'],
-                            'created_by' => $companyUser->id
+                            'tenant_id' => $companyUser->tenant_id,
                         ], $billingData);
                     }
                 }

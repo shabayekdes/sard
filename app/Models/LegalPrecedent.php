@@ -4,10 +4,11 @@ namespace App\Models;
 
 use App\Traits\AutoApplyPermissionCheck;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class LegalPrecedent extends BaseModel
 {
-    use HasFactory, AutoApplyPermissionCheck;
+    use BelongsToTenant, HasFactory, AutoApplyPermissionCheck;
 
     protected $fillable = [
         'case_name',
@@ -20,7 +21,7 @@ class LegalPrecedent extends BaseModel
         'court_level',
         'key_points',
         'status',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $casts = [

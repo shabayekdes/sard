@@ -15,7 +15,7 @@ class DocumentVersionSeeder extends Seeder
         $companyUsers = User::where('type', 'company')->get();
         
         foreach ($companyUsers as $companyUser) {
-            $documents = Document::where('created_by', $companyUser->id)->get();
+            $documents = Document::where('tenant_id', $companyUser->tenant_id)->get();
             
             if ($documents->count() > 0) {
                 // Create 2-3 document versions per company
@@ -42,7 +42,7 @@ class DocumentVersionSeeder extends Seeder
                         'file_path' => str_replace('.pdf', '_v' . $versionNumber . '.pdf', $document->file_path),
                         'changes_description' => $changeDescriptions[($companyUser->id + $i - 1) % count($changeDescriptions)],
                         'is_current' => $i === $versionCount, // Last version is current
-                        'created_by' => $companyUser->id,
+                        'tenant_id' => $companyUser->tenant_id,
                     ]);
                 }
             }

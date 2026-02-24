@@ -25,12 +25,12 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->text('outcome')->nullable();
             $table->json('attendees')->nullable();
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
             $table->index(['case_id', 'hearing_date']);
             $table->index(['court_id', 'hearing_date']);
-            $table->index(['created_by', 'status']);
+            $table->index(['tenant_id', 'status']);
         });
     }
 

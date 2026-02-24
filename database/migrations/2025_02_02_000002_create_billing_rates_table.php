@@ -23,11 +23,11 @@ return new class extends Migration
             $table->date('end_date')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->text('notes')->nullable();
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
             // Indexes for better performance
-            $table->index(['created_by', 'status']);
+            $table->index(['tenant_id', 'status']);
             $table->index(['user_id']);
             $table->index(['client_id']);
             $table->index(['effective_date']);

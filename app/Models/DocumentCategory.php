@@ -5,10 +5,11 @@ namespace App\Models;
 use App\Traits\AutoApplyPermissionCheck;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Translatable\HasTranslations;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class DocumentCategory extends BaseModel
 {
-    use HasFactory, HasTranslations, AutoApplyPermissionCheck;
+    use BelongsToTenant, HasFactory, HasTranslations, AutoApplyPermissionCheck;
 
     public array $translatable = ['name', 'description'];
 
@@ -18,7 +19,7 @@ class DocumentCategory extends BaseModel
         'description',
         'color',
         'status',
-        'created_by'
+        'tenant_id'
     ];
 
     protected static function boot()

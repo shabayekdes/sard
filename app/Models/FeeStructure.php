@@ -6,13 +6,14 @@ use App\Traits\AutoApplyPermissionCheck;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class FeeStructure extends BaseModel
 {
-    use HasFactory, AutoApplyPermissionCheck;
+    use BelongsToTenant, HasFactory, AutoApplyPermissionCheck;
 
     protected $fillable = [
-        'created_by',
+        'tenant_id',
         'client_id',
         'case_id',
         'fee_type_id',

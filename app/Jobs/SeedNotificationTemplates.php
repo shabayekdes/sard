@@ -34,7 +34,7 @@ class SeedNotificationTemplates implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        public int $companyUserId
+        public string $tenant_id
     ) {
         $this->onQueue('default');
     }
@@ -47,7 +47,7 @@ class SeedNotificationTemplates implements ShouldQueue
         $this->createDefaultNotificationSettings();
 
         Log::info("SeedNotificationTemplates: Completed", [
-            'company_id' => $this->companyUserId
+            'company_id' => $this->tenant_id
         ]);
     }
 
@@ -63,7 +63,7 @@ class SeedNotificationTemplates implements ShouldQueue
             foreach ($types as $type) {
                 \App\Models\UserNotificationTemplate::updateOrCreate(
                     [
-                        'user_id' => $this->companyUserId,
+                        'user_id' => $this->tenant_id,
                         'template_id' => $template->id,
                         'type' => $type
                     ],
@@ -79,7 +79,7 @@ class SeedNotificationTemplates implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         Log::error("SeedNotificationTemplates: Job failed", [
-            'company_id' => $this->companyUserId,
+            'company_id' => $this->tenant_id,
             'error' => $exception->getMessage()
         ]);
     }

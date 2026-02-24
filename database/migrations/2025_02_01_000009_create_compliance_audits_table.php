@@ -27,11 +27,11 @@ return new class extends Migration
             $table->string('auditor_organization')->nullable();
             $table->text('corrective_actions')->nullable();
             $table->date('follow_up_date')->nullable();
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
             // Index for better performance
-            $table->index(['created_by', 'status']);
+            $table->index(['tenant_id', 'status']);
             $table->index(['audit_date']);
         });
     }

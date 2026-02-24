@@ -22,10 +22,10 @@ class ClientDocumentSeeder extends Seeder
         
         foreach ($companyUsers as $companyUser) {
             // Get clients for this company
-            $clients = Client::where('created_by', $companyUser->id)->get();
+            $clients = Client::where('tenant_id', $companyUser->tenant_id)->get();
             
             // Get document types for this specific company
-            $documentTypes = DocumentType::where('created_by', $companyUser->id)
+            $documentTypes = DocumentType::where('tenant_id', $companyUser->tenant_id)
                 ->where('status', 'active')
                 ->pluck('id')
                 ->toArray();
@@ -76,13 +76,13 @@ class ClientDocumentSeeder extends Seeder
                             'document_type_id' => $documentTypes[($index) % count($documentTypes)],
                             'description' => $descriptions[$docIndex],
                             'status' => rand(1, 10) > 9 ? 'archived' : 'active', // 10% chance archived
-                            'created_by' => $companyUser->id,
+                            'tenant_id' => $companyUser->tenant_id,
                         ];
                         
                         ClientDocument::firstOrCreate([
                             'document_name' => $docData['document_name'],
                             'client_id' => $docData['client_id'],
-                            'created_by' => $companyUser->id
+                            'tenant_id' => $companyUser->tenant_id
                         ], $docData);
                     }
                 }

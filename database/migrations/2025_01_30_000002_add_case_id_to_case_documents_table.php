@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('case_documents', function (Blueprint $table) {
             $table->foreignId('case_id')->nullable()->after('document_id')->constrained('cases')->onDelete('cascade');
-            $table->index(['case_id', 'created_by']);
+            $table->index(['case_id', 'tenant_id']);
         });
     }
 
@@ -18,7 +18,7 @@ return new class extends Migration
     {
         Schema::table('case_documents', function (Blueprint $table) {
             $table->dropForeign(['case_id']);
-            $table->dropIndex(['case_id', 'created_by']);
+            $table->dropIndex(['case_id', 'tenant_id']);
             $table->dropColumn('case_id');
         });
     }

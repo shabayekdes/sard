@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class HearingType extends BaseModel
 {
-    use HasFactory, HasTranslations;
+    use BelongsToTenant, HasFactory, HasTranslations;
 
     public array $translatable = ['name', 'description', 'notes'];
 

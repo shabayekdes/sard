@@ -73,7 +73,7 @@ class LoginHistorySeeder extends Seeder
                     'date' => Carbon::now()->subDays(rand(0, 30))->toDateString(),
                     'details' => $details,
                     'type' => 'superadmin',
-                    'created_by' => $user->id,
+                    'tenant_id' => $user->id,
                     'created_at' => Carbon::now()->subDays(rand(0, 30))->subHours(rand(0, 23)),
                     'updated_at' => Carbon::now()
                 ]);
@@ -104,7 +104,7 @@ class LoginHistorySeeder extends Seeder
                     'date' => Carbon::now()->subDays(rand(0, 30))->toDateString(),
                     'details' => $details,
                     'type' => 'company',
-                    'created_by' => $user->id,
+                    'tenant_id' => $user->id,
                     'created_at' => Carbon::now()->subDays(rand(0, 30))->subHours(rand(0, 23)),
                     'updated_at' => Carbon::now()
                 ]);
@@ -136,7 +136,7 @@ class LoginHistorySeeder extends Seeder
                 'date' => Carbon::now()->subDays(rand(0, 30))->toDateString(),
                 'details' => $details,
                 'type' => $roleType,
-                'created_by' => $createdBy,
+                'tenant_id' => $createdBy,
                 'created_at' => Carbon::now()->subDays(rand(0, 30))->subHours(rand(0, 23)),
                 'updated_at' => Carbon::now()
             ]);

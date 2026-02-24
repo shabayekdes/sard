@@ -78,7 +78,7 @@ class CaseModelFactory extends Factory
             'expected_completion_date' => $expectedCompletion,
             'estimated_value' => $this->faker->optional(0.7)->randomFloat(2, 1000, 500000),
             'status' => $this->faker->randomElement(['active', 'inactive']),
-            'created_by' => function () {
+            'tenant_id' => function () {
                 return User::where('type', 'company')->inRandomOrder()->first()?->id ?? User::factory();
             },
         ];

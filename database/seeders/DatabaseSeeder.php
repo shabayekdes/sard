@@ -101,7 +101,7 @@ class DatabaseSeeder extends Seeder
                 PlanRequestSeeder::class,
                 NewsletterSeeder::class,
                 ReferralSettingSeeder::class,
-                ReferralSeeder::class,
+                // ReferralSeeder::class,
             ]);
         } else {
             // Main/Production mode - run minimal seeders with basic data

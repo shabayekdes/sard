@@ -5,10 +5,11 @@ namespace App\Models;
 use App\Traits\AutoApplyPermissionCheck;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class PracticeArea extends BaseModel
 {
-    use HasFactory, AutoApplyPermissionCheck;
+    use BelongsToTenant, HasFactory, AutoApplyPermissionCheck;
 
     protected $fillable = [
         'area_id',
@@ -18,7 +19,7 @@ class PracticeArea extends BaseModel
         'is_primary',
         'certifications',
         'status',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $casts = [

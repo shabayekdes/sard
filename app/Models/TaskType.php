@@ -5,10 +5,11 @@ namespace App\Models;
 use App\Traits\AutoApplyPermissionCheck;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Translatable\HasTranslations;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class TaskType extends BaseModel
 {
-    use HasFactory, HasTranslations, AutoApplyPermissionCheck;
+    use BelongsToTenant, HasFactory, HasTranslations, AutoApplyPermissionCheck;
 
     public array $translatable = ['name', 'description'];
 
@@ -18,7 +19,7 @@ class TaskType extends BaseModel
         'color',
         'default_duration',
         'status',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $casts = [

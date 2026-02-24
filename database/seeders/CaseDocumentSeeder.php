@@ -19,7 +19,7 @@ class CaseDocumentSeeder extends Seeder
 
         foreach ($companyUsers as $companyUser) {
             // Get document types for this company
-            $documentTypes = \App\Models\DocumentType::where('created_by', $companyUser->id)->pluck('id')->toArray();
+            $documentTypes = \App\Models\DocumentType::where('tenant_id', $companyUser->tenant_id)->pluck('id')->toArray();
 
             // Create default document type if none exists
             if (empty($documentTypes)) {
@@ -28,17 +28,17 @@ class CaseDocumentSeeder extends Seeder
                     'description' => 'General document type',
                     'color' => '#3B82F6',
                     'status' => 'active',
-                    'created_by' => $companyUser->id
+                    'tenant_id' => $companyUser->tenant_id
                 ]);
                 $documentTypes = [$defaultDocType->id];
             }
 
             // Get cases for this company
-            $cases = \App\Models\CaseModel::where('created_by', $companyUser->id)->get();
+            $cases = \App\Models\CaseModel::where('tenant_id', $companyUser->tenant_id)->get();
             if ($cases->isEmpty()) continue;
 
             // Get team members for this company
-            $teamMembers = User::where('created_by', $companyUser->id)
+            $teamMembers = User::where('tenant_id', $companyUser->tenant_id)
                 ->where('type', 'team_member')
                 ->where('status', 'active')
                 ->get();
@@ -121,7 +121,7 @@ class CaseDocumentSeeder extends Seeder
                         'document_type_id' => $documentTypes[array_rand($documentTypes)],
                         'document_date' => now()->subDays(rand(1, 30)),
                         'status' => 'active',
-                        'created_by' => $creator->id,
+                        'tenant_id' => $creator->tenant_id,
                     ]);
                 }
             }

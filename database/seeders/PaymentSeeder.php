@@ -15,7 +15,7 @@ class PaymentSeeder extends Seeder
         $companies = User::where('type', 'company')->get();
 
         foreach ($companies as $company) {
-            $invoices = Invoice::where('created_by', $company->id)->get();
+            $invoices = Invoice::where('tenant_id', $company->tenant_id)->get();
 
             if ($invoices->count() > 0) {
                 // Create 2-3 payments per company
@@ -45,7 +45,7 @@ class PaymentSeeder extends Seeder
                         $paymentDate = $invoice->invoice_date->copy()->addDays(rand(1, 45));
                         
                         $paymentData = [
-                            'created_by' => $company->id,
+                            'tenant_id' => $company->tenant_id,
                             'invoice_id' => $invoice->id,
                             'payment_method' => $paymentMethods[rand(0, count($paymentMethods) - 1)],
                             'amount' => $paymentAmount,
@@ -56,7 +56,7 @@ class PaymentSeeder extends Seeder
                         Payment::firstOrCreate([
                             'invoice_id' => $paymentData['invoice_id'],
                             'payment_date' => $paymentData['payment_date'],
-                            'created_by' => $company->id
+                            'tenant_id' => $company->tenant_id
                         ], $paymentData);
                     }
                 }

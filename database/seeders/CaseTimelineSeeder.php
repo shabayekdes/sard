@@ -44,7 +44,7 @@ class CaseTimelineSeeder extends Seeder
         
         foreach ($companyUsers as $companyUser) {
             // Get event types for this company user
-            $eventTypes = EventType::where('created_by', $companyUser->id)
+            $eventTypes = EventType::where('tenant_id', $companyUser->tenant_id)
                 ->where('status', 'active')
                 ->get();
             
@@ -53,7 +53,7 @@ class CaseTimelineSeeder extends Seeder
                 continue;
             }
             
-            $cases = CaseModel::where('created_by', $companyUser->id)->get();
+            $cases = CaseModel::where('tenant_id', $companyUser->tenant_id)->get();
             $allTimelineRecords = [];
             
             foreach ($cases as $case) {
@@ -65,7 +65,7 @@ class CaseTimelineSeeder extends Seeder
                         ...$timelineData,
                         'event_type_id' => $randomEventType->id,
                         'case_id' => $case->id,
-                        'created_by' => $companyUser->id,
+                        'tenant_id' => $companyUser->tenant_id,
                         'status' => 'active',
                         'created_at' => now(),
                         'updated_at' => now(),

@@ -13,11 +13,11 @@ return new class extends Migration
             $table->foreignId('document_id')->constrained('documents')->onDelete('cascade');
             $table->text('comment_text');
             $table->boolean('is_resolved')->default(false);
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
             $table->index(['document_id', 'is_resolved']);
-            $table->index(['created_by']);
+            $table->index(['tenant_id']);
         });
     }
 

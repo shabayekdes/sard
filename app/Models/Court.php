@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class Court extends BaseModel
 {
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = [
         'court_id',
@@ -22,7 +23,7 @@ class Court extends BaseModel
         'filing_requirements',
         'local_rules',
         'notes',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $casts = [

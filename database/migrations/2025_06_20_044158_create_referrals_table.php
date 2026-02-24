@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('referrals', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('company_id')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->decimal('commission_percentage', 5, 2);
             $table->decimal('amount', 10, 2);
             $table->foreignId('plan_id')->nullable()->constrained()->onDelete('set null');

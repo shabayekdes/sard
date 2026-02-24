@@ -16,13 +16,13 @@ return new class extends Migration
             $table->string('page_number')->nullable();
             $table->enum('citation_type', ['case', 'statute', 'article', 'book', 'website', 'other'])->default('case');
             $table->text('notes')->nullable();
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
             $table->index(['research_project_id']);
             $table->index(['source_id']);
             $table->index(['citation_type']);
-            $table->index(['created_by']);
+            $table->index(['tenant_id']);
         });
     }
 

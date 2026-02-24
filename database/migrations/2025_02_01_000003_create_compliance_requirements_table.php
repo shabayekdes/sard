@@ -29,11 +29,11 @@ return new class extends Migration
             $table->text('monitoring_procedures')->nullable();
             $table->enum('status', ['pending', 'in_progress', 'compliant', 'non_compliant', 'overdue'])->default('pending');
             $table->enum('priority', ['low', 'medium', 'high', 'critical'])->default('medium');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
             // Indexes for better performance
-            $table->index(['created_by', 'status']);
+            $table->index(['tenant_id', 'status']);
             $table->index(['deadline', 'status']);
             $table->index(['category_id', 'status']);
         });

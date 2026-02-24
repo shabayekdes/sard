@@ -36,12 +36,12 @@ class ComplianceCategorySeeder extends Seeder
             foreach ($selectedCategories as $categoryData) {
                 ComplianceCategory::firstOrCreate([
                     'name' => $categoryData['name'],
-                    'created_by' => $companyUser->id
+                    'tenant_id' => $companyUser->tenant_id
                 ], [
                     'description' => $categoryData['description'],
                     'color' => $categoryData['color'],
                     'status' => 'active',
-                    'created_by' => $companyUser->id,
+                    'tenant_id' => $companyUser->tenant_id,
                 ]);
             }
         }

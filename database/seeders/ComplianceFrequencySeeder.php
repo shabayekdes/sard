@@ -36,12 +36,12 @@ class ComplianceFrequencySeeder extends Seeder
             foreach ($selectedFrequencies as $frequencyData) {
                 ComplianceFrequency::firstOrCreate([
                     'name' => $frequencyData['name'],
-                    'created_by' => $companyUser->id
+                    'tenant_id' => $companyUser->tenant_id
                 ], [
                     'description' => $frequencyData['description'],
                     'days' => $frequencyData['days'],
                     'status' => 'active',
-                    'created_by' => $companyUser->id,
+                    'tenant_id' => $companyUser->tenant_id,
                 ]);
             }
         }

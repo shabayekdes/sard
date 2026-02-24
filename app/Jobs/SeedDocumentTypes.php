@@ -35,7 +35,7 @@ class SeedDocumentTypes implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        public int $companyUserId
+        public string $tenant_id
     ) {
         $this->onQueue('default');
     }
@@ -51,7 +51,7 @@ class SeedDocumentTypes implements ShouldQueue
                 'description' => '{"en":"Any document related to filing or managing a lawsuit","ar":"أي مستند متعلق برفع أو متابعة دعوى قضائية"}',
                 'color' => '#3B82F6',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -60,7 +60,7 @@ class SeedDocumentTypes implements ShouldQueue
                 'description' => '{"en":"Legal pleadings, briefs, and submissions","ar":"مذكرات ومرافعات ودفوع قانونية"}',
                 'color' => '#10B981',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -69,7 +69,7 @@ class SeedDocumentTypes implements ShouldQueue
                 'description' => '{"en":"Judgments and court decisions","ar":"أحكام وقرارات صادرة من الجهات القضائية"}',
                 'color' => '#F59E0B',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -78,7 +78,7 @@ class SeedDocumentTypes implements ShouldQueue
                 'description' => '{"en":"Documents related to enforcement procedures","ar":"مستندات مرتبطة بتنفيذ حكم أو سند"}',
                 'color' => '#EF4444',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -87,7 +87,7 @@ class SeedDocumentTypes implements ShouldQueue
                 'description' => '{"en":"Any commercial, civil, or administrative contract","ar":"أي عقد تجاري أو مدني أو إداري"}',
                 'color' => '#8B5CF6',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -96,7 +96,7 @@ class SeedDocumentTypes implements ShouldQueue
                 'description' => '{"en":"Agreements regulating legal relationships","ar":"اتفاقيات بين أطراف لتنظيم علاقة قانونية"}',
                 'color' => '#059669',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -105,7 +105,7 @@ class SeedDocumentTypes implements ShouldQueue
                 'description' => '{"en":"Corporate formation and governance documents","ar":"مستندات تأسيس أو قرارات أو تعديلات شركات"}',
                 'color' => '#DC2626',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -114,7 +114,7 @@ class SeedDocumentTypes implements ShouldQueue
                 'description' => '{"en":"Official authorization for representation","ar":"مستند تفويض رسمي بالتمثيل"}',
                 'color' => '#6B7280',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -123,7 +123,7 @@ class SeedDocumentTypes implements ShouldQueue
                 'description' => '{"en":"Financial documents related to legal matters","ar":"مستندات مالية مرتبطة بقضية أو عقد"}',
                 'color' => '#F97316',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -132,7 +132,7 @@ class SeedDocumentTypes implements ShouldQueue
                 'description' => '{"en":"Supporting documents and expert reports","ar":"مستندات داعمة أو تقارير خبرة"}',
                 'color' => '#84CC16',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -141,7 +141,7 @@ class SeedDocumentTypes implements ShouldQueue
                 'description' => '{"en":"Formal legal communications","ar":"خطابات ومخاطبات رسمية"}',
                 'color' => '#06B6D4',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -150,7 +150,7 @@ class SeedDocumentTypes implements ShouldQueue
                 'description' => '{"en":"Legal advisory or analytical memorandum","ar":"مذكرة تحليل أو استشارة قانونية"}',
                 'color' => '#EC4899',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -159,7 +159,7 @@ class SeedDocumentTypes implements ShouldQueue
                 'description' => '{"en":"Employment-related legal documents","ar":"مستندات مرتبطة بقضايا العمل"}',
                 'color' => '#6366F1',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -168,7 +168,7 @@ class SeedDocumentTypes implements ShouldQueue
                 'description' => '{"en":"Criminal case-related documents","ar":"مستندات مرتبطة بقضايا جنائية"}',
                 'color' => '#14B8A6',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -177,7 +177,7 @@ class SeedDocumentTypes implements ShouldQueue
                 'description' => '{"en":"Administrative court-related documents","ar":"مستندات مرتبطة بالقضاء الإداري"}',
                 'color' => '#F43F5E',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -186,7 +186,7 @@ class SeedDocumentTypes implements ShouldQueue
                 'description' => '{"en":"Internal or external legal reports","ar":"تقارير داخلية أو خارجية متعلقة بالقضية"}',
                 'color' => '#EAB308',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -195,7 +195,7 @@ class SeedDocumentTypes implements ShouldQueue
                 'description' => '{"en":"Arbitration-related documents","ar":"مستندات مرتبطة بإجراءات التحكيم"}',
                 'color' => '#A855F7',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -204,7 +204,7 @@ class SeedDocumentTypes implements ShouldQueue
                 'description' => '{"en":"Regulatory compliance documents","ar":"مستندات مرتبطة بالالتزام بالأنظمة"}',
                 'color' => '#0EA5E9',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -213,7 +213,7 @@ class SeedDocumentTypes implements ShouldQueue
                 'description' => '{"en":"Client identification or contractual documents","ar":"مستندات تعريفية أو تعاقدية للعميل"}',
                 'color' => '#22C55E',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -222,7 +222,7 @@ class SeedDocumentTypes implements ShouldQueue
                 'description' => '{"en":"Any legal document not falling under specific category","ar":"أي مستند قانوني لا يندرج تحت تصنيف محدد"}',
                 'color' => '#78716C',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -231,7 +231,7 @@ class SeedDocumentTypes implements ShouldQueue
         DocumentType::insert($documentTypes);
 
         Log::info("SeedDocumentTypes: Completed", [
-            'company_id' => $this->companyUserId,
+            'company_id' => $this->tenant_id,
             'created' => count($documentTypes)
         ]);
     }
@@ -242,7 +242,7 @@ class SeedDocumentTypes implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         Log::error("SeedDocumentTypes: Job failed", [
-            'company_id' => $this->companyUserId,
+            'company_id' => $this->tenant_id,
             'error' => $exception->getMessage()
         ]);
     }

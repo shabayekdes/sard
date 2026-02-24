@@ -15,7 +15,7 @@ class DocumentSeeder extends Seeder
         $companyUsers = User::where('type', 'company')->get();
         
         foreach ($companyUsers as $companyUser) {
-            $categories = DocumentCategory::where('created_by', $companyUser->id)->get();
+            $categories = DocumentCategory::where('tenant_id', $companyUser->tenant_id)->get();
             
             if ($categories->count() > 0) {
                 // Create 2-3 documents per company
@@ -54,16 +54,16 @@ class DocumentSeeder extends Seeder
                         'status' => $statuses[rand(0, count($statuses) - 1)],
                         'confidentiality' => $confidentialities[rand(0, count($confidentialities) - 1)],
                         'tags' => ['document', 'legal', 'case_' . $i],
-                        'created_by' => $companyUser->id,
+                        'tenant_id' => $companyUser->tenant_id,
                     ];
                     
                     $document = Document::firstOrCreate([
                         'name' => $documentData['name'],
-                        'created_by' => $companyUser->id
+                        'tenant_id' => $companyUser->tenant_id
                     ], $documentData);
                     
                     // Create document permissions for client users
-                    $clientUsers = User::where('created_by', $companyUser->id)
+                    $clientUsers = User::where('tenant_id', $companyUser->tenant_id)
                         ->where('type', 'client')
                         ->take(2) // Limit to 2 clients for performance
                         ->get();
@@ -75,7 +75,7 @@ class DocumentSeeder extends Seeder
                         ], [
                             'permission_type' => 'view',
                             'expires_at' => null,
-                            'created_by' => $companyUser->id
+                            'tenant_id' => $companyUser->tenant_id
                         ]);
                     }
                 }

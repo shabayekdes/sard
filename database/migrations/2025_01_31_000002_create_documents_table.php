@@ -17,10 +17,10 @@ return new class extends Migration
             $table->enum('status', ['draft', 'review', 'final', 'archived'])->default('draft');
             $table->enum('confidentiality', ['public', 'internal', 'confidential', 'restricted'])->default('internal');
             $table->json('tags')->nullable();
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
-            $table->index(['created_by', 'status']);
+            $table->index(['tenant_id', 'status']);
             $table->index(['category_id']);
             $table->index(['confidentiality']);
         });

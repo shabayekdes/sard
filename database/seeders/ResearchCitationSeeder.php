@@ -16,8 +16,8 @@ class ResearchCitationSeeder extends Seeder
         $companyUsers = User::where('type', 'company')->get();
         
         foreach ($companyUsers as $companyUser) {
-            $projects = ResearchProject::where('created_by', $companyUser->id)->get();
-            $sources = ResearchSource::where('created_by', $companyUser->id)->get();
+            $projects = ResearchProject::where('tenant_id', $companyUser->tenant_id)->get();
+            $sources = ResearchSource::where('tenant_id', $companyUser->tenant_id)->get();
             
             if ($projects->isEmpty()) continue;
             
@@ -69,12 +69,12 @@ class ResearchCitationSeeder extends Seeder
                     ResearchCitation::firstOrCreate([
                         'citation_text' => $citationData['citation_text'],
                         'research_project_id' => $project->id,
-                        'created_by' => $companyUser->id
+                        'tenant_id' => $companyUser->tenant_id
                     ], [
                         ...$citationData,
                         'research_project_id' => $project->id,
                         'source_id' => $sources->count() > 0 ? $sources->random()->id : null,
-                        'created_by' => $companyUser->id,
+                        'tenant_id' => $companyUser->tenant_id,
                     ]);
                 }
             }

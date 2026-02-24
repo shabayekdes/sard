@@ -27,14 +27,14 @@ use Inertia\Inertia;
 */
 
 // Payment routes accessible without plan check
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'tenant'])->group(function () {
     Route::get('/payment-methods', [PaymentSettingController::class, 'getPaymentMethods'])->name('payment.methods');
     Route::get('/enabled-payment-methods', [PaymentSettingController::class, 'getEnabledMethods'])->name('payment.enabled-methods');
     Route::post('/plan-orders', [PlanOrderController::class, 'create'])->name('plan-orders.create');
     Route::post('/stripe-payment', [StripePaymentController::class, 'processPayment'])->name('settings.stripe.payment');
 });
 
-Route::middleware(['auth', 'verified', 'plan.access'])->group(function () {
+Route::middleware(['auth', 'verified', 'tenant', 'plan.access'])->group(function () {
     // Payment Settings (admin only)
     Route::post('/payment-settings', [PaymentSettingController::class, 'store'])->name('payment.settings');
 

@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Translatable\HasTranslations;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class DocumentType extends BaseModel
 {
-    use HasFactory, HasTranslations;
+    use BelongsToTenant, HasFactory, HasTranslations;
 
     public array $translatable = ['name', 'description'];
 
@@ -16,7 +17,7 @@ class DocumentType extends BaseModel
         'description',
         'color',
         'status',
-        'created_by',
+        'tenant_id',
     ];
 
     public function creator()

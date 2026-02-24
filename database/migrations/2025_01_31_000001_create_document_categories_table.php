@@ -15,11 +15,11 @@ return new class extends Migration
             $table->json('description')->nullable();
             $table->string('color', 7)->default('#3b82f6');
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
 
-            $table->unique(['category_id', 'created_by']);
-            $table->index(['created_by', 'status']);
+            $table->unique(['category_id', 'tenant_id']);
+            $table->index(['tenant_id', 'status']);
         });
     }
 

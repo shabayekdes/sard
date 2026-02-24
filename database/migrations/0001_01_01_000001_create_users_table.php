@@ -24,7 +24,7 @@ return new class extends Migration
             $table->unsignedBigInteger('plan_id')->nullable();
             $table->date('plan_expire_date')->nullable();
             $table->integer('requested_plan')->default(0);
-            $table->integer('created_by')->default(0);
+            $table->foreignUuid('tenant_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->string('mode')->default('light');
             $table->integer('plan_is_active')->default(1);
             $table->float('storage_limit', 15, 2)->default(0.00);

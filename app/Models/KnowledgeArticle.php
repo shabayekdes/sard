@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\AutoApplyPermissionCheck;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class KnowledgeArticle extends BaseModel
 {
-    use HasFactory, AutoApplyPermissionCheck;
+    use BelongsToTenant, HasFactory, AutoApplyPermissionCheck;
 
     protected $fillable = [
         'title',
@@ -16,7 +17,7 @@ class KnowledgeArticle extends BaseModel
         'tags',
         'is_public',
         'status',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $casts = [

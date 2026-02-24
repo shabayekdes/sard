@@ -14,10 +14,10 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('color', 7)->default('#3B82F6');
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->unsignedBigInteger('created_by');
+            $table->foreignUuid('tenant_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
 
-            $table->index(['created_by', 'status']);
+            $table->index(['tenant_id', 'status']);
         });
     }
 

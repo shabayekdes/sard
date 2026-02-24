@@ -18,8 +18,8 @@ class BillingRateSeeder extends Seeder
         $companyUsers = User::where('type', 'company')->get();
         
         foreach ($companyUsers as $companyUser) {
-            $clients = Client::where('created_by', $companyUser->id)->get();
-            $users = User::where('created_by', $companyUser->id)->get();
+            $clients = Client::where('tenant_id', $companyUser->tenant_id)->get();
+            $users = User::where('tenant_id', $companyUser->tenant_id)->get();
             
             // Create 2-3 billing rates per company
             $rateCount = rand(8, 10);
@@ -42,14 +42,14 @@ class BillingRateSeeder extends Seeder
                     'end_date' => $endDate,
                     'status' => $statuses[rand(0, count($statuses) - 1)],
                     'notes' => 'Billing rate #' . $i . ' for ' . $companyUser->name . '. ' . ucfirst($rateType) . ' billing structure.',
-                    'created_by' => $companyUser->id,
+                    'tenant_id' => $companyUser->tenant_id,
                 ];
                 
                 BillingRate::firstOrCreate([
                     'user_id' => $rateData['user_id'],
                     'client_id' => $rateData['client_id'],
                     'rate_type' => $rateData['rate_type'],
-                    'created_by' => $companyUser->id
+                    'tenant_id' => $companyUser->tenant_id
                 ], $rateData);
             }
         }

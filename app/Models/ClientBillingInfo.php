@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\AutoApplyPermissionCheck;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class ClientBillingInfo extends BaseModel
 {
-    use HasFactory, AutoApplyPermissionCheck;
+    use BelongsToTenant, HasFactory, AutoApplyPermissionCheck;
 
     /**
      * Override the module name for permission checks

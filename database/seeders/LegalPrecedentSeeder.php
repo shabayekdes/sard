@@ -15,7 +15,7 @@ class LegalPrecedentSeeder extends Seeder
         $companyUsers = User::where('type', 'company')->get();
         
         foreach ($companyUsers as $companyUser) {
-            $categories = ResearchCategory::where('created_by', $companyUser->id)->get();
+            $categories = ResearchCategory::where('tenant_id', $companyUser->tenant_id)->get();
             
             // Create 2-3 legal precedents per company
             $precedentCount = rand(8, 10);
@@ -138,7 +138,7 @@ class LegalPrecedentSeeder extends Seeder
             foreach ($selectedPrecedents as $precedentData) {
                 LegalPrecedent::firstOrCreate([
                     'case_name' => $precedentData['case_name'],
-                    'created_by' => $companyUser->id
+                    'tenant_id' => $companyUser->tenant_id
                 ], [
                     'citation' => $precedentData['citation'],
                     'jurisdiction' => $precedentData['jurisdiction'],
@@ -149,7 +149,7 @@ class LegalPrecedentSeeder extends Seeder
                     'court_level' => $precedentData['court_level'],
                     'key_points' => $precedentData['key_points'],
                     'status' => $precedentData['status'],
-                    'created_by' => $companyUser->id,
+                    'tenant_id' => $companyUser->tenant_id,
                 ]);
             }
         }

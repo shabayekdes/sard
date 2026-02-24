@@ -115,7 +115,7 @@ class RegulatoryBodySeeder extends Seeder
             foreach ($selectedBodies as $bodyData) {
                 RegulatoryBody::firstOrCreate([
                     'name' => $bodyData['name'],
-                    'created_by' => $companyUser->id
+                    'tenant_id' => $companyUser->tenant_id
                 ], [
                     'description' => $bodyData['description'],
                     'jurisdiction' => $bodyData['jurisdiction'],
@@ -124,7 +124,7 @@ class RegulatoryBodySeeder extends Seeder
                     'address' => $bodyData['address'],
                     'website' => $bodyData['website'],
                     'status' => 'active',
-                    'created_by' => $companyUser->id,
+                    'tenant_id' => $companyUser->tenant_id,
                 ]);
             }
         }

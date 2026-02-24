@@ -18,9 +18,9 @@ class HearingSeeder extends Seeder
 
         foreach ($companyUsers as $companyUser) {
             // Get company-specific data
-            $cases = CaseModel::where('created_by', $companyUser->id)->get();
-            $courts = Court::where('created_by', $companyUser->id)->get();
-            $hearingTypes = HearingType::where('created_by', $companyUser->id)->get();
+            $cases = CaseModel::where('tenant_id', $companyUser->tenant_id)->get();
+            $courts = Court::where('tenant_id', $companyUser->tenant_id)->get();
+            $hearingTypes = HearingType::where('tenant_id', $companyUser->tenant_id)->get();
 
             if ($cases->count() > 0 && $courts->count() > 0) {
                 // Create 2-3 hearings per company
@@ -55,13 +55,13 @@ class HearingSeeder extends Seeder
                         'notes' => 'Hearing scheduled for case proceedings. All parties required to attend.',
                         'outcome' => null,
                         'attendees' => ['attorney', 'client', 'opposing_counsel'],
-                        'created_by' => $companyUser->id
+                        'tenant_id' => $companyUser->tenant_id
                     ];
                     
                     Hearing::firstOrCreate([
                         'title' => $hearingData['title'],
                         'case_id' => $hearingData['case_id'],
-                        'created_by' => $companyUser->id
+                        'tenant_id' => $companyUser->tenant_id
                     ], $hearingData);
                 }
             }

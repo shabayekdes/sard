@@ -35,12 +35,12 @@ class RiskCategorySeeder extends Seeder
             foreach ($selectedCategories as $category) {
                 RiskCategory::firstOrCreate([
                     'name' => $category['name'],
-                    'created_by' => $companyUser->id
+                    'tenant_id' => $companyUser->tenant_id
                 ], [
                     'description' => $category['description'],
                     'color' => $category['color'],
                     'status' => 'active',
-                    'created_by' => $companyUser->id
+                    'tenant_id' => $companyUser->tenant_id
                 ]);
             }
         }

@@ -35,7 +35,7 @@ class SeedCaseStatuses implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        public int $companyUserId
+        public string $tenant_id
     ) {
         $this->onQueue('default');
     }
@@ -45,14 +45,6 @@ class SeedCaseStatuses implements ShouldQueue
      */
     public function handle(): void
     {
-        // Check if case statuses already exist for this company
-        if (CaseStatus::where('created_by', $this->companyUserId)->exists()) {
-            Log::info("SeedCaseStatuses: Case statuses already exist, skipping", [
-                'company_id' => $this->companyUserId
-            ]);
-            return;
-        }
-
         $caseStatuses = [
             [
                 'name' => '{"ar":"مسودة","en":"Draft"}',
@@ -61,7 +53,7 @@ class SeedCaseStatuses implements ShouldQueue
                 'is_default' => true,
                 'is_closed' => false,
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -72,7 +64,7 @@ class SeedCaseStatuses implements ShouldQueue
                 'is_default' => false,
                 'is_closed' => false,
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -83,7 +75,7 @@ class SeedCaseStatuses implements ShouldQueue
                 'is_default' => false,
                 'is_closed' => false,
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -94,7 +86,7 @@ class SeedCaseStatuses implements ShouldQueue
                 'is_default' => false,
                 'is_closed' => false,
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -105,7 +97,7 @@ class SeedCaseStatuses implements ShouldQueue
                 'is_default' => false,
                 'is_closed' => false,
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -116,7 +108,7 @@ class SeedCaseStatuses implements ShouldQueue
                 'is_default' => false,
                 'is_closed' => false,
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -127,7 +119,7 @@ class SeedCaseStatuses implements ShouldQueue
                 'is_default' => false,
                 'is_closed' => false,
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -138,7 +130,7 @@ class SeedCaseStatuses implements ShouldQueue
                 'is_default' => false,
                 'is_closed' => false,
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -149,7 +141,7 @@ class SeedCaseStatuses implements ShouldQueue
                 'is_default' => false,
                 'is_closed' => false,
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -160,7 +152,7 @@ class SeedCaseStatuses implements ShouldQueue
                 'is_default' => false,
                 'is_closed' => true,
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -171,7 +163,7 @@ class SeedCaseStatuses implements ShouldQueue
                 'is_default' => false,
                 'is_closed' => false,
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -182,7 +174,7 @@ class SeedCaseStatuses implements ShouldQueue
                 'is_default' => false,
                 'is_closed' => false,
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -193,7 +185,7 @@ class SeedCaseStatuses implements ShouldQueue
                 'is_default' => false,
                 'is_closed' => false,
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -204,7 +196,7 @@ class SeedCaseStatuses implements ShouldQueue
                 'is_default' => false,
                 'is_closed' => false,
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -215,7 +207,7 @@ class SeedCaseStatuses implements ShouldQueue
                 'is_default' => false,
                 'is_closed' => false,
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -226,7 +218,7 @@ class SeedCaseStatuses implements ShouldQueue
                 'is_default' => false,
                 'is_closed' => true,
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -237,7 +229,7 @@ class SeedCaseStatuses implements ShouldQueue
                 'is_default' => false,
                 'is_closed' => true,
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -248,7 +240,7 @@ class SeedCaseStatuses implements ShouldQueue
                 'is_default' => false,
                 'is_closed' => true,
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -259,7 +251,7 @@ class SeedCaseStatuses implements ShouldQueue
                 'is_default' => false,
                 'is_closed' => true,
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -268,7 +260,7 @@ class SeedCaseStatuses implements ShouldQueue
         CaseStatus::insert($caseStatuses);
 
         Log::info("SeedCaseStatuses: Completed", [
-            'company_id' => $this->companyUserId,
+            'company_id' => $this->tenant_id,
             'created' => count($caseStatuses)
         ]);
     }
@@ -279,7 +271,7 @@ class SeedCaseStatuses implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         Log::error("SeedCaseStatuses: Job failed", [
-            'company_id' => $this->companyUserId,
+            'company_id' => $this->tenant_id,
             'error' => $exception->getMessage()
         ]);
     }

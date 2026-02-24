@@ -10,14 +10,13 @@ return new class extends Migration
     {
         Schema::create('fee_types', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('created_by');
             $table->string('name');
             $table->text('description')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
 
-            $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
-            $table->index(['created_by', 'status']);
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->index(['tenant_id', 'status']);
         });
     }
 

@@ -22,7 +22,7 @@ class CourtSeeder extends Seeder
         
         foreach ($companyUsers as $companyUser) {
             // Get court types for this specific company
-            $courtTypes = CourtType::where('created_by', $companyUser->id)
+            $courtTypes = CourtType::where('tenant_id', $companyUser->tenant_id)
                 ->where('status', 'active')
                 ->pluck('id')
                 ->toArray();
@@ -31,7 +31,7 @@ class CourtSeeder extends Seeder
             }
             
             // Get circle types for this specific company
-            $circleTypes = CircleType::where('created_by', $companyUser->id)
+            $circleTypes = CircleType::where('tenant_id', $companyUser->tenant_id)
                 ->where('status', 'active')
                 ->pluck('id')
                 ->toArray();
@@ -69,12 +69,12 @@ class CourtSeeder extends Seeder
                     'status' => rand(1, 10) > 9 ? 'inactive' : 'active', // 10% chance inactive
                     'facilities' => $facilitiesOptions[($i - 1) % count($facilitiesOptions)],
                     'notes' => 'Court #' . $i . ' for ' . $companyUser->name . '. Handles various legal matters with modern facilities and procedures.',
-                    'created_by' => $companyUser->id,
+                    'tenant_id' => $companyUser->tenant_id,
                 ];
                 
                 Court::firstOrCreate([
                     'name' => $courtData['name'],
-                    'created_by' => $companyUser->id
+                    'tenant_id' => $companyUser->tenant_id
                 ], $courtData);
             }
         }

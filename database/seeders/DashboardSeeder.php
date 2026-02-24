@@ -35,7 +35,7 @@ class DashboardSeeder extends Seeder
                 'is_public' => true,
                 'status' => 'active',
                 'user_id' => $user->id,
-                'created_by' => $user->id,
+                'tenant_id' => $user->id,
             ]);
 
             // Create financial dashboard
@@ -55,7 +55,7 @@ class DashboardSeeder extends Seeder
                 'is_public' => true,
                 'status' => 'active',
                 'user_id' => $user->id,
-                'created_by' => $user->id,
+                'tenant_id' => $user->id,
             ]);
 
             // Create operational dashboard
@@ -75,7 +75,7 @@ class DashboardSeeder extends Seeder
                 'is_public' => true,
                 'status' => 'active',
                 'user_id' => $user->id,
-                'created_by' => $user->id,
+                'tenant_id' => $user->id,
             ]);
         }
     }

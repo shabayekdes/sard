@@ -36,12 +36,12 @@ class AuditTypeSeeder extends Seeder
             foreach ($selectedTypes as $type) {
                 AuditType::firstOrCreate([
                     'name' => $type['name'],
-                    'created_by' => $companyUser->id
+                    'tenant_id' => $companyUser->tenant_id
                 ], [
                     'description' => $type['description'],
                     'color' => $type['color'],
                     'status' => 'active',
-                    'created_by' => $companyUser->id,
+                    'tenant_id' => $companyUser->tenant_id,
                 ]);
             }
         }

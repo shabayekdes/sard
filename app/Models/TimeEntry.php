@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\AutoApplyPermissionCheck;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class TimeEntry extends BaseModel
 {
-    use HasFactory, AutoApplyPermissionCheck;
+    use BelongsToTenant, HasFactory, AutoApplyPermissionCheck;
 
     protected $fillable = [
         'entry_id',

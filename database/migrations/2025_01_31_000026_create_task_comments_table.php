@@ -13,10 +13,10 @@ return new class extends Migration
             $table->foreignId('task_id')->constrained('tasks')->onDelete('cascade');
             $table->text('comment_text');
             $table->boolean('is_internal')->default(false);
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
-            $table->index(['created_by', 'task_id']);
+            $table->index(['tenant_id', 'task_id']);
             $table->index(['task_id', 'created_at']);
         });
     }

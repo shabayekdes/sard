@@ -1174,6 +1174,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     }); // End plan.access middleware group
 });
 
+require __DIR__ . '/central.php';
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
 

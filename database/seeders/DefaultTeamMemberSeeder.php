@@ -24,7 +24,7 @@ class DefaultTeamMemberSeeder extends Seeder
 
         // Check if team_member role exists for this company
         $teamRole = Role::where('name', 'team_member')
-            ->where('created_by', $companyId)
+            ->where('tenant_id', $companyId)
             ->first();
 
         if (!$teamRole) {
@@ -34,7 +34,7 @@ class DefaultTeamMemberSeeder extends Seeder
         // Create default team member user
         $teamMember = User::firstOrCreate([
             'email' => 'teammember@company.com',
-            'created_by' => $companyId
+            'tenant_id' => $companyId
         ], [
             'name' => 'John Doe',
             'password' => Hash::make('password'),

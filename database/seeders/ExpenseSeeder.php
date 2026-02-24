@@ -15,8 +15,8 @@ class ExpenseSeeder extends Seeder
         $companies = User::where('type', 'company')->get();
 
         foreach ($companies as $company) {
-            $categories = ExpenseCategory::where('created_by', $company->id)->get();
-            $cases = \App\Models\CaseModel::where('created_by', $company->id)->get();
+            $categories = ExpenseCategory::where('tenant_id', $company->tenant_id)->get();
+            $cases = \App\Models\CaseModel::where('tenant_id', $company->tenant_id)->get();
 
             if ($categories->isEmpty() || $cases->isEmpty()) continue;
 
@@ -38,7 +38,7 @@ class ExpenseSeeder extends Seeder
                     $expenseDate = now()->subDays(rand(1, 60));
                     
                     $expenseData = [
-                        'created_by' => $company->id,
+                        'tenant_id' => $company->tenant_id,
                         'case_id' => $case->id,
                         'expense_category_id' => $categories->random()->id,
                         'invoice_id' => null,

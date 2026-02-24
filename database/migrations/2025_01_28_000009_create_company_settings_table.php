@@ -18,13 +18,13 @@ return new class extends Migration
             $table->enum('setting_type', ['text', 'number', 'boolean', 'json', 'file'])->default('text');
             $table->string('category')->default('general');
             $table->text('description')->nullable();
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->nullable()->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
             
             // Unique constraint - one setting per key per company
-            $table->unique(['setting_key', 'created_by']);
+            $table->unique(['setting_key', 'tenant_id']);
             // Index for better performance
-            $table->index(['created_by', 'category']);
+            $table->index(['tenant_id', 'category']);
         });
     }
 

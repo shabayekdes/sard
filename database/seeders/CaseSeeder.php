@@ -23,11 +23,11 @@ class CaseSeeder extends Seeder
         }
 
         foreach ($companyUsers as $companyUser) {
-            $caseTypes = CaseType::where('created_by', $companyUser->id)->get();
-            $caseStatuses = CaseStatus::where('created_by', $companyUser->id)->get();
-            $clients = Client::where('created_by', $companyUser->id)->get();
-            $courts = Court::where('created_by', $companyUser->id)->get();
-            $caseCategories = CaseCategory::where('created_by', $companyUser->id)->get();
+            $caseTypes = CaseType::where('tenant_id', $companyUser->tenant_id)->get();
+            $caseStatuses = CaseStatus::where('tenant_id', $companyUser->tenant_id)->get();
+            $clients = Client::where('tenant_id', $companyUser->tenant_id)->get();
+            $courts = Court::where('tenant_id', $companyUser->tenant_id)->get();
+            $caseCategories = CaseCategory::where('tenant_id', $companyUser->tenant_id)->get();
             $parentCategories = $caseCategories->whereNull('parent_id');
             $subcategories = $caseCategories->whereNotNull('parent_id');
 
@@ -60,11 +60,11 @@ class CaseSeeder extends Seeder
                             'case_category_id' => $selectedCategory?->id,
                             'case_subcategory_id' => $selectedSubcategory?->id,
                             'court_id' => $courts->count() > 0 && rand(1, 10) <= 6 ? $courts->random()->id : null,
-                            'created_by' => $companyUser->id,
+                            'tenant_id' => $companyUser->tenant_id,
                         ]);
                 }
 
-                $totalCases = CaseModel::where('created_by', $companyUser->id)->count();
+                $totalCases = CaseModel::where('tenant_id', $companyUser->tenant_id)->count();
                 $this->command->info("Created {$caseCount} cases for company user: {$companyUser->name} (Total: {$totalCases})");
             } else {
                 $this->command->warn("Skipping case creation for {$companyUser->name} - missing required data (case types, statuses, or clients)");

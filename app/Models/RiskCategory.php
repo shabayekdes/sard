@@ -5,17 +5,18 @@ namespace App\Models;
 use App\Traits\AutoApplyPermissionCheck;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class RiskCategory extends BaseModel
 {
-    use AutoApplyPermissionCheck;
+    use BelongsToTenant, AutoApplyPermissionCheck;
 
     protected $fillable = [
         'name',
         'description',
         'color',
         'status',
-        'created_by'
+        'tenant_id'
     ];
 
     // public function scopeWithPermissionCheck($query)

@@ -4,10 +4,11 @@ namespace App\Models;
 
 use App\Traits\AutoApplyPermissionCheck;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class CaseTimeline extends BaseModel
 {
-    use HasFactory, AutoApplyPermissionCheck;
+    use BelongsToTenant, HasFactory, AutoApplyPermissionCheck;
 
     protected $fillable = [
         'case_id',
@@ -17,7 +18,7 @@ class CaseTimeline extends BaseModel
         'event_date',
         'is_completed',
         'status',
-        'created_by',
+        'tenant_id',
         'google_calendar_event_id',
         'meeting_link'
     ];

@@ -20,7 +20,7 @@ class ComplianceAuditSeeder extends Seeder
         $companyUsers = User::where('type', 'company')->get();
         
         foreach ($companyUsers as $companyUser) {
-            $auditTypes = AuditType::where('created_by', $companyUser->id)->get();
+            $auditTypes = AuditType::where('tenant_id', $companyUser->tenant_id)->get();
             
             if ($auditTypes->count() > 0) {
                 // Create 2-3 compliance audits per company
@@ -84,12 +84,12 @@ class ComplianceAuditSeeder extends Seeder
                         'auditor_organization' => $auditorOrgs[rand(0, count($auditorOrgs) - 1)],
                         'corrective_actions' => $status === 'completed' ? 'Corrective actions implemented as recommended' : null,
                         'follow_up_date' => $followUpDate,
-                        'created_by' => $companyUser->id,
+                        'tenant_id' => $companyUser->tenant_id,
                     ];
                     
                     ComplianceAudit::firstOrCreate([
                         'audit_title' => $auditData['audit_title'],
-                        'created_by' => $companyUser->id
+                        'tenant_id' => $companyUser->tenant_id
                     ], $auditData);
                 }
             }

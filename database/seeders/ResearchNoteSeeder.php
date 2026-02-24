@@ -15,7 +15,7 @@ class ResearchNoteSeeder extends Seeder
         $companyUsers = User::where('type', 'company')->get();
         
         foreach ($companyUsers as $companyUser) {
-            $projects = ResearchProject::where('created_by', $companyUser->id)->get();
+            $projects = ResearchProject::where('tenant_id', $companyUser->tenant_id)->get();
             
             if ($projects->isEmpty()) continue;
             
@@ -66,11 +66,11 @@ class ResearchNoteSeeder extends Seeder
                     ResearchNote::firstOrCreate([
                         'title' => $noteData['title'],
                         'research_project_id' => $project->id,
-                        'created_by' => $companyUser->id
+                        'tenant_id' => $companyUser->tenant_id
                     ], [
                         ...$noteData,
                         'research_project_id' => $project->id,
-                        'created_by' => $companyUser->id,
+                        'tenant_id' => $companyUser->tenant_id,
                     ]);
                 }
             }

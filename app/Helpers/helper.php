@@ -52,7 +52,7 @@ if (! function_exists('settings')) {
             return collect();
         }
 
-        $userSettings = Setting::where('user_id', $user_id)->pluck('value', 'key')->toArray();
+        $userSettings = Setting::where('tenant_id', tenant('id'))->pluck('value', 'key')->toArray();
 
         // If user is not superadmin, merge with superadmin settings for specific keys
         if (auth()->check() && auth()->user()->type !== 'superadmin') {
@@ -1264,17 +1264,17 @@ if (! function_exists('createDefaultSettings')) {
     /**
      * Create default settings for a user
      *
-     * @param int $userId
+     * @param string|null $tenant_id
      * @return void
      */
-    function createDefaultSettings($userId)
+    function createDefaultSettings(?string $tenant_id = null)
     {
         $defaults = defaultSettings();
         $settingsData = [];
 
         foreach ($defaults as $key => $value) {
             $settingsData[] = [
-                'user_id' => $userId,
+                'tenant_id' => $tenant_id,
                 'key' => $key,
                 'value' => is_bool($value) ? ($value ? '1' : '0') : (string)$value,
                 'created_at' => now(),

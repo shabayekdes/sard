@@ -15,13 +15,13 @@ return new class extends Migration
 
             $table->date('assigned_date');
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
             $table->unique(['case_id', 'user_id']);
             $table->index(['case_id']);
             $table->index(['user_id']);
-            $table->index(['created_by']);
+            $table->index(['tenant_id']);
         });
     }
 

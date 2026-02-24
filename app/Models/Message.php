@@ -5,10 +5,11 @@ namespace App\Models;
 use App\Traits\AutoApplyPermissionCheck;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class Message extends BaseModel
 {
-    use AutoApplyPermissionCheck;
+    use BelongsToTenant, AutoApplyPermissionCheck;
     
     protected $fillable = [
         'message_id',

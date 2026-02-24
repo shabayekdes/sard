@@ -21,7 +21,7 @@ use App\Traits\AutoApplyPermissionCheck;
 class User extends BaseAuthenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasRoles, HasFactory, Notifiable, Impersonate, AutoApplyPermissionCheck;
+    use HasRoles, HasFactory, Notifiable, AutoApplyPermissionCheck;
 
     /**
      * The attributes that are mass assignable.
@@ -46,7 +46,7 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
         'is_enable_login',
         'storage_limit',
         'mode',
-        'created_by',
+        'tenant_id',
         'referral_code',
         'used_referral_code',
         'google2fa_enable',

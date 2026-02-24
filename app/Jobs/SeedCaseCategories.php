@@ -36,7 +36,7 @@ class SeedCaseCategories implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        public int $companyUserId
+        public string $tenant_id
     )
     {
         $this->onQueue('default');
@@ -47,13 +47,6 @@ class SeedCaseCategories implements ShouldQueue
      */
     public function handle(): void
     {
-        if (CaseCategory::where('created_by', $this->companyUserId)->exists()) {
-            Log::info('SeedCaseCategories: Categories already exist, skipping', [
-                'company_id' => $this->companyUserId,
-            ]);
-            return;
-        }
-
         $seedData = [
             [
                 "name" => [
@@ -691,7 +684,7 @@ class SeedCaseCategories implements ShouldQueue
             $category = CaseCategory::create([
                 'name' => $item['name'],
                 'parent_id' => null,
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'status' => 'active',
             ]);
 
@@ -699,7 +692,7 @@ class SeedCaseCategories implements ShouldQueue
                 $subCategoryRecord = CaseCategory::create([
                     'name' => $subcategory['name'],
                     'parent_id' => $category->id,
-                    'created_by' => $this->companyUserId,
+                    'tenant_id' => $this->tenant_id,
                     'status' => 'active',
                 ]);
 
@@ -707,7 +700,7 @@ class SeedCaseCategories implements ShouldQueue
                     CaseType::create([
                         'name' => $type['name'],
                         'case_category_id' => $subCategoryRecord->id,
-                        'created_by' => $this->companyUserId,
+                        'tenant_id' => $this->tenant_id,
                         'status' => 'active',
                     ]);
                 }
@@ -715,7 +708,7 @@ class SeedCaseCategories implements ShouldQueue
         }
 
         Log::info('SeedCaseCategories: Completed', [
-            'company_id' => $this->companyUserId,
+            'company_id' => $this->tenant_id,
         ]);
     }
 
@@ -725,7 +718,7 @@ class SeedCaseCategories implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         Log::error('SeedCaseCategories: Job failed', [
-            'company_id' => $this->companyUserId,
+            'company_id' => $this->tenant_id,
             'error' => $exception->getMessage(),
         ]);
     }

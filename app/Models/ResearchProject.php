@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class ResearchProject extends BaseModel
 {
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = [
         'research_id',
@@ -17,7 +18,7 @@ class ResearchProject extends BaseModel
         'status',
         'priority',
         'due_date',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $casts = [

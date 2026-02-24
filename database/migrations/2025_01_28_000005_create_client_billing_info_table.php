@@ -23,13 +23,13 @@ return new class extends Migration
             $table->string('currency')->default('USD');
             $table->text('billing_notes')->nullable();
             $table->enum('status', ['active', 'suspended', 'closed'])->default('active');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
             // Unique constraint - one billing info per client
             $table->unique('client_id');
             // Index for better performance
-            $table->index(['created_by', 'status']);
+            $table->index(['tenant_id', 'status']);
         });
     }
 

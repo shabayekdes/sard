@@ -4,10 +4,11 @@ namespace App\Models;
 
 use App\Traits\AutoApplyPermissionCheck;
 use Illuminate\Database\Eloquent\Model;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class ComplianceAudit extends BaseModel
 {
-    use AutoApplyPermissionCheck;
+    use BelongsToTenant, AutoApplyPermissionCheck;
     
     protected $fillable = [
         'audit_title',
@@ -24,7 +25,7 @@ class ComplianceAudit extends BaseModel
         'auditor_organization',
         'corrective_actions',
         'follow_up_date',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $casts = [

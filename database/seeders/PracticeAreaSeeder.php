@@ -118,14 +118,14 @@ class PracticeAreaSeeder extends Seeder
             foreach ($selectedAreas as $index => $areaData) {
                 PracticeArea::firstOrCreate([
                     'name' => $areaData['name'],
-                    'created_by' => $companyUser->id
+                    'tenant_id' => $companyUser->tenant_id
                 ], [
                     'description' => $areaData['description'],
                     'expertise_level' => $areaData['expertise_level'],
                     'is_primary' => $index === 0, // First area is primary for this company
                     'certifications' => $areaData['certifications'],
                     'status' => $areaData['status'],
-                    'created_by' => $companyUser->id,
+                    'tenant_id' => $companyUser->tenant_id
                 ]);
             }
         }

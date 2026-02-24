@@ -23,12 +23,12 @@ class TaskSeeder extends Seeder
         
         foreach ($companyUsers as $companyUser) {
             // Get task types and statuses for this company
-            $taskTypes = TaskType::where('created_by', $companyUser->id)->get();
-            $taskStatuses = TaskStatus::where('created_by', $companyUser->id)->get();
-            $cases = CaseModel::where('created_by', $companyUser->id)
+            $taskTypes = TaskType::where('tenant_id', $companyUser->tenant_id)->get();
+            $taskStatuses = TaskStatus::where('tenant_id', $companyUser->tenant_id)->get();
+            $cases = CaseModel::where('tenant_id', $companyUser->tenant_id)
                 ->whereNotNull('client_id')
                 ->get();
-            $users = User::where('created_by', $companyUser->id)->get();
+            $users = User::where('tenant_id', $companyUser->tenant_id)->get();
             
             if ($taskTypes->count() > 0 && $taskStatuses->count() > 0) {
                 // Create 2-3 tasks per company
@@ -76,12 +76,12 @@ class TaskSeeder extends Seeder
                         'task_type_id' => $taskType->id,
                         'task_status_id' => $taskStatus->id,
                         'notes' => 'Task #' . $i . ' for ' . $companyUser->name . '. Important legal work requiring attention.',
-                        'created_by' => $companyUser->id,
+                        'tenant_id' => $companyUser->tenant_id,
                     ];
                     
                     Task::firstOrCreate([
                         'title' => $taskData['title'],
-                        'created_by' => $companyUser->id
+                        'tenant_id' => $companyUser->tenant_id
                     ], $taskData);
                 }
             }

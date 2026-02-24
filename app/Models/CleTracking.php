@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class CleTracking extends BaseModel
 {
+    use BelongsToTenant;
     protected $table = 'cle_tracking';
 
     protected $fillable = [

@@ -19,7 +19,7 @@ class TaskCommentSeeder extends Seeder
 
         foreach ($companyUsers as $user) {
             // Get tasks for this company
-            $tasks = Task::where('created_by', $user->id)->take(5)->get();
+            $tasks = Task::where('tenant_id', $user->tenant_id)->take(5)->get();
 
             foreach ($tasks as $task) {
                 // Create 1-3 comments per task
@@ -27,7 +27,7 @@ class TaskCommentSeeder extends Seeder
                     TaskComment::create([
                         'task_id' => $task->id,
                         'comment_text' => $this->getTaskComment($i),
-                        'created_by' => $user->id,
+                        'tenant_id' => $user->tenant_id,
                         'created_at' => now()->subDays(rand(1, 15)),
                         'updated_at' => now()->subDays(rand(1, 15)),
                     ]);

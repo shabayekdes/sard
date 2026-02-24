@@ -2,11 +2,13 @@
 
 namespace Database\Seeders;
 
+use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Plan;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Faker\Factory as Faker;
+use Illuminate\Support\Str;
 
 class CompanySeeder extends Seeder
 {
@@ -48,7 +50,9 @@ class CompanySeeder extends Seeder
             if (User::where('email', $email)->exists()) {
                 continue;
             }
-            
+
+            $tenant = Tenant::create();
+
             // Create user
             $user = User::create([
                 'name' => $companyName,
@@ -60,14 +64,14 @@ class CompanySeeder extends Seeder
                 'plan_id' => $plans->random()->id,
                 'referral_code' => rand(100000, 999999),
                 'created_at' => $faker->dateTimeBetween('-1 year', 'now'),
-                'created_by' => 1
+                'tenant_id' => $tenant->id
             ]);
             
             // Assign company role
             $user->assignRole('company');
-            
+
             // Seed all default company data (settings, roles, notification templates, and all data types)
-            \App\Jobs\SeedDefaultCompanyData::dispatchSync($user->id);
+            \App\Jobs\SeedDefaultCompanyData::dispatch($tenant->id);
         }
         
         $this->command->info('Created ' . count($companyNames) . ' company users successfully!');

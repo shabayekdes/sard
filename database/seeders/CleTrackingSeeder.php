@@ -19,7 +19,7 @@ class CleTrackingSeeder extends Seeder
         $companyUsers = User::where('type', 'company')->get();
         
         foreach ($companyUsers as $companyUser) {
-            $staffUsers = User::where('created_by', $companyUser->id)->get();
+            $staffUsers = User::where('tenant_id', $companyUser->tenant_id)->get();
             $allUsers = $staffUsers->push($companyUser); // Include company user
             
             // Create 2-3 CLE tracking records per company
@@ -75,13 +75,13 @@ class CleTrackingSeeder extends Seeder
                     'certificate_file' => null,
                     'status' => $statuses[rand(0, count($statuses) - 1)],
                     'description' => $descriptions[($companyUser->id + $i - 1) % count($descriptions)] . ' for ' . $companyUser->name . '.',
-                    'created_by' => $companyUser->id,
+                    'tenant_id' => $companyUser->tenant_id,
                 ];
                 
                 CleTracking::firstOrCreate([
                     'course_name' => $cleData['course_name'],
                     'user_id' => $cleData['user_id'],
-                    'created_by' => $companyUser->id
+                    'tenant_id' => $companyUser->tenant_id
                 ], $cleData);
             }
         }

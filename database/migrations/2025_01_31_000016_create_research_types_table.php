@@ -18,11 +18,11 @@ return new class extends Migration
             $table->json('name');
             $table->json('description')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
             // Unique constraint for research type name within a company
-            $table->unique(['code', 'created_by']);
+            $table->unique(['code', 'tenant_id']);
         });
     }
 

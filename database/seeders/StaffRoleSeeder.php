@@ -68,7 +68,7 @@ class StaffRoleSeeder extends Seeder
                     'label' => $roleTemplate['label'],
                     'description' => $roleTemplate['description'],
                     'guard_name' => 'web',
-                    'created_by' => $company->id
+                    'tenant_id' => $company->tenant_id
                 ]);
                 
                 // Get permissions for this role
@@ -102,7 +102,7 @@ class StaffRoleSeeder extends Seeder
                         'password' => Hash::make('password'),
                         'type' => $roleTemplate['name'],
                         'lang' => $faker->randomElement(['en', 'es', 'fr', 'de']),
-                        'created_by' => $company->id,
+                        'tenant_id' => $company->tenant_id,
                         'created_at' => $faker->dateTimeBetween('-6 months', 'now'),
                     ]);
                     

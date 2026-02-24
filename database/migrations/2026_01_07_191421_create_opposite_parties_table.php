@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('id_number')->nullable();
             $table->foreignId('nationality_id')->nullable()->constrained('countries')->onDelete('set null');
             $table->string('lawyer_name')->nullable();
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
             $table->index(['case_id']);

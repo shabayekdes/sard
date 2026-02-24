@@ -15,10 +15,10 @@ return new class extends Migration
             $table->string('color', 7)->default('#3b82f6');
             $table->foreignId('practice_area_id')->nullable()->constrained('practice_areas')->onDelete('set null');
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
-            $table->index(['created_by', 'status']);
+            $table->index(['tenant_id', 'status']);
             $table->index(['practice_area_id']);
         });
     }

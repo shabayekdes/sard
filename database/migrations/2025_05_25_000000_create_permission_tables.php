@@ -46,7 +46,8 @@ return new class extends Migration
             $table->string('guard_name'); // For MySQL 8.0 use string('guard_name', 125);
             $table->json('label')->nullable();
             $table->json('description')->nullable();
-            $table->unsignedBigInteger('created_by')->nullable();
+            $table->foreignUuid('tenant_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+
             $table->timestamps();
             if ($teams || config('permission.teams')) {
                 $table->unique([$columnNames['team_foreign_key'], 'name', 'guard_name']);
@@ -54,7 +55,6 @@ return new class extends Migration
                 //$table->unique(['guard_name']);
             }
 
-            $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
         });
 
         Schema::create($tableNames['model_has_permissions'], function (Blueprint $table) use ($tableNames, $columnNames, $pivotPermission, $teams) {

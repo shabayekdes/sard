@@ -15,7 +15,7 @@ class CompliancePolicy extends BaseModel
         'effective_date',
         'review_date',
         'status',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $casts = [

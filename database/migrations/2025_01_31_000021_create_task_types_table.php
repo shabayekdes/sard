@@ -18,11 +18,11 @@ return new class extends Migration
             $table->string('color', 7)->default('#3B82F6'); // Hex color code
             $table->integer('default_duration')->nullable(); // in minutes
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
             // Index for better performance
-            $table->index(['created_by', 'status']);
+            $table->index(['tenant_id', 'status']);
         });
     }
 

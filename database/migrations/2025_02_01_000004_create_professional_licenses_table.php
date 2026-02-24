@@ -19,10 +19,10 @@ return new class extends Migration
             $table->date('expiry_date');
             $table->enum('status', ['active', 'expired', 'suspended', 'revoked'])->default('active');
             $table->text('notes')->nullable();
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
-            $table->index(['created_by', 'status']);
+            $table->index(['tenant_id', 'status']);
             $table->index(['user_id', 'status']);
             $table->index(['expiry_date', 'status']);
         });

@@ -15,10 +15,10 @@ return new class extends Migration
             $table->foreignId('parent_id')->nullable()->constrained('case_categories')->onDelete('cascade');
             $table->string('color', 7)->default('#3B82F6');
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
-            $table->index(['created_by', 'status']);
+            $table->index(['tenant_id', 'status']);
             $table->index(['parent_id']);
         });
     }

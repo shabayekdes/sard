@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->nullable()->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('key');
             $table->text('value')->nullable();
             $table->timestamps();
             
             // Unique constraint to prevent duplicate settings for a user
-            $table->unique(['user_id', 'key']);
+            $table->unique(['tenant_id', 'key']);
         });
     }
 

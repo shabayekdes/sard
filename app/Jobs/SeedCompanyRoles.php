@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\ClientType;
 use App\Models\Role;
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -38,7 +39,7 @@ class SeedCompanyRoles implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        public int $companyUserId
+        public string $tenant_id
     ) {
         $this->onQueue('default');
     }
@@ -48,11 +49,11 @@ class SeedCompanyRoles implements ShouldQueue
      */
     public function handle(): void
     {
-        $companyUser = User::find($this->companyUserId);
+        $companyUser = Tenant::find($this->tenant_id);
         
-        if (!$companyUser || $companyUser->type !== 'company') {
+        if (!$companyUser) {
             Log::warning("SeedCompanyRoles: Company user not found or invalid", [
-                'user_id' => $this->companyUserId
+                'user_id' => $this->tenant_id
             ]);
             return;
         }
@@ -61,10 +62,16 @@ class SeedCompanyRoles implements ShouldQueue
         $clientRole = Role::firstOrCreate([
             'name' => 'client',
             'guard_name' => 'web',
-            'created_by' => $companyUser->id
+            'tenant_id' => $this->tenant_id
         ], [
-            'label' => 'Client',
-            'description' => 'Client with limited access to their cases and documents'
+            'label' => [
+                'en' => 'Client',
+                'ar' => 'عميل'
+            ],
+            'description' => [
+                'en' => 'Client role with limited access to their cases, documents, and communication',
+                'ar' => 'دور العميل مع وصول محدود إلى قضاياه ومستنداته واتصالاته'
+            ]
         ]);
 
         $clientRole->syncPermissions([
@@ -150,10 +157,16 @@ class SeedCompanyRoles implements ShouldQueue
         $teamRole = Role::firstOrCreate([
             'name' => 'team_member',
             'guard_name' => 'web',
-            'created_by' => $companyUser->id
+            'tenant_id' => $this->tenant_id
         ], [
-            'label' => 'Team Member',
-            'description' => 'Team member with limited access to company modules'
+            'label' => [
+                'en' => 'Team Member',
+                'ar' => 'عضو الفريق'
+            ],
+            'description' => [
+                'en' => 'Team member with access to manage cases, documents, and collaborate with clients',
+                'ar' => 'عضو الفريق لديه حق الوصول لإدارة القضايا والمستندات والتعاون مع العملاء'
+            ]
         ]);
 
         $teamPermissions = [
@@ -262,8 +275,8 @@ class SeedCompanyRoles implements ShouldQueue
 
         // Create default team member user
         $teamMember = User::firstOrCreate([
-            'email' => 'teammember' . $companyUser->id . '@company.com',
-            'created_by' => $companyUser->id
+            'email' => 'teammember' . $this->tenant_id . '@company.com',
+            'tenant_id' => $this->tenant_id
         ], [
             'name' => 'John Doe',
             'password' => Hash::make('password'),
@@ -285,7 +298,7 @@ class SeedCompanyRoles implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         Log::error("SeedCompanyRoles: Job failed", [
-            'company_id' => $this->companyUserId,
+            'company_id' => $this->tenant_id,
             'error' => $exception->getMessage()
         ]);
     }

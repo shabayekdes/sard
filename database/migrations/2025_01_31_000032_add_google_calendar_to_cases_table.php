@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('cases', function (Blueprint $table) {
-            $table->string('google_calendar_event_id')->nullable()->after('created_by');
+            $table->string('google_calendar_event_id')->nullable()->after('tenant_id');
         });
     }
 

@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('fee_structures', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('created_by');
             $table->unsignedBigInteger('client_id')->nullable();
             $table->unsignedBigInteger('case_id')->nullable();
             $table->unsignedBigInteger('fee_type_id');
@@ -23,10 +22,10 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
-            $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
             $table->foreign('fee_type_id')->references('id')->on('fee_types')->onDelete('cascade');
-            $table->index(['created_by', 'is_active']);
+            $table->index(['tenant_id', 'is_active']);
         });
     }
 

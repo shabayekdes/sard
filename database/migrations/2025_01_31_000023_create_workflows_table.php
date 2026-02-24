@@ -15,10 +15,10 @@ return new class extends Migration
             $table->string('trigger_event')->nullable(); // case_created, task_completed, etc.
             $table->boolean('is_active')->default(true);
 
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
-            $table->index(['created_by', 'is_active']);
+            $table->index(['tenant_id', 'is_active']);
         });
     }
 

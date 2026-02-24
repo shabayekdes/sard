@@ -20,10 +20,10 @@ return new class extends Migration
             $table->string('court_level')->nullable();
             $table->json('key_points')->nullable();
             $table->enum('status', ['active', 'overruled', 'questioned', 'archived'])->default('active');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
-            $table->index(['created_by', 'status']);
+            $table->index(['tenant_id', 'status']);
             $table->index(['category_id']);
             $table->index(['jurisdiction']);
             $table->index(['relevance_score']);

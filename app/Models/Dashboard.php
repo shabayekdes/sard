@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class Dashboard extends BaseModel
 {
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = [
         'dashboard_id',
@@ -19,7 +20,7 @@ class Dashboard extends BaseModel
         'is_public',
         'status',
         'user_id',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $casts = [

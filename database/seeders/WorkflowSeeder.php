@@ -92,12 +92,12 @@ class WorkflowSeeder extends Seeder
             foreach ($selectedWorkflows as $workflowData) {
                 Workflow::firstOrCreate([
                     'name' => $workflowData['name'],
-                    'created_by' => $companyUser->id
+                    'tenant_id' => $companyUser->tenant_id
                 ], [
                     'description' => $workflowData['description'],
                     'trigger_event' => $workflowData['trigger_event'],
                     'is_active' => $workflowData['is_active'],
-                    'created_by' => $companyUser->id,
+                    'tenant_id' => $companyUser->tenant_id,
                 ]);
             }
         }

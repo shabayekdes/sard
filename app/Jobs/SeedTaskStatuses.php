@@ -22,7 +22,7 @@ class SeedTaskStatuses implements ShouldQueue
     public $backoff = 30;
 
     public function __construct(
-        public int $companyUserId
+        public string $tenant_id
     ) {
         $this->onQueue('default');
     }
@@ -35,7 +35,7 @@ class SeedTaskStatuses implements ShouldQueue
                 'name' => '{"en":"Not Started","ar":"لم تبدأ"}',
                 'color' => '#6B7280',
                 'is_completed' => false,
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => $now,
                 'updated_at' => $now
             ],
@@ -43,7 +43,7 @@ class SeedTaskStatuses implements ShouldQueue
                 'name' => '{"en":"In Progress","ar":"قيد التنفيذ"}',
                 'color' => '#3B82F6',
                 'is_completed' => false,
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => $now,
                 'updated_at' => $now
             ],
@@ -51,7 +51,7 @@ class SeedTaskStatuses implements ShouldQueue
                 'name' => '{"en":"Awaiting Information","ar":"بانتظار معلومات"}',
                 'color' => '#8B5CF6',
                 'is_completed' => false,
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => $now,
                 'updated_at' => $now
             ],
@@ -59,7 +59,7 @@ class SeedTaskStatuses implements ShouldQueue
                 'name' => '{"en":"Pending Approval","ar":"بانتظار اعتماد"}',
                 'color' => '#8B5CF6',
                 'is_completed' => false,
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => $now,
                 'updated_at' => $now
             ],
@@ -67,7 +67,7 @@ class SeedTaskStatuses implements ShouldQueue
                 'name' => '{"en":"Under Review","ar":"قيد المراجعة"}',
                 'color' => '#F59E0B',
                 'is_completed' => false,
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => $now,
                 'updated_at' => $now
             ],
@@ -75,7 +75,7 @@ class SeedTaskStatuses implements ShouldQueue
                 'name' => '{"en":"On Hold","ar":"متوقفة مؤقتًا"}',
                 'color' => '#EF4444',
                 'is_completed' => false,
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => $now,
                 'updated_at' => $now
             ],
@@ -83,7 +83,7 @@ class SeedTaskStatuses implements ShouldQueue
                 'name' => '{"en":"Blocked","ar":"معطّلة"}',
                 'color' => '#EC4899',
                 'is_completed' => false,
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => $now,
                 'updated_at' => $now
             ],
@@ -91,7 +91,7 @@ class SeedTaskStatuses implements ShouldQueue
                 'name' => '{"en":"Deferred","ar":"مؤجلة"}',
                 'color' => '#F97316',
                 'is_completed' => false,
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => $now,
                 'updated_at' => $now
             ],
@@ -99,7 +99,7 @@ class SeedTaskStatuses implements ShouldQueue
                 'name' => '{"en":"Completed","ar":"مكتملة"}',
                 'color' => '#10B981',
                 'is_completed' => true,
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => $now,
                 'updated_at' => $now
             ],
@@ -107,7 +107,7 @@ class SeedTaskStatuses implements ShouldQueue
                 'name' => '{"en":"Cancelled","ar":"ملغاة"}',
                 'color' => '#DC2626',
                 'is_completed' => false,
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => $now,
                 'updated_at' => $now
             ],
@@ -115,7 +115,7 @@ class SeedTaskStatuses implements ShouldQueue
                 'name' => '{"en":"Archived","ar":"مؤرشفة"}',
                 'color' => '#6B7280',
                 'is_completed' => true,
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => $now,
                 'updated_at' => $now
             ],
@@ -124,7 +124,7 @@ class SeedTaskStatuses implements ShouldQueue
         TaskStatus::insert($defaultStatuses);
 
         Log::info('SeedTaskStatuses: Completed', [
-            'company_id' => $this->companyUserId,
+            'company_id' => $this->tenant_id,
             'count' => count($defaultStatuses),
         ]);
     }
@@ -132,7 +132,7 @@ class SeedTaskStatuses implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         Log::error('SeedTaskStatuses: Job failed', [
-            'company_id' => $this->companyUserId,
+            'company_id' => $this->tenant_id,
             'error' => $exception->getMessage(),
         ]);
     }

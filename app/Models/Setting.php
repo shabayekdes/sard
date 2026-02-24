@@ -10,7 +10,7 @@ class Setting extends BaseModel
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
+        'tenant_id',
         'key',
         'value',
     ];
@@ -25,6 +25,6 @@ class Setting extends BaseModel
 
     public static function getUserSettings($userId)
     {
-        return self::where('user_id', $userId)->pluck('value', 'key')->toArray();
+        return self::where('tenant_id', $userId)->pluck('value', 'key')->toArray();
     }
 }

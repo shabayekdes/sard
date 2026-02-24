@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class CompanyProfile extends BaseModel
 {
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = [
         'company_id',
@@ -27,7 +28,7 @@ class CompanyProfile extends BaseModel
         'services_offered',
         'default_setup',
         'description',
-        'created_by',
+        'tenant_id',
     ];
 
     protected $casts = [

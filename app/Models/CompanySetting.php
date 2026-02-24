@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class CompanySetting extends BaseModel
 {
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = [
         'setting_key',
@@ -15,7 +16,7 @@ class CompanySetting extends BaseModel
         'setting_type',
         'category',
         'description',
-        'created_by'
+        'tenant_id'
     ];
 
     /**

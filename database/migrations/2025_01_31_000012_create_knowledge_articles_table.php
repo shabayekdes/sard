@@ -16,10 +16,10 @@ return new class extends Migration
             $table->json('tags')->nullable();
             $table->boolean('is_public')->default(false);
             $table->enum('status', ['draft', 'published', 'archived'])->default('draft');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
-            $table->index(['created_by', 'status']);
+            $table->index(['tenant_id', 'status']);
             $table->index(['category_id']);
             $table->index(['is_public']);
         });

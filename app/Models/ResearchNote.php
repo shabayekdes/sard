@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class ResearchNote extends BaseModel
 {
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = [
         'research_project_id',
@@ -16,7 +17,7 @@ class ResearchNote extends BaseModel
         'source_reference',
         'tags',
         'is_private',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $casts = [

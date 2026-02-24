@@ -8,13 +8,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Traits\AutoApplyPermissionCheck;
 use App\Models\Currency;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class Invoice extends BaseModel
 {
-    use HasFactory, AutoApplyPermissionCheck;
+    use BelongsToTenant, HasFactory, AutoApplyPermissionCheck;
 
     protected $fillable = [
-        'created_by',
+        'tenant_id',
         'client_id',
         'case_id',
         'currency_id',
@@ -43,8 +44,8 @@ class Invoice extends BaseModel
 
         static::creating(function ($invoice) {
             if (!$invoice->invoice_number) {
-                $invoice->invoice_number = 'INV-' . date('Y') . '-' . $invoice->created_by . '-' . str_pad(
-                    Invoice::where('created_by', $invoice->created_by)
+                $invoice->invoice_number = 'INV-' . date('Y') . '-' . $invoice->tenant_id . '-' . str_pad(
+                    Invoice::where('tenant_id', $invoice->tenant_id)
                         ->whereYear('created_at', date('Y'))->count() + 1,
                     4,
                     '0',

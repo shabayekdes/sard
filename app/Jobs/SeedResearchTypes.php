@@ -22,7 +22,7 @@ class SeedResearchTypes implements ShouldQueue
     public $backoff = 30;
 
     public function __construct(
-        public int $companyUserId
+        public string $tenant_id
     ) {
         $this->onQueue('default');
     }
@@ -47,7 +47,7 @@ class SeedResearchTypes implements ShouldQueue
             ['code' => 'RT15', 'name' => ['ar' => 'بحث تشريعي', 'en' => 'Legislative Analysis'], 'description' => ['ar' => 'دراسة التعديلات النظامية والمشاريع التشريعية الجديدة', 'en' => 'Analysis of new or amended legislation']],
         ];
 
-        $existingCodes = ResearchType::where('created_by', $this->companyUserId)->pluck('code')->flip()->all();
+        $existingCodes = ResearchType::where('tenant_id', $this->tenant_id)->pluck('code')->flip()->all();
 
         $toInsert = [];
         foreach ($researchTypes as $row) {
@@ -60,7 +60,7 @@ class SeedResearchTypes implements ShouldQueue
                 'name' => json_encode($row['name']),
                 'description' => json_encode($row['description']),
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -72,7 +72,7 @@ class SeedResearchTypes implements ShouldQueue
         }
 
         Log::info('SeedResearchTypes: Completed', [
-            'company_id' => $this->companyUserId,
+            'company_id' => $this->tenant_id,
             'created' => count($toInsert),
             'total' => count($researchTypes),
         ]);
@@ -81,7 +81,7 @@ class SeedResearchTypes implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         Log::error('SeedResearchTypes: Job failed', [
-            'company_id' => $this->companyUserId,
+            'company_id' => $this->tenant_id,
             'error' => $exception->getMessage(),
         ]);
     }

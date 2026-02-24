@@ -15,11 +15,11 @@ return new class extends Migration
             $table->string('file_path');
             $table->text('changes_description')->nullable();
             $table->boolean('is_current')->default(false);
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
             $table->index(['document_id', 'is_current']);
-            $table->index(['created_by']);
+            $table->index(['tenant_id']);
         });
     }
 

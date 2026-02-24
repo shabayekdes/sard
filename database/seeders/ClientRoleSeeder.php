@@ -24,7 +24,7 @@ class ClientRoleSeeder extends Seeder
         ], [
             'label' => 'Client',
             'description' => 'Client with limited access to their own data',
-            'created_by' => $companyUser->id
+            'tenant_id' => $companyUser->tenant_id
         ]);
 
         $permissions = [

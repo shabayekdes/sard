@@ -6,10 +6,11 @@ use App\Traits\AutoApplyPermissionCheck;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class Conversation extends BaseModel
 {
-    use AutoApplyPermissionCheck;
+    use BelongsToTenant, AutoApplyPermissionCheck;
     
     protected $fillable = [
         'company_id',
@@ -19,7 +20,7 @@ class Conversation extends BaseModel
         'case_id',
         'last_message_at',
         'status',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $casts = [

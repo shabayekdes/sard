@@ -16,7 +16,7 @@ class InvoiceSeeder extends Seeder
         $companies = User::where('type', 'company')->get();
 
         foreach ($companies as $company) {
-            $clients = Client::where('created_by', $company->id)->get();
+            $clients = Client::where('tenant_id', $company->tenant_id)->get();
             
             // Create 3 invoices per client
             foreach ($clients as $client) {
@@ -30,7 +30,7 @@ class InvoiceSeeder extends Seeder
 
     private function createTimeEntriesAndExpenses($company, $client)
     {
-        $cases = \App\Models\CaseModel::where('created_by', $company->id)
+        $cases = \App\Models\CaseModel::where('tenant_id', $company->tenant_id)
             ->where('client_id', $client->id)
             ->get();
 
@@ -43,7 +43,7 @@ class InvoiceSeeder extends Seeder
             \App\Models\TimeEntry::create([
                 'case_id' => $case->id,
                 'user_id' => $company->id,
-                'created_by' => $company->id,
+                'tenant_id' => $company->tenant_id,
                 'description' => 'Legal consultation and case review',
                 'hours' => rand(1, 8),
                 'billable_rate' => rand(100, 300),
@@ -54,12 +54,12 @@ class InvoiceSeeder extends Seeder
         }
 
         // Create expenses
-        $expenseCategory = \App\Models\ExpenseCategory::where('created_by', $company->id)->first();
+        $expenseCategory = \App\Models\ExpenseCategory::where('tenant_id', $company->tenant_id)->first();
         if ($expenseCategory) {
             for ($i = 0; $i < rand(1, 3); $i++) {
                 \App\Models\Expense::create([
                     'case_id' => $case->id,
-                    'created_by' => $company->id,
+                    'tenant_id' => $company->tenant_id,
                     'expense_category_id' => $expenseCategory->id,
                     'description' => 'Court filing fees and documentation',
                     'amount' => rand(50, 500),
@@ -73,7 +73,7 @@ class InvoiceSeeder extends Seeder
 
     private function createInvoiceForClient($company, $client)
     {
-        $cases = \App\Models\CaseModel::where('created_by', $company->id)
+        $cases = \App\Models\CaseModel::where('tenant_id', $company->tenant_id)
             ->where('client_id', $client->id)
             ->get();
 
@@ -82,14 +82,14 @@ class InvoiceSeeder extends Seeder
         $case = $cases->random();
         
         $timeEntries = \App\Models\TimeEntry::where('case_id', $case->id)
-            ->where('created_by', $company->id)
+            ->where('tenant_id', $company->tenant_id)
             ->whereNull('invoice_id')
             ->where('is_billable', true)
             ->where('status', 'approved')
             ->get();
             
         $expenses = \App\Models\Expense::where('case_id', $case->id)
-            ->where('created_by', $company->id)
+            ->where('tenant_id', $company->tenant_id)
             ->whereNull('invoice_id')
             ->where('is_billable', true)
             ->where('is_approved', true)
@@ -131,7 +131,7 @@ class InvoiceSeeder extends Seeder
         $statuses = ['draft', 'sent', 'paid', 'overdue'];
         
         $invoice = Invoice::create([
-            'created_by' => $company->id,
+            'tenant_id' => $company->tenant_id,
             'client_id' => $client->id,
             'case_id' => $case->id,
             'currency_id' => $currencyId,
@@ -167,7 +167,7 @@ class InvoiceSeeder extends Seeder
                 'payment_date' => $invoice->invoice_date->addDays(rand(1, 15)),
                 'payment_method' => collect(['credit_card', 'bank_transfer', 'check'])->random(),
                 'notes' => 'Payment for invoice #' . $invoice->invoice_number,
-                'created_by' => $company->id,
+                'tenant_id' => $company->tenant_id,
             ]);
         }
     }

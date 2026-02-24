@@ -20,8 +20,8 @@ class ComplianceRequirementSeeder extends Seeder
         $companyUsers = User::where('type', 'company')->get();
         
         foreach ($companyUsers as $companyUser) {
-            $categories = ComplianceCategory::where('created_by', $companyUser->id)->get();
-            $frequencies = ComplianceFrequency::where('created_by', $companyUser->id)->get();
+            $categories = ComplianceCategory::where('tenant_id', $companyUser->tenant_id)->get();
+            $frequencies = ComplianceFrequency::where('tenant_id', $companyUser->tenant_id)->get();
             
             if ($categories->count() > 0 && $frequencies->count() > 0) {
                 // Create 2-3 compliance requirements per company
@@ -81,12 +81,12 @@ class ComplianceRequirementSeeder extends Seeder
                         'monitoring_procedures' => 'Regular review and monitoring procedures established',
                         'status' => $statuses[rand(0, count($statuses) - 1)],
                         'priority' => $priorities[rand(0, count($priorities) - 1)],
-                        'created_by' => $companyUser->id,
+                        'tenant_id' => $companyUser->tenant_id,
                     ];
                     
                     ComplianceRequirement::firstOrCreate([
                         'title' => $requirementData['title'],
-                        'created_by' => $companyUser->id
+                        'tenant_id' => $companyUser->tenant_id
                     ], $requirementData);
                 }
             }

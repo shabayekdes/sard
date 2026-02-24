@@ -25,11 +25,11 @@ return new class extends Migration
             $table->unsignedBigInteger('task_type_id')->nullable();
             $table->unsignedBigInteger('task_status_id')->nullable();
             $table->text('notes')->nullable();
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
             // Index for better performance
-            $table->index(['created_by', 'status']);
+            $table->index(['tenant_id', 'status']);
             $table->index(['assigned_to']);
             $table->index(['case_id']);
             $table->index(['due_date']);

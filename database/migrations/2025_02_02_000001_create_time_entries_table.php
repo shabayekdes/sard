@@ -25,11 +25,11 @@ return new class extends Migration
             $table->time('end_time')->nullable();
             $table->enum('status', ['draft', 'submitted', 'approved', 'billed'])->default('draft');
             $table->text('notes')->nullable();
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
             // Indexes for better performance
-            $table->index(['created_by', 'status']);
+            $table->index(['tenant_id', 'status']);
             $table->index(['case_id']);
             $table->index(['user_id']);
             $table->index(['entry_date']);

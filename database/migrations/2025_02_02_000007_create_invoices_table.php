@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('created_by');
             $table->unsignedBigInteger('client_id');
             $table->unsignedBigInteger('case_id')->nullable();
             $table->foreignId('currency_id')->nullable()->constrained()->nullOnDelete();
@@ -24,10 +23,10 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamps();
 
-            $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
             $table->foreign('case_id')->references('id')->on('cases')->onDelete('set null');
-            $table->index(['created_by', 'status']);
+            $table->index(['tenant_id', 'status']);
             $table->index(['client_id', 'status']);
         });
     }

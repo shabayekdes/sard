@@ -16,9 +16,9 @@ class FeeStructureSeeder extends Seeder
         $companies = User::where('type', 'company')->get();
 
         foreach ($companies as $company) {
-            $clients = Client::where('created_by', $company->id)->get();
-            $cases = \App\Models\CaseModel::where('created_by', $company->id)->get();
-            $feeTypes = FeeType::where('created_by', $company->id)->get();
+            $clients = Client::where('tenant_id', $company->tenant_id)->get();
+            $cases = \App\Models\CaseModel::where('tenant_id', $company->tenant_id)->get();
+            $feeTypes = FeeType::where('tenant_id', $company->tenant_id)->get();
             
             if ($feeTypes->isEmpty()) continue;
 
@@ -31,7 +31,7 @@ class FeeStructureSeeder extends Seeder
                 $endDate = rand(1, 10) > 7 ? now()->addMonths(rand(6, 24)) : null; // 30% chance of end date
                 
                 $structureData = [
-                    'created_by' => $company->id,
+                    'tenant_id' => $company->tenant_id,
                     'client_id' => $clients->count() > 0 ? $clients->random()->id : null,
                     'case_id' => rand(1, 10) > 6 && $cases->count() > 0 ? $cases->random()->id : null, // 40% chance case-specific
                     'fee_type_id' => $feeType->id,
@@ -47,7 +47,7 @@ class FeeStructureSeeder extends Seeder
                 FeeStructure::firstOrCreate([
                     'client_id' => $structureData['client_id'],
                     'fee_type_id' => $structureData['fee_type_id'],
-                    'created_by' => $company->id
+                    'tenant_id' => $company->tenant_id
                 ], $structureData);
             }
         }

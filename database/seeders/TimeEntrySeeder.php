@@ -18,9 +18,9 @@ class TimeEntrySeeder extends Seeder
         $companyUsers = User::where('type', 'company')->get();
         
         foreach ($companyUsers as $companyUser) {
-            $cases = CaseModel::where('created_by', $companyUser->id)->get();
-            $clients = \App\Models\Client::where('created_by', $companyUser->id)->get();
-            $users = User::where('created_by', $companyUser->id)->get();
+            $cases = CaseModel::where('tenant_id', $companyUser->tenant_id)->get();
+            $clients = \App\Models\Client::where('tenant_id', $companyUser->tenant_id)->get();
+            $users = User::where('tenant_id', $companyUser->tenant_id)->get();
             
             if ($cases->count() > 0) {
                 // Create 2-3 time entries per case
@@ -59,7 +59,7 @@ class TimeEntrySeeder extends Seeder
                             'end_time' => sprintf('%02d:%02d', floor($endTime), ($endTime - floor($endTime)) * 60),
                             'status' => 'approved',
                             'notes' => 'Professional legal services for case.',
-                            'created_by' => $companyUser->id,
+                            'tenant_id' => $companyUser->tenant_id,
                         ];
                         
                         TimeEntry::create($entryData);

@@ -18,12 +18,12 @@ return new class extends Migration
             $table->string('file_path');
             $table->text('description')->nullable();
             $table->enum('status', ['active', 'archived'])->default('active');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
             // Index for better performance
             $table->index(['client_id']);
-            $table->index(['created_by', 'status']);
+            $table->index(['tenant_id', 'status']);
         });
     }
 

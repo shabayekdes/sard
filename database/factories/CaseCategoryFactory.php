@@ -71,7 +71,7 @@ class CaseCategoryFactory extends Factory
                 '#EC4899', // Pink
             ]),
             'status' => $this->faker->randomElement(['active', 'inactive']),
-            'created_by' => function () {
+            'tenant_id' => function () {
                 return User::where('type', 'company')->inRandomOrder()->first()?->id ?? User::factory();
             },
         ];
@@ -104,7 +104,7 @@ class CaseCategoryFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'parent_id' => $parent->id,
-            'created_by' => $parent->created_by,
+            'tenant_id' => $parent->created_by,
         ]);
     }
 }

@@ -20,11 +20,11 @@ return new class extends Migration
                 $table->date('date');
                 $table->json('details');
                 $table->string('type', 50)->default('login');
-                $table->foreignId('created_by')->nullable()->index();
+                $table->foreignId('tenant_id')->nullable()->index();
                 $table->timestamps();
 
                 $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
-                $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
+                $table->foreign('tenant_id')->references('id')->on('users')->onDelete('cascade');
             });
         }
     }

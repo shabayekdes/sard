@@ -36,7 +36,7 @@ class SeedCompanySettings implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        public int $companyUserId
+        public string $tenant_id
     ) {
         $this->onQueue('default');
     }
@@ -49,9 +49,9 @@ class SeedCompanySettings implements ShouldQueue
         $superAdmin = User::where('type', 'superadmin')->first();
         if (!$superAdmin) {
             // If no superadmin, create default settings
-            createDefaultSettings($this->companyUserId);
+            createDefaultSettings($this->tenant_id);
             Log::info("SeedCompanySettings: No superadmin found, created default settings", [
-                'company_id' => $this->companyUserId
+                'company_id' => $this->tenant_id
             ]);
             return;
         }
@@ -63,7 +63,7 @@ class SeedCompanySettings implements ShouldQueue
             'logoDark', 'logoLight', 'favicon', 'titleText', 'footerText'
         ];
 
-        $superAdminSettings = Setting::where('user_id', $superAdmin->id)
+        $superAdminSettings = Setting::where('tenant_id', $superAdmin->id)
             ->whereIn('key', $settingsToCopy)
             ->get();
 
@@ -72,7 +72,7 @@ class SeedCompanySettings implements ShouldQueue
         // Only copy existing superadmin settings
         foreach ($superAdminSettings as $setting) {
             $settingsData[] = [
-                'user_id' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'key' => $setting->key,
                 'value' => $setting->value,
                 'created_at' => now(),
@@ -83,7 +83,7 @@ class SeedCompanySettings implements ShouldQueue
         Setting::insertOrIgnore($settingsData);
 
         Log::info("SeedCompanySettings: Completed", [
-            'company_id' => $this->companyUserId,
+            'company_id' => $this->tenant_id,
             'copied' => count($settingsData)
         ]);
     }
@@ -94,7 +94,7 @@ class SeedCompanySettings implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         Log::error("SeedCompanySettings: Job failed", [
-            'company_id' => $this->companyUserId,
+            'company_id' => $this->tenant_id,
             'error' => $exception->getMessage()
         ]);
     }

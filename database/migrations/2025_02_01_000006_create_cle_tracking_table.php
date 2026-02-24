@@ -24,12 +24,12 @@ return new class extends Migration
             $table->string('certificate_file')->nullable();
             $table->enum('status', ['completed', 'in_progress', 'expired'])->default('completed');
             $table->text('description')->nullable();
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
             // Index for better performance
             $table->index(['user_id', 'status']);
-            $table->index(['created_by', 'completion_date']);
+            $table->index(['tenant_id', 'completion_date']);
             $table->index(['expiry_date', 'status']);
         });
     }

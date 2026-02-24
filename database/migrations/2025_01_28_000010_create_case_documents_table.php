@@ -20,11 +20,11 @@ return new class extends Migration
             $table->enum('confidentiality', ['public', 'confidential', 'privileged'])->default('confidential');
             $table->date('document_date')->nullable();
             $table->enum('status', ['active', 'archived'])->default('active');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
             // Index for better performance
-            $table->index(['created_by', 'status']);
+            $table->index(['tenant_id', 'status']);
 
         });
     }

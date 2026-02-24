@@ -35,7 +35,7 @@ class SeedExpenseCategories implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        public int $companyUserId
+        public string $tenant_id
     ) {
         $this->onQueue('default');
     }
@@ -49,77 +49,77 @@ class SeedExpenseCategories implements ShouldQueue
             [
                 'name' => '{"en":"Office Rent","ar":"إيجار المكتب"}',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'name' => '{"en":"Utilities","ar":"فواتير خدمات"}',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'name' => '{"en":"Office Supplies","ar":"قرطاسية ومستلزمات مكتبية"}',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'name' => '{"en":"Maintenance & Cleaning","ar":"صيانة وتنظيف"}',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'name' => '{"en":"Salaries","ar":"رواتب الموظفين"}',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'name' => '{"en":"Allowances & Incentives","ar":"بدلات وحوافز"}',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'name' => '{"en":"Court Fees","ar":"رسوم محاكم"}',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'name' => '{"en":"Case Fees","ar":"رسوم قضايا"}',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'name' => '{"en":"Transportation","ar":"مواصلات"}',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'name' => '{"en":"Software Subscriptions","ar":"اشتراكات برامج"}',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'name' => '{"en":"Miscellaneous Expenses","ar":"مصاريف متفرقة"}',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -128,7 +128,7 @@ class SeedExpenseCategories implements ShouldQueue
         ExpenseCategory::insert($expenseCategories);
 
         Log::info("SeedExpenseCategories: Completed", [
-            'company_id' => $this->companyUserId,
+            'company_id' => $this->tenant_id,
             'created' => count($expenseCategories)
         ]);
     }
@@ -139,7 +139,7 @@ class SeedExpenseCategories implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         Log::error("SeedExpenseCategories: Job failed", [
-            'company_id' => $this->companyUserId,
+            'company_id' => $this->tenant_id,
             'error' => $exception->getMessage()
         ]);
     }

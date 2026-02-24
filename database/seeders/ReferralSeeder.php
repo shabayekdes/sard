@@ -23,28 +23,28 @@ class ReferralSeeder extends Seeder
         $referrals = [
             [
                 'user_id' => $users->first()->id,
-                'company_id' => $users->skip(1)->first()->id,
+                'tenant_id' => $users->skip(1)->first()->id,
                 'commission_percentage' => 10.00,
                 'amount' => 19.99,
                 'plan_id' => $plans->first()->id
             ],
             [
                 'user_id' => $users->skip(1)->first()->id,
-                'company_id' => $users->skip(2)->first()->id,
+                'tenant_id' => $users->skip(2)->first()->id,
                 'commission_percentage' => 15.00,
                 'amount' => 49.99,
                 'plan_id' => $plans->skip(1)->first()->id
             ],
             [
                 'user_id' => $users->skip(2)->first()->id,
-                'company_id' => $users->skip(3)->first()->id,
+                'tenant_id' => $users->skip(3)->first()->id,
                 'commission_percentage' => 12.50,
                 'amount' => 99.99,
                 'plan_id' => $plans->last()->id
             ],
             [
                 'user_id' => $users->skip(3)->first()->id,
-                'company_id' => $users->last()->id,
+                'tenant_id' => $users->last()->id,
                 'commission_percentage' => 8.00,
                 'amount' => 19.99,
                 'plan_id' => $plans->first()->id

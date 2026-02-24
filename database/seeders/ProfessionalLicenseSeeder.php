@@ -14,7 +14,7 @@ class ProfessionalLicenseSeeder extends Seeder
         $companyUsers = User::where('type', 'company')->get();
         
         foreach ($companyUsers as $companyUser) {
-            $users = User::where('created_by', $companyUser->id)->get();
+            $users = User::where('tenant_id', $companyUser->tenant_id)->get();
             
             // If no users exist, use the company user itself
             if ($users->isEmpty()) {
@@ -63,13 +63,13 @@ class ProfessionalLicenseSeeder extends Seeder
                     'expiry_date' => $expiryDate,
                     'status' => $statuses[rand(0, count($statuses) - 1)],
                     'notes' => 'Professional license #' . $i . ' for ' . $companyUser->name . '. Required for legal practice and professional services.',
-                    'created_by' => $companyUser->id,
+                    'tenant_id' => $companyUser->tenant_id,
                 ];
                 
                 ProfessionalLicense::firstOrCreate([
                     'license_type' => $licenseData['license_type'],
                     'user_id' => $licenseData['user_id'],
-                    'created_by' => $companyUser->id
+                    'tenant_id' => $companyUser->tenant_id
                 ], $licenseData);
             }
         }

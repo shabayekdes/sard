@@ -19,7 +19,7 @@ class RiskAssessmentSeeder extends Seeder
         $companyUsers = User::where('type', 'company')->get();
         
         foreach ($companyUsers as $companyUser) {
-            $riskCategories = RiskCategory::where('created_by', $companyUser->id)->get();
+            $riskCategories = RiskCategory::where('tenant_id', $companyUser->tenant_id)->get();
             
             if ($riskCategories->count() > 0) {
                 // Create 2-3 risk assessments per company
@@ -78,12 +78,12 @@ class RiskAssessmentSeeder extends Seeder
                         'review_date' => $reviewDate,
                         'status' => $statuses[rand(0, count($statuses) - 1)],
                         'responsible_person' => $responsiblePersons[rand(0, count($responsiblePersons) - 1)],
-                        'created_by' => $companyUser->id,
+                        'tenant_id' => $companyUser->tenant_id,
                     ];
                     
                     RiskAssessment::firstOrCreate([
                         'risk_title' => $riskData['risk_title'],
-                        'created_by' => $companyUser->id
+                        'tenant_id' => $companyUser->tenant_id
                     ], $riskData);
                 }
             }

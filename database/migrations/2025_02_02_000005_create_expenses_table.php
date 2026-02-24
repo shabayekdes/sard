@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('expenses', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('created_by');
             $table->unsignedBigInteger('case_id')->nullable();
             $table->unsignedBigInteger('expense_category_id');
             $table->string('description');
@@ -22,9 +21,9 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamps();
 
-            $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->foreign('expense_category_id')->references('id')->on('expense_categories')->onDelete('cascade');
-            $table->index(['created_by', 'is_billable']);
+            $table->index(['tenant_id', 'is_billable']);
         });
     }
 

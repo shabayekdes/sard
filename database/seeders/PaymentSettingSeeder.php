@@ -36,7 +36,7 @@ class PaymentSettingSeeder extends Seeder
         foreach ($keys as $key => $value) {
             PaymentSetting::firstOrCreate([
                 'key' => $key,
-                'user_id' => 1
+                'tenant_id' => null
             ], [
                 'value' => $value
             ]);
@@ -48,7 +48,7 @@ class PaymentSettingSeeder extends Seeder
             foreach ($keys as $key => $value) {
                 PaymentSetting::firstOrCreate([
                     'key' => $key,
-                    'user_id' => $companyUser->id
+                    'tenant_id' => $companyUser->tenant_id
                 ], [
                     'value' => $value
                 ]);

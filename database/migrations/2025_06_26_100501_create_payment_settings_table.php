@@ -10,14 +10,12 @@ return new class extends Migration
     {
         Schema::create('payment_settings', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
             $table->string('key');
             $table->text('value')->nullable();
+            $table->foreignUuid('tenant_id')->nullable()->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
-            
-            $table->unique(['user_id', 'key']);
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->index(['user_id', 'key']);
+
+            $table->unique(['tenant_id', 'key']);
         });
     }
 

@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('created_by');
             $table->unsignedBigInteger('invoice_id');
             $table->string('payment_method');
             $table->string('approval_status')->default('approved');
@@ -25,9 +24,9 @@ return new class extends Migration
             $table->json('attachment')->nullable();
             $table->timestamps();
 
-            $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreign('invoice_id')->references('id')->on('invoices')->onDelete('cascade');
-            $table->index(['created_by', 'payment_date']);
+            $table->index(['tenant_id', 'payment_date']);
             $table->index(['payment_method', 'approval_status'], 'payments_method_approval_status_index');
         });
     }

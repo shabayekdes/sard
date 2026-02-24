@@ -35,11 +35,11 @@ class FeeTypeSeeder extends Seeder
             foreach ($selectedTypes as $feeType) {
                 FeeType::firstOrCreate([
                     'name' => $feeType['name'],
-                    'created_by' => $company->id
+                    'tenant_id' => $company->tenant_id
                 ], [
                     'description' => $feeType['description'],
                     'status' => 'active',
-                    'created_by' => $company->id,
+                    'tenant_id' => $company->tenant_id,
                 ]);
             }
         }

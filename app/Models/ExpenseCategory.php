@@ -8,15 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Translatable\HasTranslations;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class ExpenseCategory extends BaseModel
 {
-    use HasFactory, AutoApplyPermissionCheck, HasTranslations;
+    use BelongsToTenant, HasFactory, AutoApplyPermissionCheck, HasTranslations;
 
     public array $translatable = ['name', 'description'];
 
     protected $fillable = [
-        'created_by',
+        'tenant_id',
         'name',
         'description',
         'status',

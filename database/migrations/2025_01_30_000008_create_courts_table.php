@@ -19,11 +19,11 @@ return new class extends Migration
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->text('facilities')->nullable(); // JSON field for courtroom facilities
             $table->text('notes')->nullable();
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
             // Index for better performance
-            $table->index(['created_by', 'status']);
+            $table->index(['tenant_id', 'status']);
         });
     }
 

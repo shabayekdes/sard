@@ -10,6 +10,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
+use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
+use Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain;
+use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,12 +24,16 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->encryptCookies(except: ['appearance']);
 
         $middleware->web(append: [
+            // \App\Http\Middleware\InitializeTenancyByDomainOrSubdomainWhenNotCentral::class,
             CheckInstallation::class,
             SetLocale::class,
             HandleAppearance::class,
             ShareGlobalSettings::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+
+            InitializeTenancyByDomain::class,
+            PreventAccessFromCentralDomains::class,
             // DemoModeMiddleware::class,
         ]);
 
@@ -37,6 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'landing.enabled' => \App\Http\Middleware\CheckLandingPageEnabled::class,
             'verified' => App\Http\Middleware\EnsureEmailIsVerified::class,
             'plan.access' => \App\Http\Middleware\CheckPlanAccess::class,
+            'tenant' => InitializeTenancyBySubdomain::class,
         ]);
 
         $middleware->validateCsrfTokens(
@@ -84,5 +92,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(function (Exception $e) {
+            // dd($e);
+        });
     })->create();

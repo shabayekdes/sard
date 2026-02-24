@@ -62,14 +62,14 @@
             window.APP_URL = '{{ config('app.url') }}';
 
             // Set initial locale for i18next
-            fetch('{{ route("initial-locale") }}')
-                .then(response => response.text())
-                .then(locale => {
-                    window.initialLocale = locale;
-                })
-                .catch(() => {
-                    window.initialLocale = 'en';
-                });
+            {{--fetch('{{ route("initial-locale") }}')--}}
+            {{--    .then(response => response.text())--}}
+            {{--    .then(locale => {--}}
+            {{--        window.initialLocale = locale;--}}
+            {{--    })--}}
+            {{--    .catch(() => {--}}
+            {{--        window.initialLocale = 'en';--}}
+            {{--    });--}}
         </script>
         @inertiaHead
     </head>

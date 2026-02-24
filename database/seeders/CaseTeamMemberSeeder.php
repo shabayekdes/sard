@@ -14,8 +14,8 @@ class CaseTeamMemberSeeder extends Seeder
         $companyUsers = User::where('type', 'company')->get();
         
         foreach ($companyUsers as $companyUser) {
-            $cases = CaseModel::where('created_by', $companyUser->id)->get();
-            $teamMembers = User::where('created_by', $companyUser->id)
+            $cases = CaseModel::where('tenant_id', $companyUser->tenant_id)->get();
+            $teamMembers = User::where('tenant_id', $companyUser->tenant_id)
                 ->where('type', 'team_member')
                 ->get();
             
@@ -29,7 +29,7 @@ class CaseTeamMemberSeeder extends Seeder
                     'user_id' => $companyUser->id,
                     'assigned_date' => now()->subDays(rand(20, 40)),
                     'status' => 'active',
-                    'created_by' => $companyUser->id,
+                    'tenant_id' => $companyUser->tenant_id,
                 ]);
                 
                 // Add 2-4 team members
@@ -43,7 +43,7 @@ class CaseTeamMemberSeeder extends Seeder
                             'user_id' => $member->id,
                             'assigned_date' => now()->subDays(rand(1, 30)),
                             'status' => 'active',
-                            'created_by' => $companyUser->id,
+                            'tenant_id' => $companyUser->tenant_id,
                         ]);
                     }
                 }

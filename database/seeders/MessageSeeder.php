@@ -15,7 +15,7 @@ class MessageSeeder extends Seeder
         $companyUsers = User::where('type', 'company')->get();
         
         foreach ($companyUsers as $companyUser) {
-            $allUsers = User::where('created_by', $companyUser->id)->get();
+            $allUsers = User::where('tenant_id', $companyUser->tenant_id)->get();
             $allUsers->push($companyUser); // Include company user
             
             if ($allUsers->count() < 2) {
@@ -53,10 +53,10 @@ class MessageSeeder extends Seeder
                 $conversation = null;
                 try {
                     $conversation = Conversation::firstOrCreate([
-                        'company_id' => $companyUser->id,
+                        'user_id' => $companyUser->id,
                         'type' => 'direct',
                         'participants' => [$sender->id, $recipient->id],
-                        'created_by' => $companyUser->id
+                        'tenant_id' => $companyUser->tenant_id
                     ], [
                         'title' => null,
                         'last_message_at' => now(),
@@ -67,7 +67,7 @@ class MessageSeeder extends Seeder
                 
                 $messageData = [
                     'message_id' => null, // Auto-generated
-                    'company_id' => $companyUser->id,
+                    'user_id' => $companyUser->id,
                     'sender_id' => $sender->id,
                     'recipient_id' => $recipient->id,
                     'conversation_id' => $conversation->id,
@@ -80,14 +80,14 @@ class MessageSeeder extends Seeder
                     'attachments' => null,
                     'case_id' => null,
                     'status' => $statuses[rand(0, count($statuses) - 1)],
-                    'created_by' => $companyUser->id,
+                    'tenant_id' => $companyUser->tenant_id,
                 ];
                 
                 Message::firstOrCreate([
                     'subject' => $messageData['subject'],
                     'sender_id' => $messageData['sender_id'],
                     'recipient_id' => $messageData['recipient_id'],
-                    'created_by' => $companyUser->id
+                    'tenant_id' => $companyUser->tenant_id
                 ], $messageData);
             }
         }

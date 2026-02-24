@@ -81,7 +81,7 @@ class CaseCategorySeeder extends Seeder
 
                 $name = json_decode($item['name'], true) ?? ['en' => $item['name']];
                 $existing = CaseCategory::query()
-                    ->where('created_by', $companyUser->id)
+                    ->where('tenant_id', $companyUser->tenant_id)
                     ->whereNull('parent_id')
                     ->where('name->en', $name['en'] ?? $item['name'])
                     ->first();
@@ -89,7 +89,7 @@ class CaseCategorySeeder extends Seeder
                 $category = $existing ?: CaseCategory::create([
                     'name' => $name,
                     'parent_id' => null,
-                    'created_by' => $companyUser->id,
+                    'tenant_id' => $companyUser->tenant_id,
                     'status' => 'active',
                 ]);
 
@@ -110,7 +110,7 @@ class CaseCategorySeeder extends Seeder
 
                 $name = json_decode($item['name'], true) ?? ['en' => $item['name']];
                 $exists = CaseCategory::query()
-                    ->where('created_by', $companyUser->id)
+                    ->where('tenant_id', $companyUser->tenant_id)
                     ->where('parent_id', $parentId)
                     ->where('name->en', $name['en'] ?? $item['name'])
                     ->exists();
@@ -119,13 +119,13 @@ class CaseCategorySeeder extends Seeder
                     CaseCategory::create([
                         'name' => $name,
                         'parent_id' => $parentId,
-                        'created_by' => $companyUser->id,
+                        'tenant_id' => $companyUser->tenant_id,
                         'status' => 'active',
                     ]);
                 }
             }
 
-            $totalCategories = CaseCategory::where('created_by', $companyUser->id)->count();
+            $totalCategories = CaseCategory::where('tenant_id', $companyUser->tenant_id)->count();
             $this->command->info("Created {$totalCategories} case categories for company user: {$companyUser->name}");
         }
     }

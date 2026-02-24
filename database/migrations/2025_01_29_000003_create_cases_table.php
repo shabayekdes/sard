@@ -24,10 +24,10 @@ return new class extends Migration
             $table->text('opposing_party')->nullable();
             $table->text('court_details')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
-            $table->index(['created_by', 'status']);
+            $table->index(['tenant_id', 'status']);
             $table->index(['case_type_id']);
             $table->index(['case_status_id']);
             $table->index(['client_id']);

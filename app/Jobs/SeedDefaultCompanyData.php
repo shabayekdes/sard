@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -36,7 +37,7 @@ class SeedDefaultCompanyData implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        public int $companyUserId
+        public string $tenant_id
     ) {
         // Set queue name if needed
         $this->onQueue('default');
@@ -47,17 +48,17 @@ class SeedDefaultCompanyData implements ShouldQueue
      */
     public function handle(): void
     {
-        $companyUser = User::find($this->companyUserId);
+        $tenant = Tenant::find($this->tenant_id);
 
-        if (!$companyUser || $companyUser->type !== 'company') {
+        if (!$tenant) {
             Log::warning("SeedDefaultCompanyData: Company user not found or invalid", [
-                'user_id' => $this->companyUserId
+                'user_id' => $this->tenant_id
             ]);
             return;
         }
 
         Log::info("SeedDefaultCompanyData: Starting to seed default data for company", [
-            'company_id' => $this->companyUserId
+            'company_id' => $this->tenant_id
         ]);
 
         // Dispatch individual jobs for each data type
@@ -65,42 +66,42 @@ class SeedDefaultCompanyData implements ShouldQueue
         // Jobs will run in parallel if queue workers are available
         
         // Foundation jobs - should run first (settings, roles, notifications)
-        SeedCompanySettings::dispatch($this->companyUserId);
-        SeedCompanyRoles::dispatch($this->companyUserId);
-        SeedNotificationTemplates::dispatch($this->companyUserId);
+        SeedCompanySettings::dispatch($this->tenant_id);
+        SeedCompanyRoles::dispatch($this->tenant_id);
+        SeedNotificationTemplates::dispatch($this->tenant_id);
         
         // Data seeding jobs
-        SeedExpenseCategories::dispatch($this->companyUserId);
-        SeedClientTypes::dispatch($this->companyUserId);
-        SeedCaseTypes::dispatch($this->companyUserId);
-        SeedCaseCategories::dispatch($this->companyUserId);
-        SeedDocumentTypes::dispatch($this->companyUserId);
-        SeedDocumentCategories::dispatch($this->companyUserId);
-        SeedTaskTypes::dispatch($this->companyUserId);
-        SeedResearchTypes::dispatch($this->companyUserId);
-        SeedCourtTypes::dispatch($this->companyUserId);
-        SeedCircleTypes::dispatch($this->companyUserId);
-        SeedCaseStatuses::dispatch($this->companyUserId);
-        SeedTaskStatuses::dispatch($this->companyUserId);
-        SeedHearingTypes::dispatch($this->companyUserId);
-        SeedEventTypes::dispatch($this->companyUserId);
-        SeedResearchSources::dispatch($this->companyUserId);
+        SeedExpenseCategories::dispatch($this->tenant_id);
+        SeedClientTypes::dispatch($this->tenant_id);
+        SeedCaseTypes::dispatch($this->tenant_id);
+        SeedCaseCategories::dispatch($this->tenant_id);
+        SeedDocumentTypes::dispatch($this->tenant_id);
+        SeedDocumentCategories::dispatch($this->tenant_id);
+        SeedTaskTypes::dispatch($this->tenant_id);
+        SeedResearchTypes::dispatch($this->tenant_id);
+        SeedCourtTypes::dispatch($this->tenant_id);
+        SeedCircleTypes::dispatch($this->tenant_id);
+        SeedCaseStatuses::dispatch($this->tenant_id);
+        SeedTaskStatuses::dispatch($this->tenant_id);
+        SeedHearingTypes::dispatch($this->tenant_id);
+        SeedEventTypes::dispatch($this->tenant_id);
+        SeedResearchSources::dispatch($this->tenant_id);
 
         // ============================================
         // TO ADD NEW DATA TYPE:
         // ============================================
         // 1. Create a new job file (e.g., SeedCourtTypes.php)
         // 2. Add the dispatch call below:
-        //    SeedCourtTypes::dispatch($this->companyUserId);
+        //    SeedCourtTypes::dispatch($this->tenant_id);
         // 3. That's it! The job will run automatically when a company is created
         // ============================================
         
         // Example additions (uncomment when ready):
-        // SeedCourtTypes::dispatch($this->companyUserId);
-        // SeedHearingTypes::dispatch($this->companyUserId);
+        // SeedCourtTypes::dispatch($this->tenant_id);
+        // SeedHearingTypes::dispatch($this->tenant_id);
 
         Log::info("SeedDefaultCompanyData: All seeding jobs dispatched", [
-            'company_id' => $this->companyUserId
+            'company_id' => $this->tenant_id
         ]);
     }
 
@@ -110,7 +111,7 @@ class SeedDefaultCompanyData implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         Log::error("SeedDefaultCompanyData: Job failed", [
-            'company_id' => $this->companyUserId,
+            'company_id' => $this->tenant_id,
             'error' => $exception->getMessage(),
             'trace' => $exception->getTraceAsString()
         ]);

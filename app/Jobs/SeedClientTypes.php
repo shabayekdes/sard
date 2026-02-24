@@ -35,7 +35,7 @@ class SeedClientTypes implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        public int $companyUserId
+        public string $tenant_id
     ) {
         $this->onQueue('default');
     }
@@ -49,63 +49,63 @@ class SeedClientTypes implements ShouldQueue
             [
                 'name' => '{"en":"Individual","ar":"فرد"}',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'name' => '{"en":"Sole Proprietorship","ar":"مؤسسة فردية"}',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'name' => '{"en":"Simple Partnership","ar":"شركة توصية بسيطة"}',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'name' => '{"en":"Partnership","ar":"شركة تضامنية"}',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'name' => '{"en":"Limited Liability Company","ar":"شركة ذات مسئولية محدودة"}',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'name' => '{"en":"Public Joint Stock Company","ar":"شركة مساهمة عامة"}',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'name' => '{"en":"Foreign Company","ar":"شركة أجنبية"}',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'name' => '{"en":"Gulf Company","ar":"شركة خليجية"}',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'name' => '{"en":"Closed Joint Stock Company","ar":"شركة مساهمة مقفلة"}',
                 'status' => 'active',
-                'created_by' => $this->companyUserId,
+                'tenant_id' => $this->tenant_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -114,7 +114,7 @@ class SeedClientTypes implements ShouldQueue
         ClientType::insert($clientTypes);
 
         Log::info("SeedClientTypes: Completed", [
-            'company_id' => $this->companyUserId,
+            'company_id' => $this->tenant_id,
             'created' => count($clientTypes)
         ]);
     }
@@ -125,7 +125,7 @@ class SeedClientTypes implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         Log::error("SeedClientTypes: Job failed", [
-            'company_id' => $this->companyUserId,
+            'company_id' => $this->tenant_id,
             'error' => $exception->getMessage()
         ]);
     }

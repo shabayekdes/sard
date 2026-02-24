@@ -24,14 +24,13 @@ return new class extends Migration
             $table->json('attachments')->nullable();
             $table->unsignedBigInteger('case_id')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->unsignedBigInteger('created_by');
             $table->timestamps();
 
             $table->foreign('sender_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('recipient_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('case_id')->references('id')->on('cases')->onDelete('cascade');
-            $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
-            
+            $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+
             $table->index(['company_id', 'recipient_id', 'is_read']);
             $table->index(['conversation_id', 'created_at']);
         });

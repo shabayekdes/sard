@@ -32,7 +32,7 @@ class CompanyProfileSeeder extends Seeder
             $experience = date('Y') - $establishmentYear;
             
             CompanyProfile::firstOrCreate([
-                'created_by' => $companyUser->id
+                'tenant_id' => $companyUser->tenant_id
             ], [
                 // Contact Details
                 'email' => $companyUser->email,
@@ -57,7 +57,7 @@ class CompanyProfileSeeder extends Seeder
                 // Services
                 'services_offered' => 'Legal Consultation, Contract Drafting, Legal Advisory, Litigation Support, Court Representation, Legal Documentation',
                 'description' => $companyUser->name . ' is a professional law firm specializing in ' . explode(',', $specializations[$index % count($specializations)])[0] . '. With ' . $experience . ' years of experience, we provide comprehensive legal solutions.',
-                'created_by' => $companyUser->id
+                'tenant_id' => $companyUser->tenant_id
             ]);
         }
     }

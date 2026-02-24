@@ -6,10 +6,11 @@ use App\Traits\AutoApplyPermissionCheck;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class CaseStatus extends BaseModel
 {
-    use HasFactory, AutoApplyPermissionCheck, HasTranslations;
+    use BelongsToTenant, HasFactory, AutoApplyPermissionCheck, HasTranslations;
 
     public array $translatable = ['name', 'description'];
 
@@ -20,7 +21,7 @@ class CaseStatus extends BaseModel
         'is_default',
         'is_closed',
         'status',
-        'created_by'
+        'tenant_id'
     ];
 
     protected $casts = [

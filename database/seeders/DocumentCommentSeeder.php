@@ -15,7 +15,7 @@ class DocumentCommentSeeder extends Seeder
         $companyUsers = User::where('type', 'company')->get();
         
         foreach ($companyUsers as $companyUser) {
-            $documents = Document::where('created_by', $companyUser->id)->get();
+            $documents = Document::where('tenant_id', $companyUser->tenant_id)->get();
             
             if ($documents->count() > 0) {
                 // Create 2-3 document comments per company
@@ -38,12 +38,12 @@ class DocumentCommentSeeder extends Seeder
                     DocumentComment::firstOrCreate([
                         'document_id' => $document->id,
                         'comment_text' => $commentText,
-                        'created_by' => $companyUser->id
+                        'tenant_id' => $companyUser->tenant_id
                     ], [
                         'document_id' => $document->id,
                         'comment_text' => $commentText,
                         'is_resolved' => rand(1, 10) > 6, // 40% chance resolved
-                        'created_by' => $companyUser->id,
+                        'tenant_id' => $companyUser->tenant_id,
                     ]);
                 }
             }
