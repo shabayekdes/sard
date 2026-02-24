@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('code')->unique();
             $table->enum('code_type', ['manual', 'auto'])->default('manual');
             $table->boolean('status')->default(true);
-            $table->foreignUuid('tenant_id')->constrained()->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->nullable()->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
 
             $table->index(['tenant_id', 'status']);

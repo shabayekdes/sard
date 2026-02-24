@@ -5,6 +5,7 @@ namespace App\Http\Requests\Auth;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -41,12 +42,37 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+        $credentials = $this->only('email', 'password');
+        $remember = $this->boolean('remember');
 
-            throw ValidationException::withMessages([
-                'email' => __('auth.failed'),
-            ]);
+        // When tenant is initialized (tenant domain), scope login to that tenant
+        if (function_exists('tenancy') && tenancy()->initialized) {
+            $user = \App\Models\User::where('email', $credentials['email'])
+                ->where('tenant_id', tenant()->getTenantKey())
+                ->first();
+
+            if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+                RateLimiter::hit($this->throttleKey());
+                throw ValidationException::withMessages([
+                    'email' => __('auth.failed'),
+                ]);
+            }
+
+            Auth::login($user, $remember);
+        } else {
+            // Central domain: only users with null tenant_id (e.g. superadmin)
+            $user = \App\Models\User::where('email', $credentials['email'])
+                ->whereNull('tenant_id')
+                ->first();
+
+            if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+                RateLimiter::hit($this->throttleKey());
+                throw ValidationException::withMessages([
+                    'email' => __('auth.failed'),
+                ]);
+            }
+
+            Auth::login($user, $remember);
         }
 
         // Check if user account is inactive

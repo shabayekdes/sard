@@ -14,13 +14,17 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('email')->unique();
+            $table->string('phone')->nullable();
+            $table->string('email');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();
-            $table->rememberToken();
-            $table->string('lang')->default('en')->nullable();
+
+            $table->string('lang')->default('ar')->nullable();
             $table->string('avatar')->nullable();
             $table->string('type', 20)->default('company');
+
+            $table->string('city')->nullable();
+
             $table->unsignedBigInteger('plan_id')->nullable();
             $table->date('plan_expire_date')->nullable();
             $table->integer('requested_plan')->default(0);
@@ -39,9 +43,11 @@ return new class extends Migration
             $table->integer('referral_code')->default(0);
             $table->integer('used_referral_code')->default(0);
             $table->integer('commission_amount')->default(0);
+            $table->rememberToken();
             $table->timestamps();
 
-            // Foreign keys will be added in a separate migration after all tables are created
+            $table->unique(['tenant_id', 'email']);
+            $table->unique(['tenant_id', 'phone']);
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
