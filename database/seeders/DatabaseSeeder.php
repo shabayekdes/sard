@@ -13,9 +13,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        if (config('app.is_demo')) {
-            // Demo mode - run all seeders with full demo data
-            $this->call([
+        $this->call([
                 // Core system seeders
                 PermissionSeeder::class,
                 RoleSeeder::class,
@@ -103,22 +101,5 @@ class DatabaseSeeder extends Seeder
                 ReferralSettingSeeder::class,
                 // ReferralSeeder::class,
             ]);
-        } else {
-            // Main/Production mode - run minimal seeders with basic data
-            $this->call([
-                // Essential system seeders
-                PermissionSeeder::class,
-                RoleSeeder::class,
-                PlanSeeder::class,
-                UserSeeder::class,
-                CurrencySeeder::class,
-                CountrySeeder::class,
-                TaxRateSeeder::class,
-                EmailTemplateSeeder::class,
-                NotificationTemplateSeeder::class,
-                LandingPageCustomPageSeeder::class,
-                TeamMemberRoleSeeder::class,
-            ]);
-        }
     }
 }
