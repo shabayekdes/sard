@@ -140,7 +140,9 @@ export function CrudTable({
         return !permissionKey || hasPermission(permissions, permissionKey);
     });
 
-    const renderActionButtons = (row: any) => {
+    const renderActionButtons = (row: any, rowIndex: number) => {
+        // Stable key per row+action to avoid React removeChild errors when Tooltip portals reconcile (use row.id + action.action, not index)
+        const rowKey = row?.id ?? row?.email ?? `row-${rowIndex}`;
         return (
             <div
                 className={cn(
@@ -148,7 +150,7 @@ export function CrudTable({
                     isRtl ? 'justify-start space-x-reverse space-x-2' : 'justify-end space-x-2'
                 )}
             >
-                {actions.map((action, index) => {
+                {actions.map((action) => {
                     // Skip if user doesn't have permission
                     const permissionKey =
                         action.requiredPermission ||
@@ -184,13 +186,14 @@ export function CrudTable({
                                 ? action.label(row)
                                 : action.label;
                     const IconComponent = CRUD_ICONS[iconName] ?? Eye;
+                    const actionKey = `${rowKey}-${action.action}`;
 
                     // Handle link actions (use native <a> so the request is a full page load — avoids CORS when the server redirects to another origin, e.g. impersonation)
                     if (action.href) {
                         const href = typeof action.href === 'function' ? action.href(row) : action.href.replace(':id', row.id);
 
                         return (
-                            <TooltipProvider key={index}>
+                            <TooltipProvider key={actionKey}>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Button variant="ghost" size="icon" className={cn('h-8 w-8', action.className)} asChild>
@@ -213,7 +216,7 @@ export function CrudTable({
 
                     // Handle regular action buttons
                     return (
-                        <TooltipProvider key={index}>
+                        <TooltipProvider key={actionKey}>
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Button
@@ -382,13 +385,13 @@ export function CrudTable({
                                 ))}
                                 {showActions && hasAnyActionPermission && (
                                     <TableCell className={cn('px-4 py-3', isRtl ? 'text-left' : 'text-right')}>
-                                        {renderActionButtons(row)}
+                                        {renderActionButtons(row, index)}
                                     </TableCell>
                                 )}
                             </TableRow>
                         ))
                     ) : (
-                        <TableRow>
+                        <TableRow key="crud-table-empty">
                             <TableCell
                                 colSpan={columns.length + (showActions && hasAnyActionPermission ? 2 : 1)}
                                 className="text-muted-foreground h-24 text-center dark:text-gray-400"
