@@ -153,6 +153,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
 
                 if (successMessage) {
                     toast.success(successMessage);
+                    router.reload();
                 } else if (errorMessage) {
                     toast.error(errorMessage);
                 }

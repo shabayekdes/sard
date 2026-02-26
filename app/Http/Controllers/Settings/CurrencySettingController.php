@@ -31,8 +31,11 @@ class CurrencySettingController extends Controller
 
             // Update settings using helper function
             foreach ($validated as $key => $value) {
-                updateSetting($key, $value);
+                updateSetting($key, is_bool($value) ? ($value ? '1' : '0') : $value);
             }
+
+            // Clear settings cache so next request gets fresh currency data
+            \Cache::forget('settings_' . (function_exists('createdBy') ? createdBy() : 'global'));
 
             return redirect()->back()->with('success', __('Currency settings updated successfully.'));
         } catch (\Exception $e) {

@@ -193,6 +193,7 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
                     if (successMessage) {
                         toast.success(successMessage);
                         setTimeout(() => setIsSaving(false), 500);
+                        router.reload();
                     } else if (errorMessage) {
                         toast.error(errorMessage);
                         setIsSaving(false);

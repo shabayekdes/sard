@@ -129,10 +129,12 @@ export default function CurrencySettings() {
 
                 if (successMessage) {
                     toast.success(successMessage);
+                    window.location.reload();
                 } else if (errorMessage) {
                     toast.error(errorMessage);
                 } else {
                     toast.success(t('Currency settings updated successfully'));
+                    window.location.reload();
                 }
             },
             onError: (errors) => {

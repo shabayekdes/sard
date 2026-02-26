@@ -1,139 +1,75 @@
 // resources/js/i18n.js
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import Backend from 'i18next-http-backend';
 import LanguageDetector from 'i18next-browser-languagedetector';
+
+import en from '../lang/en.json';
+import ar from '../lang/ar.json';
 
 // Make i18n instance available for direct imports
 export { default as i18next } from 'i18next';
 
-// Custom backend to handle the modified response format
-const customBackend = {
-  type: 'backend',
-  init: function(services, backendOptions) {
-    this.services = services;
-    this.options = backendOptions;
-  },
-  read: function(language, namespace, callback) {
-    const loadPath = window.route ? window.route('translations', language) : `/translations/${language}`;
-
-    fetch(loadPath)
-      .then(response => response.json())
-      .then(data => {
-        // Extract translations from the structured response
-        const translations = data.translations;
-
-        // Set document direction based on layoutDirection
-        if (data.layoutDirection) {
-            // Use layoutDirection directly ('right'/'left') for DOM
-            // const domDirection = data.layoutDirection;
-            // Normalize layoutDirection to valid dir attribute
-            const domDirection = data.layoutDirection === 'right' ? 'rtl' : data.layoutDirection === 'left' ? 'ltr' : data.layoutDirection;
-
-            // Force direction change regardless of previous state
-            document.documentElement.dir = domDirection;
-            document.documentElement.setAttribute('dir', domDirection);
-
-            // Store direction in localStorage for persistence
-            localStorage.setItem('layoutDirection', data.layoutDirection);
-
-            // Also store in cookie for server-side awareness
-            document.cookie = `app_direction=${data.layoutDirection}; path=/; max-age=${60 * 60 * 24 * 30}`;
-
-            // Force re-render of layout components
-            document.documentElement.classList.add('direction-changed');
-
-            // Trigger a resize event to force layout recalculation
-            window.dispatchEvent(new Event('resize'));
-
-            // Force repaint by temporarily changing a style
-            const body = document.body;
-            const originalDisplay = body.style.display;
-            body.style.display = 'none';
-            body.offsetHeight; // Trigger reflow
-            body.style.display = originalDisplay;
-
-            setTimeout(() => {
-                document.documentElement.classList.remove('direction-changed');
-            }, 100);
-        }
-
-        // Store the current locale
-        if (data.locale) {
-          localStorage.setItem('i18nextLng', data.locale);
-          // Also store in a session cookie for server-side awareness
-          document.cookie = `app_language=${data.locale}; path=/; max-age=${60 * 60 * 24}`;
-        }
-
-        callback(null, translations);
-      })
-      .catch(error => {
-        console.error('Translation loading error:', error);
-        callback(error, null);
-      });
-  }
-};
+// Apply layout direction and persist locale from current language (no API)
+function applyDirectionForLocale(locale) {
+  if (typeof document === 'undefined') return;
+  const layoutDirection = ['ar', 'he'].includes(locale) ? 'right' : 'left';
+  const domDirection = layoutDirection === 'right' ? 'rtl' : 'ltr';
+  document.documentElement.dir = domDirection;
+  document.documentElement.setAttribute('dir', domDirection);
+  if (typeof localStorage !== 'undefined') localStorage.setItem('layoutDirection', layoutDirection);
+  document.cookie = `app_direction=${layoutDirection}; path=/; max-age=${60 * 60 * 24 * 30}`;
+  document.cookie = `app_language=${locale}; path=/; max-age=${60 * 60 * 24}`;
+  document.documentElement.classList.add('direction-changed');
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('resize'));
+  setTimeout(() => document.documentElement.classList.remove('direction-changed'), 100);
+}
 
 // Function to get initial language
 const getInitialLanguage = () => {
-  // Try to get from server if available
-  if (window.initialLocale) {
+  if (typeof window !== 'undefined' && window.initialLocale) {
     return window.initialLocale;
   }
-
-  // Otherwise use browser detection with fallback to 'en'
-  return null; // null will trigger language detection
+  return null;
 };
 
-// Function to reset language cache when switching languages
-const resetLanguageCache = (language) => {
-  // Clear any cached translations for better switching
-  if (window.localStorage) {
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('i18next_res_')) {
-        localStorage.removeItem(key);
-      }
-    });
-  }
-};
-
-// Override the changeLanguage method to reset cache
-const originalChangeLanguage = i18n.changeLanguage;
-i18n.changeLanguage = function(language) {
-  resetLanguageCache(language);
-  return originalChangeLanguage.apply(this, arguments);
-};
-
-// Initialize i18n
+// Initialize i18n with bundled JSON only (no HTTP backend)
 i18n
-    .use(customBackend)
     .use(LanguageDetector)
     .use(initReactI18next)
     .init({
         lng: getInitialLanguage(),
-        fallbackLng: getInitialLanguage(),
-        load: 'currentOnly',
+        fallbackLng: 'en',
         debug: process.env.NODE_ENV === 'development',
+
+        resources: {
+            en: { translation: en },
+            ar: { translation: ar },
+        },
 
         interpolation: {
             escapeValue: false,
         },
 
         detection: {
-          order: ['localStorage', 'cookie', 'navigator'],
-          lookupCookie: 'app_language',
-          caches: ['localStorage', 'cookie'],
+            order: ['localStorage', 'cookie', 'navigator'],
+            lookupCookie: 'app_language',
+            caches: ['localStorage', 'cookie'],
         },
 
         ns: ['translation'],
         defaultNS: 'translation',
-
-        partialBundledLanguages: true,
-        loadOnInitialization: true
     });
+
+// Apply direction when language is set (init and changes)
+const applyDirectionOnLanguage = (lng) => {
+  if (lng) applyDirectionForLocale(lng);
+};
+i18n.on('initialized', () => applyDirectionOnLanguage(i18n.language));
+i18n.on('languageChanged', applyDirectionOnLanguage);
 
 // Export the initialized instance
 export default i18n;
 
-// Make sure the i18n instance is available for direct imports
-window.i18next = i18n;
+if (typeof window !== 'undefined') {
+  window.i18next = i18n;
+}

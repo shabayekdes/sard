@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('clients', function (Blueprint $table) {
             $table->id();
-            $table->string('client_id')->unique(); // Auto-generated client ID
+            $table->string('client_id'); // Auto-generated client ID
             $table->string('name');
-            $table->string('email')->unique();
-            $table->string('phone')->nullable()->unique();
+            $table->string('email');
+            $table->string('phone')->nullable();
             $table->text('address')->nullable();
             $table->foreignId('client_type_id')->nullable()->constrained()->nullOnDelete();
             $table->enum('status', ['active', 'inactive'])->default('active');
@@ -25,11 +25,14 @@ return new class extends Migration
             $table->decimal('tax_rate', 5, 2)->default(0);
             $table->date('date_of_birth')->nullable();
             $table->text('notes')->nullable();
-            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
 
             // Index for better performance
             $table->index(['tenant_id', 'status']);
+            $table->unique(['tenant_id', 'client_id']);
+            $table->unique(['tenant_id', 'email']);
+            $table->unique(['tenant_id', 'phone']);
         });
     }
 
