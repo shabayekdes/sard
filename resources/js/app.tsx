@@ -33,7 +33,7 @@ import i18n from './i18n';
 initPerformanceMonitoring();
 
 // Ensure Ziggy base URL is current origin so route() generates same-origin URLs (avoids CORS when on tenant vs central domain)
-function normalizeZiggyUrl(page: { props?: { ziggy?: Record<string, unknown> } } | undefined) {
+function normalizeZiggyUrl(page: { props?: Record<string, unknown> } | undefined) {
     try {
         const ziggy = page?.props?.ziggy;
         if (ziggy && typeof ziggy === 'object') {
@@ -95,18 +95,7 @@ createInertiaApp({
         }),
 
     setup({ el, App, props }) {
-        const fallback = <div className="flex h-screen w-full items-center justify-center">Loading...</div>;
-        const doRender = (rootInstance: ReturnType<typeof createRoot>, pageProps: { initialPage: typeof props.initialPage }) => {
-            rootInstance.render(
-                <Suspense fallback={fallback}>
-                    <App {...pageProps} />
-                </Suspense>
-            );
-        };
-
         const root = createRoot(el);
-        (window as any).__inertiaEl = el;
-        (window as any).__inertiaRoot = root;
 
         try {
             (window as any).page = props.initialPage;
@@ -125,9 +114,15 @@ createInertiaApp({
             initializeGlobalSettings(globalSettings);
         }
 
-        doRender(root, props);
+        root.render(
+            <Suspense fallback={<div className="flex h-screen w-full items-center justify-center">Loading...</div>}>
+                <App {...props} />
+            </Suspense>
+        );
 
-        const runNavigateSideEffects = (page: typeof props.initialPage) => {
+        router.on('navigate', (event: { detail: { page?: typeof props.initialPage } }) => {
+            const page = event.detail?.page;
+            if (!page) return;
             try {
                 (window as any).page = page;
                 normalizeZiggyUrl(page);
@@ -147,22 +142,6 @@ createInertiaApp({
             } catch (e) {
                 console.error('Navigation side-effect error:', e);
             }
-        };
-
-        router.on('navigate', (event: { detail: { page?: typeof props.initialPage } }) => {
-            const page = event.detail?.page;
-            if (!page) return;
-            runNavigateSideEffects(page);
-            // Full root remount only on tenant domains to fix removeChild/Portal errors (portal/SaaS domain works without this)
-            const isCentralDomain = (page as any)?.props?.isCentralDomain === true;
-            if (isCentralDomain) return;
-            const currentRoot = (window as any).__inertiaRoot as ReturnType<typeof createRoot>;
-            if (currentRoot && (window as any).__inertiaEl === el) {
-                currentRoot.unmount();
-            }
-            const newRoot = createRoot(el);
-            (window as any).__inertiaRoot = newRoot;
-            doRender(newRoot, { initialPage: page });
         });
     },
 
