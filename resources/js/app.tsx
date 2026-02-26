@@ -6,13 +6,13 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import React, { Suspense } from 'react';
 
-/** Wraps the current Inertia page with a key derived from the URL so that on navigation the previous page (and any Portals/Dialogs/Tooltips) fully unmount before the new page mounts. Prevents "removeChild" DOM errors during Inertia page swaps. */
-function PageKeyWrapper({ children }: { children: React.ReactNode }) {
+/** Keys the entire layout by URL so on navigation the full tree (including header/sidebar with Radix Portals) unmounts before the new page mounts. Prevents "removeChild" DOM errors from Portal reconciliation during Inertia navigation. */
+function LayoutKeyWrapper({ children }: { children: React.ReactNode }) {
     const { url } = usePage();
     return (
-        <div key={url} style={{ display: 'contents' }}>
+        <React.Fragment key={url}>
             {children}
-        </div>
+        </React.Fragment>
     );
 }
 
@@ -81,19 +81,18 @@ createInertiaApp({
             Page.layout =
                 Page.layout ||
                 ((page: React.ReactNode) => (
-                    <ModalStackProvider>
-                        <LayoutProvider>
-                            <SidebarProvider>
-                                {/* BrandProvider is now INSIDE Inertia context, so it can safely use usePage() */}
-                                <BrandProvider>
-                                    <PageKeyWrapper>
+                    <LayoutKeyWrapper>
+                        <ModalStackProvider>
+                            <LayoutProvider>
+                                <SidebarProvider>
+                                    <BrandProvider>
                                         {page}
-                                    </PageKeyWrapper>
-                                    <CustomToast />
-                                </BrandProvider>
-                            </SidebarProvider>
-                        </LayoutProvider>
-                    </ModalStackProvider>
+                                        <CustomToast />
+                                    </BrandProvider>
+                                </SidebarProvider>
+                            </LayoutProvider>
+                        </ModalStackProvider>
+                    </LayoutKeyWrapper>
                 ));
 
             return module;
