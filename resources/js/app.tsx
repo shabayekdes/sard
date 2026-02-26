@@ -4,16 +4,34 @@ import '../css/dark-mode.css';
 import { createInertiaApp, router, usePage } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 
-/** Keys the entire layout by URL so on navigation the full tree (including header/sidebar with Radix Portals) unmounts before the new page mounts. Prevents "removeChild" DOM errors from Portal reconciliation during Inertia navigation. */
+/** During navigation we unmount the full layout (and all Portals) and show a minimal loader. Prevents "removeChild" DOM errors from Radix Portals (often only seen in production). */
 function LayoutKeyWrapper({ children }: { children: React.ReactNode }) {
     const { url } = usePage();
-    return (
-        <React.Fragment key={url}>
-            {children}
-        </React.Fragment>
-    );
+    const [isNavigating, setIsNavigating] = useState(false);
+    useEffect(() => {
+        const onStart = () => setIsNavigating(true);
+        const onFinish = () => setIsNavigating(false);
+        const unStart = router.on('start', onStart);
+        const unFinish = router.on('finish', onFinish);
+        const unError = router.on('error', onFinish);
+        const unCancel = router.on('cancel', onFinish);
+        return () => {
+            unStart();
+            unFinish();
+            unError();
+            unCancel();
+        };
+    }, []);
+    if (isNavigating) {
+        return (
+            <div key="navigating" className="flex min-h-screen w-full items-center justify-center bg-background">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            </div>
+        );
+    }
+    return <React.Fragment key={url}>{children}</React.Fragment>;
 }
 
 import { LayoutProvider } from './contexts/LayoutContext';
@@ -35,6 +53,19 @@ import i18n from './i18n';
 // Perf + lazy images
 // -------------------------
 initPerformanceMonitoring();
+
+// Production-only: recover from removeChild/Portal DOM errors (often only occur in prod build)
+if (import.meta.env.PROD && typeof window !== 'undefined') {
+    window.addEventListener('error', (event) => {
+        if (event.message?.includes('removeChild') || (event.error?.name === 'NotFoundError' && event.error?.message?.includes('removeChild'))) {
+            event.preventDefault();
+            event.stopPropagation();
+            console.warn('[Recovery] Portal/DOM sync error caught; reloading to recover.');
+            window.location.reload();
+            return true;
+        }
+    });
+}
 
 // Ensure Ziggy base URL is current origin so route() generates same-origin URLs (avoids CORS when on tenant vs central domain)
 function normalizeZiggyUrl(page: { props?: { ziggy?: Record<string, unknown> } } | undefined) {
