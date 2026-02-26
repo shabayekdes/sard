@@ -2,7 +2,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { TableAction, TableColumn } from '@/types/crud';
 import { hasPermission } from '@/utils/authorization';
@@ -141,7 +140,7 @@ export function CrudTable({
     });
 
     const renderActionButtons = (row: any, rowIndex: number) => {
-        // Stable key per row+action to avoid React removeChild errors when Tooltip portals reconcile (use row.id + action.action, not index)
+        // Stable key per row+action so React reconciles table action buttons correctly
         const rowKey = row?.id ?? row?.email ?? `row-${rowIndex}`;
         return (
             <div
@@ -188,55 +187,49 @@ export function CrudTable({
                     const IconComponent = CRUD_ICONS[iconName] ?? Eye;
                     const actionKey = `${rowKey}-${action.action}`;
 
+                    const labelText = resolveTranslatable(actionLabel, locale);
+
                     // Handle link actions (use native <a> so the request is a full page load — avoids CORS when the server redirects to another origin, e.g. impersonation)
                     if (action.href) {
                         const href = typeof action.href === 'function' ? action.href(row) : action.href.replace(':id', row.id);
 
                         return (
-                            <TooltipProvider key={actionKey}>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button variant="ghost" size="icon" className={cn('h-8 w-8', action.className)} asChild>
-                                            <a
-                                                href={href}
-                                                target={action.openInNewTab ? '_blank' : undefined}
-                                                rel={action.openInNewTab ? 'noopener noreferrer' : undefined}
-                                            >
-                                                <IconComponent size={16} />
-                                            </a>
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>{resolveTranslatable(actionLabel, locale)}</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
+                            <Button
+                                key={actionKey}
+                                variant="ghost"
+                                size="icon"
+                                className={cn('h-8 w-8', action.className)}
+                                title={labelText}
+                                asChild
+                            >
+                                <a
+                                    href={href}
+                                    target={action.openInNewTab ? '_blank' : undefined}
+                                    rel={action.openInNewTab ? 'noopener noreferrer' : undefined}
+                                    title={labelText}
+                                >
+                                    <IconComponent size={16} />
+                                </a>
+                            </Button>
                         );
                     }
 
-                    // Handle regular action buttons
+                    // Handle regular action buttons (use native title to avoid Radix Portal removeChild errors in table cells)
                     return (
-                        <TooltipProvider key={actionKey}>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className={cn('h-8 w-8', action.className)}
-                                        onClick={() => {
-                                            if (action.action) {
-                                                onAction(action.action, row);
-                                            }
-                                        }}
-                                    >
-                                        <IconComponent size={16} />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>{resolveTranslatable(actionLabel, locale)}</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
+                        <Button
+                            key={actionKey}
+                            variant="ghost"
+                            size="icon"
+                            className={cn('h-8 w-8', action.className)}
+                            title={labelText}
+                            onClick={() => {
+                                if (action.action) {
+                                    onAction(action.action, row);
+                                }
+                            }}
+                        >
+                            <IconComponent size={16} />
+                        </Button>
                     );
                 })}
             </div>
