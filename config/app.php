@@ -65,6 +65,7 @@ return [
     |
     */
 
+    'domain' => env('APP_DOMAIN', 'sard.app'),
     'url' => env('APP_URL', 'http://localhost'),
 
     /*

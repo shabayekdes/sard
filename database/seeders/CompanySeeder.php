@@ -25,6 +25,7 @@ class CompanySeeder extends Seeder
         
         // Company names
         $companyNames = [
+            'Demo Company',
             'Acme Corporation',
             'Globex Industries',
             'Stark Enterprises',
@@ -52,6 +53,7 @@ class CompanySeeder extends Seeder
             }
 
             $tenant = Tenant::create();
+            $tenant->createDomain(str($companyName)->lower()->before(' ')->append('.' . config('app.domain'))->toString());
 
             // Create user
             $user = User::create([

@@ -91,7 +91,7 @@ class RegisteredUserController extends Controller
         ]);
 
         $subdomain = strtolower(trim($request->domain));
-        $fullDomain = $subdomain . '.sard.app';
+        $fullDomain = $subdomain . '.' . config('app.domain');
 
         if (Domain::where('domain', $fullDomain)->exists()) {
             return redirect()->back()
