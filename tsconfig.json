@@ -110,6 +110,7 @@
         "baseUrl": ".",
         "paths": {
             "@/*": ["./resources/js/*"],
+            "@lang/*": ["./lang/*"],
             "ziggy-js": ["./vendor/tightenco/ziggy"]
         },
         "jsx": "react-jsx"

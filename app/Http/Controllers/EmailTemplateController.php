@@ -42,7 +42,7 @@ class EmailTemplateController extends Controller
         $template->setAttribute('from', $template->getTranslations('from'));
         $template->setAttribute('subject', $template->getTranslations('subject'));
         $template->setAttribute('content', $template->getTranslations('content'));
-        $languages = json_decode(file_get_contents(resource_path('lang/language.json')), true);
+        $languages = json_decode(file_get_contents(lang_path('language.json')), true);
         $templateType = $template->type instanceof EmailTemplateName ? $template->type->value : $template->type;
 
         // Template-specific variables

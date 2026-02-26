@@ -10,13 +10,13 @@ return new class extends Migration
     {
         Schema::create('cases', function (Blueprint $table) {
             $table->id();
-            $table->string('case_id')->unique();
+            $table->string('case_id');
             $table->string('case_number')->nullable();
             $table->string('title');
             $table->text('description')->nullable();
-            $table->foreignId('client_id')->constrained('clients')->onDelete('cascade');
-            $table->foreignId('case_type_id')->constrained('case_types')->onDelete('cascade');
-            $table->foreignId('case_status_id')->constrained('case_statuses')->onDelete('cascade');
+            $table->foreignId('client_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('case_type_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('case_status_id')->constrained()->cascadeOnDelete();
             $table->enum('priority', ['low', 'medium', 'high'])->default('medium');
             $table->date('filing_date')->nullable();
             $table->date('expected_completion_date')->nullable();
@@ -24,13 +24,14 @@ return new class extends Migration
             $table->text('opposing_party')->nullable();
             $table->text('court_details')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
             
             $table->index(['tenant_id', 'status']);
             $table->index(['case_type_id']);
             $table->index(['case_status_id']);
             $table->index(['client_id']);
+            $table->unique(['tenant_id', 'case_id']);
         });
     }
 

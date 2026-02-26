@@ -8,7 +8,7 @@ $directories = [
     __DIR__ . '/resources/views',
     __DIR__ . '/app'
 ];
-$outputFile = __DIR__ . '/resources/lang/en.json';
+$outputFile = __DIR__ . '/lang/en.json';
 
 // Initialize an array to store translations
 $translations = [];

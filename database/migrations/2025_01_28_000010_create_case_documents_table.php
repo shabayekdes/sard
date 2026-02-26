@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('case_documents', function (Blueprint $table) {
             $table->id();
-            $table->string('document_id')->unique();
+            $table->string('document_id');
             $table->string('document_name');
             $table->string('file_path');
             $table->text('description')->nullable();
@@ -25,6 +25,7 @@ return new class extends Migration
             
             // Index for better performance
             $table->index(['tenant_id', 'status']);
+            $table->unique(['tenant_id', 'document_id']);
 
         });
     }

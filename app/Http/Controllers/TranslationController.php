@@ -16,10 +16,10 @@ class TranslationController extends BaseController
     {
       
 
-        $path = resource_path("lang/{$locale}.json");
+        $path = lang_path("{$locale}.json");
 
         if (!File::exists($path)) {
-            $path = resource_path("lang/en.json");
+            $path = lang_path('en.json');
             $locale = 'en';
         }
 
@@ -52,7 +52,7 @@ class TranslationController extends BaseController
                     $locale = $superAdmin->lang ?? 'en';
 
                     // Check if superadmin's language is enabled
-                    $languagesFile = resource_path('lang/language.json');
+                    $languagesFile = lang_path('language.json');
                     if (File::exists($languagesFile)) {
                         $languages = json_decode(File::get($languagesFile), true);
                         $requestedLang = collect($languages)->firstWhere('code', $locale);
@@ -63,10 +63,10 @@ class TranslationController extends BaseController
                         // }
                     }
 
-                    $path = resource_path("lang/{$locale}.json");
+                    $path = lang_path("{$locale}.json");
 
                     if (!File::exists($path)) {
-                        $path = resource_path("lang/en.json");
+                        $path = lang_path('en.json');
                         $locale = 'en';
                     }
 
@@ -107,7 +107,7 @@ class TranslationController extends BaseController
         }
 
         // Check if the determined language is enabled
-        $languagesFile = resource_path('lang/language.json');
+        $languagesFile = lang_path('language.json');
         if (File::exists($languagesFile)) {
             $languages = json_decode(File::get($languagesFile), true);
             $requestedLang = collect($languages)->firstWhere('code', $locale);

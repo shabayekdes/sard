@@ -11,7 +11,7 @@ class LanguageController extends Controller
     // Show the manage language Inertia page
     public function managePage(Request $request, $lang = null)
     {
-        $langListPath = resource_path('lang/language.json');
+        $langListPath = lang_path('language.json');
         $languages = [];
         if (File::exists($langListPath)) {
             $languages = json_decode(File::get($langListPath), true);
@@ -22,8 +22,8 @@ class LanguageController extends Controller
             $selectedLang = $lang;
         }
         $defaultData = [];
-        if (File::exists(resource_path("lang/{$selectedLang}.json"))) {
-            $defaultData = json_decode(File::get(resource_path("lang/{$selectedLang}.json")), true);
+        if (File::exists(lang_path("{$selectedLang}.json"))) {
+            $defaultData = json_decode(File::get(lang_path("{$selectedLang}.json")), true);
         }
 
         // Get available languages with flags and enabled status
@@ -54,7 +54,7 @@ class LanguageController extends Controller
     // Load a language file
     public function load(Request $request)
     {
-        $langListPath = resource_path('lang/language.json');
+        $langListPath = lang_path('language.json');
         $languages = collect();
         if (\Illuminate\Support\Facades\File::exists($langListPath)) {
             $languages = collect(json_decode(\Illuminate\Support\Facades\File::get($langListPath), true));
@@ -63,7 +63,7 @@ class LanguageController extends Controller
         if (!$languages->pluck('code')->contains($lang)) {
             return response()->json(['error' => __('Language not found')], 404);
         }
-        $langPath = resource_path("lang/{$lang}.json");
+        $langPath = lang_path("{$lang}.json");
         if (!\Illuminate\Support\Facades\File::exists($langPath)) {
             return response()->json(['error' => __('Language file not found')], 404);
         }
@@ -75,7 +75,7 @@ class LanguageController extends Controller
     public function save(Request $request)
     {
         try {
-            $langListPath = resource_path('lang/language.json');
+            $langListPath = lang_path('language.json');
             $languages = collect();
             if (\Illuminate\Support\Facades\File::exists($langListPath)) {
                 $languages = collect(json_decode(\Illuminate\Support\Facades\File::get($langListPath), true));
@@ -88,7 +88,7 @@ class LanguageController extends Controller
                 }
                 return redirect()->back()->with('error', __('Invalid request'));
             }
-            $langPath = resource_path("lang/{$lang}.json");
+            $langPath = lang_path("{$lang}.json");
             if (!\Illuminate\Support\Facades\File::exists($langPath)) {
                 if ($request->expectsJson()) {
                     return response()->json(['error' => __('Language file not found')], 404);
@@ -130,7 +130,7 @@ class LanguageController extends Controller
 
         try {
             // Check if language already exists in language.json
-            $languagesFile = resource_path('lang/language.json');
+            $languagesFile = lang_path('language.json');
 
             if (!is_writable($languagesFile)) {
                 return response()->json(['error' => __('Language file is not writable. Please check file permissions.')], 500);
@@ -156,8 +156,8 @@ class LanguageController extends Controller
             }
 
             // Copy en.json to new language
-            $enFile = resource_path('lang/en.json');
-            $newLangFile = resource_path("lang/{$request->code}.json");
+            $enFile = lang_path('en.json');
+            $newLangFile = lang_path("{$request->code}.json");
             if (\Illuminate\Support\Facades\File::exists($enFile)) {
                 $enContent = \Illuminate\Support\Facades\File::get($enFile);
                 \Illuminate\Support\Facades\File::put($newLangFile, $enContent);
@@ -183,13 +183,13 @@ class LanguageController extends Controller
             \App\Models\User::where('lang', $languageCode)->update(['lang' => 'en']);
 
             // Remove from language.json
-            $languagesFile = resource_path('lang/language.json');
+            $languagesFile = lang_path('language.json');
             $languages = json_decode(File::get($languagesFile), true);
             $languages = array_filter($languages, fn($lang) => $lang['code'] !== $languageCode);
             File::put($languagesFile, json_encode(array_values($languages), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
             // Delete main language file
-            $mainLangFile = resource_path("lang/{$languageCode}.json");
+            $mainLangFile = lang_path("{$languageCode}.json");
             if (File::exists($mainLangFile)) {
                 File::delete($mainLangFile);
             }
@@ -207,7 +207,7 @@ class LanguageController extends Controller
         }
 
         try {
-            $languagesFile = resource_path('lang/language.json');
+            $languagesFile = lang_path('language.json');
             $languages = json_decode(File::get($languagesFile), true);
 
             $isBeingDisabled = false;

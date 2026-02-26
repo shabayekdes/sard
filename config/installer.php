@@ -55,6 +55,7 @@ return [
         'public/storage/'        => '775',
         'storage/uploads/'       => '775',
         'resources/lang/'        => '775',
+        'lang/'                  => '775',
     ],
 
     /*

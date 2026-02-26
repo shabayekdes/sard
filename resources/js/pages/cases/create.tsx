@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Repeater, type RepeaterField } from '@/components/ui/repeater';
+import { Select as FormSelect } from '@/components/forms/select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useLayout } from '@/contexts/LayoutContext';
@@ -30,12 +31,16 @@ export default function CreateCase() {
         base_url,
     } = usePage().props as any;
     const { isRtl } = useLayout();
+    const selectDir = isRtl ? 'rtl' : 'ltr';
     const canCreate = !planLimits || planLimits.can_create;
     const currentLocale = i18n.language || 'en';
 
     useEffect(() => {
         const handleLanguageChange = () => {
-            router.get(route('cases.create'), {}, { preserveState: true, preserveScroll: true });
+            // Defer navigation to avoid Radix Portal removeChild errors (run after React commit)
+            setTimeout(() => {
+                router.get(route('cases.create'), {}, { preserveState: true, preserveScroll: true });
+            }, 0);
         };
 
         window.addEventListener('languageChanged', handleLanguageChange);
@@ -89,36 +94,6 @@ export default function CreateCase() {
         }
         return displayName || '';
     };
-
-    const uniqueClients = useMemo(() => {
-        const seen = new Set<string>();
-        return (clients || []).filter((c: any) => {
-            const id = c.id.toString();
-            if (seen.has(id)) return false;
-            seen.add(id);
-            return true;
-        });
-    }, [clients]);
-
-    const uniqueCaseStatuses = useMemo(() => {
-        const seen = new Set<string>();
-        return (caseStatuses || []).filter((s: any) => {
-            const id = s.id.toString();
-            if (seen.has(id)) return false;
-            seen.add(id);
-            return true;
-        });
-    }, [caseStatuses]);
-
-    const uniqueCourts = useMemo(() => {
-        const seen = new Set<string>();
-        return (courts || []).filter((c: any) => {
-            const id = c.id.toString();
-            if (seen.has(id)) return false;
-            seen.add(id);
-            return true;
-        });
-    }, [courts]);
 
     const categorySubcategoryTypeFields = useMemo(
         () => [
@@ -251,24 +226,14 @@ export default function CreateCase() {
                 <div className="mb-6 rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div className="space-y-2">
-                            <Label required>{t('Client')}</Label>
-                            <Select value={formData.client_id} onValueChange={(value) => updateField('client_id', value)}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder={t('Select Client')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {uniqueClients.map((client: any) => (
-                                        <SelectItem key={`client-${client.id}`} value={client.id.toString()}>
-                                            {client.name}
-                                        </SelectItem>
-                                    ))}
-                                    {auth?.user && !uniqueClients.some((c: any) => c.id === auth.user?.id) && (
-                                        <SelectItem key={`client-me-${auth.user.id}`} value={auth.user.id.toString()}>
-                                            {auth.user.name} (Me)
-                                        </SelectItem>
-                                    )}
-                                </SelectContent>
-                            </Select>
+                            <FormSelect
+                                label={t('Client')}
+                                required
+                                value={formData.client_id ?? ''}
+                                onValueChange={(v) => updateField('client_id', v)}
+                                placeholder={t('Select Client')}
+                                options={clients || []}
+                            />
                             {renderError('client_id')}
                         </div>
                         <div className="space-y-2">
@@ -304,28 +269,23 @@ export default function CreateCase() {
 
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div className="space-y-2">
-                            <Label>{t('Case Status')}</Label>
-                            <Select value={formData.case_status_id} onValueChange={(value) => updateField('case_status_id', value)}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder={t('Select Status')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {uniqueCaseStatuses.map((status: any) => (
-                                        <SelectItem key={`case-status-${status.id}`} value={status.id.toString()}>
-                                            {resolveTranslatableName(status)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <FormSelect
+                                label={t('Case Status')}
+                                required
+                                value={formData.case_status_id ?? ''}
+                                onValueChange={(v) => updateField('case_status_id', v)}
+                                placeholder={t('Select Status')}
+                                options={caseStatuses || []}
+                            />
                             {renderError('case_status_id')}
                         </div>
                         <div className="space-y-2">
                             <Label>{t('Priority')}</Label>
                             <Select value={formData.priority} onValueChange={(value) => updateField('priority', value)}>
-                                <SelectTrigger>
+                                <SelectTrigger dir={selectDir}>
                                     <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent dir={selectDir}>
                                     <SelectItem value="low">{t('Low')}</SelectItem>
                                     <SelectItem value="medium">{t('Medium')}</SelectItem>
                                     <SelectItem value="high">{t('High')}</SelectItem>
@@ -380,19 +340,13 @@ export default function CreateCase() {
                             {renderError('file_number')}
                         </div>
                         <div className="space-y-2">
-                            <Label>{t('Court')}</Label>
-                            <Select value={formData.court_id} onValueChange={(value) => updateField('court_id', value)}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder={t('Select Court')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {uniqueCourts.map((court: any) => (
-                                        <SelectItem key={`court-${court.id}`} value={court.id.toString()}>
-                                            {court.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <FormSelect
+                                label={t('Court')}
+                                value={formData.court_id ?? ''}
+                                onValueChange={(v) => updateField('court_id', v)}
+                                placeholder={t('Select Court')}
+                                options={courts || []}
+                            />
                             {renderError('court_id')}
                         </div>
                     </div>

@@ -1,4 +1,4 @@
-import languageData from '@/../../resources/lang/language.json';
+import languageData from '@lang/language.json';
 import { toast } from '@/components/custom-toast';
 import { SettingsSection } from '@/components/settings-section';
 import { Button } from '@/components/ui/button';

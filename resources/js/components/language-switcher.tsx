@@ -23,7 +23,7 @@ interface Language {
 }
 
 // Import languages from the JSON file
-import languageData from '@/../../resources/lang/language.json';
+import languageData from '@lang/language.json';
 
 export const LanguageSwitcher: React.FC = () => {
     const { i18n } = useTranslation();

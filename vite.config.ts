@@ -57,6 +57,7 @@ export default defineConfig({
     resolve: {
         alias: {
             'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
+            '@lang': resolve(__dirname, 'lang'),
         },
     },
     build: {

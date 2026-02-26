@@ -44,6 +44,22 @@ function normalizeZiggyUrl(page: { props?: Record<string, unknown> } | undefined
     }
 }
 
+// Dev-only: avoid crash when React tries to remove a portal node that was already removed (Radix/React known issue)
+if (import.meta.env.DEV && typeof Node !== 'undefined' && Node.prototype.removeChild) {
+    const originalRemoveChild = Node.prototype.removeChild;
+    (Node.prototype as any).removeChild = function (child: Node) {
+        try {
+            return originalRemoveChild.call(this, child);
+        } catch (e: unknown) {
+            const err = e as { name?: string; message?: string };
+            if (err?.name === 'NotFoundError' && err?.message?.includes('removeChild')) {
+                return child;
+            }
+            throw e;
+        }
+    };
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     lazyLoadImages();
 });
@@ -117,8 +133,8 @@ createInertiaApp({
             initializeGlobalSettings(globalSettings);
         }
 
-        // On tenant only: recover from Radix Portal removeChild errors (one reload per session to avoid loop)
-        if (!isCentralDomain) {
+        // Recover from Radix Portal / React removeChild errors in development only (issue does not occur in production)
+        if (import.meta.env.DEV) {
             const RELOAD_KEY = 'inertia_removechild_reload';
             window.addEventListener('error', (event) => {
                 const err = event.error;

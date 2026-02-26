@@ -40,7 +40,7 @@ class NotificationTemplateController extends Controller
         $template->setAttribute('title', $template->getTranslations('title'));
         $template->setAttribute('content', $template->getTranslations('content'));
 
-        $languages = json_decode(file_get_contents(resource_path('lang/language.json')), true);
+        $languages = json_decode(file_get_contents(lang_path('language.json')), true);
 
         $variables = $this->getVariablesByNameAndType(EmailTemplateName::from($template->name), $template->type);
 

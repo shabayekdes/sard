@@ -25,6 +25,7 @@ use App\Models\User;
 use App\Models\Setting;
 use App\Services\GoogleCalendarService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class CaseController extends BaseController
@@ -454,7 +455,10 @@ class CaseController extends BaseController
     {
         $clients = Client::where('tenant_id', createdBy())
             ->where('status', 'active')
-            ->get(['id', 'name']);
+            ->get(['id', 'name'])
+            ->prepend([null, __('Select Client')], 'id')
+            ->values()
+            ->toArray();
 
         $caseTypes = CaseType::where('tenant_id', createdBy())
             ->where('status', 'active')
@@ -481,11 +485,19 @@ class CaseController extends BaseController
 
         $caseStatuses = CaseStatus::where('tenant_id', createdBy())
             ->where('status', 'active')
-            ->get(['id', 'name']);
+            ->get()
+            ->map(fn ($s) => [$s->id, $s->name])
+            ->prepend([null, __('Select Status')], 'id')
+            ->values()
+            ->toArray();
 
         $courts = Court::where('tenant_id', createdBy())
             ->where('status', 'active')
-            ->get(['id', 'name']);
+            ->get()
+            ->map(fn ($s) => [$s->id, $s->name])
+            ->prepend([null, __('Select Court')], 'id')
+            ->values()
+            ->toArray();
 
         $locale = app()->getLocale();
         $countries = Country::where('is_active', true)
@@ -570,7 +582,10 @@ class CaseController extends BaseController
 
         $clients = Client::where('tenant_id', createdBy())
             ->where('status', 'active')
-            ->get(['id', 'name']);
+            ->get(['id', 'name'])
+            ->prepend([null, __('Select Client')], 'id')
+            ->values()
+            ->toArray();
 
         $caseTypes = CaseType::where('tenant_id', createdBy())
             ->where('status', 'active')
@@ -597,11 +612,19 @@ class CaseController extends BaseController
 
         $caseStatuses = CaseStatus::where('tenant_id', createdBy())
             ->where('status', 'active')
-            ->get(['id', 'name']);
+            ->get()
+            ->map(fn ($s) => [$s->id, $s->name])
+            ->prepend([null, __('Select Status')], 'id')
+            ->values()
+            ->toArray();
 
         $courts = Court::where('tenant_id', createdBy())
             ->where('status', 'active')
-            ->get(['id', 'name']);
+            ->get()
+            ->map(fn ($c) => [$c->id, $c->name])
+            ->prepend([null, __('Select Court')], 'id')
+            ->values()
+            ->toArray();
 
         $locale = app()->getLocale();
         $countries = Country::where('is_active', true)
@@ -687,6 +710,8 @@ class CaseController extends BaseController
     {
         // Check case limit (same pattern as UserController)
         $authUser = auth()->user();
+        $tenant_id = tenant('id');
+
         if ($authUser->type === 'company' && $authUser->plan) {
             $currentCases = CaseModel::where('tenant_id', $authUser->tenant_id)->count();
             $maxCases = $authUser->plan->max_cases;
@@ -716,12 +741,12 @@ class CaseController extends BaseController
             'case_number' => 'nullable|string|max:255',
             'file_number' => 'nullable|string|max:255',
             'attributes' => 'nullable|in:petitioner,respondent',
-            'client_id' => 'required|exists:clients,id',
-            'case_type_id' => 'required|exists:case_types,id',
+            'client_id' => ['required', Rule::exists('clients', 'id')->where('tenant_id', $tenant_id)],
+            'case_type_id' => ['required', Rule::exists('case_types', 'id')->where('tenant_id', $tenant_id)],
             'case_category_id' => 'nullable|exists:case_categories,id',
             'case_subcategory_id' => 'nullable|exists:case_categories,id',
-            'case_status_id' => 'required|exists:case_statuses,id',
-            'court_id' => 'nullable|exists:courts,id',
+            'case_status_id' => ['required', Rule::exists('case_statuses', 'id')->where('tenant_id', $tenant_id)],
+            'court_id' => ['nullable', Rule::exists('courts', 'id')->where('tenant_id', $tenant_id)],
             'priority' => 'required|in:low,medium,high',
             'filing_date' => 'nullable|date',
             'expected_completion_date' => 'nullable|date',
@@ -742,18 +767,8 @@ class CaseController extends BaseController
             'documents.*.file' => 'required_with:documents|string',
         ]);
 
-        $validated['tenant_id'] = createdBy();
+        $validated['tenant_id'] = $tenant_id;
         $validated['status'] = $validated['status'] ?? 'active';
-
-        // Verify related records belong to current company
-        $client = Client::where('id', $validated['client_id'])->where('tenant_id', createdBy())->first();
-        $caseType = CaseType::where('id', $validated['case_type_id'])->where('tenant_id', createdBy())->first();
-        $caseStatus = CaseStatus::where('id', $validated['case_status_id'])->where('tenant_id', createdBy())->first();
-        $court = Court::where('id', $validated['court_id'])->where('tenant_id', createdBy())->first();
-
-        if (!$client || !$caseType || !$caseStatus || !$court) {
-            return redirect()->back()->with('error', __('Invalid selection. Please try again.'));
-        }
 
         // Extract opposite parties and documents before creating case
         $oppositeParties = $validated['opposite_parties'] ?? [];
@@ -840,12 +855,12 @@ class CaseController extends BaseController
             'case_number' => 'nullable|string|max:255',
             'file_number' => 'nullable|string|max:255',
             'attributes' => 'nullable|in:petitioner,respondent',
-            'client_id' => 'required|exists:clients,id',
-            'case_type_id' => 'required|exists:case_types,id',
+            'client_id' => ['required', Rule::exists('clients', 'id')->where('tenant_id', createdBy())],
+            'case_type_id' => ['required', Rule::exists('case_types', 'id')->where('tenant_id', createdBy())],
             'case_category_id' => 'nullable|exists:case_categories,id',
             'case_subcategory_id' => 'nullable|exists:case_categories,id',
-            'case_status_id' => 'required|exists:case_statuses,id',
-            'court_id' => 'required|exists:courts,id',
+            'case_status_id' => ['required', Rule::exists('case_statuses', 'id')->where('tenant_id', createdBy())],
+            'court_id' => ['required', Rule::exists('courts', 'id')->where('tenant_id', createdBy())],
             'priority' => 'required|in:low,medium,high',
             'filing_date' => 'nullable|date',
             'expected_completion_date' => 'nullable|date',
@@ -864,16 +879,6 @@ class CaseController extends BaseController
             'documents.*.confidentiality' => 'required_with:documents|in:public,confidential,privileged',
             'documents.*.file' => 'required_with:documents|string',
         ]);
-
-        // Verify related records belong to current company
-        $client = Client::where('id', $validated['client_id'])->where('tenant_id', createdBy())->first();
-        $caseType = CaseType::where('id', $validated['case_type_id'])->where('tenant_id', createdBy())->first();
-        $caseStatus = CaseStatus::where('id', $validated['case_status_id'])->where('tenant_id', createdBy())->first();
-        $court = Court::where('id', $validated['court_id'])->where('tenant_id', createdBy())->first();
-
-        if (!$client || !$caseType || !$caseStatus || !$court) {
-            return redirect()->back()->with('error', __('Invalid selection. Please try again.'));
-        }
 
         // Extract opposite parties and documents before updating case
         $oppositeParties = $validated['opposite_parties'] ?? [];

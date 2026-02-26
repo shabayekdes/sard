@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from '@/components/custom-toast';
 import { useStackedModal } from '@/hooks/useStackedModal';
 import ReactCountryFlag from 'react-country-flag';
-import languageData from '@/../../resources/lang/language.json';
+import languageData from '@lang/language.json';
 
 interface ChatGptModalProps {
   isOpen: boolean;
