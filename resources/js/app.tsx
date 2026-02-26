@@ -6,25 +6,39 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import React, { Suspense, useEffect, useState } from 'react';
 
-/** During navigation we unmount the full layout (and all Portals) and show a minimal loader. Prevents "removeChild" DOM errors from Radix Portals (often only seen in production). */
+/** During navigation we unmount the full layout (and all Portals) and show a minimal loader. After finish we defer mounting the new page to the next frame so the DOM is fully settled and Radix Portals don't cause removeChild errors. */
 function LayoutKeyWrapper({ children }: { children: React.ReactNode }) {
     const { url } = usePage();
     const [isNavigating, setIsNavigating] = useState(false);
+    const [showContent, setShowContent] = useState(true);
     useEffect(() => {
-        const onStart = () => setIsNavigating(true);
-        const onFinish = () => setIsNavigating(false);
-        const unStart = router.on('start', onStart);
+        const onBefore = () => {
+            setShowContent(false);
+            setIsNavigating(true);
+        };
+        const onFinish = () => {
+            // Defer showing new page to next frame so old Portals are fully torn down before React mounts new tree
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    setShowContent(true);
+                    setIsNavigating(false);
+                });
+            });
+        };
+        const unBefore = router.on('before', onBefore);
+        const unStart = router.on('start', onBefore);
         const unFinish = router.on('finish', onFinish);
         const unError = router.on('error', onFinish);
         const unCancel = router.on('cancel', onFinish);
         return () => {
+            unBefore();
             unStart();
             unFinish();
             unError();
             unCancel();
         };
     }, []);
-    if (isNavigating) {
+    if (isNavigating || !showContent) {
         return (
             <div key="navigating" className="flex min-h-screen w-full items-center justify-center bg-background">
                 <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
