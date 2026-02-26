@@ -45,7 +45,18 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('verification.notice');
         }
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Redirect to intended URL only if it's an Inertia page (not a JSON/API route).
+        // Following a redirect to e.g. /translations/ar would return JSON and break Inertia.
+        $defaultUrl = route('dashboard', absolute: false);
+        $intendedUrl = $request->session()->pull('url.intended', $defaultUrl);
+        $path = parse_url($intendedUrl, PHP_URL_PATH) ?? '';
+        $jsonApiPrefixes = ['/translations/', '/api/', '/refresh-language/', '/initial-locale'];
+        $isJsonRoute = str_starts_with($path, '/api')
+            || in_array($path, ['/settings/api'], true)
+            || collect($jsonApiPrefixes)->contains(fn ($prefix) => str_starts_with($path, $prefix));
+        $targetUrl = $isJsonRoute ? $defaultUrl : $intendedUrl;
+
+        return redirect()->to($targetUrl);
     }
 
     /**
