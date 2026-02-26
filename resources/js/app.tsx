@@ -26,6 +26,18 @@ import i18n from './i18n';
 // -------------------------
 initPerformanceMonitoring();
 
+// Ensure Ziggy base URL is current origin so route() generates same-origin URLs (avoids CORS when on tenant vs central domain)
+function normalizeZiggyUrl(page: { props?: { ziggy?: Record<string, unknown> } } | undefined) {
+    try {
+        const ziggy = page?.props?.ziggy;
+        if (ziggy && typeof ziggy === 'object') {
+            (ziggy as Record<string, string>).url = window.location.origin;
+        }
+    } catch {
+        // ignore
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     lazyLoadImages();
 });
@@ -81,6 +93,7 @@ createInertiaApp({
         // Make initial page data globally available (if you still need it)
         try {
             (window as any).page = props.initialPage;
+            normalizeZiggyUrl(props.initialPage);
         } catch (e) {
             console.warn('Could not set global page data:', e);
         }
@@ -111,6 +124,7 @@ createInertiaApp({
         router.on('navigate', (event) => {
             try {
                 (window as any).page = event.detail.page;
+                normalizeZiggyUrl(event.detail.page);
 
                 // Re-initialize global settings so currency/date settings reflect latest backend (e.g. after user changes settings)
                 const nextGlobalSettings = event.detail.page?.props?.globalSettings || {};

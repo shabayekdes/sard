@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Notifications\CustomVerifyEmail;
 use App\Notifications\CustomResetPassword;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Spatie\Permission\Traits\HasRoles;
@@ -118,6 +119,14 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     }
 
     // Businesses relationship removed
+
+    /**
+     * Get the company user (creator) for this user's tenant.
+     */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'tenant_id', 'id')->where('type', 'company');
+    }
 
     /**
      * Get the plan associated with the user.

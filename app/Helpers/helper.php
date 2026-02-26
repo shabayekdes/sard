@@ -35,7 +35,9 @@ if (!function_exists('getCacheSize')) {
 if (! function_exists('settings')) {
     function settings($tenant = null)
     {
-        $userSettings = Setting::where('tenant_id', $tenant ?: tenant('id'))->pluck('value', 'key')->toArray();
+        // Explicit arg > tenant() from domain (e.g. tenant routes) > auth user's tenant_id (e.g. universal routes)
+        $tenantId = $tenant ?? (function_exists('tenant') && tenant() !== null ? tenant('id') : null) ?? (auth()->check() ? auth()->user()->tenant_id : null);
+        $userSettings = Setting::where('tenant_id', $tenantId)->pluck('value', 'key')->toArray();
 
         // If user is not superadmin, merge with superadmin settings for specific keys
         if (auth()->check() && auth()->user()->type !== 'superadmin') {

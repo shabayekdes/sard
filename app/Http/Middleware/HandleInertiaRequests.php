@@ -156,6 +156,8 @@ class HandleInertiaRequests extends Middleware
             'ziggy' => fn(): array => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
+                // Force base URL to current request origin so route() generates same-origin URLs (avoids CORS when on tenant domain)
+                'url' => $request->getSchemeAndHttpHost(),
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),

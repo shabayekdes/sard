@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Plan;
+use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
@@ -81,6 +82,47 @@ class CompanyController extends Controller
             'plans' => $plans,
             'filters' => $request->only(['search', 'status', 'start_date', 'end_date', 'sort_field', 'sort_direction', 'per_page'])
         ]);
+    }
+
+    /**
+     * Redirect to tenant app as the company user using Stancl UserImpersonation.
+     * Logs in as the company on the tenant domain without email/password (token-based).
+     */
+    public function impersonate(Request $request, User $company)
+    {
+        if ($company->type !== 'company') {
+            return redirect()->back()->with('error', __('Invalid company'));
+        }
+
+        // Tenant id matches the company User id in single-database tenancy; fallback to tenant_id
+        $tenant = Tenant::find($company->id) ?? Tenant::find($company->tenant_id);
+        if (! $tenant) {
+            return redirect()->back()->with('error', __('Tenant not found for this company'));
+        }
+
+        try {
+            $redirectUrl = '/dashboard';
+            $token = tenancy()->impersonate($tenant, (string) $company->id, $redirectUrl, 'web');
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('error', __('Impersonation failed: %s', [$e->getMessage()]));
+        }
+
+        $domainRecord = $tenant->domains()->first();
+        if (! $domainRecord) {
+            return redirect()->back()->with('error', __('No domain configured for this company'));
+        }
+
+        $domain = $domainRecord->domain;
+        $centralDomains = config('tenancy.central_domains', []);
+        $centralHost = $centralDomains[0] ?? parse_url(config('app.url'), PHP_URL_HOST);
+        $scheme = $request->secure() ? 'https' : 'http';
+        $host = str_contains($domain, '.') ? $domain : "{$domain}.{$centralHost}";
+
+        if (in_array($host, $centralDomains, true)) {
+            return redirect()->back()->with('error', __('Impersonation requires the company to have a subdomain or custom domain (e.g. company-name.%1$s), not the central host.', [$centralHost]));
+        }
+
+        return redirect()->away("{$scheme}://{$host}/impersonate/{$token->token}");
     }
 
     public function store(Request $request)

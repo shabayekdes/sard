@@ -10,16 +10,19 @@ import { CurrencyAmount } from '@/components/currency-amount';
 import { capitalize, getStatusIcon, getStatusLabel } from '@/utils/helpers';
 import { Link } from '@inertiajs/react';
 import {
+    ArrowUpRight,
     ChevronDown,
     ChevronUp,
     ChevronsUpDown,
     Check,
     CheckCircle,
+    CreditCard,
     DollarSign,
     Download,
     Edit,
     Eye,
     Globe,
+    Info,
     Key,
     KeyRound,
     Link as LinkIcon,
@@ -35,13 +38,16 @@ import {
 import { useTranslation } from 'react-i18next';
 
 const CRUD_ICONS: Record<string, React.ComponentType<{ size?: number }>> = {
+    ArrowUpRight,
     Check,
     CheckCircle,
+    CreditCard,
     DollarSign,
     Download,
     Edit,
     Eye,
     Globe,
+    Info,
     Key,
     KeyRound,
     Link: LinkIcon,
@@ -179,7 +185,7 @@ export function CrudTable({
                                 : action.label;
                     const IconComponent = CRUD_ICONS[iconName] ?? Eye;
 
-                    // Handle link actions
+                    // Handle link actions (use native <a> so the request is a full page load — avoids CORS when the server redirects to another origin, e.g. impersonation)
                     if (action.href) {
                         const href = typeof action.href === 'function' ? action.href(row) : action.href.replace(':id', row.id);
 
@@ -187,11 +193,15 @@ export function CrudTable({
                             <TooltipProvider key={index}>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <Link href={href} target={action.openInNewTab ? '_blank' : undefined}>
-                                            <Button variant="ghost" size="icon" className={cn('h-8 w-8', action.className)}>
+                                        <Button variant="ghost" size="icon" className={cn('h-8 w-8', action.className)} asChild>
+                                            <a
+                                                href={href}
+                                                target={action.openInNewTab ? '_blank' : undefined}
+                                                rel={action.openInNewTab ? 'noopener noreferrer' : undefined}
+                                            >
                                                 <IconComponent size={16} />
-                                            </Button>
-                                        </Link>
+                                            </a>
+                                        </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
                                         <p>{resolveTranslatable(actionLabel, locale)}</p>

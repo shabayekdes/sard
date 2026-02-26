@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { Card } from '@/components/ui/card';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -19,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { DatePicker } from '@/components/ui/date-picker';
 import { CrudFormModal } from '@/components/CrudFormModal';
 import { CrudDeleteModal } from '@/components/CrudDeleteModal';
+import { CrudTable } from '@/components/CrudTable';
 import { UpgradePlanModal } from '@/components/UpgradePlanModal';
 
 export default function Companies() {
@@ -160,7 +160,7 @@ export default function Companies() {
 
     switch (action) {
       case 'login-as':
-        router.get(route("impersonate.start", company.id));
+        window.open(route('companies.impersonate', company.id), '_blank');
         break;
       case 'company-info':
         setFormMode('view');
@@ -440,6 +440,52 @@ export default function Companies() {
     }
   ];
 
+  // Define table actions for CrudTable (Login as: open new tab then server redirects to tenant and logs in)
+  const tableActions = [
+    {
+      label: t('Login as Company'),
+      icon: 'ArrowUpRight',
+      action: 'login-as',
+      className: 'text-blue-500 hover:text-blue-700',
+    },
+    {
+      label: t('Company Info'),
+      icon: 'Info',
+      action: 'company-info',
+      className: 'text-blue-500 hover:text-blue-700',
+    },
+    {
+      label: t('Upgrade Plan'),
+      icon: 'CreditCard',
+      action: 'upgrade-plan',
+      className: 'text-amber-500 hover:text-amber-700',
+    },
+    {
+      label: t('Reset Password'),
+      icon: 'KeyRound',
+      action: 'reset-password',
+      className: 'text-blue-500 hover:text-blue-700',
+    },
+    {
+      label: (row: any) => (row?.status === 'active' ? t('Disable Login') : t('Enable Login')),
+      icon: 'toggle-status',
+      action: 'toggle-status',
+      className: 'text-amber-500 hover:text-amber-700',
+    },
+    {
+      label: t('Edit'),
+      icon: 'Edit',
+      action: 'edit',
+      className: 'text-amber-500 hover:text-amber-700',
+    },
+    {
+      label: t('Delete'),
+      icon: 'Trash2',
+      action: 'delete',
+      className: 'text-red-500 hover:text-red-700',
+    },
+  ];
+
   return (
       <PageTemplate title={t('Companies Management')} url="/companies" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
           {/* Search and filters section */}
@@ -513,164 +559,17 @@ export default function Companies() {
           {/* Content section */}
           {activeView === 'list' ? (
               <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
-                  <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                          <thead>
-                              <tr className="border-b bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
-                                  {columns.map((column) => (
-                                      <th
-                                          key={column.key}
-                                          className="px-4 py-3 text-left font-medium text-gray-500"
-                                          onClick={() => column.sortable && handleSort(column.key)}
-                                      >
-                                          <div className="flex items-center">
-                                              {column.label}
-                                              {column.sortable && (
-                                                  <span className="ml-1">
-                                                      {pageFilters.sort_field === column.key
-                                                          ? pageFilters.sort_direction === 'asc'
-                                                              ? '↑'
-                                                              : '↓'
-                                                          : ''}
-                                                  </span>
-                                              )}
-                                          </div>
-                                      </th>
-                                  ))}
-                                  <th className="px-4 py-3 text-right font-medium text-gray-500">{t('Actions')}</th>
-                              </tr>
-                          </thead>
-                          <tbody>
-                              {companies?.data?.map((company: any) => (
-                                  <tr
-                                      key={company.id}
-                                      className="border-b hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800"
-                                  >
-                                      {columns.map((column) => (
-                                          <td key={`${company.id}-${column.key}`} className="px-4 py-3">
-                                              {column.render ? column.render(company[column.key], company) : company[column.key]}
-                                          </td>
-                                      ))}
-                                      <td className="px-4 py-3 text-right">
-                                          <div className="flex justify-end gap-1">
-                                              <Tooltip>
-                                                  <TooltipTrigger asChild>
-                                                      <Button
-                                                          variant="ghost"
-                                                          size="icon"
-                                                          onClick={() => handleAction('login-as', company)}
-                                                          className="text-blue-500 hover:text-blue-700"
-                                                      >
-                                                          <ArrowUpRight className="h-4 w-4" />
-                                                      </Button>
-                                                  </TooltipTrigger>
-                                                  <TooltipContent>{t('Login as Company')}</TooltipContent>
-                                              </Tooltip>
-
-                                              <Tooltip>
-                                                  <TooltipTrigger asChild>
-                                                      <Button
-                                                          variant="ghost"
-                                                          size="icon"
-                                                          onClick={() => handleAction('company-info', company)}
-                                                          className="text-blue-500 hover:text-blue-700"
-                                                      >
-                                                          <Info className="h-4 w-4" />
-                                                      </Button>
-                                                  </TooltipTrigger>
-                                                  <TooltipContent>{t('Company Info')}</TooltipContent>
-                                              </Tooltip>
-
-                                              <Tooltip>
-                                                  <TooltipTrigger asChild>
-                                                      <Button
-                                                          variant="ghost"
-                                                          size="icon"
-                                                          onClick={() => handleAction('upgrade-plan', company)}
-                                                          className="text-amber-500 hover:text-amber-700"
-                                                      >
-                                                          <CreditCard className="h-4 w-4" />
-                                                      </Button>
-                                                  </TooltipTrigger>
-                                                  <TooltipContent>{t('Upgrade Plan')}</TooltipContent>
-                                              </Tooltip>
-
-                                              <Tooltip>
-                                                  <TooltipTrigger asChild>
-                                                      <Button
-                                                          variant="ghost"
-                                                          size="icon"
-                                                          onClick={() => handleAction('reset-password', company)}
-                                                          className="text-blue-500 hover:text-blue-700"
-                                                      >
-                                                          <KeyRound className="h-4 w-4" />
-                                                      </Button>
-                                                  </TooltipTrigger>
-                                                  <TooltipContent>{t('Reset Password')}</TooltipContent>
-                                              </Tooltip>
-
-                                              <Tooltip>
-                                                  <TooltipTrigger asChild>
-                                                      <Button
-                                                          variant="ghost"
-                                                          size="icon"
-                                                          onClick={() => handleAction('toggle-status', company)}
-                                                          className="text-amber-500 hover:text-amber-700"
-                                                      >
-                                                          {company.status === 'active' ? (
-                                                              <Lock className="h-4 w-4" />
-                                                          ) : (
-                                                              <Unlock className="h-4 w-4" />
-                                                          )}
-                                                      </Button>
-                                                  </TooltipTrigger>
-                                                  <TooltipContent>
-                                                      {company.status === 'active' ? t('Disable Login') : t('Enable Login')}
-                                                  </TooltipContent>
-                                              </Tooltip>
-
-                                              <Tooltip>
-                                                  <TooltipTrigger asChild>
-                                                      <Button
-                                                          variant="ghost"
-                                                          size="icon"
-                                                          onClick={() => handleAction('edit', company)}
-                                                          className="text-amber-500 hover:text-amber-700"
-                                                      >
-                                                          <Edit className="h-4 w-4" />
-                                                      </Button>
-                                                  </TooltipTrigger>
-                                                  <TooltipContent>{t('Edit')}</TooltipContent>
-                                              </Tooltip>
-
-                                              <Tooltip>
-                                                  <TooltipTrigger asChild>
-                                                      <Button
-                                                          variant="ghost"
-                                                          size="icon"
-                                                          className="text-red-500 hover:text-red-700"
-                                                          onClick={() => handleAction('delete', company)}
-                                                      >
-                                                          <Trash2 className="h-4 w-4" />
-                                                      </Button>
-                                                  </TooltipTrigger>
-                                                  <TooltipContent>{t('Delete')}</TooltipContent>
-                                              </Tooltip>
-                                          </div>
-                                      </td>
-                                  </tr>
-                              ))}
-
-                              {(!companies?.data || companies.data.length === 0) && (
-                                  <tr>
-                                      <td colSpan={columns.length + 1} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                                          {t('No companies found')}
-                                      </td>
-                                  </tr>
-                              )}
-                          </tbody>
-                      </table>
-                  </div>
+                  <CrudTable
+                      columns={columns}
+                      actions={tableActions}
+                      data={companies?.data || []}
+                      from={companies?.from ?? 1}
+                      onAction={handleAction}
+                      sortField={pageFilters.sort_field}
+                      sortDirection={pageFilters.sort_direction}
+                      onSort={handleSort}
+                      permissions={permissions}
+                  />
 
                   {/* Pagination section */}
                   <Pagination

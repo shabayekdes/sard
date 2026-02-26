@@ -74,9 +74,8 @@ class SystemSettingsController extends Controller
                 'settings.themeMode' => 'nullable|string|in:light,dark,system',
             ]);
 
-            $userId = auth()->id();
             foreach ($validated['settings'] as $key => $value) {
-                updateSetting($key, $value, $userId);
+                updateSetting($key, $value);
             }
 
             return redirect()->back()->with('success', __('Brand settings updated successfully.'));
@@ -164,8 +163,6 @@ class SystemSettingsController extends Controller
                 'wasabiRoot' => 'required_if:storage_type,wasabi|string',
             ]);
 
-            $userId = Auth::id();
-
             $settings = [
                 'storage_type' => $validated['storage_type'],
                 'storage_file_types' => $validated['allowedFileTypes'],
@@ -197,8 +194,8 @@ class SystemSettingsController extends Controller
             // Clear storage config cache
             StorageConfigService::clearCache();
 
-            // Also clear general cache to refresh global settings
-            \Cache::forget('settings_' . $userId);
+            // Also clear general cache to refresh global settings (scope by tenant)
+            \Cache::forget('settings_' . (createdBy() ?? 'global'));
 
             return redirect()->back()->with('success', __('Storage settings updated successfully.'));
         } catch (\Exception $e) {

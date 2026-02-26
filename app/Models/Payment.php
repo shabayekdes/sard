@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Traits\AutoApplyPermissionCheck;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
@@ -79,7 +80,7 @@ class Payment extends BaseModel
         });
     }
 
-    public function creator(): BelongsTo
+    public function creator(): HasOne
     {
         return $this->hasOne(User::class, 'tenant_id', 'tenant_id')->where('type', 'company');
     }
