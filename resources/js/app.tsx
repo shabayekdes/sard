@@ -1,10 +1,20 @@
 import '../css/app.css';
 import '../css/dark-mode.css';
 
-import { createInertiaApp, router } from '@inertiajs/react';
+import { createInertiaApp, router, usePage } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import React, { Suspense } from 'react';
+
+/** Wraps the current Inertia page with a key derived from the URL so that on navigation the previous page (and any Portals/Dialogs/Tooltips) fully unmount before the new page mounts. Prevents "removeChild" DOM errors during Inertia page swaps. */
+function PageKeyWrapper({ children }: { children: React.ReactNode }) {
+    const { url } = usePage();
+    return (
+        <div key={url} style={{ display: 'contents' }}>
+            {children}
+        </div>
+    );
+}
 
 import { LayoutProvider } from './contexts/LayoutContext';
 import { SidebarProvider } from './contexts/SidebarContext';
@@ -76,7 +86,9 @@ createInertiaApp({
                             <SidebarProvider>
                                 {/* BrandProvider is now INSIDE Inertia context, so it can safely use usePage() */}
                                 <BrandProvider>
-                                    {page}
+                                    <PageKeyWrapper>
+                                        {page}
+                                    </PageKeyWrapper>
                                     <CustomToast />
                                 </BrandProvider>
                             </SidebarProvider>
