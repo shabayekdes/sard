@@ -4,47 +4,11 @@ import '../css/dark-mode.css';
 import { createInertiaApp, router, usePage } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense } from 'react';
 
-/** During navigation we unmount the full layout (and all Portals) and show a minimal loader. After finish we defer mounting the new page to the next frame so the DOM is fully settled and Radix Portals don't cause removeChild errors. */
+/** Keys layout by URL so each page gets a fresh subtree (helps avoid Portal removeChild issues). */
 function LayoutKeyWrapper({ children }: { children: React.ReactNode }) {
     const { url } = usePage();
-    const [isNavigating, setIsNavigating] = useState(false);
-    const [showContent, setShowContent] = useState(true);
-    useEffect(() => {
-        const onBefore = () => {
-            setShowContent(false);
-            setIsNavigating(true);
-        };
-        const onFinish = () => {
-            // Defer showing new page to next frame so old Portals are fully torn down before React mounts new tree
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    setShowContent(true);
-                    setIsNavigating(false);
-                });
-            });
-        };
-        const unBefore = router.on('before', onBefore);
-        const unStart = router.on('start', onBefore);
-        const unFinish = router.on('finish', onFinish);
-        const unError = router.on('error', onFinish);
-        const unCancel = router.on('cancel', onFinish);
-        return () => {
-            unBefore();
-            unStart();
-            unFinish();
-            unError();
-            unCancel();
-        };
-    }, []);
-    if (isNavigating || !showContent) {
-        return (
-            <div key="navigating" className="flex min-h-screen w-full items-center justify-center bg-background">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            </div>
-        );
-    }
     return <React.Fragment key={url}>{children}</React.Fragment>;
 }
 
@@ -131,64 +95,74 @@ createInertiaApp({
         }),
 
     setup({ el, App, props }) {
-        const root = createRoot(el);
+        const fallback = <div className="flex h-screen w-full items-center justify-center">Loading...</div>;
+        const doRender = (rootInstance: ReturnType<typeof createRoot>, pageProps: { initialPage: typeof props.initialPage }) => {
+            rootInstance.render(
+                <Suspense fallback={fallback}>
+                    <App {...pageProps} />
+                </Suspense>
+            );
+        };
 
-        // Make initial page data globally available (if you still need it)
+        const root = createRoot(el);
+        (window as any).__inertiaEl = el;
+        (window as any).__inertiaRoot = root;
+
         try {
             (window as any).page = props.initialPage;
             normalizeZiggyUrl(props.initialPage);
         } catch (e) {
             console.warn('Could not set global page data:', e);
         }
-
-        // Set demo mode globally
         try {
-            (window as any).isDemo = props.initialPage.props?.is_demo || false;
+            (window as any).isDemo = props.initialPage.props?.is_demo ?? false;
         } catch {
             // ignore
         }
-
-        // Initialize direction + global settings from initial shared props
         initializeDirection();
-
-        const globalSettings = props.initialPage.props.globalSettings || {};
+        const globalSettings = props.initialPage.props?.globalSettings ?? {};
         if (Object.keys(globalSettings).length > 0) {
             initializeGlobalSettings(globalSettings);
         }
 
-        // Render ONCE — Inertia handles updates on navigation
-        root.render(
-            <Suspense fallback={<div className="flex h-screen w-full items-center justify-center">Loading...</div>}>
-                <App {...props} />
-            </Suspense>
-        );
+        doRender(root, props);
 
-        // Side effects on navigation (NO root.render)
-        router.on('navigate', (event) => {
+        const runNavigateSideEffects = (page: typeof props.initialPage) => {
             try {
-                (window as any).page = event.detail.page;
-                normalizeZiggyUrl(event.detail.page);
-
-                // Re-initialize global settings so currency/date settings reflect latest backend (e.g. after user changes settings)
-                const nextGlobalSettings = event.detail.page?.props?.globalSettings || {};
+                (window as any).page = page;
+                normalizeZiggyUrl(page);
+                const nextGlobalSettings = page?.props?.globalSettings ?? {};
                 if (Object.keys(nextGlobalSettings).length > 0) {
                     initializeGlobalSettings(nextGlobalSettings);
                 }
-
-                // Optional: keep theme synced in demo mode
                 const savedTheme = isDemoMode() ? getCookie('themeSettings') : null;
                 if (savedTheme) {
                     const themeSettings = JSON.parse(savedTheme);
                     const isDark =
                         themeSettings.appearance === 'dark' ||
                         (themeSettings.appearance === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-
                     document.documentElement.classList.toggle('dark', isDark);
                     document.body.classList.toggle('dark', isDark);
                 }
             } catch (e) {
                 console.error('Navigation side-effect error:', e);
             }
+        };
+
+        router.on('navigate', (event: { detail: { page?: typeof props.initialPage } }) => {
+            const page = event.detail?.page;
+            if (!page) return;
+            runNavigateSideEffects(page);
+            // Full root remount only on tenant domains to fix removeChild/Portal errors (portal/SaaS domain works without this)
+            const isCentralDomain = (page as any)?.props?.isCentralDomain === true;
+            if (isCentralDomain) return;
+            const currentRoot = (window as any).__inertiaRoot as ReturnType<typeof createRoot>;
+            if (currentRoot && (window as any).__inertiaEl === el) {
+                currentRoot.unmount();
+            }
+            const newRoot = createRoot(el);
+            (window as any).__inertiaRoot = newRoot;
+            doRender(newRoot, { initialPage: page });
         });
     },
 
