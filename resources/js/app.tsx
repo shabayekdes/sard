@@ -108,10 +108,33 @@ createInertiaApp({
         } catch {
             // ignore
         }
+        const isCentralDomain = (props.initialPage?.props as Record<string, unknown>)?.isCentralDomain === true;
+        (window as any).__isCentralDomain = isCentralDomain;
+
         initializeDirection();
         const globalSettings = props.initialPage.props?.globalSettings ?? {};
         if (Object.keys(globalSettings).length > 0) {
             initializeGlobalSettings(globalSettings);
+        }
+
+        // On tenant only: recover from Radix Portal removeChild errors (one reload per session to avoid loop)
+        if (!isCentralDomain) {
+            const RELOAD_KEY = 'inertia_removechild_reload';
+            window.addEventListener('error', (event) => {
+                const err = event.error;
+                if (
+                    err?.name === 'NotFoundError' &&
+                    typeof err?.message === 'string' &&
+                    err.message.includes('removeChild')
+                ) {
+                    if (!sessionStorage.getItem(RELOAD_KEY)) {
+                        sessionStorage.setItem(RELOAD_KEY, '1');
+                        event.preventDefault();
+                        event.stopPropagation();
+                        window.location.reload();
+                    }
+                }
+            });
         }
 
         root.render(
@@ -123,6 +146,7 @@ createInertiaApp({
         router.on('navigate', (event: { detail: { page?: typeof props.initialPage } }) => {
             const page = event.detail?.page;
             if (!page) return;
+            (window as any).__isCentralDomain = (page?.props as Record<string, unknown>)?.isCentralDomain === true;
             try {
                 (window as any).page = page;
                 normalizeZiggyUrl(page);
