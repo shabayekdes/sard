@@ -219,7 +219,7 @@ class DashboardController extends Controller
     private function renderCompanyDashboard()
     {
         $user = auth()->user();
-        $companyId = tenant('id');
+        $companyId = auth()->user()->tenant_id;
 
         // Get legal management statistics
         $totalCases = CaseModel::where('tenant_id', $companyId)->count();
