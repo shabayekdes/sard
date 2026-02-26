@@ -39,7 +39,7 @@ class TranslationController extends BaseController
                 Setting::updateOrCreate(
                     [
                         'key' => 'layoutDirection',
-                        'user_id' => auth()->id()
+                        'tenant_id' => auth()->user()->tenant_id,
                     ],
                     [
                         'value' => $layoutDirection
