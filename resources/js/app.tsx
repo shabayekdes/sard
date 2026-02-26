@@ -54,19 +54,6 @@ import i18n from './i18n';
 // -------------------------
 initPerformanceMonitoring();
 
-// Production-only: recover from removeChild/Portal DOM errors (often only occur in prod build)
-if (import.meta.env.PROD && typeof window !== 'undefined') {
-    window.addEventListener('error', (event) => {
-        if (event.message?.includes('removeChild') || (event.error?.name === 'NotFoundError' && event.error?.message?.includes('removeChild'))) {
-            event.preventDefault();
-            event.stopPropagation();
-            console.warn('[Recovery] Portal/DOM sync error caught; reloading to recover.');
-            window.location.reload();
-            return true;
-        }
-    });
-}
-
 // Ensure Ziggy base URL is current origin so route() generates same-origin URLs (avoids CORS when on tenant vs central domain)
 function normalizeZiggyUrl(page: { props?: { ziggy?: Record<string, unknown> } } | undefined) {
     try {
