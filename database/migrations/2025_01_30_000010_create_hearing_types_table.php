@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('hearing_types', function (Blueprint $table) {
             $table->id();
-            $table->string('type_id')->unique(); // Auto-generated type ID
+            $table->string('type_id'); // Auto-generated type ID
             $table->json('name');
             $table->json('description')->nullable();
             $table->integer('duration_estimate')->nullable(); // Duration in minutes
@@ -25,6 +25,7 @@ return new class extends Migration
             
             // Index for better performance
             $table->index(['tenant_id', 'status']);
+            $table->unique(['tenant_id', 'type_id']);
         });
     }
 

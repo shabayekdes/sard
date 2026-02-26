@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
-            $table->string('task_id')->unique(); // Auto-generated task ID
+            $table->string('task_id'); // Auto-generated task ID
             $table->string('title');
             $table->text('description')->nullable();
             $table->enum('priority', ['critical', 'high', 'medium', 'low'])->default('medium');
@@ -33,6 +33,8 @@ return new class extends Migration
             $table->index(['assigned_to']);
             $table->index(['case_id']);
             $table->index(['due_date']);
+
+            $table->unique(['tenant_id', 'task_id']);
         });
     }
 

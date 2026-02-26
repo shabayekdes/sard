@@ -13,7 +13,7 @@ return new class extends Migration
             $table->unsignedBigInteger('client_id');
             $table->unsignedBigInteger('case_id')->nullable();
             $table->foreignId('currency_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('invoice_number')->unique();
+            $table->string('invoice_number');
             $table->enum('status', ['draft', 'sent', 'paid', 'partial_paid', 'overdue', 'cancelled'])->default('draft');
             $table->decimal('subtotal', 10, 2)->default(0);
             $table->decimal('tax_amount', 10, 2)->default(0);
@@ -28,6 +28,8 @@ return new class extends Migration
             $table->foreign('case_id')->references('id')->on('cases')->onDelete('set null');
             $table->index(['tenant_id', 'status']);
             $table->index(['client_id', 'status']);
+
+            $table->unique(['tenant_id', 'invoice_number']);
         });
     }
 

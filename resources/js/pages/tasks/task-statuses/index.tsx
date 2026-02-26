@@ -414,8 +414,8 @@ export default function TaskStatuses() {
               }}
               initialData={currentItem ? {
                   ...currentItem,
-                  'name.en': typeof currentItem.name === 'object' && currentItem.name !== null ? currentItem.name.en : '',
-                  'name.ar': typeof currentItem.name === 'object' && currentItem.name !== null ? currentItem.name.ar : '',
+                  'name.en': (currentItem.name_translations && currentItem.name_translations.en) ?? (typeof currentItem.name === 'object' && currentItem.name !== null ? currentItem.name.en : ''),
+                  'name.ar': (currentItem.name_translations && currentItem.name_translations.ar) ?? (typeof currentItem.name === 'object' && currentItem.name !== null ? currentItem.name.ar : ''),
               } : {}}
               title={formMode === 'create' ? t('Add New Task Status') : formMode === 'edit' ? t('Edit Task Status') : t('View Task Status')}
               mode={formMode}

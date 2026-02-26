@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('case_notes', function (Blueprint $table) {
             $table->id();
-            $table->string('note_id')->unique();
+            $table->string('note_id');
             $table->string('title');
             $table->text('content');
             $table->enum('note_type', ['general', 'meeting', 'research', 'strategy', 'client_communication', 'court_appearance'])->default('general');
@@ -29,6 +29,8 @@ return new class extends Migration
             $table->index(['tenant_id', 'status']);
             $table->index(['note_type', 'tenant_id']);
             $table->index(['priority', 'tenant_id']);
+
+            $table->unique(['tenant_id', 'note_id']);
         });
     }
 

@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('hearings', function (Blueprint $table) {
             $table->id();
-            $table->string('hearing_id')->unique();
+            $table->string('hearing_id');
             $table->foreignId('case_id')->constrained('cases')->onDelete('cascade');
             $table->foreignId('court_id')->constrained('courts')->onDelete('cascade');
             $table->string('circle_number')->nullable();
@@ -31,6 +31,8 @@ return new class extends Migration
             $table->index(['case_id', 'hearing_date']);
             $table->index(['court_id', 'hearing_date']);
             $table->index(['tenant_id', 'status']);
+
+            $table->unique(['tenant_id', 'hearing_id']);
         });
     }
 

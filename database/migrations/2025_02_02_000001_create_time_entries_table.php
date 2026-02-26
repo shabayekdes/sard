@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('time_entries', function (Blueprint $table) {
             $table->id();
-            $table->string('entry_id')->unique(); // Auto-generated entry ID
+            $table->string('entry_id'); // Auto-generated entry ID
             $table->foreignId('case_id')->nullable()->constrained('cases')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->text('description');
@@ -33,6 +33,8 @@ return new class extends Migration
             $table->index(['case_id']);
             $table->index(['user_id']);
             $table->index(['entry_date']);
+
+            $table->unique(['tenant_id', 'entry_id']);
         });
     }
 

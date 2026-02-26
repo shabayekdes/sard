@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('courts', function (Blueprint $table) {
             $table->id();
-            $table->string('court_id')->unique(); // Auto-generated court ID
+            $table->string('court_id'); // Auto-generated court ID
             $table->string('name');
             $table->text('address')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
@@ -24,6 +24,7 @@ return new class extends Migration
             
             // Index for better performance
             $table->index(['tenant_id', 'status']);
+            $table->unique(['tenant_id', 'court_id']);
         });
     }
 
