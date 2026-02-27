@@ -94,8 +94,6 @@ export default function CaseCategories() {
         }
 
         if (formMode === 'create') {
-            toast.loading(t('Creating case category...'));
-
             router.post(route('setup.case-categories.store'), formData, {
                 onSuccess: (page) => {
                     setIsFormModalOpen(false);
@@ -108,12 +106,10 @@ export default function CaseCategories() {
                 },
                 onError: (errors) => {
                     toast.dismiss();
-                    toast.error(`Failed to create case category: ${Object.values(errors).join(', ')}`);
+                    toast.error(t('Failed to create {{model}}: {{errors}}', { model: t('Case category'), errors: Object.values(errors).join(', ') }));
                 }
             });
         } else if (formMode === 'edit') {
-            toast.loading(t('Updating case category...'));
-
             router.put(route('setup.case-categories.update', currentItem.id), formData, {
                 onSuccess: (page) => {
                     setIsFormModalOpen(false);
@@ -126,15 +122,13 @@ export default function CaseCategories() {
                 },
                 onError: (errors) => {
                     toast.dismiss();
-                    toast.error(`Failed to update case category: ${Object.values(errors).join(', ')}`);
+                    toast.error(t('Failed to update {{model}}: {{errors}}', { model: t('Case category'), errors: Object.values(errors).join(', ') }));
                 }
             });
         }
     };
 
     const handleDeleteConfirm = () => {
-        toast.loading(t('Deleting case category...'));
-
         router.delete(route('setup.case-categories.destroy', currentItem.id), {
             onSuccess: (page) => {
                 setIsDeleteModalOpen(false);
@@ -147,15 +141,12 @@ export default function CaseCategories() {
             },
             onError: (errors) => {
                 toast.dismiss();
-                toast.error(`Failed to delete case category: ${Object.values(errors).join(', ')}`);
+                toast.error(t('Failed to delete {{model}}: {{errors}}', { model: t('Case category'), errors: Object.values(errors).join(', ') }));
             }
         });
     };
 
     const handleToggleStatus = (caseCategory: any) => {
-        const newStatus = caseCategory.status === 'active' ? 'inactive' : 'active';
-        toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} case category...`);
-
         router.put(route('setup.case-categories.toggle-status', caseCategory.id), {}, {
             onSuccess: (page) => {
                 toast.dismiss();
@@ -167,7 +158,7 @@ export default function CaseCategories() {
             },
             onError: (errors) => {
                 toast.dismiss();
-                toast.error(`Failed to update case category status: ${Object.values(errors).join(', ')}`);
+                toast.error(t('Failed to update {{model}} status: {{errors}}', { model: t('Case category'), errors: Object.values(errors).join(', ') }));
             }
         });
     };
@@ -518,7 +509,7 @@ export default function CaseCategories() {
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={handleDeleteConfirm}
                 itemName={currentItem?.name || ''}
-                entityName="case category"
+                entityName="Case Category"
             />
         </PageTemplate>
     );

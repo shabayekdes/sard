@@ -31,24 +31,10 @@ class CaseCategoryController extends Controller
         }
 
         // Handle sorting
-        $sortField = $request->input('sort_field');
-        $sortDirection = $request->input('sort_direction', 'desc');
-
-        if (!empty($sortField)) {
-            // Validate sort direction
-            if (!in_array($sortDirection, ['asc', 'desc'])) {
-                $sortDirection = 'desc';
-            }
-
-            // For translatable fields, sort by the current locale
-            if (in_array($sortField, ['name', 'description'])) {
-                $locale = app()->getLocale();
-                $query->orderByRaw("JSON_EXTRACT({$sortField}, '$.{$locale}') {$sortDirection}");
-            } else {
-                $query->orderBy($sortField, $sortDirection);
-            }
+        if ($request->has('sort_field') && !empty($request->sort_field)) {
+            $query->orderBy($request->sort_field, $request->sort_direction ?? 'asc');
         } else {
-            $query->orderBy('created_at', 'desc');
+            $query->latest('id');
         }
 
         $caseCategories = $query->paginate($request->per_page ?? 10);
@@ -121,7 +107,7 @@ class CaseCategoryController extends Controller
                 ->first();
             
             if (!$parent) {
-                return redirect()->back()->with('error', 'Invalid parent category selected.');
+                return redirect()->back()->with('error', __('Invalid parent category selected.'));
             }
         }
 
@@ -131,7 +117,7 @@ class CaseCategoryController extends Controller
 
         CaseCategory::create($validated);
 
-        return redirect()->back()->with('success', 'Case category created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Case category')]));
     }
 
     public function update(Request $request, $caseCategoryId)
@@ -139,7 +125,7 @@ class CaseCategoryController extends Controller
         $caseCategory = CaseCategory::where('id', $caseCategoryId)->where('tenant_id', createdBy())->first();
 
         if (!$caseCategory) {
-            return redirect()->back()->with('error', 'Case category not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Case category')]));
         }
 
         $validated = $request->validate([
@@ -156,7 +142,7 @@ class CaseCategoryController extends Controller
 
         // Prevent setting itself as parent
         if ($validated['parent_id'] == $caseCategoryId) {
-            return redirect()->back()->with('error', 'A category cannot be its own parent.');
+            return redirect()->back()->with('error', __('A category cannot be its own parent.'));
         }
 
         // Validate that parent belongs to the same user
@@ -166,13 +152,13 @@ class CaseCategoryController extends Controller
                 ->first();
             
             if (!$parent) {
-                return redirect()->back()->with('error', 'Invalid parent category selected.');
+                return redirect()->back()->with('error', __('Invalid parent category selected.'));
             }
 
             // Prevent circular references - check if parent is a descendant
             $descendantIds = $this->getDescendantIds($caseCategory);
             if (in_array($validated['parent_id'], $descendantIds)) {
-                return redirect()->back()->with('error', 'Cannot set a descendant category as parent.');
+                return redirect()->back()->with('error', __('Cannot set a descendant category as parent.'));
             }
         }
 
@@ -180,7 +166,7 @@ class CaseCategoryController extends Controller
 
         $caseCategory->update($validated);
 
-        return redirect()->back()->with('success', 'Case category updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Case category')]));
     }
 
     public function destroy($caseCategoryId)
@@ -188,23 +174,23 @@ class CaseCategoryController extends Controller
         $caseCategory = CaseCategory::where('id', $caseCategoryId)->where('tenant_id', createdBy())->first();
 
         if (!$caseCategory) {
-            return redirect()->back()->with('error', 'Case category not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Case category')]));
         }
 
         // Check if there are any cases mapped with status (active cases)
         $casesWithStatus = $caseCategory->cases()->where('status', 'active')->count();
         if ($casesWithStatus > 0) {
-            return redirect()->back()->with('error', 'Cannot delete case category that has associated cases with active status.');
+            return redirect()->back()->with('error', __('Cannot delete case category that has associated cases with active status.'));
         }
 
         // Check if it has children
         if ($caseCategory->children()->count() > 0) {
-            return redirect()->back()->with('error', 'Cannot delete case category that has child categories. Please delete or reassign child categories first.');
+            return redirect()->back()->with('error', __('Cannot delete case category that has child categories. Please delete or reassign child categories first.'));
         }
 
         $caseCategory->delete();
 
-        return redirect()->back()->with('success', 'Case category deleted successfully.');
+        return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Case category')]));
     }
 
     public function toggleStatus($caseCategoryId)
@@ -212,13 +198,13 @@ class CaseCategoryController extends Controller
         $caseCategory = CaseCategory::where('id', $caseCategoryId)->where('tenant_id', createdBy())->first();
 
         if (!$caseCategory) {
-            return redirect()->back()->with('error', 'Case category not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Case category')]));
         }
 
         $caseCategory->status = $caseCategory->status === 'active' ? 'inactive' : 'active';
         $caseCategory->save();
 
-        return redirect()->back()->with('success', 'Case category status updated successfully.');
+        return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Case category')]));
     }
 
     /**
