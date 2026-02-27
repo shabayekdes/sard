@@ -78,6 +78,9 @@ export default function BillingRates() {
       case 'delete':
         setIsDeleteModalOpen(true);
         break;
+      case 'toggle-status':
+        handleToggleStatus(item);
+        break;
     }
   };
 
@@ -253,23 +256,9 @@ export default function BillingRates() {
     {
       key: 'status',
       label: t('Status'),
-      render: (value: string, row: any) => {
-        const canToggleStatus = hasPermission(permissions, 'toggle-status-billing-rates');
-        return (
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={value === 'active'}
-              disabled={!canToggleStatus}
-              onCheckedChange={() => {
-                if (!canToggleStatus) return;
-                handleToggleStatus(row);
-              }}
-              aria-label={value === 'active' ? t('Deactivate billing rate') : t('Activate billing rate')}
-            />
-            <span className="text-muted-foreground text-xs">{value === 'active' ? t('Active') : t('Inactive')}</span>
-          </div>
-        );
-      }
+      type: 'switch',
+      switchAction: 'toggle-status',
+      switchPermission: 'toggle-status-billing-rates',
     }
   ];
 

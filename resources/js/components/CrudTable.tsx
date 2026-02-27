@@ -2,6 +2,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { TableAction, TableColumn } from '@/types/crud';
 import { hasPermission } from '@/utils/authorization';
@@ -288,6 +289,27 @@ export function CrudTable({
 
             case 'boolean':
                 return <span className="text-sm">{value ? 'Yes' : 'No'}</span>;
+
+            case 'switch': {
+                const switchAction = col.switchAction ?? 'toggle-status';
+                const perm = col.switchPermission ?? entityPermissions?.edit;
+                const canToggle = !perm || hasPermission(permissions, perm);
+                const isActive = value === 'active';
+                return (
+                    <div className="flex items-center gap-2">
+                        <Switch
+                            checked={isActive}
+                            disabled={!canToggle}
+                            onCheckedChange={() => {
+                                if (!canToggle) return;
+                                onAction(switchAction, row);
+                            }}
+                            aria-label={isActive ? t('Deactivate') : t('Activate')}
+                        />
+                        <span className="text-muted-foreground text-xs">{isActive ? t('Active') : t('Inactive')}</span>
+                    </div>
+                );
+            }
 
             case 'link':
                 if (!value) return <span>-</span>;

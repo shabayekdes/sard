@@ -86,9 +86,6 @@ export default function EventTypes() {
   };
 
   const handleToggleStatus = (item: any) => {
-    const newStatus = item.status === 'active' ? 'inactive' : 'active';
-    toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} event type...`);
-
     router.put(
         route('setup.event-types.toggle-status', item.id),
         {},
@@ -101,7 +98,7 @@ export default function EventTypes() {
             },
             onError: (errors) => {
                 toast.dismiss();
-                toast.error('Failed to update status');
+                toast.error(t('Failed to update :model status', { model: t('Event type') }));
             },
         },
     );
@@ -119,7 +116,7 @@ export default function EventTypes() {
           },
           onError: (errors) => {
               toast.dismiss();
-              toast.error(`Failed to create event type: ${Object.values(errors).join(', ')}`);
+              toast.error(t('Failed to create {{model}}: {{errors}}', { model: t('Event type'), errors: Object.values(errors).join(', ') }));
           },
       });
     } else if (formMode === 'edit') {
@@ -150,7 +147,7 @@ export default function EventTypes() {
         },
         onError: (errors) => {
             toast.dismiss();
-            toast.error('Failed to delete event type');
+            toast.error(t('Failed to delete :model', { model: t('Event type') }));
         },
     });
   };
@@ -244,14 +241,9 @@ export default function EventTypes() {
     {
       key: 'status',
       label: t('Status'),
-      render: (value: string) => (
-        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'active'
-          ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
-          : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
-          }`}>
-          {value === 'active' ? t('Active') : t('Inactive')}
-        </span>
-      )
+      type: 'switch',
+      switchAction: 'toggle-status',
+      switchPermission: 'edit-event-types',
     },
     {
       key: 'created_at',
@@ -419,7 +411,7 @@ export default function EventTypes() {
                       : currentItem?.name) ||
                   ''
               }
-              entityName={t('event type')}
+              entityName={t('Event Type')}
           />
       </PageTemplate>
   );

@@ -44,9 +44,13 @@ class EventTypeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'color' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
+            'name' => 'required|array',
+            'name.en' => 'required|string|max:255',
+            'name.ar' => 'required|string|max:255',
+            'description' => 'nullable|array',
+            'description.en' => 'nullable|string',
+            'description.ar' => 'nullable|string',
+            'color' => 'required|string',
             'status' => 'nullable|in:active,inactive',
         ]);
 
@@ -55,7 +59,7 @@ class EventTypeController extends Controller
 
         EventType::create($validated);
 
-        return redirect()->back()->with('success', 'Event type created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Event type')]));
     }
 
     public function update(Request $request, $id)
@@ -65,19 +69,23 @@ class EventTypeController extends Controller
             ->first();
 
         if (!$eventType) {
-            return redirect()->back()->with('error', 'Event type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Event type')]));
         }
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'color' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
+            'name' => 'required|array',
+            'name.en' => 'required|string|max:255',
+            'name.ar' => 'required|string|max:255',
+            'description' => 'nullable|array',
+            'description.en' => 'nullable|string',
+            'description.ar' => 'nullable|string',
+            'color' => 'required|string',
             'status' => 'nullable|in:active,inactive',
         ]);
 
         $eventType->update($validated);
 
-        return redirect()->back()->with('success', 'Event type updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Event type')]));
     }
 
     public function destroy($id)
@@ -87,12 +95,12 @@ class EventTypeController extends Controller
             ->first();
 
         if (!$eventType) {
-            return redirect()->back()->with('error', 'Event type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Event type')]));
         }
 
         $eventType->delete();
 
-        return redirect()->back()->with('success', 'Event type deleted successfully.');
+        return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Event type')]));
     }
 
     public function toggleStatus($id)
@@ -102,12 +110,12 @@ class EventTypeController extends Controller
             ->first();
 
         if (!$eventType) {
-            return redirect()->back()->with('error', 'Event type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Event type')]));
         }
 
         $eventType->status = $eventType->status === 'active' ? 'inactive' : 'active';
         $eventType->save();
 
-        return redirect()->back()->with('success', 'Event type status updated successfully.');
+        return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Event type')]));
     }
 }

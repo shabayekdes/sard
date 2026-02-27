@@ -8,7 +8,6 @@ import { CrudDeleteModal } from '@/components/CrudDeleteModal';
 import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
-import { Switch } from '@/components/ui/switch';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
 function resolveTranslatable(val: unknown, locale: string): string {
@@ -258,23 +257,9 @@ export default function Cases() {
     {
       key: 'status',
       label: t('Status'),
-      render: (value: string, row: any) => {
-        const canToggleStatus = hasPermission(permissions, 'edit-cases');
-        return (
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={value === 'active'}
-              disabled={!canToggleStatus}
-              onCheckedChange={() => {
-                if (!canToggleStatus) return;
-                handleToggleStatus(row);
-              }}
-              aria-label={value === 'active' ? t('Deactivate case') : t('Activate case')}
-            />
-            <span className="text-muted-foreground text-xs">{value === 'active' ? t('Active') : t('Inactive')}</span>
-          </div>
-        );
-      }
+      type: 'switch',
+      switchAction: 'toggle-status',
+      switchPermission: 'edit-cases',
     }
   ];
 

@@ -10,7 +10,6 @@ import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
-import { Switch } from '@/components/ui/switch';
 
 export default function Courts() {
   const { t, i18n } = useTranslation();
@@ -81,6 +80,9 @@ export default function Courts() {
         break;
       case 'delete':
         setIsDeleteModalOpen(true);
+        break;
+      case 'toggle-status':
+        handleToggleStatus(item);
         break;
     }
   };
@@ -254,23 +256,9 @@ export default function Courts() {
     {
       key: 'status',
       label: t('Status'),
-      render: (value: string, row: any) => {
-        const canToggleStatus = hasPermission(permissions, 'edit-courts');
-        return (
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={value === 'active'}
-              disabled={!canToggleStatus}
-              onCheckedChange={() => {
-                if (!canToggleStatus) return;
-                handleToggleStatus(row);
-              }}
-              aria-label={value === 'active' ? t('Deactivate court') : t('Activate court')}
-            />
-            <span className="text-muted-foreground text-xs">{value === 'active' ? t('Active') : t('Inactive')}</span>
-          </div>
-        );
-      }
+      type: 'switch',
+      switchAction: 'toggle-status',
+      switchPermission: 'edit-courts',
     },
     {
       key: 'created_at',

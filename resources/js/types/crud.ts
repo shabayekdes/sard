@@ -18,11 +18,15 @@ export interface TableColumn {
     key: string;
     label: string;
     sortable?: boolean;
-    type?: 'text' | 'badge' | 'image' | 'date' | 'currency' | 'boolean' | 'link' | 'custom';
+    type?: 'text' | 'badge' | 'image' | 'date' | 'currency' | 'boolean' | 'link' | 'custom' | 'switch';
     className?: string;
     linkClassName?: string;
     href?: string | ((row: any) => string);
     openInNewTab?: boolean;
+    /** For type 'switch': action name to pass to onAction when toggled (default 'toggle-status'). */
+    switchAction?: string;
+    /** For type 'switch': permission required to enable the switch (defaults to entityPermissions.edit when present). */
+    switchPermission?: string;
     render?: (value: any, row: any) => React.ReactNode;
 }
 

@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
-import { Switch } from '@/components/ui/switch';
 import { hasPermission } from '@/utils/authorization';
 import { router, usePage } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
@@ -313,23 +312,9 @@ export default function Clients() {
         {
             key: 'status',
             label: t('Status'),
-            render: (value: string, row: any) => {
-                const canToggleStatus = hasPermission(permissions, 'edit-clients');
-                return (
-                    <div className="flex items-center gap-2">
-                        <Switch
-                            checked={value === 'active'}
-                            disabled={!canToggleStatus}
-                            onCheckedChange={() => {
-                                if (!canToggleStatus) return;
-                                handleToggleStatus(row);
-                            }}
-                            aria-label={value === 'active' ? t('Deactivate client') : t('Activate client')}
-                        />
-                        <span className="text-muted-foreground text-xs">{value === 'active' ? t('Active') : t('Inactive')}</span>
-                    </div>
-                );
-            },
+            type: 'switch',
+            switchAction: 'toggle-status',
+            switchPermission: 'edit-clients',
         },
     ];
 
