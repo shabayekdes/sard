@@ -12,6 +12,7 @@ return new class extends Migration
         Schema::create('invoice_line_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('invoice_id')->constrained('invoices')->cascadeOnDelete();
+            $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('type', 50)->default('manual');
             $table->text('description');
             $table->decimal('quantity', 10, 2)->default(1);
@@ -27,6 +28,7 @@ return new class extends Migration
 
             $table->foreign('time_entry_id')->references('id')->on('time_entries')->nullOnDelete();
             $table->foreign('expense_id')->references('id')->on('expenses')->nullOnDelete();
+            $table->index('tenant_id');
         });
     }
 

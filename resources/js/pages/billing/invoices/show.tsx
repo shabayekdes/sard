@@ -27,11 +27,12 @@ export default function ShowInvoice() {
 
     const formatDate = (date: string | null) => (date ? window.appSettings?.formatDate?.(date) || new Date(date).toLocaleDateString() : '-');
 
-    const amountPaid = Number(amountPaidProp ?? invoice?.amount_paid ?? 0);
-    const subtotal = Number(invoice?.subtotal ?? 0);
-    const taxAmount = Number(invoice?.tax_amount ?? 0);
-    const totalAmount = Number(invoice?.total_amount ?? 0);
-    const remainingAmount = Number(remainingAmountProp ?? invoice?.remaining_amount ?? totalAmount - amountPaid);
+    const round2 = (n: number) => Math.round(n * 100) / 100;
+    const amountPaid = round2(Number(amountPaidProp ?? invoice?.amount_paid ?? 0));
+    const subtotal = round2(Number(invoice?.subtotal ?? 0));
+    const taxAmount = round2(Number(invoice?.tax_amount ?? 0));
+    const totalAmount = round2(Number(invoice?.total_amount ?? 0));
+    const remainingAmount = round2(Number(remainingAmountProp ?? invoice?.remaining_amount ?? totalAmount - amountPaid));
     const taxRate = invoice?.tax_rate ?? invoice?.client?.tax_rate ?? 0;
 
     const handleSend = () => {
@@ -64,7 +65,11 @@ export default function ShowInvoice() {
     };
 
     const handlePaymentSubmit = (formData: any) => {
-        router.post(route('billing.payments.store'), formData, {
+        const payload = {
+            ...formData,
+            amount: Math.round(Number(formData.amount) * 100) / 100,
+        };
+        router.post(route('billing.payments.store'), payload, {
             onSuccess: (page: any) => {
                 toast.dismiss();
                 if (page.props.flash?.success) toast.success(page.props.flash.success);
@@ -523,7 +528,7 @@ export default function ShowInvoice() {
                 }}
                 initialData={{
                     invoice_id: String(invoice.id),
-                    amount: remainingAmountProp ?? invoice?.remaining_amount ?? invoice?.total_amount,
+                    amount: remainingAmount,
                     payment_date: new Date().toISOString().split('T')[0],
                     payment_method: 'cash',
                 }}

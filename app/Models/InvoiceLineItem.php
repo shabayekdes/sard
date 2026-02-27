@@ -11,6 +11,7 @@ class InvoiceLineItem extends Model
     use BelongsToTenant;
     protected $fillable = [
         'invoice_id',
+        'tenant_id',
         'type',
         'description',
         'quantity',
@@ -32,6 +33,15 @@ class InvoiceLineItem extends Model
         'vat_amount' => 'decimal:2',
         'expense_date' => 'date',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (InvoiceLineItem $item) {
+            if (empty($item->tenant_id) && $item->invoice_id) {
+                $item->tenant_id = Invoice::find($item->invoice_id)?->tenant_id;
+            }
+        });
+    }
 
     public function invoice(): BelongsTo
     {

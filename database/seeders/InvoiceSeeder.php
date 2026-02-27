@@ -146,6 +146,7 @@ class InvoiceSeeder extends Seeder
 
         foreach ($lineItems as $index => $item) {
             $invoice->lineItems()->create([
+                'tenant_id' => $company->tenant_id,
                 'type' => $item['type'],
                 'description' => $item['description'],
                 'quantity' => $item['quantity'],

@@ -53,7 +53,8 @@ export default function InvoicePayment() {
     const [showGatewayModal, setShowGatewayModal] = useState(false);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const [showCopiedMessage, setShowCopiedMessage] = useState(false);
-    const [paymentAmount, setPaymentAmount] = useState(remainingAmount || invoice.total_amount || 0);
+    const round2 = (n: number) => Math.round(Number(n) * 100) / 100;
+    const [paymentAmount, setPaymentAmount] = useState(() => round2(Number(remainingAmount ?? invoice?.total_amount ?? 0)));
 
     // Payment method icons mapping with Lucide React icons (same as plans)
     const getLogoUrl = (url?: string) => {
@@ -168,15 +169,16 @@ export default function InvoicePayment() {
         checkPaymentStatus();
     }, [invoice?.status, remainingAmount, flash?.success]);
 
-    const subtotal = Number(invoice?.subtotal ?? 0);
-    const taxAmount = Number(invoice?.tax_amount ?? 0);
-    const totalAmount = Number(invoice?.total_amount ?? 0);
+    const subtotal = round2(Number(invoice?.subtotal ?? 0));
+    const taxAmount = round2(Number(invoice?.tax_amount ?? 0));
+    const totalAmount = round2(Number(invoice?.total_amount ?? 0));
+    const remainingAmountRounded = round2(Number(remainingAmount ?? 0));
     const getLineAmounts = (itemAmount: number) => {
-        const amt = Number(itemAmount) || 0;
+        const amt = round2(Number(itemAmount) || 0);
         if (totalAmount <= 0) return { subtotalWithoutTax: amt, tax: 0, total: amt };
         const ratio = amt / totalAmount;
-        const subtotalWithoutTax = subtotal * ratio;
-        const tax = taxAmount * ratio;
+        const subtotalWithoutTax = round2(subtotal * ratio);
+        const tax = round2(taxAmount * ratio);
         return { subtotalWithoutTax, tax, total: amt };
     };
 
@@ -220,7 +222,7 @@ export default function InvoicePayment() {
             onClose: closeModal,
             onSuccess: handlePaymentSuccess,
             invoice,
-            amount: Number(paymentAmount)
+            amount: round2(Number(paymentAmount))
         };
 
         switch (selectedGateway) {
@@ -243,11 +245,11 @@ export default function InvoicePayment() {
                     isOpen={showPaymentModal}
                     onClose={closeModal}
                     invoice={invoice}
-                    amount={Number(paymentAmount)}
+                    amount={round2(Number(paymentAmount))}
                     paystackKey={paystackPublicKey}
                 />;
             case 'coingate':
-                return <CoinGatePaymentModal {...modalProps} amount={paymentAmount} />;
+                return <CoinGatePaymentModal {...modalProps} amount={round2(Number(paymentAmount))} />;
             case 'aamarpay':
                 return <AamarpayPaymentModal {...modalProps} />;
             case 'authorizenet':
@@ -425,7 +427,7 @@ export default function InvoicePayment() {
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <p className="text-sm font-medium text-gray-500">{t('Total Amount')}</p>
-                                        <p className="mt-1 text-xl font-bold text-gray-900"><CurrencyAmount amount={invoice.total_amount} /></p>
+                                        <p className="mt-1 text-xl font-bold text-gray-900"><CurrencyAmount amount={totalAmount} /></p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -439,7 +441,7 @@ export default function InvoicePayment() {
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <p className="text-sm font-medium text-gray-500">{t('Paid Amount')}</p>
-                                        <p className="mt-1 text-xl font-bold text-gray-900"><CurrencyAmount amount={(invoice.total_amount ?? 0) - (remainingAmount ?? 0)} /></p>
+                                        <p className="mt-1 text-xl font-bold text-gray-900"><CurrencyAmount amount={round2(Number(invoice?.total_amount ?? 0) - remainingAmountRounded)} /></p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -453,7 +455,7 @@ export default function InvoicePayment() {
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <p className="text-sm font-medium text-gray-500">{t('Due Amount')}</p>
-                                        <p className="mt-1 text-xl font-bold text-gray-900"><CurrencyAmount amount={remainingAmount} /></p>
+                                        <p className="mt-1 text-xl font-bold text-gray-900"><CurrencyAmount amount={remainingAmountRounded} /></p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -606,7 +608,7 @@ export default function InvoicePayment() {
                                                 </thead>
                                                 <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900/50">
                                                     {invoice.line_items.map((item: any, index: number) => {
-                                                        const { subtotalWithoutTax, tax, total } = getLineAmounts(parseFloat(item.amount || 0));
+                                                        const { subtotalWithoutTax, tax, total } = getLineAmounts(round2(parseFloat(item.amount || 0)));
                                                         const isExpense = item.type === 'expense';
                                                         const isTime = item.type === 'time';
                                                         const typeLabel = isExpense ? t('Expense') : isTime ? t('Time Entry') : t('Item');
@@ -620,7 +622,7 @@ export default function InvoicePayment() {
                                                                     </span>
                                                                 </td>
                                                                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{item.quantity}</td>
-                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100"><CurrencyAmount amount={parseFloat(item.rate || 0)} /></td>
+                                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100"><CurrencyAmount amount={round2(parseFloat(item.rate || 0))} /></td>
                                                                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100"><CurrencyAmount amount={subtotalWithoutTax} /></td>
                                                                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100"><CurrencyAmount amount={tax} /></td>
                                                                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100"><CurrencyAmount amount={total} /></td>
@@ -645,11 +647,11 @@ export default function InvoicePayment() {
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-muted-foreground">{t('Tax Value')}:</span>
-                                                <span className="font-medium"><CurrencyAmount amount={invoice?.tax_amount ?? 0} /></span>
+                                                <span className="font-medium"><CurrencyAmount amount={taxAmount} /></span>
                                             </div>
                                             <div className="flex justify-between border-t pt-3 text-lg font-bold">
                                                 <span>{t('Total')}:</span>
-                                                <span><CurrencyAmount amount={invoice?.total_amount ?? 0} /></span>
+                                                <span><CurrencyAmount amount={totalAmount} /></span>
                                             </div>
                                         </div>
                                     </div>
@@ -712,11 +714,11 @@ export default function InvoicePayment() {
                                     <span className="text-sm text-blue-700">
                                         {t('Invoice')} #{invoice.invoice_number}
                                     </span>
-                                    <span className="font-bold text-blue-900"><CurrencyAmount amount={invoice.total_amount} /></span>
+                                    <span className="font-bold text-blue-900"><CurrencyAmount amount={totalAmount} /></span>
                                 </div>
                                 <div className="mt-1 text-xs text-blue-600">{invoice.client?.name}</div>
                                 <div className="mt-1 text-xs text-blue-600">
-                                    {t('Remaining')}: <CurrencyAmount amount={remainingAmount} />
+                                    {t('Remaining')}: <CurrencyAmount amount={remainingAmountRounded} />
                                 </div>
                             </div>
 
@@ -726,17 +728,17 @@ export default function InvoicePayment() {
                                     type="number"
                                     step="0.01"
                                     min="0.01"
-                                    max={remainingAmount}
+                                    max={remainingAmountRounded}
                                     value={paymentAmount}
-                                    onChange={(e) => setPaymentAmount(Number(e.target.value))}
+                                    onChange={(e) => setPaymentAmount(round2(Number(e.target.value)))}
                                     placeholder={t('Enter amount to pay')}
                                     className="w-full"
                                 />
                                 <div className="mt-2 flex gap-2">
-                                    <Button variant="outline" size="sm" onClick={() => setPaymentAmount(Math.round((remainingAmount / 2) * 100) / 100)}>
+                                    <Button variant="outline" size="sm" onClick={() => setPaymentAmount(round2(remainingAmountRounded / 2))}>
                                         50%
                                     </Button>
-                                    <Button variant="outline" size="sm" onClick={() => setPaymentAmount(Math.round(remainingAmount * 100) / 100)}>
+                                    <Button variant="outline" size="sm" onClick={() => setPaymentAmount(remainingAmountRounded)}>
                                         {t('Full Amount')}
                                     </Button>
                                 </div>
@@ -796,7 +798,7 @@ export default function InvoicePayment() {
                                                 toast.error(t('Please enter a valid payment amount.'));
                                                 return;
                                             }
-                                            if (paymentAmount > remainingAmount) {
+                                            if (paymentAmount > remainingAmountRounded) {
                                                 toast.error(t('Payment amount cannot exceed remaining balance.'));
                                                 return;
                                             }

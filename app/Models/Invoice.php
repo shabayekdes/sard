@@ -45,7 +45,7 @@ class Invoice extends BaseModel
 
         static::creating(function ($invoice) {
             if (!$invoice->invoice_number) {
-                $invoice->invoice_number = 'INV-' . date('Y') . '-' . $invoice->tenant_id . '-' . str_pad(
+                $invoice->invoice_number = 'INV-' . date('Y') . '-' . str_pad(
                     Invoice::where('tenant_id', $invoice->tenant_id)
                         ->whereYear('created_at', date('Y'))->count() + 1,
                     4,
