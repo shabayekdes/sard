@@ -23,7 +23,7 @@ return new class extends Migration
             $table->enum('business_type', ['law_firm', 'corporate_legal', 'government', 'other'])->default('law_firm');
             $table->string('cr')->nullable();
             $table->string('tax_number')->nullable();
-            $table->enum('company_size', ['solo', 'small', 'medium', 'large'])->default('solo');
+            $table->string('company_size', 50)->default('solo');
             $table->string('office_hours')->nullable();
             $table->decimal('consultation_fees', 10, 2)->nullable();
             $table->integer('success_rate')->nullable();

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\CompanySize;
 use App\Models\CompanyProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +17,7 @@ class CompanyProfileController extends Controller
 
         return Inertia::render('advocate/company-profiles/index', [
             'companyProfile' => $companyProfile,
+            'officeSizeOptions' => CompanySize::options(),
         ]);
     }
 
@@ -38,7 +40,7 @@ class CompanyProfileController extends Controller
             'establishment_date' => 'nullable|date',
             'cr' => 'nullable|string|max:255',
             'tax_number' => 'nullable|string|max:255',
-            'company_size' => 'required|in:solo,small,medium,large',
+            'company_size' => ['required', 'in:' . implode(',', CompanySize::values())],
             'business_type' => 'required|in:law_firm,corporate_legal,government,other',
             'default_setup' => 'nullable|string|max:255',
             
@@ -83,7 +85,7 @@ class CompanyProfileController extends Controller
             'establishment_date' => 'nullable|date',
             'cr' => 'nullable|string|max:255',
             'tax_number' => 'nullable|string|max:255',
-            'company_size' => 'required|in:solo,small,medium,large',
+            'company_size' => ['required', 'in:' . implode(',', CompanySize::values())],
             'business_type' => 'required|in:law_firm,corporate_legal,government,other',
             'default_setup' => 'nullable|string|max:255',
             

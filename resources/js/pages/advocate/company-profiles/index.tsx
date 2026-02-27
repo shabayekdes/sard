@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 
 export default function CompanyProfiles() {
   const { t } = useTranslation();
-  const { companyProfile } = usePage().props as any;
+  const { companyProfile, officeSizeOptions = [] } = usePage().props as any;
   const [isEditing, setIsEditing] = useState(!companyProfile);
   const [formData, setFormData] = useState({
     email: '',
@@ -301,18 +301,11 @@ export default function CompanyProfiles() {
                   <SelectValue placeholder={t('Choose Office Size')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="solo" className="text-sm">
-                    {t('Solo Practice')}
-                  </SelectItem>
-                  <SelectItem value="small" className="text-sm">
-                    {t('Small')}
-                  </SelectItem>
-                  <SelectItem value="medium" className="text-sm">
-                    {t('Med')}
-                  </SelectItem>
-                  <SelectItem value="large" className="text-sm">
-                    {t('Large')}
-                  </SelectItem>
+                  {(officeSizeOptions as { value: string; labelKey: string }[]).map((option) => (
+                    <SelectItem key={option.value} value={option.value} className="text-sm">
+                      {t(option.labelKey)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
