@@ -11,7 +11,6 @@ return new class extends Migration
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
             $table->string('message_id')->unique();
-            $table->unsignedBigInteger('company_id');
             $table->unsignedBigInteger('sender_id');
             $table->unsignedBigInteger('recipient_id')->nullable();
             $table->unsignedBigInteger('conversation_id')->nullable();

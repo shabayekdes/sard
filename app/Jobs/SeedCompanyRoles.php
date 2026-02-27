@@ -272,24 +272,6 @@ class SeedCompanyRoles implements ShouldQueue
         ];
 
         $teamRole->syncPermissions($teamPermissions);
-
-        // Create default team member user
-        $teamMember = User::firstOrCreate([
-            'email' => 'teammember' . $this->tenant_id . '@company.com',
-            'tenant_id' => $this->tenant_id
-        ], [
-            'name' => 'John Doe',
-            'password' => Hash::make('password'),
-            'type' => 'team_member',
-            'lang' => $companyUser->lang ?? 'en',
-            'status' => 'active',
-            'referral_code' => 0
-        ]);
-
-        $teamMember->roles()->sync([$teamRole->id]);
-
-        // Create client billing currencies
-        // $companyUser->clientBillingCurrencies()->createMany(config('currencies.available_currencies', []));
     }
 
     /**

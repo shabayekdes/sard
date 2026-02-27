@@ -66,7 +66,6 @@ class MessageSeeder extends Seeder
                 
                 $messageData = [
                     'message_id' => null, // Auto-generated
-                    'company_id' => $companyUser->id,
                     'sender_id' => $sender->id,
                     'recipient_id' => $recipient->id,
                     'conversation_id' => $conversation->id,

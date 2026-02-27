@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { useBrand } from '@/contexts/BrandContext';
+import { THEME_COLORS } from '@/hooks/use-appearance';
 import { router, usePage } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { MessageSquare, MoreVertical, Plus, Search, Send, Trash2, User, Users, Mail, Phone, Calendar, Briefcase, Scale } from 'lucide-react';
@@ -59,6 +61,9 @@ interface Props {
 export default function MessagesIndex({ conversations, users, filters }: Props) {
     const { t } = useTranslation();
     const { auth } = usePage().props as any;
+    const { themeColor, customColor } = useBrand();
+    const primaryColor = themeColor === 'custom' ? customColor : (THEME_COLORS[themeColor as keyof typeof THEME_COLORS] ?? '#3b82f6');
+    const primaryBgLight = `${primaryColor}18`;
     const [search, setSearch] = useState(filters.search || '');
     const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
     const [newMessage, setNewMessage] = useState('');
@@ -406,13 +411,12 @@ export default function MessagesIndex({ conversations, users, filters }: Props) 
                                                     <div className={`max-w-xs lg:max-w-md ${isCurrentUser ? 'order-1' : 'order-2'}`}>
                                                         <div
                                                             className={`rounded-lg p-3 shadow-sm ${
-                                                                isCurrentUser
-                                                                    ? 'bg-blue-500 text-white'
-                                                                    : 'bg-white text-gray-900 dark:bg-gray-800 dark:text-white'
+                                                                isCurrentUser ? '' : 'bg-white text-gray-900 dark:bg-gray-800 dark:text-white'
                                                             }`}
+                                                            style={isCurrentUser ? { backgroundColor: primaryBgLight, color: primaryColor } : undefined}
                                                         >
                                                             <p className="text-sm">{message.content}</p>
-                                                            <p className={`mt-1 text-xs ${isCurrentUser ? 'text-blue-100' : 'text-gray-500'}`}>
+                                                            <p className={`mt-1 text-xs ${isCurrentUser ? 'opacity-80' : 'text-gray-500'}`} style={isCurrentUser ? { color: primaryColor } : undefined}>
                                                                 {window.appSettings?.formatTime(message.created_at) || format(new Date(message.created_at), 'HH:mm')}
                                                             </p>
                                                         </div>
