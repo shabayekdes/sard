@@ -52,6 +52,12 @@
 
         <script src="{{ asset('js/jquery.min.js') }}"></script>
         @routes
+        <script>
+            // Force Ziggy base URL to current origin (avoids CORS when on tenant domain vs central)
+            if (typeof Ziggy !== 'undefined') {
+                Ziggy.url = window.location.origin;
+            }
+        </script>
         @if (app()->environment('local'))
             @viteReactRefresh
         @endif

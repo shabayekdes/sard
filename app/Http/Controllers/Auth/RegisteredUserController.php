@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Facades\Settings;
 use App\Http\Controllers\Controller;
 use App\Models\Country;
 use App\Models\Tenant;
@@ -156,20 +157,21 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        // Check if email verification is enabled
-        $emailVerificationEnabled = getSetting('emailVerification', false);
+        // Redirect on current host only (avoid cross-origin redirect so session/cookies stay)
+        $currentHost = $request->getSchemeAndHttpHost();
+
+        $emailVerificationEnabled = Settings::boolean('ENABLE_EMAIL_VERIFICATION');
         if ($emailVerificationEnabled) {
             event(new Registered($user));
-            return redirect()->route('verification.notice');
+            return redirect()->away("{$currentHost}/verify-email");
         }
 
-        // Redirect to plans page with selected plan
         $planId = $request->plan_id;
         if ($planId) {
-            return redirect()->route('plans.index', ['selected' => $planId]);
+            return redirect()->away("{$currentHost}/plans?selected={$planId}");
         }
 
-        return to_route('dashboard');
+        return redirect()->away("{$currentHost}/dashboard");
     }
 
     /**

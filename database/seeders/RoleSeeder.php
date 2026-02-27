@@ -129,7 +129,6 @@ class RoleSeeder extends Seeder
             'manage-own-language',
 
 
-
             // Client Type permissions
             'manage-client-types',
             'manage-any-client-types',
@@ -384,7 +383,6 @@ class RoleSeeder extends Seeder
             'toggle-status-documents',
 
 
-
             // Document Versions permissions
             'manage-document-versions',
             'manage-any-document-versions',
@@ -413,7 +411,6 @@ class RoleSeeder extends Seeder
             'create-document-permissions',
             'edit-document-permissions',
             'delete-document-permissions',
-
 
 
             // Research Projects permissions
@@ -729,10 +726,6 @@ class RoleSeeder extends Seeder
             // Task Dependencies permissions
 
 
-
-
-
-
             // Task Comments permissions
             'manage-task-comments',
             'manage-any-task-comments',
@@ -754,48 +747,33 @@ class RoleSeeder extends Seeder
 
         $adminRole->syncPermissions($adminPermissions);
 
-        // Add demo-specific roles
-        $isDemo = config('app.is_demo', true);
-
-        if ($isDemo) {
-            // Demo mode - create additional roles
-            $roles = [
-                [
-                    'name' => 'senior_attorney',
-                    'label' => self::translatableJson('Senior Attorney', 'محامٍ أول'),
-                    'description' => self::translatableJson('Senior attorney with advanced permissions', 'محامٍ أول بصلاحيات متقدمة'),
-                    'permissions' => ['manage-cases', 'view-cases', 'create-cases', 'edit-cases', 'manage-clients', 'view-clients', 'manage-documents', 'view-documents']
-                ],
-                [
-                    'name' => 'junior_attorney',
-                    'label' => self::translatableJson('Junior Attorney', 'محامٍ مبتدئ'),
-                    'description' => self::translatableJson('Junior attorney with limited permissions', 'محامٍ مبتدئ بصلاحيات محدودة'),
-                    'permissions' => ['view-cases', 'view-clients', 'view-documents', 'create-case-notes', 'view-case-notes']
-                ],
-                [
-                    'name' => 'paralegal',
-                    'label' => self::translatableJson('Paralegal', 'مساعد قانوني'),
-                    'description' => self::translatableJson('Paralegal with document and research access', 'مساعد قانوني مع صلاحية المستندات والبحث'),
-                    'permissions' => ['view-cases', 'manage-documents', 'view-documents', 'manage-research-projects', 'view-research-projects']
-                ],
-                [
-                    'name' => 'legal_secretary',
-                    'label' => self::translatableJson('Legal Secretary', 'سكرتير قانوني'),
-                    'description' => self::translatableJson('Legal secretary with administrative access', 'سكرتير قانوني بصلاحيات إدارية'),
-                    'permissions' => ['view-calendar', 'manage-calendar', 'view-clients', 'manage-messages', 'view-messages']
-                ]
-            ];
-        } else {
-            // Main/Production mode - create minimal additional roles
-            $roles = [
-                [
-                    'name' => 'attorney',
-                    'label' => self::translatableJson('Attorney', 'محامٍ'),
-                    'description' => self::translatableJson('Attorney with case management access', 'محامٍ بصلاحية إدارة القضايا'),
-                    'permissions' => ['manage-cases', 'view-cases', 'manage-clients', 'view-clients', 'manage-documents', 'view-documents']
-                ]
-            ];
-        }
+        // Demo mode - create additional roles
+        $roles = [
+            [
+                'name' => 'senior_attorney',
+                'label' => self::translatableJson('Senior Attorney', 'محامٍ أول'),
+                'description' => self::translatableJson('Senior attorney with advanced permissions', 'محامٍ أول بصلاحيات متقدمة'),
+                'permissions' => ['manage-cases', 'view-cases', 'create-cases', 'edit-cases', 'manage-clients', 'view-clients', 'manage-documents', 'view-documents']
+            ],
+            [
+                'name' => 'junior_attorney',
+                'label' => self::translatableJson('Junior Attorney', 'محامٍ مبتدئ'),
+                'description' => self::translatableJson('Junior attorney with limited permissions', 'محامٍ مبتدئ بصلاحيات محدودة'),
+                'permissions' => ['view-cases', 'view-clients', 'view-documents', 'create-case-notes', 'view-case-notes']
+            ],
+            [
+                'name' => 'paralegal',
+                'label' => self::translatableJson('Paralegal', 'مساعد قانوني'),
+                'description' => self::translatableJson('Paralegal with document and research access', 'مساعد قانوني مع صلاحية المستندات والبحث'),
+                'permissions' => ['view-cases', 'manage-documents', 'view-documents', 'manage-research-projects', 'view-research-projects']
+            ],
+            [
+                'name' => 'legal_secretary',
+                'label' => self::translatableJson('Legal Secretary', 'سكرتير قانوني'),
+                'description' => self::translatableJson('Legal secretary with administrative access', 'سكرتير قانوني بصلاحيات إدارية'),
+                'permissions' => ['view-calendar', 'manage-calendar', 'view-clients', 'manage-messages', 'view-messages']
+            ]
+        ];
 
         foreach ($roles as $roleData) {
             $role = Role::firstOrCreate(

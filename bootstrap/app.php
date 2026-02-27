@@ -24,7 +24,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->group('universal', []);
 
         $middleware->web(append: [
-            CheckInstallation::class,
             SetLocale::class,
             HandleAppearance::class,
             ShareGlobalSettings::class,

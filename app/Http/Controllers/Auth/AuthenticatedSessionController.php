@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Facades\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\LoginHistory;
@@ -40,9 +41,10 @@ class AuthenticatedSessionController extends Controller
         $this->logLoginHistory($request);
 
         // Check if email verification is enabled and user is not verified
-        $emailVerificationEnabled = getSetting('emailVerification', false);
-        if ($emailVerificationEnabled && !$request->user()->hasVerifiedEmail()) {
-            return redirect()->route('verification.notice');
+        $emailVerificationEnabled = Settings::boolean('ENABLE_EMAIL_VERIFICATION');
+        if ($emailVerificationEnabled && ! $request->user()->hasVerifiedEmail()) {
+            // Redirect to verification on current host (tenant or central) to avoid sending to SaaS domain
+            return redirect()->away($request->getSchemeAndHttpHost() . '/verify-email');
         }
 
         // Redirect to intended URL only if it's an Inertia page (not a JSON/API route).

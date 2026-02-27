@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
                 RoleSeeder::class,
                 PlanSeeder::class,
                 UserSeeder::class,
+                SaasSettingSeeder::class,
                 CompanySeeder::class,
                 CurrencySeeder::class,
                 CountrySeeder::class,

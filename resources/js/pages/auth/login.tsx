@@ -71,13 +71,13 @@ export default function Login({ canResetPassword, isNonProduction }: LoginProps)
                     </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 rounded-lg border border-slate-200 bg-white p-1 text-sm font-medium">
-                    <dev
+                    <div
                         className="flex items-center justify-center rounded-md px-3 py-2"
                         style={{ backgroundColor: `${primaryColor}1A`, color: primaryColor }}
                         aria-current="page"
                     >
                         {t('Log in')}
-                    </dev>
+                    </div>
                     <TextLink
                         href={route('register')}
                         className="flex items-center justify-center rounded-md px-3 py-2 text-slate-600 transition-colors duration-200"
@@ -161,7 +161,7 @@ export default function Login({ canResetPassword, isNonProduction }: LoginProps)
                             className="rounded border-gray-300"
                             style={{ '--tw-ring-color': primaryColor, color: primaryColor } as React.CSSProperties}
                         />
-                        <Label htmlFor="remember" className="ml-2 text-gray-600 dark:text-gray-400">
+                        <Label htmlFor="remember" className="mx-2 text-gray-600 dark:text-gray-400">
                             {t('Remember me')}
                         </Label>
                     </div>

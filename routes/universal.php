@@ -12,10 +12,6 @@ Route::middleware([
 
     Route::middleware(['auth', 'verified'])
         ->group(function () {
-
-            Route::get('dashboard', [Controllers\DashboardController::class, 'index'])->name('dashboard');
-            Route::get('dashboard/redirect', [Controllers\DashboardController::class, 'redirectToFirstAvailablePage'])->name('dashboard.redirect');
-
             Route::get('media-library', function () {
                 $storageSettings = \App\Services\StorageConfigService::getStorageConfig();
 

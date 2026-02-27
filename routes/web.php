@@ -55,10 +55,8 @@ use App\Http\Controllers\YooKassaPaymentController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-require __DIR__ . '/tenant.php';
 require __DIR__ . '/universal.php';
 require __DIR__ . '/central.php';
-require __DIR__ . '/auth.php';
 
 
 // AamarPay invoice success route - must be outside CSRF protection

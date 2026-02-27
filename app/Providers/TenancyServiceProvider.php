@@ -24,7 +24,17 @@ class TenancyServiceProvider extends ServiceProvider
             // Tenant events
             Events\CreatingTenant::class => [],
             Events\TenantCreated::class => [
-                // Single-database: no per-tenant DB creation/migration
+                // JobPipeline::make([
+                //     Jobs\CreateDatabase::class,
+                //     Jobs\MigrateDatabase::class,
+                //     // Jobs\SeedDatabase::class,
+                //
+                //     // Your own jobs to prepare the tenant.
+                //     // Provision API keys, create S3 buckets, anything you want!
+                //
+                // ])->send(function (Events\TenantCreated $event) {
+                //     return $event->tenant;
+                // })->shouldBeQueued(false), // `false` by default, but you probably want to make this `true` for production.
             ],
             Events\SavingTenant::class => [],
             Events\TenantSaved::class => [],
@@ -32,7 +42,11 @@ class TenancyServiceProvider extends ServiceProvider
             Events\TenantUpdated::class => [],
             Events\DeletingTenant::class => [],
             Events\TenantDeleted::class => [
-                // Single-database: no per-tenant DB deletion
+                JobPipeline::make([
+                    Jobs\DeleteDatabase::class,
+                ])->send(function (Events\TenantDeleted $event) {
+                    return $event->tenant;
+                })->shouldBeQueued(false), // `false` by default, but you probably want to make this `true` for production.
             ],
 
             // Domain events
@@ -56,7 +70,6 @@ class TenancyServiceProvider extends ServiceProvider
             Events\InitializingTenancy::class => [],
             Events\TenancyInitialized::class => [
                 Listeners\BootstrapTenancy::class,
-                \App\Listeners\SetTenantAppUrl::class,
             ],
 
             Events\EndingTenancy::class => [],
@@ -90,23 +103,6 @@ class TenancyServiceProvider extends ServiceProvider
         $this->mapRoutes();
 
         $this->makeTenancyMiddlewareHighestPriority();
-        $this->setDomainIdentificationOnFail();
-    }
-
-    protected function setDomainIdentificationOnFail(): void
-    {
-        $redirectToCentral = function ($e, $request, $next) {
-            $url = config('app.url', '');
-            $centralDomains = config('tenancy.central_domains', []);
-            if ($centralDomains !== [] && $url === '') {
-                $url = 'http://' . $centralDomains[0];
-            }
-
-            return $url ? redirect()->away($url) : $next($request);
-        };
-
-        Middleware\InitializeTenancyByDomain::$onFail = $redirectToCentral;
-        Middleware\InitializeTenancyBySubdomain::$onFail = $redirectToCentral;
     }
 
     protected function bootEvents()

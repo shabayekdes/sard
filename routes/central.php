@@ -6,15 +6,21 @@ use Inertia\Inertia;
 
 foreach (config('tenancy.central_domains') as $domain) {
     Route::domain($domain)->group(function () {
+
+        require __DIR__ . '/auth.php';
+
         Route::get('/', function () {
             return 'This is the central domain';
         });
+
 
         Route::middleware([
             'auth',
             'verified',
         ])
             ->group(function () {
+                Route::get('dashboard', [Controllers\DashboardController::class, 'index'])->name('dashboard');
+
                 // Companies routes
                 Route::middleware('permission:manage-companies')->group(function () {
                     Route::get('companies', [Controllers\CompanyController::class, 'index'])->middleware('permission:manage-companies')->name('companies.index');

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
-            $table->foreignUuid('tenant_id')->nullable()->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignUuid('tenant_id')->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
             $table->string('key');
             $table->text('value')->nullable();
             $table->timestamps();

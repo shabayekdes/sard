@@ -13,8 +13,8 @@ declare global {
             formatDateTime: (date: string | Date, includeTime?: boolean) => string | null;
             formatDate: (date: string | Date) => string | null;
             formatTime: (time: string | Date) => string | null;
-            formatCurrency: (amount: number | string, options?: { showSymbol?: boolean, showCode?: boolean }) => string;
-            formatCurrencyWithSuperAdminSettings: (amount: number | string, options?: { showSymbol?: boolean, showCode?: boolean }) => string;
+            formatCurrency: (amount: number | string, options?: { showSymbol?: boolean; showCode?: boolean }) => string;
+            formatCurrencyWithSuperAdminSettings: (amount: number | string, options?: { showSymbol?: boolean; showCode?: boolean }) => string;
             currencySettings: {
                 decimalFormat: string;
                 defaultCurrency: string;

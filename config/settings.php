@@ -1,0 +1,89 @@
+<?php
+
+
+return [
+    // System Settings
+    'DEFAULT_COUNTRY' => 'SA',
+    'DEFAULT_LANGUAGE' => 'ar',
+    'DATE_FORMAT' => 'Y-m-d',
+    'TIME_FORMAT' => 'H:i',
+    'CALENDAR_START_DAY' => 'sunday',
+    'DEFAULT_TIMEZONE' => 'Asia/Riyadh',
+    'EMAIL_VERIFICATION' => true,
+    'LANDING_PAGE_ENABLED' => false,
+    'DEFAULT_TAX_RATE' => '15',
+    'RECAPTCHA_ENABLED' => config('services.recaptcha.enabled'),
+    'RECAPTCHA_VERSION' => config('services.recaptcha.version', 'v3'),
+    'RECAPTCHA_SITE_KEY' => config('services.recaptcha.site_key', ''),
+    'RECAPTCHA_SECRET_KEY' => config('services.recaptcha.secret_key', ''),
+
+    // Brand Settings
+    'LOGO_DARK' => '/images/logos/logo-dark.png',
+    'LOGO_LIGHT' => '/images/logos/logo-light.png',
+    'FAVICON' => '/images/logos/favicon.ico',
+    'TITLE_TEXT' => 'Sard app - تطبيق سرد',
+    'FOOTER_TEXT' => '© 2026 Sard . All rights reserved. - جميع الحقوق محفوظة لشركة سرد 2026',
+    'THEME_COLOR' => 'green',
+    'CUSTOM_COLOR' => '#205341',
+    'SIDEBAR_VARIANT' => 'inset',
+    'SIDEBAR_STYLE' => 'plain',
+    'LAYOUT_DIRECTION' => 'left',
+    'THEME_MODE' => 'light',
+
+    // Storage Settings
+    'STORAGE_TYPE' => config('filesystems.default', 'local'),
+    'STORAGE_FILE_TYPES' => 'jpg,png,webp,gif,pdf,doc,docx,txt,csv',
+    'STORAGE_MAX_UPLOAD_SIZE' => '2048',
+    'AWS_ACCESS_KEY_ID' => config('services.aws.access_key_id', ''),
+    'AWS_SECRET_ACCESS_KEY' => config('services.aws.secret_access_key', ''),
+    'AWS_DEFAULT_REGION' => config('services.aws.default_region', 'us-east-1'),
+    'AWS_BUCKET' => config('services.aws.bucket', ''),
+    'AWS_URL' => config('services.aws.url', ''),
+    'AWS_ENDPOINT' => config('services.aws.endpoint', ''),
+    'WASABI_ACCESS_KEY' => '',
+    'WASABI_SECRET_KEY' => '',
+    'WASABI_REGION' => 'us-east-1',
+    'WASABI_BUCKET' => '',
+    'WASABI_URL' => '',
+    'WASABI_ROOT' => '',
+
+    // Currency Settings
+    'DECIMAL_FORMAT' => '2',
+    'DEFAULT_CURRENCY' => 'SAR',
+    'DECIMAL_SEPARATOR' => '.',
+    'THOUSANDS_SEPARATOR' => ',',
+    'FLOAT_NUMBER' => true,
+    'CURRENCY_SYMBOL_SPACE' => false,
+    'CURRENCY_SYMBOL_POSITION' => 'before',
+
+    // Slack Settings
+    'SLACK_ENABLED' => false,
+    'SLACK_WEBHOOK_URL' => '',
+
+    // Email Settings
+    'EMAIL_PROVIDER' => 'smtp',
+    'EMAIL_DRIVER' => 'smtp',
+    'EMAIL_HOST' => config('mail.mailers.smtp.host', 'smtp.emailit.com'),
+    'EMAIL_PORT' => (string) config('mail.mailers.smtp.port', 587),
+    'EMAIL_USERNAME' => config('mail.mailers.smtp.username', 'emailit'),
+    'EMAIL_PASSWORD' => config('mail.mailers.smtp.password', ''),
+    'EMAIL_ENCRYPTION' => config('mail.mailers.smtp.encryption', 'tls'),
+    'EMAIL_FROM_ADDRESS' => config('mail.from.address', 'no-reply@sard.app'),
+    'EMAIL_FROM_NAME' => config('mail.from.name', config('app.name', 'Sard')),
+
+    'ENABLE_LOGGING' => true,
+    'STRICTLY_NECESSARY_COOKIES' => true,
+    'CONTACT_US_URL' => 'https://sard.app',
+    'COOKIE_TITLE_EN' => 'Cookie Consent',
+    'COOKIE_TITLE_AR' => 'إشعار ملفات تعريف الارتباط',
+    'STRICTLY_COOKIE_TITLE_EN' => 'Strictly Necessary Cookies',
+    'STRICTLY_COOKIE_TITLE_AR' => 'ملفات تعريف الارتباط الضرورية',
+    'COOKIE_DESCRIPTION_EN' => 'We use cookies to improve your browsing experience, analyze website performance, and provide content tailored to your preferences.',
+    'COOKIE_DESCRIPTION_AR' => 'نستخدم ملفات تعريف الارتباط لتحسين تجربة التصفح، وتحليل أداء الموقع، وتقديم محتوى يتناسب مع تفضيلاتك.',
+    'STRICTLY_COOKIE_DESCRIPTION_EN' => 'These cookies are essential for the proper functioning of the website and cannot be disabled as they enable core features such as security and accessibility.',
+    'STRICTLY_COOKIE_DESCRIPTION_AR' => 'تُعد ملفات تعريف الارتباط هذه ضرورية لعمل الموقع بشكل صحيح، ولا يمكن تعطيلها، حيث تُمكّن الميزات الأساسية مثل الأمان وإمكانية الوصول.',
+    'CONTACT_US_TITLE_EN' => 'Contact Us',
+    'CONTACT_US_TITLE_AR' => 'إشعار ملفات تعريف الارتباط',
+    'CONTACT_US_DESCRIPTION_EN' => 'If you have any questions or concerns regarding our cookie policy, please feel free to contact us.',
+    'CONTACT_US_DESCRIPTION_AR' => 'إذا كان لديك أي استفسار أو ملاحظات بخصوص سياسة ملفات تعريف الارتباط، يُرجى التواصل معنا.',
+];

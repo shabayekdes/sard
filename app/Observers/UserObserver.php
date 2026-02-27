@@ -37,11 +37,11 @@ class UserObserver
             $user->save();
         }
         
-        // Create default settings for new users
-        if ($user->type === 'superadmin') {
-            createDefaultSettings($user->tenant_id);
-        } elseif ($user->type === 'company' && $user->tenant_id) {
-            \App\Jobs\SeedCompanySettings::dispatchSync($user->tenant_id);
-        }
+        // // Create default settings for new users
+        // if ($user->type === 'superadmin') {
+        //     createDefaultSettings($user->tenant_id);
+        // } elseif ($user->type === 'company' && $user->tenant_id) {
+        //     \App\Jobs\SeedCompanySettings::dispatchSync($user->tenant_id);
+        // }
     }
 }
