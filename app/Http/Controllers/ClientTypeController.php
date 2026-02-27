@@ -31,24 +31,10 @@ class ClientTypeController extends Controller
         }
 
         // Handle sorting
-        $sortField = $request->input('sort_field');
-        $sortDirection = $request->input('sort_direction', 'desc');
-
-        if (!empty($sortField)) {
-            // Validate sort direction
-            if (!in_array($sortDirection, ['asc', 'desc'])) {
-                $sortDirection = 'desc';
-            }
-
-            // For translatable fields, sort by the current locale
-            if (in_array($sortField, ['name', 'description'])) {
-                $locale = app()->getLocale();
-                $query->orderByRaw("JSON_EXTRACT({$sortField}, '$.{$locale}') {$sortDirection}");
-            } else {
-                $query->orderBy($sortField, $sortDirection);
-            }
+        if ($request->has('sort_field') && !empty($request->sort_field)) {
+            $query->orderBy($request->sort_field, $request->sort_direction ?? 'asc');
         } else {
-            $query->orderBy('created_at', 'desc');
+            $query->latest('id');
         }
 
         $clientTypes = $query->paginate($request->per_page ?? 10);
@@ -96,12 +82,12 @@ class ClientTypeController extends Controller
             ->exists();
 
         if ($exists) {
-            return redirect()->back()->with('error', 'Client type with this name already exists.');
+            return redirect()->back()->with('error', __(':model with this name already exists.', ['model' => __('Client type')]));
         }
 
         ClientType::create($validated);
 
-        return redirect()->back()->with('success', 'Client type created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Client type')]));
     }
 
     public function update(Request $request, $clientTypeId)
@@ -129,17 +115,17 @@ class ClientTypeController extends Controller
                     ->exists();
 
                 if ($exists) {
-                    return redirect()->back()->with('error', 'Client type with this name already exists.');
+                    return redirect()->back()->with('error', __(':model with this name already exists.', ['model' => __('Client type')]));
                 }
 
                 $clientType->update($validated);
 
-                return redirect()->back()->with('success', 'Client type updated successfully');
+                return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Client type')]));
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to update client type');
+                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to update :model', ['model' => __('Client type')]));
             }
         } else {
-            return redirect()->back()->with('error', 'Client type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Client type')]));
         }
     }
 
@@ -155,16 +141,16 @@ class ClientTypeController extends Controller
                 if (class_exists('App\\Models\\Client')) {
                     $clientCount = \App\Models\Client::where('client_type_id', $clientTypeId)->count();
                     if ($clientCount > 0) {
-                        return response()->json(['message' => 'Cannot delete client type with assigned clients'], 400);
+                        return response()->json(['message' => __('Cannot delete :model with assigned :relation.', ['model' => __('Client type'), 'relation' => __('Clients')])], 400);
                     }
                 }
                 $clientType->delete();
-                return redirect()->back()->with('success', 'Client type deleted successfully');
+                return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Client type')]));
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to delete client type');
+                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to delete :model', ['model' => __('Client type')]));
             }
         } else {
-            return redirect()->back()->with('error', 'Client type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Client type')]));
         }
     }
 
@@ -179,12 +165,12 @@ class ClientTypeController extends Controller
                 $clientType->status = $clientType->status === 'active' ? 'inactive' : 'active';
                 $clientType->save();
 
-                return redirect()->back()->with('success', 'Client type status updated successfully');
+                return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Client type')]));
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to update client type status');
+                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to update :model status', ['model' => __('Client type')]));
             }
         } else {
-            return redirect()->back()->with('error', 'Client type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Client type')]));
         }
     }
 }

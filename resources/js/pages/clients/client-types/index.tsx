@@ -92,9 +92,8 @@ export default function ClientTypes() {
 
   const handleFormSubmit = (formData: any) => {
     if (formMode === 'create') {
-      toast.loading(t('Creating client type...'));
 
-      router.post(route('clients.client-types.store'), formData, {
+      router.post(route('setup.client-types.store'), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
           toast.dismiss();
@@ -109,14 +108,12 @@ export default function ClientTypes() {
           if (typeof errors === 'string') {
             toast.error(errors);
           } else {
-            toast.error(`Failed to create client type: ${Object.values(errors).join(', ')}`);
+            toast.error(t('Failed to create {{model}}: {{errors}}', { model: t('Client type'), errors: Object.values(errors).join(', ') }));
           }
         }
       });
     } else if (formMode === 'edit') {
-      toast.loading(t('Updating client type...'));
-
-      router.put(route('clients.client-types.update', currentItem.id), formData, {
+      router.put(route('setup.client-types.update', currentItem.id), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
           toast.dismiss();
@@ -131,7 +128,7 @@ export default function ClientTypes() {
           if (typeof errors === 'string') {
             toast.error(errors);
           } else {
-            toast.error(`Failed to update client type: ${Object.values(errors).join(', ')}`);
+            toast.error(t('Failed to update {{model}}: {{errors}}', { model: t('Client type'), errors: Object.values(errors).join(', ') }));
           }
         }
       });
@@ -139,9 +136,7 @@ export default function ClientTypes() {
   };
 
   const handleDeleteConfirm = () => {
-    toast.loading(t('Deleting client type...'));
-
-    router.delete(route('clients.client-types.destroy', currentItem.id), {
+    router.delete(route('setup.client-types.destroy', currentItem.id), {
       onSuccess: (page) => {
         setIsDeleteModalOpen(false);
         toast.dismiss();
@@ -156,17 +151,14 @@ export default function ClientTypes() {
         if (typeof errors === 'string') {
           toast.error(errors);
         } else {
-          toast.error(`Failed to delete client type: ${Object.values(errors).join(', ')}`);
+          toast.error(t('Failed to delete {{model}}: {{errors}}', { model: t('Client type'), errors: Object.values(errors).join(', ') }));
         }
       }
     });
   };
 
   const handleToggleStatus = (clientType: any) => {
-    const newStatus = clientType.status === 'active' ? 'inactive' : 'active';
-    toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} client type...`);
-
-    router.put(route('clients.client-types.toggle-status', clientType.id), {}, {
+    router.put(route('setup.client-types.toggle-status', clientType.id), {}, {
       onSuccess: (page) => {
         toast.dismiss();
         if (page.props.flash.success) {
@@ -180,7 +172,7 @@ export default function ClientTypes() {
         if (typeof errors === 'string') {
           toast.error(errors);
         } else {
-          toast.error(`Failed to update client type status: ${Object.values(errors).join(', ')}`);
+          toast.error(t('Failed to update {{model}} status: {{errors}}', { model: t('Client type'), errors: Object.values(errors).join(', ') }));
         }
       }
     });
@@ -489,7 +481,7 @@ export default function ClientTypes() {
                             : currentItem.name
                         : ''
               }
-              entityName="client type"
+              entityName="Client Type"
           />
       </PageTemplate>
   );
