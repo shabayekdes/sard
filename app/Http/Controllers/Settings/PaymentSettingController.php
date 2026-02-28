@@ -33,7 +33,7 @@ class PaymentSettingController extends Controller
         
         // Add default currency to payment settings
         $settings = settings($superAdminId);
-        $safeSettings['defaultCurrency'] = $settings['defaultCurrency'] ?? 'usd';
+        $safeSettings['defaultCurrency'] = $settings['DEFAULT_CURRENCY'] ?? 'usd';
         
         return response()->json($safeSettings);
     }

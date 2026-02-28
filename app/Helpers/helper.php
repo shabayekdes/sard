@@ -35,27 +35,7 @@ if (!function_exists('getCacheSize')) {
 if (! function_exists('settings')) {
     function settings($tenant = null)
     {
-        // Explicit arg > tenant() from domain (e.g. tenant routes) > auth user's tenant_id (e.g. universal routes)
-        $tenantId = $tenant ?? (function_exists('tenant') && tenant() !== null ? tenant('id') : null) ?? (auth()->check() ? auth()->user()->tenant_id : null);
-        $userSettings = Setting::where('tenant_id', $tenantId)->pluck('value', 'key')->toArray();
-
-        // If user is not superadmin, merge with superadmin settings for specific keys
-        if (auth()->check() && auth()->user()->type !== 'superadmin') {
-            $superAdmin = User::where('type', 'superadmin')->first();
-            if ($superAdmin) {
-                $superAdminKeys = ['decimalFormat', 'defaultCurrency', 'thousandsSeparator', 'floatNumber', 'currencySymbolSpace', 'currencySymbolPosition', 'dateFormat', 'timeFormat', 'calendarStartDay', 'defaultTimezone', 'defaultCountry', 'defaultTaxRate'];
-                $superAdminSettings = Setting::whereNull('tenant_id')
-                    ->whereIn('key', $superAdminKeys)
-                    ->pluck('value', 'key')
-                    ->toArray();
-                $userSettings = array_merge($superAdminSettings, $userSettings);
-            }
-        }
-
-        // Add demo mode flag from config
-        $userSettings['is_demo'] = config('app.is_demo', false);
-
-        return $userSettings;
+        return \App\Facades\Settings::all();
     }
 }
 
@@ -182,13 +162,21 @@ if (! function_exists('sanitizeSettingsForUi')) {
 }
 
 if (! function_exists('formatDateTime')) {
+    /**
+     * Format a date/time string according to user settings
+     *
+     * @param string|null $date
+     * @param bool $includeTime Whether to include time in the output
+     * @return string|null
+     * @deprecated
+     */
     function formatDateTime($date, $includeTime = true)
     {
         if (!$date) {
             return null;
         }
 
-        $settings = settings();
+        $settings = \App\Facades\Settings::all();
 
         $dateFormat = $settings['dateFormat'] ?? 'Y-m-d';
         $timeFormat = $settings['timeFormat'] ?? 'H:i';
@@ -203,7 +191,7 @@ if (! function_exists('formatDateTime')) {
 if (! function_exists('getSetting')) {
     function getSetting($key, $default = null, $tenant_id = null)
     {
-        $settings = settings($tenant_id);
+        $settings = \App\Facades\Settings::all();
 
         // If no value found and no default provided, try to get from defaultSettings
         if (!isset($settings[$key]) && $default === null) {
@@ -214,59 +202,6 @@ if (! function_exists('getSetting')) {
         return $settings[$key] ?? $default;
     }
 }
-if (! function_exists('IsDemo')) {
-    /**
-     * Check if the application is in demo mode
-     *
-     * @return bool
-     * @deprecated
-     */
-    function IsDemo()
-    {
-        if (config('app.is_demo')) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-}
-
-if (! function_exists('isLandingPageEnabled')) {
-    function isLandingPageEnabled()
-    {
-        return \App\Facades\Settings::boolean('LANDING_PAGE_ENABLED', false);
-    }
-}
-
-if (! function_exists('defaultRoleAndSetting')) {
-    /**
-     * Set up default roles, settings, and data for a new user
-     *
-     * @param \App\Models\User $user
-     * @return bool
-     */
-    function defaultRoleAndSetting($user)
-    {
-        $companyRole = Role::where('name', 'company')->first();
-
-        if ($companyRole) {
-            $user->assignRole($companyRole);
-        }
-
-        // Create default settings for the user
-        if ($user->type === 'superadmin') {
-            createDefaultSettings($user->id);
-        } elseif ($user->type === 'company' && $user->tenant_id) {
-            // Dispatch all seeding jobs in parallel
-            // This prevents blocking the HTTP request and improves user experience
-            // SeedDefaultCompanyData will dispatch all individual seeding jobs
-            \App\Jobs\SeedDefaultCompanyData::dispatch($user->tenant_id);
-        }
-
-        return true;
-    }
-}
-
 
 if (! function_exists('getPaymentSettings')) {
     /**
@@ -1217,33 +1152,6 @@ if (! function_exists('defaultSettings')) {
     }
 }
 
-if (! function_exists('createDefaultSettings')) {
-    /**
-     * Create default settings for a user
-     *
-     * @param string|null $tenant_id
-     * @return void
-     */
-    function createDefaultSettings(?string $tenant_id = null)
-    {
-        $defaults = defaultSettings();
-        $settingsData = [];
-
-        foreach ($defaults as $key => $value) {
-            $settingsData[] = [
-                'tenant_id' => $tenant_id,
-                'key' => $key,
-                'value' => is_bool($value) ? ($value ? '1' : '0') : (string)$value,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }
-
-        Setting::insert($settingsData);
-    }
-}
-
-
 if (! function_exists('formatCurrency')) {
     /**
      * Format amount with company/superadmin currency settings. Options: variant, userId, useCode, currencyCode, html, rtl.
@@ -1266,22 +1174,22 @@ if (! function_exists('formatCurrency')) {
             return $html ? '<span class="pdf-currency-wrap">' . $fallback . '</span>' : $fallback;
         }
 
-        $s = (array) settings($userId);
-        $currencyCode = $options['currencyCode'] ?? $s['defaultCurrency']
+        $s = (array) \App\Facades\Settings::all();
+        $currencyCode = $options['currencyCode'] ?? $s['DEFAULT_CURRENCY']
             ?? \App\Models\CompanySetting::where('tenant_id', $userId)->where('setting_key', 'currency')->value('setting_value')
             ?? 'USD';
 
-        $position = strtolower(trim((string) ($s['currencySymbolPosition'] ?? 'before')));
+        $position = strtolower(trim((string) ($s['CURRENCY_SYMBOL_POSITION'] ?? 'before')));
         $position = in_array($position, ['before', 'after'], true) ? $position : 'before';
         if ($rtl) {
             $position = $position === 'before' ? 'after' : 'before';
         }
 
-        $space = in_array($s['currencySymbolSpace'] ?? false, [true, '1', 1], true) ? ' ' : '';
+        $space = in_array($s['CURRENCY_SYMBOL_SPACE'] ?? false, [true, '1', 1], true) ? ' ' : '';
         if (($s['floatNumber'] ?? '1') === '0') {
             $amount = floor($amount);
         }
-        $num = number_format($amount, (int) ($s['decimalFormat'] ?? 2), '.', $s['thousandsSeparator'] ?? ',');
+        $num = number_format($amount, (int) ($s['DECIMAL_FORMAT'] ?? 2), '.', $s['THOUSANDS_SEPARATOR'] ?? ',');
 
         $isSar = strtoupper((string) $currencyCode) === 'SAR';
         $symbolPart = ($html && $isSar)

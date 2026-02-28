@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Facades\Settings;
 use App\Http\Controllers\Controller;
 use App\Models\Country;
+use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Plan;
@@ -151,6 +152,12 @@ class RegisteredUserController extends Controller
         // Assign role and settings to the user
         //TODO: change default values to listener
         defaultRoleAndSetting($user);
+
+        $companyRole = Role::where('name', 'company')->first();
+
+        if ($companyRole) {
+            $user->assignRole($companyRole);
+        }
 
         // Note: Referral record will be created when user purchases a plan
         // This is handled in the PlanController or payment controllers

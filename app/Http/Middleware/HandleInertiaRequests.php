@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Middleware;
 
 use Illuminate\Foundation\Inspiring;
@@ -49,107 +50,92 @@ class HandleInertiaRequests extends Middleware
         $tenantDomain = $isCentralDomain ? null : $request->getHost();
         $tenantId = function_exists('tenant') ? (tenant()?->getTenantKey() ?? null) : null;
 
-        // Skip database queries during installation
-        if ($request->is('install/*') || $request->is('update/*') || !file_exists(storage_path('installed'))) {
-            $globalSettings = [
-                'currencySymbol' => '$',
-                'currencyNname' => 'US Dollar',
-                'base_url' => $baseUrl,
-                'image_url' => $baseUrl,
-                'is_demo' => false,//config('app.is_demo', false),
+        // Get system settings
+        $settings = sanitizeSettingsForUi(settings());
+        // Get currency symbol
+        $currencyCode = $settings['DEFAULT_CURRENCY'] ?? 'USD';
+        $currency = Currency::where('code', $currencyCode)->first();
+        $currencySettings = [];
+        if ($currency) {
+            $currencySettings = [
+                'currencySymbol' => $currency->symbol,
+                'currencyName' => $currency->name
             ];
+        } else {
+            $currencySettings = [
+                'currencySymbol' => '$',
+                'currencyName' => 'US Dollar'
+            ];
+        }
+
+        // Get storage settings
+        $storageSettings = [];
+        try {
+            $storageSettings = StorageConfigService::getStorageConfig();
+        } catch (\Exception $e) {
+            // Fallback to default settings if service fails
             $storageSettings = [
                 'allowed_file_types' => 'jpg,png,webp,gif',
                 'max_file_size_mb' => 2
             ];
-        } else {
-            // Get system settings
-            $settings = sanitizeSettingsForUi(settings());
-            // Get currency symbol
-            $currencyCode = $settings['defaultCurrency'] ?? 'USD';
-            $currency = Currency::where('code', $currencyCode)->first();
-            $currencySettings = [];
-            if ($currency) {
-                $currencySettings = [
-                    'currencySymbol' => $currency->symbol,
-                    'currencyNname' => $currency->name
-                ];
-            } else {
-                $currencySettings = [
-                    'currencySymbol' =>  '$',
-                    'currencyNname' => 'US Dollar'
-                ];
-            }
+        }
 
-            // Get storage settings
-            $storageSettings = [];
-            try {
-                $storageSettings = StorageConfigService::getStorageConfig();
-            } catch (\Exception $e) {
-                // Fallback to default settings if service fails
-                $storageSettings = [
-                    'allowed_file_types' => 'jpg,png,webp,gif',
-                    'max_file_size_mb' => 2
-                ];
-            }
+        // Get super admin currency settings for plans and referrals
+        $superAdminCurrencySettings = [];
+        try {
+            $superAdmin = User::where('type', 'superadmin')->first();
+            if ($superAdmin) {
+                $superAdminSettings = Setting::whereNull('tenant_id')
+                    ->whereIn('key', ['decimalFormat', 'defaultCurrency', 'thousandsSeparator', 'currencySymbolSpace', 'currencySymbolPosition'])
+                    ->pluck('value', 'key')
+                    ->toArray();
 
-            // Get super admin currency settings for plans and referrals
-            $superAdminCurrencySettings = [];
-            try {
-                $superAdmin = User::where('type', 'superadmin')->first();
-                if ($superAdmin) {
-                    $superAdminSettings = Setting::whereNull('tenant_id')
-                        ->whereIn('key', ['decimalFormat', 'defaultCurrency', 'thousandsSeparator', 'currencySymbolSpace', 'currencySymbolPosition'])
-                        ->pluck('value', 'key')
-                        ->toArray();
+                $superAdminCurrencyCode = $superAdminSettings['defaultCurrency'] ?? 'USD';
+                $superAdminCurrency = Currency::where('code', $superAdminCurrencyCode)->first();
 
-                    $superAdminCurrencyCode = $superAdminSettings['defaultCurrency'] ?? 'USD';
-                    $superAdminCurrency = Currency::where('code', $superAdminCurrencyCode)->first();
-
-                    $superAdminCurrencySettings = [
-                        'superAdminCurrencySymbol' => $superAdminCurrency ? $superAdminCurrency->symbol : '$',
-                        'superAdminDecimalFormat' => $superAdminSettings['decimalFormat'] ?? '2',
-                        'superAdminThousandsSeparator' => $superAdminSettings['thousandsSeparator'] ?? ',',
-                        'superAdminCurrencySymbolSpace' => ($superAdminSettings['currencySymbolSpace'] ?? false) === '1',
-                        'superAdminCurrencySymbolPosition' => $superAdminSettings['currencySymbolPosition'] ?? 'before',
-                    ];
-                }
-            } catch (\Exception $e) {
-                // Fallback to default super admin currency settings
                 $superAdminCurrencySettings = [
-                    'superAdminCurrencySymbol' => '$',
-                    'superAdminDecimalFormat' => '2',
-                    'superAdminThousandsSeparator' => ',',
-                    'superAdminCurrencySymbolSpace' => false,
-                    'superAdminCurrencySymbolPosition' => 'before',
+                    'superAdminCurrencySymbol' => $superAdminCurrency ? $superAdminCurrency->symbol : '$',
+                    'superAdminDecimalFormat' => $superAdminSettings['decimalFormat'] ?? '2',
+                    'superAdminThousandsSeparator' => $superAdminSettings['thousandsSeparator'] ?? ',',
+                    'superAdminCurrencySymbolSpace' => ($superAdminSettings['currencySymbolSpace'] ?? false) === '1',
+                    'superAdminCurrencySymbolPosition' => $superAdminSettings['currencySymbolPosition'] ?? 'before',
                 ];
             }
+        } catch (\Exception $e) {
+            // Fallback to default super admin currency settings
+            $superAdminCurrencySettings = [
+                'superAdminCurrencySymbol' => '$',
+                'superAdminDecimalFormat' => '2',
+                'superAdminThousandsSeparator' => ',',
+                'superAdminCurrencySymbolSpace' => false,
+                'superAdminCurrencySymbolPosition' => 'before',
+            ];
+        }
 
-            // Merge currency settings with other settings
-            $globalSettings = array_merge($settings, $currencySettings, $superAdminCurrencySettings);
-            $globalSettings['base_url'] = $baseUrl;
-            $globalSettings['image_url'] = $baseUrl;
-            $globalSettings['is_demo'] = false; //config('app.is_demo', false);
+        // Merge currency settings with other settings
+        $globalSettings = array_merge($settings, $currencySettings, $superAdminCurrencySettings);
+        $globalSettings['base_url'] = $baseUrl;
+        $globalSettings['image_url'] = $baseUrl;
+        $globalSettings['is_demo'] = false; //config('app.is_demo', false);
 
         //     // Add cookie consent setting
         //     $cookieSetting = Setting::where('key', 'strictlyNecessaryCookies')->first();
         //     $globalSettings['strictlyNecessaryCookies'] = $cookieSetting ? (int)$cookieSetting->value : 0;
         //
-        }
 
         return [
             ...parent::share($request),
-            'name'  => config('app.name'),
-            'base_url'  => $baseUrl,
-            'image_url'  => $baseUrl,
+            'name' => config('app.name'),
+            'base_url' => $baseUrl,
+            'image_url' => $baseUrl,
             'isCentralDomain' => $isCentralDomain,
             'tenantDomain' => $tenantDomain,
             'tenantId' => $tenantId,
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'csrf_token' => csrf_token(),
-            'auth'  => [
-                'user'        => $request->user(),
-                'roles'       => fn() => $request->user()?->roles->pluck('name'),
+            'auth' => [
+                'user' => $request->user(),
+                'roles' => fn() => $request->user()?->roles->pluck('name'),
                 'permissions' => fn() => $request->user()?->getAllPermissions()->pluck('name'),
             ],
             'isImpersonating' => session('impersonated_by') ? true : false,
@@ -161,7 +147,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),
-                'error'   => $request->session()->get('error'),
+                'error' => $request->session()->get('error'),
             ],
             'globalSettings' => $globalSettings,
             'storageSettings' => $storageSettings,

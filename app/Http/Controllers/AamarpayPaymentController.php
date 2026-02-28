@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Facades\Settings;
 use App\Models\Plan;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -57,7 +58,7 @@ class AamarpayPaymentController extends Controller
 
             $user = auth()->user();
             $orderID = strtoupper(str_replace('.', '', uniqid('', true)));
-            $currency = $settings['general_settings']['defaultCurrency'] ?? 'BDT';
+            $currency = $settings['general_settings']['DEFAULT_CURRENCY'] ?? 'BDT';
             $mode = $settings['payment_settings']['aamarpay_mode'] ?? 'sandbox';
             $url = $mode === 'live' ? 'https://secure.aamarpay.com/request.php' : 'https://sandbox.aamarpay.com/request.php';
 
@@ -273,9 +274,7 @@ class AamarpayPaymentController extends Controller
             ]);
 
             // Get company currency settings
-            $companySettings = \App\Models\Setting::where('tenant_id', $invoice->tenant_id)
-                ->where('key', 'defaultCurrency')
-                ->first();
+            $companySettings = Settings::string('DEFAULT_CURRENCY', 'SAR');
             $currency = $companySettings ? $companySettings->value : 'BDT';
 
             $fields = [

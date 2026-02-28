@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Plan;
+use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -179,6 +180,12 @@ class CompanyController extends Controller
         // Assign role and settings to the user
         //TODO: change default values to listener
         defaultRoleAndSetting($company);
+
+        $companyRole = Role::where('name', 'company')->first();
+
+        if ($companyRole) {
+            $company->assignRole($companyRole);
+        }
 
         // Trigger email notification
         event(new \App\Events\UserCreated($company, $validated['password'] ?? ''));

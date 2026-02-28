@@ -12,10 +12,10 @@ return [
     ['key' => 'LANDING_PAGE_ENABLED', 'value' => false],
     ['key' => 'DEFAULT_TAX_RATE', 'value' => '15'],
 
-    ['key' => 'RECAPTCHA_ENABLED', 'value' => false],
-    ['key' => 'RECAPTCHA_VERSION', 'value' => 'v3'],
-    ['key' => 'RECAPTCHA_SITE_KEY', 'value' => ''],
-    ['key' => 'RECAPTCHA_SECRET_KEY', 'value' => ''],
+    ['key' => 'RECAPTCHA_ENABLED', 'value' => config('services.recaptcha.enabled')],
+    ['key' => 'RECAPTCHA_VERSION', 'value' => config('services.recaptcha.version', 'v3')],
+    ['key' => 'RECAPTCHA_SITE_KEY', 'value' => config('services.recaptcha.site_key', '')],
+    ['key' => 'RECAPTCHA_SECRET_KEY', 'value' => config('services.recaptcha.secret_key', '')],
 
     // Brand Settings
     ['key' => 'LOGO_DARK', 'value' => '/images/logos/logo-dark.png'],
@@ -33,15 +33,15 @@ return [
     ['key' => 'THEME_MODE', 'value' => 'light'],
 
     // Storage Settings
-    ['key' => 'STORAGE_TYPE', 'value' => 'local'],
+    ['key' => 'STORAGE_TYPE', 'value' => config('filesystems.default', 'local')],
     ['key' => 'STORAGE_FILE_TYPES', 'value' => 'jpg,png,webp,gif,pdf,doc,docx,txt,csv'],
     ['key' => 'STORAGE_MAX_UPLOAD_SIZE', 'value' => '2048'],
-    ['key' => 'AWS_ACCESS_KEY_ID', 'value' => ''],
-    ['key' => 'AWS_SECRET_ACCESS_KEY', 'value' => ''],
-    ['key' => 'AWS_DEFAULT_REGION', 'value' => 'us-east-1'],
-    ['key' => 'AWS_BUCKET', 'value' => ''],
-    ['key' => 'AWS_URL', 'value' => ''],
-    ['key' => 'AWS_ENDPOINT', 'value' => ''],
+    ['key' => 'AWS_ACCESS_KEY_ID', 'value' => config('services.aws.access_key_id', '')],
+    ['key' => 'AWS_SECRET_ACCESS_KEY', 'value' => config('services.aws.secret_access_key', '')],
+    ['key' => 'AWS_DEFAULT_REGION', 'value' => config('services.aws.default_region', 'us-east-1')],
+    ['key' => 'AWS_BUCKET', 'value' => config('services.aws.bucket', '')],
+    ['key' => 'AWS_URL', 'value' => config('services.aws.url', '')],
+    ['key' => 'AWS_ENDPOINT', 'value' => config('services.aws.endpoint', '')],
     ['key' => 'WASABI_ACCESS_KEY', 'value' => ''],
     ['key' => 'WASABI_SECRET_KEY', 'value' => ''],
     ['key' => 'WASABI_REGION', 'value' => 'us-east-1'],

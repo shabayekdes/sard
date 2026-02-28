@@ -16,7 +16,7 @@ class CheckLandingPageEnabled
     public function handle(Request $request, Closure $next): Response
     {
         // If accessing home and landing page is disabled, redirect to login
-        if (!isLandingPageEnabled() && $request->route()->getName() === 'home') {
+        if (!\App\Facades\Settings::boolean('LANDING_PAGE_ENABLED') && $request->route()->getName() === 'home') {
             return redirect()->route('login');
         }
 

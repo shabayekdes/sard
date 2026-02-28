@@ -35,16 +35,16 @@ declare global {
 export function initializeGlobalSettings(settings: Record<string, any>) {
     // Set up currency settings
     const currencySettings = {
-        decimalFormat: settings.decimalFormat || '2',
-        defaultCurrency: settings.defaultCurrency || 'USD',
-        decimalSeparator: settings.decimalSeparator || '.',
-        thousandsSeparator: settings.thousandsSeparator || ',',
-        floatNumber: settings.floatNumber === '0' ? false : true,
-        currencySymbolSpace: settings.currencySymbolSpace === '1',
-        currencySymbolPosition: settings.currencySymbolPosition || 'before',
+        decimalFormat: settings.DECIMAL_FORMAT || '2',
+        defaultCurrency: settings.DEFAULT_CURRENCY || 'USD',
+        decimalSeparator: settings.DECIMAL_SEPARATOR || '.',
+        thousandsSeparator: settings.THOUSANDS_SEPARATOR || ',',
+        floatNumber: settings.FLOAT_NUMBER !== '0',
+        currencySymbolSpace: settings.CURRENCY_SYMBOL_SPACE === '1',
+        currencySymbolPosition: settings.CURRENCY_SYMBOL_POSITION || 'before',
         currencySymbol: settings.currencySymbol || '$',
         currencyCode: settings.currencyCode || 'USD',
-        currencyName: settings.currencyNname || 'US Dollar'
+        currencyName: settings.currencyName || 'US Dollar',
     };
 
     window.appSettings = {

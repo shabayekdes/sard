@@ -136,24 +136,13 @@ class TeamMemberRoleSeeder extends Seeder
 
             $teamRole->syncPermissions($permissions);
 
-            $isDemo = config('app.is_demo', true);
-            
-            if ($isDemo) {
-                // Demo mode - create multiple team members
-                $teamMembers = [
-                    ['name' => 'Alex Johnson', 'email' => 'alex.johnson', 'status' => 'active'],
-                    ['name' => 'Maria Garcia', 'email' => 'maria.garcia', 'status' => 'active'],
-                    ['name' => 'James Wilson', 'email' => 'james.wilson', 'status' => 'active'],
-                    ['name' => 'Linda Davis', 'email' => 'linda.davis', 'status' => 'active'],
-                    ['name' => 'Robert Brown', 'email' => 'robert.brown', 'status' => 'inactive']
-                ];
-            } else {
-                // Main/Production mode - create minimal team members
-                $teamMembers = [
-                    ['name' => 'Team Member', 'email' => 'team.member', 'status' => 'active'],
-                    ['name' => 'Assistant', 'email' => 'assistant', 'status' => 'active']
-                ];
-            }
+            $teamMembers = [
+                ['name' => 'Alex Johnson', 'email' => 'alex.johnson', 'status' => 'active'],
+                ['name' => 'Maria Garcia', 'email' => 'maria.garcia', 'status' => 'active'],
+                ['name' => 'James Wilson', 'email' => 'james.wilson', 'status' => 'active'],
+                ['name' => 'Linda Davis', 'email' => 'linda.davis', 'status' => 'active'],
+                ['name' => 'Robert Brown', 'email' => 'robert.brown', 'status' => 'inactive']
+            ];
             
             foreach ($teamMembers as $memberInfo) {
                 $email = $memberInfo['email'] . '_' . $companyUser->id . '@example.com';

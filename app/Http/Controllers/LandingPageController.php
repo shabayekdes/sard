@@ -20,7 +20,7 @@ class LandingPageController extends Controller
 
 
         // Check if landing page is enabled in settings
-        if (!isLandingPageEnabled()) {
+        if (!\App\Facades\Settings::boolean('LANDING_PAGE_ENABLED', false)) {
             return redirect()->route('login');
         }
 
