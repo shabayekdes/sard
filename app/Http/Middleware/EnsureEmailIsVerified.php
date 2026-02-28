@@ -11,7 +11,7 @@ class EnsureEmailIsVerified
 {
     public function handle(Request $request, Closure $next)
     {
-        $emailVerificationEnabled = Settings::boolean('ENABLE_EMAIL_VERIFICATION');
+        $emailVerificationEnabled = Settings::boolean('EMAIL_VERIFICATION_ENABLED');
         
         if ($emailVerificationEnabled &&
             $request->user() &&

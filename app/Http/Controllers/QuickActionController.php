@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Facades\Settings;
 use App\Models\CaseModel;
 use App\Models\CaseStatus;
 use App\Models\CaseCategory;
@@ -69,9 +70,7 @@ class QuickActionController extends Controller
             })
             ->values();
 
-        $googleCalendarEnabled = Setting::where('tenant_id', createdBy())
-            ->where('key', 'googleCalendarEnabled')
-            ->value('value') == '1';
+        $googleCalendarEnabled = Settings::boolean('GOOGLE_CALENDAR_ENABLED');
 
         $currentUser = auth()->user();
 
@@ -108,7 +107,7 @@ class QuickActionController extends Controller
             ->orderBy('id')
             ->get(['id', 'name', 'nationality_name', 'country_code']);
 
-        $defaultCountryCode = getSetting('defaultCountry', '');
+        $defaultCountryCode = Settings::string('DEFAULT_COUNTRY', 'SA');
         $defaultCountryId = $defaultCountryCode
             ? $countryModels->firstWhere('country_code', $defaultCountryCode)?->id
             : null;
@@ -136,7 +135,7 @@ class QuickActionController extends Controller
         return response()->json([
             'clientTypes' => $clientTypes,
             'countries' => $countries,
-            'defaultTaxRate' => getSetting('defaultTaxRate', '0'),
+            'defaultTaxRate' => Settings::string('DEFAULT_TAX_RATE'),
             'defaultCountryId' => $defaultCountryId,
             'defaultCountry' => $defaultCountryCode,
             'phoneCountries' => $phoneCountries,
@@ -163,9 +162,7 @@ class QuickActionController extends Controller
         $cases = CaseModel::where('tenant_id', createdBy())
             ->get(['id', 'case_id', 'title']);
 
-        $googleCalendarEnabled = Setting::where('tenant_id', createdBy())
-            ->where('key', 'googleCalendarEnabled')
-            ->value('value') == '1';
+        $googleCalendarEnabled = Settings::boolean('GOOGLE_CALENDAR_ENABLED');
 
         return response()->json([
             'taskTypes' => $taskTypes,
@@ -190,9 +187,7 @@ class QuickActionController extends Controller
             ->where('status', 'active')
             ->get(['id', 'name']);
 
-        $googleCalendarEnabled = Setting::where('tenant_id', createdBy())
-            ->where('key', 'googleCalendarEnabled')
-            ->value('value') == '1';
+        $googleCalendarEnabled = Settings::boolean('GOOGLE_CALENDAR_ENABLED');
 
         return response()->json([
             'cases' => $cases,

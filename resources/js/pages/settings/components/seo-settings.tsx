@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Save, Search, Upload, X } from 'lucide-react';
 import { SettingsSection } from '@/components/settings-section';
 import { useTranslation } from 'react-i18next';
@@ -30,11 +30,13 @@ export default function SeoSettings({ settings = {} }: SeoSettingsProps) {
     : (pageProps.settings || {});
   
   // Initialize state with merged settings
-  const [seoSettings, setSeoSettings] = useState(() => ({
+  const initial = {
     metaKeywords: settingsData.metaKeywords || defaultSettings.metaKeywords,
     metaDescription: settingsData.metaDescription || defaultSettings.metaDescription,
     metaImage: settingsData.metaImage || defaultSettings.metaImage
-  }));
+  };
+  const [seoSettings, setSeoSettings] = useState(() => ({ ...initial }));
+  const initialValuesRef = useRef(initial);
 
   // State for image upload
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -43,15 +45,13 @@ export default function SeoSettings({ settings = {} }: SeoSettingsProps) {
   // Update state when settings change
   useEffect(() => {
     if (Object.keys(settingsData).length > 0) {
-      const mergedSettings = Object.keys(defaultSettings).reduce((acc, key) => {
-        acc[key] = settingsData[key] || defaultSettings[key];
-        return acc;
-      }, {} as Record<string, string>);
-      
-      setSeoSettings(prevSettings => ({
-        ...prevSettings,
-        ...mergedSettings
-      }));
+      const merged = {
+        metaKeywords: settingsData.metaKeywords || defaultSettings.metaKeywords,
+        metaDescription: settingsData.metaDescription || defaultSettings.metaDescription,
+        metaImage: settingsData.metaImage || defaultSettings.metaImage
+      };
+      setSeoSettings(merged);
+      initialValuesRef.current = { ...merged };
     }
   }, [settingsData]);
 
@@ -104,38 +104,27 @@ export default function SeoSettings({ settings = {} }: SeoSettingsProps) {
     }));
   };
 
-  // Handle SEO settings form submission
   const submitSeoSettings = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Client-side validation
-    if (!seoSettings.metaKeywords.trim()) {
-      toast.error(t('Meta Keywords is required'));
+    const init = initialValuesRef.current;
+    const changed: Record<string, string> = {};
+    (Object.keys(seoSettings) as (keyof typeof seoSettings)[]).forEach((key) => {
+      if (seoSettings[key] !== init[key]) {
+        changed[key] = seoSettings[key];
+      }
+    });
+    if (Object.keys(changed).length === 0) {
+      toast.info(t('No changes to save'));
       return;
     }
-    
-    if (!seoSettings.metaDescription.trim()) {
-      toast.error(t('Meta Description is required'));
-      return;
-    }
-    
-    if (!seoSettings.metaImage.trim()) {
-      toast.error(t('Meta Image is required'));
-      return;
-    }
-    
-    // Submit to backend using Inertia
-    router.post(route('settings.seo.update'), seoSettings, {
+    router.post(route('settings.seo.update'), changed, {
       preserveScroll: true,
       onSuccess: (page) => {
+        initialValuesRef.current = { ...seoSettings };
         const successMessage = page.props.flash?.success;
         const errorMessage = page.props.flash?.error;
-        
-        if (successMessage) {
-          toast.success(successMessage);
-        } else if (errorMessage) {
-          toast.error(errorMessage);
-        }
+        if (successMessage) toast.success(successMessage);
+        else if (errorMessage) toast.error(errorMessage);
       },
       onError: (errors) => {
         const errorMessage = errors.error || Object.values(errors).join(', ') || t('Failed to update SEO settings');

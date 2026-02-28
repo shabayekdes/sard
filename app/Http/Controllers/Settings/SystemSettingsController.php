@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Enums\SettingKey;
+use App\Facades\Settings;
 use App\Http\Controllers\Controller;
-use App\Models\Setting;
 use App\Models\NotificationTemplate;
+use App\Models\Setting;
 use App\Models\TenantNotificationTemplate;
+use App\Services\StorageConfigService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use App\Services\StorageConfigService;
 
 class SystemSettingsController extends Controller
 {
@@ -30,18 +32,23 @@ class SystemSettingsController extends Controller
         try {
             $validated = $request->validate([
                 'defaultCountry' => 'nullable|exists:countries,country_code',
-                'defaultLanguage' => 'required|string',
-                'dateFormat' => 'required|string',
-                'timeFormat' => 'required|string',
-                'calendarStartDay' => 'required|string',
-                'defaultTimezone' => 'required|string',
+                'defaultLanguage' => 'nullable|string',
+                'dateFormat' => 'nullable|string',
+                'timeFormat' => 'nullable|string',
+                'calendarStartDay' => 'nullable|string',
+                'defaultTimezone' => 'nullable|string',
                 'defaultTaxRate' => 'nullable|numeric|min:0|max:100',
-                'emailVerification' => 'boolean',
-                'landingPageEnabled' => 'boolean',
+                'emailVerification' => 'nullable|boolean',
+                'landingPageEnabled' => 'nullable|boolean',
             ]);
 
+            if (empty($validated)) {
+                return redirect()->back()->with('info', __('No changes to save.'));
+            }
+
             foreach ($validated as $key => $value) {
-                updateSetting($key, $value);
+                $keyEnum = SettingKey::match($key);
+                Settings::update($keyEnum?->value ?? strtoupper(preg_replace('/([A-Z])/', '_$1', $key)), $value);
             }
 
             return redirect()->back()->with('success', __('System settings updated successfully.'));
@@ -60,22 +67,28 @@ class SystemSettingsController extends Controller
     {
         try {
             $validated = $request->validate([
-                'settings' => 'required|array',
-                'settings.logoDark' => 'nullable|string',
-                'settings.logoLight' => 'nullable|string',
-                'settings.favicon' => 'nullable|string',
-                'settings.titleText' => 'nullable|string|max:255',
-                'settings.footerText' => 'nullable|string|max:500',
-                'settings.themeColor' => 'nullable|string|in:blue,green,purple,orange,red,custom',
-                'settings.customColor' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
-                'settings.sidebarVariant' => 'nullable|string|in:inset,floating,minimal',
-                'settings.sidebarStyle' => 'nullable|string|in:plain,colored,gradient',
-                'settings.layoutDirection' => 'nullable|string|in:left,right,ltr,rtl',
-                'settings.themeMode' => 'nullable|string|in:light,dark,system',
+                'logoDark' => 'nullable|string',
+                'logoLight' => 'nullable|string',
+                'favicon' => 'nullable|string',
+                'titleTextEn' => 'nullable|string|max:255',
+                'titleTextAr' => 'nullable|string|max:255',
+                'footerTextEn' => 'nullable|string|max:500',
+                'footerTextAr' => 'nullable|string|max:500',
+                'themeColor' => 'nullable|string|in:blue,green,purple,orange,red,custom',
+                'customColor' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'sidebarVariant' => 'nullable|string|in:inset,floating,minimal',
+                'sidebarStyle' => 'nullable|string|in:plain,colored,gradient',
+                'layoutDirection' => 'nullable|string|in:left,right,ltr,rtl',
+                'themeMode' => 'nullable|string|in:light,dark,system',
             ]);
 
-            foreach ($validated['settings'] as $key => $value) {
-                updateSetting($key, $value);
+            if (empty($validated)) {
+                return redirect()->back()->with('info', __('No changes to save.'));
+            }
+
+            foreach ($validated as $key => $value) {
+                $keyEnum = SettingKey::match($key);
+                Settings::update($keyEnum?->value ?? strtoupper(preg_replace('/([A-Z])/', '_$1', $key)), $value);
             }
 
             return redirect()->back()->with('success', __('Brand settings updated successfully.'));
@@ -96,14 +109,19 @@ class SystemSettingsController extends Controller
     {
         try {
             $validated = $request->validate([
-                'recaptchaEnabled' => 'boolean',
-                'recaptchaVersion' => 'required|in:v2,v3',
-                'recaptchaSiteKey' => 'required|string',
-                'recaptchaSecretKey' => 'required|string',
+                'recaptchaEnabled' => 'nullable|boolean',
+                'recaptchaVersion' => 'nullable|in:v2,v3',
+                'recaptchaSiteKey' => 'nullable|string',
+                'recaptchaSecretKey' => 'nullable|string',
             ]);
 
+            if (empty($validated)) {
+                return redirect()->back()->with('info', __('No changes to save.'));
+            }
+
             foreach ($validated as $key => $value) {
-                updateSetting($key, $value);
+                $keyEnum = SettingKey::match($key);
+                Settings::update($keyEnum?->value ?? strtoupper(preg_replace('/([A-Z])/', '_$1', $key)), is_bool($value) ? ($value ? '1' : '0') : $value);
             }
 
             return redirect()->back()->with('success', __('ReCaptcha settings updated successfully.'));
@@ -122,12 +140,17 @@ class SystemSettingsController extends Controller
     {
         try {
             $validated = $request->validate([
-                'chatgptKey' => 'required|string',
-                'chatgptModel' => 'required|string',
+                'chatgptKey' => 'nullable|string',
+                'chatgptModel' => 'nullable|string',
             ]);
 
+            if (empty($validated)) {
+                return redirect()->back()->with('info', __('No changes to save.'));
+            }
+
             foreach ($validated as $key => $value) {
-                updateSetting($key, $value);
+                $keyEnum = SettingKey::match($key);
+                Settings::update($keyEnum?->value ?? strtoupper(preg_replace('/([A-Z])/', '_$1', $key)), $value);
             }
 
             return redirect()->back()->with('success', __('Chat GPT settings updated successfully.'));
@@ -146,56 +169,82 @@ class SystemSettingsController extends Controller
     {
         try {
             $validated = $request->validate([
-                'storage_type' => 'required|in:local,s3,wasabi',
-                'allowedFileTypes' => 'required|string',
-                'maxUploadSize' => 'required|numeric|min:1',
-                'awsAccessKeyId' => 'required_if:storage_type,s3|string',
-                'awsSecretAccessKey' => 'required_if:storage_type,s3|string',
-                'awsDefaultRegion' => 'required_if:storage_type,s3|string',
-                'awsBucket' => 'required_if:storage_type,s3|string',
-                'awsUrl' => 'required_if:storage_type,s3|string',
-                'awsEndpoint' => 'required_if:storage_type,s3|string',
-                'wasabiAccessKey' => 'required_if:storage_type,wasabi|string',
-                'wasabiSecretKey' => 'required_if:storage_type,wasabi|string',
-                'wasabiRegion' => 'required_if:storage_type,wasabi|string',
-                'wasabiBucket' => 'required_if:storage_type,wasabi|string',
-                'wasabiUrl' => 'required_if:storage_type,wasabi|string',
-                'wasabiRoot' => 'required_if:storage_type,wasabi|string',
+                'storage_type' => 'nullable|in:local,s3,wasabi',
+                'allowedFileTypes' => 'nullable|string',
+                'maxUploadSize' => 'nullable|numeric|min:1',
+                'awsAccessKeyId' => 'nullable|string',
+                'awsSecretAccessKey' => 'nullable|string',
+                'awsDefaultRegion' => 'nullable|string',
+                'awsBucket' => 'nullable|string',
+                'awsUrl' => 'nullable|string',
+                'awsEndpoint' => 'nullable|string',
+                'wasabiAccessKey' => 'nullable|string',
+                'wasabiSecretKey' => 'nullable|string',
+                'wasabiRegion' => 'nullable|string',
+                'wasabiBucket' => 'nullable|string',
+                'wasabiUrl' => 'nullable|string',
+                'wasabiRoot' => 'nullable|string',
             ]);
 
-            $settings = [
-                'storage_type' => $validated['storage_type'],
-                'storage_file_types' => $validated['allowedFileTypes'],
-                'storage_max_upload_size' => $validated['maxUploadSize'],
-            ];
-
-            if ($validated['storage_type'] === 's3') {
+            $settings = [];
+            if (array_key_exists('storage_type', $validated)) {
+                $settings['storage_type'] = $validated['storage_type'];
+            }
+            if (array_key_exists('allowedFileTypes', $validated)) {
+                $settings['storage_file_types'] = $validated['allowedFileTypes'];
+            }
+            if (array_key_exists('maxUploadSize', $validated)) {
+                $settings['storage_max_upload_size'] = $validated['maxUploadSize'];
+            }
+            if (array_key_exists('awsAccessKeyId', $validated)) {
                 $settings['aws_access_key_id'] = $validated['awsAccessKeyId'];
+            }
+            if (array_key_exists('awsSecretAccessKey', $validated)) {
                 $settings['aws_secret_access_key'] = $validated['awsSecretAccessKey'];
+            }
+            if (array_key_exists('awsDefaultRegion', $validated)) {
                 $settings['aws_default_region'] = $validated['awsDefaultRegion'];
+            }
+            if (array_key_exists('awsBucket', $validated)) {
                 $settings['aws_bucket'] = $validated['awsBucket'];
+            }
+            if (array_key_exists('awsUrl', $validated)) {
                 $settings['aws_url'] = $validated['awsUrl'];
+            }
+            if (array_key_exists('awsEndpoint', $validated)) {
                 $settings['aws_endpoint'] = $validated['awsEndpoint'];
             }
-
-            if ($validated['storage_type'] === 'wasabi') {
+            if (array_key_exists('wasabiAccessKey', $validated)) {
                 $settings['wasabi_access_key'] = $validated['wasabiAccessKey'];
+            }
+            if (array_key_exists('wasabiSecretKey', $validated)) {
                 $settings['wasabi_secret_key'] = $validated['wasabiSecretKey'];
+            }
+            if (array_key_exists('wasabiRegion', $validated)) {
                 $settings['wasabi_region'] = $validated['wasabiRegion'];
+            }
+            if (array_key_exists('wasabiBucket', $validated)) {
                 $settings['wasabi_bucket'] = $validated['wasabiBucket'];
+            }
+            if (array_key_exists('wasabiUrl', $validated)) {
                 $settings['wasabi_url'] = $validated['wasabiUrl'];
+            }
+            if (array_key_exists('wasabiRoot', $validated)) {
                 $settings['wasabi_root'] = $validated['wasabiRoot'];
             }
 
+            if (empty($settings)) {
+                return redirect()->back()->with('info', __('No changes to save.'));
+            }
+
             foreach ($settings as $key => $value) {
-                updateSetting($key, $value);
+                $keyEnum = SettingKey::match($key);
+                Settings::update($keyEnum?->value ?? strtoupper($key), $value);
             }
 
             // Clear storage config cache
             StorageConfigService::clearCache();
 
-            // Also clear general cache to refresh global settings (scope by tenant)
-            \Cache::forget('settings_' . (createdBy() ?? 'global'));
 
             return redirect()->back()->with('success', __('Storage settings updated successfully.'));
         } catch (\Exception $e) {
@@ -219,20 +268,20 @@ class SystemSettingsController extends Controller
             };
 
             $validated = $request->validate([
-                'enableLogging' => 'required|boolean',
-                'strictlyNecessaryCookies' => 'required|boolean',
-                'cookieTitleEn' => 'required|string|max:255',
-                'cookieTitleAr' => 'required|string|max:255',
-                'strictlyCookieTitleEn' => 'required|string|max:255',
-                'strictlyCookieTitleAr' => 'required|string|max:255',
-                'cookieDescriptionEn' => 'required|string',
-                'cookieDescriptionAr' => 'required|string',
-                'strictlyCookieDescriptionEn' => 'required|string',
-                'strictlyCookieDescriptionAr' => 'required|string',
-                'contactUsDescriptionEn' => 'required|string',
-                'contactUsDescriptionAr' => 'required|string',
-                'contactUsUrlEn' => ['required', 'string', 'max:255', $urlOrEmailRule],
-                'contactUsUrlAr' => ['required', 'string', 'max:255', $urlOrEmailRule],
+                'enableLogging' => 'nullable|boolean',
+                'strictlyNecessaryCookies' => 'nullable|boolean',
+                'cookieTitleEn' => 'nullable|string|max:255',
+                'cookieTitleAr' => 'nullable|string|max:255',
+                'strictlyCookieTitleEn' => 'nullable|string|max:255',
+                'strictlyCookieTitleAr' => 'nullable|string|max:255',
+                'cookieDescriptionEn' => 'nullable|string',
+                'cookieDescriptionAr' => 'nullable|string',
+                'strictlyCookieDescriptionEn' => 'nullable|string',
+                'strictlyCookieDescriptionAr' => 'nullable|string',
+                'contactUsDescriptionEn' => 'nullable|string',
+                'contactUsDescriptionAr' => 'nullable|string',
+                'contactUsUrlEn' => ['nullable', 'string', 'max:255', $urlOrEmailRule],
+                'contactUsUrlAr' => ['nullable', 'string', 'max:255', $urlOrEmailRule],
                 'cookieTitle' => 'nullable|string|max:255',
                 'strictlyCookieTitle' => 'nullable|string|max:255',
                 'cookieDescription' => 'nullable|string',
@@ -242,15 +291,32 @@ class SystemSettingsController extends Controller
             ]);
 
             $settings = $validated;
-            $settings['cookieTitle'] = $validated['cookieTitleEn'];
-            $settings['strictlyCookieTitle'] = $validated['strictlyCookieTitleEn'];
-            $settings['cookieDescription'] = $validated['cookieDescriptionEn'];
-            $settings['strictlyCookieDescription'] = $validated['strictlyCookieDescriptionEn'];
-            $settings['contactUsDescription'] = $validated['contactUsDescriptionEn'];
-            $settings['contactUsUrl'] = $validated['contactUsUrlEn'];
+            if (array_key_exists('cookieTitleEn', $validated)) {
+                $settings['cookieTitle'] = $validated['cookieTitleEn'];
+            }
+            if (array_key_exists('strictlyCookieTitleEn', $validated)) {
+                $settings['strictlyCookieTitle'] = $validated['strictlyCookieTitleEn'];
+            }
+            if (array_key_exists('cookieDescriptionEn', $validated)) {
+                $settings['cookieDescription'] = $validated['cookieDescriptionEn'];
+            }
+            if (array_key_exists('strictlyCookieDescriptionEn', $validated)) {
+                $settings['strictlyCookieDescription'] = $validated['strictlyCookieDescriptionEn'];
+            }
+            if (array_key_exists('contactUsDescriptionEn', $validated)) {
+                $settings['contactUsDescription'] = $validated['contactUsDescriptionEn'];
+            }
+            if (array_key_exists('contactUsUrlEn', $validated)) {
+                $settings['contactUsUrl'] = $validated['contactUsUrlEn'];
+            }
+
+            if (empty($settings)) {
+                return redirect()->back()->with('info', __('No changes to save.'));
+            }
 
             foreach ($settings as $key => $value) {
-                updateSetting($key, is_bool($value) ? ($value ? '1' : '0') : $value);
+                $keyEnum = SettingKey::match($key);
+                Settings::update($keyEnum?->value ?? strtoupper(preg_replace('/([A-Z])/', '_$1', $key)), is_bool($value) ? ($value ? '1' : '0') : $value);
             }
 
             return redirect()->back()->with('success', __('Cookie settings updated successfully.'));
@@ -269,13 +335,18 @@ class SystemSettingsController extends Controller
     {
         try {
             $validated = $request->validate([
-                'metaKeywords' => 'required|string|max:255',
-                'metaDescription' => 'required|string|max:160',
-                'metaImage' => 'required|string',
+                'metaKeywords' => 'nullable|string|max:255',
+                'metaDescription' => 'nullable|string|max:160',
+                'metaImage' => 'nullable|string',
             ]);
 
+            if (empty($validated)) {
+                return redirect()->back()->with('info', __('No changes to save.'));
+            }
+
             foreach ($validated as $key => $value) {
-                updateSetting($key, $value);
+                $keyEnum = SettingKey::match($key);
+                Settings::update($keyEnum?->value ?? strtoupper(preg_replace('/([A-Z])/', '_$1', $key)), $value);
             }
 
             return redirect()->back()->with('success', __('SEO settings updated successfully.'));
@@ -294,20 +365,22 @@ class SystemSettingsController extends Controller
     {
         try {
             $validated = $request->validate([
-                'googleCalendarEnabled' => 'boolean',
+                'googleCalendarEnabled' => 'nullable|boolean',
                 'googleCalendarId' => 'nullable|string|max:255',
                 'googleCalendarJson' => 'nullable|file|mimes:json|max:2048',
             ]);
 
             $userId = createdBy();
-            $settings = [
-                'googleCalendarEnabled' => $validated['googleCalendarEnabled'] ?? false,
-                'googleCalendarId' => $validated['googleCalendarId'] ?? '',
-            ];
+            $settings = [];
+            if (array_key_exists('googleCalendarEnabled', $validated)) {
+                $settings['googleCalendarEnabled'] = $validated['googleCalendarEnabled'];
+            }
+            if (array_key_exists('googleCalendarId', $validated)) {
+                $settings['googleCalendarId'] = $validated['googleCalendarId'];
+            }
 
-            // Check if credentials are being changed
             $credentialsChanged = false;
-            if (isset($settings['googleCalendarId']) && $settings['googleCalendarId'] !== getSetting('googleCalendarId', '', $userId)) {
+            if (isset($settings['googleCalendarId']) && $settings['googleCalendarId'] !== (getSetting(SettingKey::GoogleCalendarId->value, '', $userId) ?: getSetting('googleCalendarId', '', $userId))) {
                 $credentialsChanged = true;
             }
 
@@ -316,7 +389,7 @@ class SystemSettingsController extends Controller
                 $credentialsChanged = true;
                 
                 // Delete existing JSON file if it exists
-                $existingPath = getSetting('googleCalendarJsonPath', null, $userId);
+                $existingPath = getSetting(SettingKey::GoogleCalendarJsonPath->value, null, $userId) ?: getSetting('googleCalendarJsonPath', null, $userId);
                 if ($existingPath && \Storage::disk('public')->exists($existingPath)) {
                     \Storage::disk('public')->delete($existingPath);
                 }
@@ -326,13 +399,17 @@ class SystemSettingsController extends Controller
                 $settings['googleCalendarJsonPath'] = $path;
             }
 
-            // Reset sync test status when credentials change
             if ($credentialsChanged) {
                 $settings['is_googlecalendar_sync'] = '0';
             }
 
+            if (empty($settings)) {
+                return redirect()->back()->with('info', __('No changes to save.'));
+            }
+
             foreach ($settings as $key => $value) {
-                updateSetting($key, is_bool($value) ? ($value ? '1' : '0') : $value, $userId);
+                $keyEnum = SettingKey::match($key);
+                Settings::update($keyEnum?->value ?? strtoupper(preg_replace('/([A-Z])/', '_$1', $key)), is_bool($value) ? ($value ? '1' : '0') : $value, $userId);
             }
 
             return redirect()->back()->with('success', __('Google Calendar settings updated successfully.'));
@@ -352,30 +429,33 @@ class SystemSettingsController extends Controller
         try {
             $userId = createdBy();
             $settings = settings($userId);
-            
+            $enabled = $settings[SettingKey::GoogleCalendarEnabled->value] ?? $settings['googleCalendarEnabled'] ?? null;
+            $calendarId = $settings[SettingKey::GoogleCalendarId->value] ?? $settings['googleCalendarId'] ?? '';
+            $jsonPathKey = $settings[SettingKey::GoogleCalendarJsonPath->value] ?? $settings['googleCalendarJsonPath'] ?? '';
+
             \Log::info('Google Calendar sync attempt', [
                 'user_id' => $userId,
                 'settings' => [
-                    'googleCalendarEnabled' => $settings['googleCalendarEnabled'] ?? 'not_set',
-                    'googleCalendarId' => !empty($settings['googleCalendarId']) ? 'set' : 'empty',
-                    'googleCalendarJsonPath' => !empty($settings['googleCalendarJsonPath']) ? 'set' : 'empty'
+                    'googleCalendarEnabled' => $enabled !== null ? 'set' : 'not_set',
+                    'googleCalendarId' => !empty($calendarId) ? 'set' : 'empty',
+                    'googleCalendarJsonPath' => !empty($jsonPathKey) ? 'set' : 'empty'
                 ]
             ]);
-            
-            if (!($settings['googleCalendarEnabled'] ?? false) || $settings['googleCalendarEnabled'] !== '1') {
+
+            if (!($enabled === true || $enabled === '1')) {
                 return redirect()->back()->withErrors(['error' => __('Google Calendar integration is not enabled.')]);
             }
-            
-            if (empty($settings['googleCalendarId']) || trim($settings['googleCalendarId']) === '') {
+
+            if (trim((string) $calendarId) === '') {
                 return redirect()->back()->withErrors(['error' => __('Google Calendar ID is not configured.')]);
             }
-            
-            if (empty($settings['googleCalendarJsonPath']) || trim($settings['googleCalendarJsonPath']) === '') {
+
+            if (trim((string) $jsonPathKey) === '') {
                 return redirect()->back()->withErrors(['error' => __('Google Calendar service account JSON is not uploaded.')]);
             }
 
             // Get the JSON file path
-            $jsonPath = storage_path('app/public/' . $settings['googleCalendarJsonPath']);
+            $jsonPath = storage_path('app/public/' . $jsonPathKey);
             
             if (!file_exists($jsonPath)) {
                 throw new \Exception('Service account JSON file not found.');
@@ -407,13 +487,13 @@ class SystemSettingsController extends Controller
             
             // Test by fetching calendar info
             try {
-                $calendar = $service->calendars->get($settings['googleCalendarId']);
+                $calendar = $service->calendars->get($calendarId);
               
-                if (!$calendar) {   
+                if (!$calendar) {
                     throw new \Exception('Unable to access the specified calendar.');
                 }
                 // Store sync test success status
-            updateSetting('is_googlecalendar_sync', '1', $userId);
+                Settings::update(SettingKey::IsGoogleCalendarSync->value, '1', $userId);
             } catch (\Google_Service_Exception $calendarException) {
                 // Handle specific calendar access errors
                 $errorCode = $calendarException->getCode();
@@ -431,11 +511,11 @@ class SystemSettingsController extends Controller
             return redirect()->back()->with('success', __('Google Calendar sync test completed successfully. Connected to: :name', ['name' => $calendar->getSummary()]));
         } catch (\Google_Service_Exception $e) {
             // Clear sync test status on failure
-            updateSetting('is_googlecalendar_sync', '0', $userId);
-            
+            Settings::update(SettingKey::IsGoogleCalendarSync->value, '0', $userId);
+
             $errorCode = $e->getCode();
             $errorMessage = 'Google API Error: ' . $e->getMessage();
-            
+
             // Provide more specific error messages based on error codes
             if ($errorCode === 404) {
                 $errorMessage = 'Calendar not found. Please verify your Google Calendar ID is correct.';
@@ -444,17 +524,17 @@ class SystemSettingsController extends Controller
             } elseif ($errorCode === 401) {
                 $errorMessage = 'Authentication failed. Please check your service account credentials.';
             }
-            
+
             \Log::error('Google Calendar API error', [
                 'error' => $errorMessage,
                 'error_code' => $errorCode,
-                'calendar_id' => $settings['googleCalendarId'] ?? 'not_set'
+                'calendar_id' => $calendarId
             ]);
                 return redirect()->back()->withErrors(['error' => __('Google Calendar sync failed: :error', ['error' => $e->getMessage()])]);
         } catch (\Exception $e) {
             // Clear sync test status on failure
-            updateSetting('is_googlecalendar_sync', '0', $userId);
-            
+            Settings::update(SettingKey::IsGoogleCalendarSync->value, '0', $userId);
+
             \Log::error('Google Calendar sync failed', [
                 'error' => $e->getMessage(),
                 'user_id' => auth()->id(),
@@ -491,7 +571,8 @@ class SystemSettingsController extends Controller
             }
 
             foreach ($settings as $key => $value) {
-                updateSetting($key, $value);
+                $keyEnum = SettingKey::match($key);
+                Settings::update($keyEnum?->value ?? strtoupper(preg_replace('/([A-Z])/', '_$1', $key)), $value);
             }
 
             return redirect()->back()->with('success', __('Google Wallet settings updated successfully.'));
@@ -524,8 +605,8 @@ class SystemSettingsController extends Controller
             $validated = $request->validate($rules);
 
             // Update Slack configuration
-            updateSetting('slack_enabled', $validated['slack_enabled'] ? '1' : '0', $userId);
-            updateSetting('slack_webhook_url', $validated['slack_webhook_url'] ?? '', $userId);
+            Settings::update('slack_enabled', $validated['slack_enabled'] ? '1' : '0', $userId);
+            Settings::update('slack_webhook_url', $validated['slack_webhook_url'] ?? '', $userId);
 
             // Update notification settings
             $tenantId = \Illuminate\Support\Facades\Auth::user()?->tenant_id;
@@ -610,8 +691,8 @@ class SystemSettingsController extends Controller
             $validated = $request->validate($rules);
 
             // Update Slack configuration
-            updateSetting('slack_enabled', $validated['slack_enabled'] ? '1' : '0', $userId);
-            updateSetting('slack_webhook_url', $validated['slack_webhook_url'] ?? '', $userId);
+            Settings::update('slack_enabled', $validated['slack_enabled'] ? '1' : '0', $userId);
+            Settings::update('slack_webhook_url', $validated['slack_webhook_url'] ?? '', $userId);
 
             // Update notification settings
             $tenantId = \Illuminate\Support\Facades\Auth::user()?->tenant_id;
@@ -717,9 +798,9 @@ public function updateTwilioNotifications(Request $request)
             $validated = $request->validate($rules);
 
             // Update Twilio configuration
-            updateSetting('twilio_sid', $validated['twilio_sid'] ?? '');
-            updateSetting('twilio_token', $validated['twilio_token'] ?? '');
-            updateSetting('twilio_from', $validated['twilio_from'] ?? '');
+            Settings::update('twilio_sid', $validated['twilio_sid'] ?? '');
+            Settings::update('twilio_token', $validated['twilio_token'] ?? '');
+            Settings::update('twilio_from', $validated['twilio_from'] ?? '');
 
             // Update notification settings in tenant_notification_templates
             $tenantId = \Illuminate\Support\Facades\Auth::user()?->tenant_id;

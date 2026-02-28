@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\NewCaseCreated;
+use App\Facades\Settings;
 use App\Models\CaseModel;
 use App\Models\CaseType;
 use App\Models\CaseCategory;
@@ -338,9 +339,7 @@ class CaseController extends BaseController
             ->where('status', 'active')
             ->get(['id', 'name']);
 
-        $googleCalendarEnabled = Setting::where('tenant_id', createdBy())
-            ->where('key', 'googleCalendarEnabled')
-            ->value('value') == '1';
+        $googleCalendarEnabled = Settings::boolean('GOOGLE_CALENDAR_ENABLED');
 
         // Get latest hearing (done or upcoming) for this case
         // Prioritize upcoming hearings, then show the most recent completed one
@@ -532,9 +531,7 @@ class CaseController extends BaseController
             ];
         });
 
-        $googleCalendarEnabled = Setting::where('tenant_id', createdBy())
-            ->where('key', 'googleCalendarEnabled')
-            ->value('value') == '1';
+        $googleCalendarEnabled = Settings::boolean('GOOGLE_CALENDAR_ENABLED');
 
         $authUser = auth()->user();
         $planLimits = null;

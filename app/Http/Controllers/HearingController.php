@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Facades\Settings;
 use App\Models\Hearing;
 use App\Models\CaseModel;
 use App\Models\Court;
@@ -85,8 +86,7 @@ class HearingController extends BaseController
             ->where('status', 'active')
             ->get(['id', 'name']);
 
-        // TODO: Enable when ready integration with Google Calendar is done
-        $googleCalendarEnabled = false; //Setting::where('tenant_id', createdBy())->where('key', 'googleCalendarEnabled')->value('value') == '1';
+        $googleCalendarEnabled = Settings::boolean('GOOGLE_CALENDAR_ENABLED');
 
         return Inertia::render('hearings/index', [
             'hearings' => $hearings,

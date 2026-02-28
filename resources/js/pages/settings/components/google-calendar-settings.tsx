@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { router } from '@inertiajs/react';
 import { Save, Calendar, RefreshCw } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface GoogleCalendarSettingsProps {
@@ -16,10 +16,12 @@ interface GoogleCalendarSettingsProps {
 export default function GoogleCalendarSettings({ settings = {} }: GoogleCalendarSettingsProps) {
     const { t } = useTranslation();
 
-    const [googleCalendarSettings, setGoogleCalendarSettings] = useState({
-        googleCalendarEnabled: settings.googleCalendarEnabled === 'true' || settings.googleCalendarEnabled === '1',
-        googleCalendarId: settings.googleCalendarId || '',
-    });
+    const initial = {
+        googleCalendarEnabled: (settings.GOOGLE_CALENDAR_ENABLED ?? settings.googleCalendarEnabled) === 'true' || (settings.GOOGLE_CALENDAR_ENABLED ?? settings.googleCalendarEnabled) === '1',
+        googleCalendarId: (settings.GOOGLE_CALENDAR_ID ?? settings.googleCalendarId) || '',
+    };
+    const [googleCalendarSettings, setGoogleCalendarSettings] = useState(initial);
+    const initialValuesRef = useRef(initial);
 
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isSyncing, setIsSyncing] = useState(false);
@@ -42,23 +44,26 @@ export default function GoogleCalendarSettings({ settings = {} }: GoogleCalendar
 
     const submitGoogleCalendarSettings = (e: React.FormEvent) => {
         e.preventDefault();
-
-        const formData = new FormData();
-        formData.append('googleCalendarEnabled', googleCalendarSettings.googleCalendarEnabled ? '1' : '0');
-        formData.append('googleCalendarId', googleCalendarSettings.googleCalendarId);
-        
-        if (selectedFile) {
-            formData.append('googleCalendarJson', selectedFile);
+        const init = initialValuesRef.current;
+        const enabledChanged = googleCalendarSettings.googleCalendarEnabled !== init.googleCalendarEnabled;
+        const idChanged = googleCalendarSettings.googleCalendarId !== init.googleCalendarId;
+        const hasFile = !!selectedFile;
+        if (!enabledChanged && !idChanged && !hasFile) {
+            toast.info(t('No changes to save'));
+            return;
         }
+        const formData = new FormData();
+        if (enabledChanged) formData.append('googleCalendarEnabled', googleCalendarSettings.googleCalendarEnabled ? '1' : '0');
+        if (idChanged) formData.append('googleCalendarId', googleCalendarSettings.googleCalendarId);
+        if (selectedFile) formData.append('googleCalendarJson', selectedFile);
 
         router.post(route('settings.google-calendar.update'), formData, {
             preserveScroll: true,
             onSuccess: (page) => {
+                if (enabledChanged || idChanged) initialValuesRef.current = { ...googleCalendarSettings };
+                if (selectedFile) setSelectedFile(null);
                 const successMessage = page.props.flash?.success;
-                if (successMessage) {
-                    toast.success(successMessage);
-                    setSelectedFile(null);
-                }
+                if (successMessage) toast.success(successMessage);
             },
             onError: (errors) => {
                 const errorMessage = errors.error || Object.values(errors).join(', ') || t('Failed to update Google Calendar settings');

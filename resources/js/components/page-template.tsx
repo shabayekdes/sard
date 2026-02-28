@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { ReactNode } from 'react';
 import { FloatingChatGpt } from '@/components/FloatingChatGpt';
+import { useTranslation } from 'react-i18next';
+import { useBrand } from '@/contexts/BrandContext';
 
 export interface PageAction {
   label: string;
@@ -38,7 +40,13 @@ export function PageTemplate({
   breadcrumbs
 }: PageTemplateProps) {
   const titleString = titleForHead ?? (typeof title === 'string' ? title : '');
-  // Default breadcrumbs if none provided
+  const { i18n } = useTranslation();
+  const gs = (usePage().props as any).globalSettings || {};
+  const lang = i18n.language?.split('-')[0] || 'en';
+  const appTitle = lang === 'ar' ? (gs.titleTextAr ?? gs.TITLE_TEXT_AR ?? 'Sard App') : (gs.titleTextEn ?? gs.TITLE_TEXT_EN ?? 'Sard App');
+  const { footerTextEn, footerTextAr } = useBrand();
+  const footerText = lang === 'ar' ? footerTextAr : footerTextEn;
+
   const pageBreadcrumbs: BreadcrumbItem[] = breadcrumbs || [
     {
       title: titleString,
@@ -48,7 +56,7 @@ export function PageTemplate({
 
   return (
     <AppLayout breadcrumbs={pageBreadcrumbs}>
-      <Head title={`${titleString || 'Page'} - ${(usePage().props as any).globalSettings?.titleText || 'Sard App'}`} />
+      <Head title={`${titleString || 'Page'} - ${appTitle}`} />
 
 
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden p-4">
@@ -88,6 +96,13 @@ export function PageTemplate({
         <div className={noPadding ? "" : "rounded-xl border p-6"}>
           {children}
         </div>
+
+        {/* Footer text */}
+        {footerText && (
+          <footer className="mt-auto">
+            <p className="text-muted-foreground text-start text-xs leading-none">{footerText}</p>
+          </footer>
+        )}
       </div>
       <FloatingChatGpt />
     </AppLayout>

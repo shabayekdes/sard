@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Facades\Settings;
 use App\Models\CaseTimeline;
 use App\Models\CaseModel;
 use App\Models\Setting;
@@ -46,9 +47,7 @@ class CaseTimelineController extends Controller
         $timelines = $query->paginate($request->per_page ?? 10);
         $cases = CaseModel::withPermissionCheck()->where('status', 'active')->get(['id', 'title', 'case_id']);
 
-        $googleCalendarEnabled = Setting::where('tenant_id', createdBy())
-            ->where('key', 'googleCalendarEnabled')
-            ->value('value') == '1';
+        $googleCalendarEnabled = Settings::boolean('GOOGLE_CALENDAR_ENABLED');
 
         return Inertia::render('cases/case-timelines/index', [
             'timelines' => $timelines,

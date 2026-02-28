@@ -12,7 +12,7 @@ import { getCookie } from '@/utils/cookies';
 import { getImagePath } from '@/utils/helpers';
 import { router, usePage } from '@inertiajs/react';
 import { Check, FileText, Layout, Moon, Palette, Save, SidebarIcon, Upload } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Separator } from '@/components/ui/separator';
@@ -32,6 +32,7 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
     const { updateBrandSettings } = useBrand();
 
     const [settings, setSettings] = useState<BrandSettings>(() => getBrandSettings(currentGlobalSettings || userSettings, currentGlobalSettings));
+    const initialValuesRef = useRef<BrandSettings>(getBrandSettings(currentGlobalSettings || userSettings, currentGlobalSettings));
 
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -56,6 +57,7 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
 
         const newBrandSettings = getBrandSettings(currentGlobalSettings || userSettings, currentGlobalSettings);
         setSettings(newBrandSettings);
+        initialValuesRef.current = newBrandSettings;
 
         // Sync sidebar settings from cookies or localStorage
         try {
@@ -175,14 +177,29 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
             layoutDirection: settings.layoutDirection,
             sidebarVariant: settings.sidebarVariant,
             sidebarStyle: settings.sidebarStyle,
-            titleText: settings.titleText,
-            footerText: settings.footerText,
+            titleTextEn: settings.titleTextEn,
+            titleTextAr: settings.titleTextAr,
+            footerTextEn: settings.footerTextEn,
+            footerTextAr: settings.footerTextAr,
         });
 
-        // Save to database (Inertia)
+        const initial = initialValuesRef.current;
+        const changed: Record<string, unknown> = {};
+        (Object.keys(settings) as (keyof BrandSettings)[]).forEach((key) => {
+            if (settings[key] !== initial[key]) {
+                changed[key] = settings[key];
+            }
+        });
+        if (Object.keys(changed).length === 0) {
+            toast.info(t('No changes to save'));
+            setIsLoading(false);
+            setIsSaving(false);
+            return;
+        }
+
         router.post(
             route('settings.brand.update'),
-            { settings },
+            changed as Record<string, string>,
             {
                 preserveScroll: true,
                 onSuccess: (page) => {
@@ -191,6 +208,7 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
                     const errorMessage = (page.props as any).flash?.error;
 
                     if (successMessage) {
+                        initialValuesRef.current = { ...settings };
                         toast.success(successMessage);
                         setTimeout(() => setIsSaving(false), 500);
                         router.reload();
@@ -370,27 +388,51 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 gap-6">
                                 <div className="space-y-3">
-                                    <Label htmlFor="titleText">{t('Title Text')}</Label>
+                                    <Label htmlFor="titleTextEn">{t('Title Text (English)')}</Label>
                                     <Input
-                                        id="titleText"
-                                        name="titleText"
-                                        value={settings.titleText}
+                                        id="titleTextEn"
+                                        name="titleTextEn"
+                                        value={settings.titleTextEn}
                                         onChange={handleInputChange}
-                                        placeholder="WorkDo"
+                                        placeholder="Sard App"
                                     />
-                                    <p className="text-muted-foreground text-xs">{t('Application title displayed in the browser tab')}</p>
+                                    <p className="text-muted-foreground text-xs">{t('Application title in English')}</p>
                                 </div>
 
                                 <div className="space-y-3">
-                                    <Label htmlFor="footerText">{t('Footer Text')}</Label>
+                                    <Label htmlFor="titleTextAr">{t('Title Text (Arabic)')}</Label>
                                     <Input
-                                        id="footerText"
-                                        name="footerText"
-                                        value={settings.footerText}
+                                        id="titleTextAr"
+                                        name="titleTextAr"
+                                        value={settings.titleTextAr}
                                         onChange={handleInputChange}
-                                        placeholder="© 2025 WorkDo. All rights reserved."
+                                        placeholder="تطبيق سرد"
                                     />
-                                    <p className="text-muted-foreground text-xs">{t('Text displayed in the footer')}</p>
+                                    <p className="text-muted-foreground text-xs">{t('Application title in Arabic')}</p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <Label htmlFor="footerTextEn">{t('Footer Text (English)')}</Label>
+                                    <Input
+                                        id="footerTextEn"
+                                        name="footerTextEn"
+                                        value={settings.footerTextEn}
+                                        onChange={handleInputChange}
+                                        placeholder="© 2026 Sard. All rights reserved."
+                                    />
+                                    <p className="text-muted-foreground text-xs">{t('Footer text in English')}</p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <Label htmlFor="footerTextAr">{t('Footer Text (Arabic)')}</Label>
+                                    <Input
+                                        id="footerTextAr"
+                                        name="footerTextAr"
+                                        value={settings.footerTextAr}
+                                        onChange={handleInputChange}
+                                        placeholder="جميع الحقوق محفوظة لشركة سرد 2026"
+                                    />
+                                    <p className="text-muted-foreground text-xs">{t('Footer text in Arabic')}</p>
                                 </div>
                             </div>
                         </div>
@@ -658,12 +700,18 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
 
                             <ThemePreview />
 
-                            <div className="mt-4 border-t pt-4">
-                                <div className="text-muted-foreground mb-2 text-xs">
-                                    {t('Title')}: <span className="text-foreground font-medium">{settings.titleText}</span>
+                            <div className="mt-4 border-t pt-4 space-y-1">
+                                <div className="text-muted-foreground text-xs">
+                                    {t('Title (EN)')}: <span className="text-foreground font-medium">{settings.titleTextEn}</span>
                                 </div>
                                 <div className="text-muted-foreground text-xs">
-                                    {t('Footer')}: <span className="text-foreground font-medium">{settings.footerText}</span>
+                                    {t('Title (AR)')}: <span className="text-foreground font-medium">{settings.titleTextAr}</span>
+                                </div>
+                                <div className="text-muted-foreground text-xs">
+                                    {t('Footer (EN)')}: <span className="text-foreground font-medium">{settings.footerTextEn}</span>
+                                </div>
+                                <div className="text-muted-foreground text-xs">
+                                    {t('Footer (AR)')}: <span className="text-foreground font-medium">{settings.footerTextAr}</span>
                                 </div>
                             </div>
                         </div>

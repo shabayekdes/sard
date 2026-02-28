@@ -64,7 +64,7 @@ class RegisteredUserController extends Controller
             'referralCode' => $referralCode,
             'planId' => $planId,
             'phoneCountries' => $phoneCountries,
-            'defaultCountry' => getSetting('defaultCountry', ''),
+            'defaultCountry' => Settings::string('DEFAULT_COUNTRY', 'SA'),
             'referrer' => $referrer ? $referrer->name : null,
             'settings' => settings(),
         ]);
@@ -160,7 +160,7 @@ class RegisteredUserController extends Controller
         // Redirect on current host only (avoid cross-origin redirect so session/cookies stay)
         $currentHost = $request->getSchemeAndHttpHost();
 
-        $emailVerificationEnabled = Settings::boolean('ENABLE_EMAIL_VERIFICATION');
+        $emailVerificationEnabled = Settings::boolean('EMAIL_VERIFICATION_ENABLED');
         if ($emailVerificationEnabled) {
             event(new Registered($user));
             return redirect()->away("{$currentHost}/verify-email");

@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Save, HardDrive, Search } from 'lucide-react';
 import { SettingsSection } from '@/components/settings-section';
 import { useTranslation } from 'react-i18next';
@@ -135,7 +135,7 @@ export default function StorageSettings({ settings = {} }: StorageSettingsProps)
 'webp': 'webp'
   };
   
-  const [storageSettings, setStorageSettings] = useState<StorageSettings>({
+  const initialStorage: StorageSettings = {
     storageType: (settings.storage_type as StorageType) || 'local',
     allowedFileTypes: settings.storage_file_types || 'jpg,png,webp,gif',
     maxUploadSize: settings.storage_max_upload_size || '2048',
@@ -151,7 +151,9 @@ export default function StorageSettings({ settings = {} }: StorageSettingsProps)
     wasabiBucket: settings.wasabi_bucket || '',
     wasabiUrl: settings.wasabi_url || '',
     wasabiRoot: settings.wasabi_root || ''
-  });
+  };
+  const [storageSettings, setStorageSettings] = useState<StorageSettings>(initialStorage);
+  const initialValuesRef = useRef<StorageSettings>(initialStorage);
 
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -201,42 +203,37 @@ export default function StorageSettings({ settings = {} }: StorageSettingsProps)
 
   const submitStorageSettings = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const formData: any = {
-      storage_type: storageSettings.storageType,
-      allowedFileTypes: storageSettings.allowedFileTypes,
-      maxUploadSize: storageSettings.maxUploadSize,
-    };
+    const init = initialValuesRef.current;
+    const formData: Record<string, string> = {};
+    if (storageSettings.storageType !== init.storageType) formData.storage_type = storageSettings.storageType;
+    if (storageSettings.allowedFileTypes !== init.allowedFileTypes) formData.allowedFileTypes = storageSettings.allowedFileTypes;
+    if (storageSettings.maxUploadSize !== init.maxUploadSize) formData.maxUploadSize = storageSettings.maxUploadSize;
+    if (storageSettings.awsAccessKeyId !== init.awsAccessKeyId) formData.awsAccessKeyId = storageSettings.awsAccessKeyId;
+    if (storageSettings.awsSecretAccessKey !== init.awsSecretAccessKey) formData.awsSecretAccessKey = storageSettings.awsSecretAccessKey;
+    if (storageSettings.awsDefaultRegion !== init.awsDefaultRegion) formData.awsDefaultRegion = storageSettings.awsDefaultRegion;
+    if (storageSettings.awsBucket !== init.awsBucket) formData.awsBucket = storageSettings.awsBucket;
+    if (storageSettings.awsUrl !== init.awsUrl) formData.awsUrl = storageSettings.awsUrl;
+    if (storageSettings.awsEndpoint !== init.awsEndpoint) formData.awsEndpoint = storageSettings.awsEndpoint;
+    if (storageSettings.wasabiAccessKey !== init.wasabiAccessKey) formData.wasabiAccessKey = storageSettings.wasabiAccessKey;
+    if (storageSettings.wasabiSecretKey !== init.wasabiSecretKey) formData.wasabiSecretKey = storageSettings.wasabiSecretKey;
+    if (storageSettings.wasabiRegion !== init.wasabiRegion) formData.wasabiRegion = storageSettings.wasabiRegion;
+    if (storageSettings.wasabiBucket !== init.wasabiBucket) formData.wasabiBucket = storageSettings.wasabiBucket;
+    if (storageSettings.wasabiUrl !== init.wasabiUrl) formData.wasabiUrl = storageSettings.wasabiUrl;
+    if (storageSettings.wasabiRoot !== init.wasabiRoot) formData.wasabiRoot = storageSettings.wasabiRoot;
 
-    if (storageSettings.storageType === 's3') {
-      formData.awsAccessKeyId = storageSettings.awsAccessKeyId;
-      formData.awsSecretAccessKey = storageSettings.awsSecretAccessKey;
-      formData.awsDefaultRegion = storageSettings.awsDefaultRegion;
-      formData.awsBucket = storageSettings.awsBucket;
-      formData.awsUrl = storageSettings.awsUrl;
-      formData.awsEndpoint = storageSettings.awsEndpoint;
+    if (Object.keys(formData).length === 0) {
+      toast.info(t('No changes to save'));
+      return;
     }
 
-    if (storageSettings.storageType === 'wasabi') {
-      formData.wasabiAccessKey = storageSettings.wasabiAccessKey;
-      formData.wasabiSecretKey = storageSettings.wasabiSecretKey;
-      formData.wasabiRegion = storageSettings.wasabiRegion;
-      formData.wasabiBucket = storageSettings.wasabiBucket;
-      formData.wasabiUrl = storageSettings.wasabiUrl;
-      formData.wasabiRoot = storageSettings.wasabiRoot;
-    }
-    
     router.post(route('settings.storage.update'), formData, {
       preserveScroll: true,
       onSuccess: (page) => {
+        initialValuesRef.current = { ...storageSettings };
         const successMessage = page.props.flash?.success;
         const errorMessage = page.props.flash?.error;
-        
-        if (successMessage) {
-          toast.success(successMessage);
-        } else if (errorMessage) {
-          toast.error(errorMessage);
-        }
+        if (successMessage) toast.success(successMessage);
+        else if (errorMessage) toast.error(errorMessage);
       },
       onError: (errors) => {
         const errorMessage = errors.error || Object.values(errors).join(', ') || t('Failed to update storage settings');

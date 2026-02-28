@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Facades\Settings;
 use App\Models\Client;
 use App\Models\ClientType;
 use App\Models\CaseType;
@@ -219,8 +220,8 @@ class ClientController extends Controller
             'clientTypes' => $clientTypes,
             'countries' => $countries,
             'phoneCountries' => $phoneCountries,
-            'defaultCountry' => getSetting('defaultCountry', ''),
-            'defaultTaxRate' => getSetting('defaultTaxRate', ''),
+            'defaultCountry' => Settings::string('DEFAULT_COUNTRY', 'SA'),
+            'defaultTaxRate' => Settings::string('DEFAULT_TAX_RATE', 15),
             'planLimits' => $planLimits,
             'documentTypes' => $documentTypes,
         ];

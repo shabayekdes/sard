@@ -8,9 +8,10 @@ return [
     ['key' => 'TIME_FORMAT', 'value' => 'H:i'],
     ['key' => 'CALENDAR_START_DAY', 'value' => 'sunday'],
     ['key' => 'DEFAULT_TIMEZONE', 'value' => 'Asia/Riyadh'],
-    ['key' => 'ENABLE_EMAIL_VERIFICATION', 'value' => true],
+    ['key' => 'EMAIL_VERIFICATION_ENABLED', 'value' => true],
     ['key' => 'LANDING_PAGE_ENABLED', 'value' => false],
     ['key' => 'DEFAULT_TAX_RATE', 'value' => '15'],
+
     ['key' => 'RECAPTCHA_ENABLED', 'value' => false],
     ['key' => 'RECAPTCHA_VERSION', 'value' => 'v3'],
     ['key' => 'RECAPTCHA_SITE_KEY', 'value' => ''],
@@ -20,8 +21,10 @@ return [
     ['key' => 'LOGO_DARK', 'value' => '/images/logos/logo-dark.png'],
     ['key' => 'LOGO_LIGHT', 'value' => '/images/logos/logo-light.png'],
     ['key' => 'FAVICON', 'value' => '/images/logos/favicon.ico'],
-    ['key' => 'TITLE_TEXT', 'value' => 'Sard app - تطبيق سرد'],
-    ['key' => 'FOOTER_TEXT', 'value' => '© 2026 Sard . All rights reserved. - جميع الحقوق محفوظة لشركة سرد 2026'],
+    ['key' => 'TITLE_TEXT_EN', 'value' => 'Sard App'],
+    ['key' => 'TITLE_TEXT_AR', 'value' => 'تطبيق سرد'],
+    ['key' => 'FOOTER_TEXT_EN', 'value' => '© 2026 Sard. All rights reserved.'],
+    ['key' => 'FOOTER_TEXT_AR', 'value' => 'جميع الحقوق محفوظة لشركة سرد 2026'],
     ['key' => 'THEME_COLOR', 'value' => 'green'],
     ['key' => 'CUSTOM_COLOR', 'value' => '#205341'],
     ['key' => 'SIDEBAR_VARIANT', 'value' => 'inset'],
@@ -65,10 +68,16 @@ return [
     ['key' => 'EMAIL_HOST', 'value' => 'smtp.emailit.com'],
     ['key' => 'EMAIL_PORT', 'value' => '587'],
     ['key' => 'EMAIL_USERNAME', 'value' => 'emailit'],
-    ['key' => 'EMAIL_PASSWORD', 'value' => ''],
+    ['key' => 'EMAIL_PASSWORD', 'value' => config('mail.mailers.smtp.password')],
     ['key' => 'EMAIL_ENCRYPTION', 'value' => 'tls'],
     ['key' => 'EMAIL_FROM_ADDRESS', 'value' => 'no-reply@sard.app'],
     ['key' => 'EMAIL_FROM_NAME', 'value' => 'Sard'],
+
+    // Google Calendar Settings
+    ['key' => 'GOOGLE_CALENDAR_ENABLED', 'value' => false],
+    ['key' => 'GOOGLE_CALENDAR_CLIENT_ID', 'value' => ''],
+    ['key' => 'GOOGLE_CALENDAR_CLIENT_SECRET', 'value' => ''],
+    ['key' => 'GOOGLE_CALENDAR_REDIRECT_URI', 'value' => ''],
 
     // Cookie & Contact
     ['key' => 'ENABLE_LOGGING', 'value' => true],

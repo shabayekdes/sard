@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Save } from 'lucide-react';
 import { SettingsSection } from '@/components/settings-section';
 import { useTranslation } from 'react-i18next';
@@ -29,23 +29,21 @@ export default function ChatGptSettings({ settings = {} }: ChatGptSettingsProps)
     : (pageProps.settings || {});
   
   // Initialize state with merged settings
-  const [chatgptSettings, setChatgptSettings] = useState(() => ({
+  const initial = {
     chatgptKey: settingsData.chatgptKey || defaultSettings.chatgptKey,
     chatgptModel: settingsData.chatgptModel || defaultSettings.chatgptModel
-  }));
-  
-  // Update state when settings change
+  };
+  const [chatgptSettings, setChatgptSettings] = useState(() => ({ ...initial }));
+  const initialValuesRef = useRef(initial);
+
   useEffect(() => {
     if (Object.keys(settingsData).length > 0) {
-      const mergedSettings = Object.keys(defaultSettings).reduce((acc, key) => {
-        acc[key] = settingsData[key] || defaultSettings[key];
-        return acc;
-      }, {} as Record<string, string>);
-      
-      setChatgptSettings(prevSettings => ({
-        ...prevSettings,
-        ...mergedSettings
-      }));
+      const merged = {
+        chatgptKey: settingsData.chatgptKey || defaultSettings.chatgptKey,
+        chatgptModel: settingsData.chatgptModel || defaultSettings.chatgptModel
+      };
+      setChatgptSettings(merged);
+      initialValuesRef.current = { ...merged };
     }
   }, [settingsData]);
 
@@ -60,18 +58,25 @@ export default function ChatGptSettings({ settings = {} }: ChatGptSettingsProps)
   // Handle form submission
   const submitChatgptSettings = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    router.post(route('settings.chatgpt.update'), chatgptSettings, {
+    const init = initialValuesRef.current;
+    const changed: Record<string, string> = {};
+    (Object.keys(chatgptSettings) as (keyof typeof chatgptSettings)[]).forEach((key) => {
+      if (chatgptSettings[key] !== init[key]) {
+        changed[key] = chatgptSettings[key];
+      }
+    });
+    if (Object.keys(changed).length === 0) {
+      toast.info(t('No changes to save'));
+      return;
+    }
+    router.post(route('settings.chatgpt.update'), changed, {
       preserveScroll: true,
       onSuccess: (page) => {
+        initialValuesRef.current = { ...chatgptSettings };
         const successMessage = page.props.flash?.success;
         const errorMessage = page.props.flash?.error;
-        
-        if (successMessage) {
-          toast.success(successMessage);
-        } else if (errorMessage) {
-          toast.error(errorMessage);
-        }
+        if (successMessage) toast.success(successMessage);
+        else if (errorMessage) toast.error(errorMessage);
       },
       onError: (errors) => {
         const errorMessage = errors.error || Object.values(errors).join(', ') || t('Failed to update Chat GPT settings');

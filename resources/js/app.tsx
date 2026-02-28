@@ -106,10 +106,10 @@ i18n.changeLanguage = function (lng: any, callback?: any) {
 i18n.on('languageChanged', (window as any).updateLayoutDirection);
 i18n.on('loaded', () => (window as any).updateLayoutDirection(i18n.language));
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'Sard App';
 
 createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    title: (title) => (title ? (title.includes(' - ') ? title : `${title} - ${appName}`) : appName),
     resolve: (name) =>
         resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')).then((module: any) => {
             const Page = module.default;

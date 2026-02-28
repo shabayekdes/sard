@@ -66,7 +66,7 @@ class SeedDefaultCompanyData implements ShouldQueue
         // Jobs will run in parallel if queue workers are available
         
         // Foundation jobs - should run first (settings, roles, notifications)
-        SeedCompanySettings::dispatch($this->tenant_id);
+        // SeedCompanySettings::dispatch($this->tenant_id);
         SeedCompanyRoles::dispatch($this->tenant_id);
         SeedNotificationTemplates::dispatch($this->tenant_id);
         

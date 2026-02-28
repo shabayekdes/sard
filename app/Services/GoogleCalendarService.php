@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\SettingKey;
+use App\Facades\Settings;
 use App\Models\Setting;
 use Google_Client;
 use Google_Service_Calendar;
@@ -22,7 +24,7 @@ class GoogleCalendarService
     public function isEnabled($userId)
     {
         // Check if Google Calendar is globally enabled
-        $globalEnabled = getSetting('googleCalendarEnabled', '0', $userId) === '1';
+        $globalEnabled = Settings::boolean(SettingKey::GoogleCalendarEnabled->value);
         \Log::info('Google Calendar enabled check', [
             'user_id' => $userId,
             'enabled' => $globalEnabled
@@ -33,10 +35,10 @@ class GoogleCalendarService
     private function setupClient($userId)
     {
         $settings = Setting::where('tenant_id', $userId)
-            ->whereIn('key', ['googleCalendarJsonPath', 'googleCalendarId'])
+            ->whereIn('key', [SettingKey::GoogleCalendarJsonPath->value, SettingKey::GoogleCalendarId->value, 'googleCalendarJsonPath', 'googleCalendarId'])
             ->pluck('value', 'key');
 
-        $jsonPath = $settings['googleCalendarJsonPath'] ?? null;
+        $jsonPath = $settings[SettingKey::GoogleCalendarJsonPath->value] ?? $settings['googleCalendarJsonPath'] ?? null;
         
         if (!$jsonPath) {
             throw new \Exception('Google Calendar JSON credentials not configured');
@@ -156,11 +158,11 @@ class GoogleCalendarService
                 $event->setConferenceData($conferenceData);
             }
 
-            // Get calendar ID from settings
+            // Get calendar ID from settings (UPPERCASE or camelCase)
             $calendarId = Setting::where('tenant_id', $userId)
-                ->where('key', 'googleCalendarId')
+                ->whereIn('key', [SettingKey::GoogleCalendarId->value, 'googleCalendarId'])
                 ->value('value') ?: 'primary';
-                
+
             $calendarEvent = $this->service->events->insert($calendarId, $event, [
                 'conferenceDataVersion' => isset($item->create_meeting_link) && $item->create_meeting_link ? 1 : 0
             ]);
@@ -206,11 +208,11 @@ class GoogleCalendarService
         try {
             $this->setupClient($userId);
 
-            // Get calendar ID from settings
+            // Get calendar ID from settings (UPPERCASE or camelCase)
             $calendarId = Setting::where('tenant_id', $userId)
-                ->where('key', 'googleCalendarId')
+                ->whereIn('key', [SettingKey::GoogleCalendarId->value, 'googleCalendarId'])
                 ->value('value') ?: 'primary';
-                
+
             $event = $this->service->events->get($calendarId, $eventId);
             
             $summary = $item->title ?? ($type === 'team_member' ? 'Team Member Assignment: ' . ($item->user->name ?? 'Unknown') : 'Event');
@@ -292,11 +294,11 @@ class GoogleCalendarService
 
         try {
             $this->setupClient($userId);
-            // Get calendar ID from settings
+            // Get calendar ID from settings (UPPERCASE or camelCase)
             $calendarId = Setting::where('tenant_id', $userId)
-                ->where('key', 'googleCalendarId')
+                ->whereIn('key', [SettingKey::GoogleCalendarId->value, 'googleCalendarId'])
                 ->value('value') ?: 'primary';
-                
+
             $this->service->events->delete($calendarId, $eventId);
             return true;
         } catch (\Exception $e) {
@@ -317,11 +319,11 @@ class GoogleCalendarService
         try {
             $this->setupClient($settingsUserId);
             
-            // Get calendar ID from settings
+            // Get calendar ID from settings (UPPERCASE or camelCase)
             $calendarId = Setting::where('tenant_id', $settingsUserId)
-                ->where('key', 'googleCalendarId')
+                ->whereIn('key', [SettingKey::GoogleCalendarId->value, 'googleCalendarId'])
                 ->value('value') ?: 'primary';
-            
+
             $optParams = [
                 'maxResults' => $maxResults,
                 'orderBy' => 'startTime',
@@ -452,7 +454,7 @@ class GoogleCalendarService
     public function isAuthorized($userId)
     {
         $jsonPath = Setting::where('tenant_id', $userId)
-            ->where('key', 'googleCalendarJsonPath')
+            ->whereIn('key', [SettingKey::GoogleCalendarJsonPath->value, 'googleCalendarJsonPath'])
             ->first();
         
         if (!$jsonPath || empty($jsonPath->value)) {

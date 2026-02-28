@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Facades\Settings;
 use App\Http\Controllers\Controller;
 use App\Mail\TestMail;
 use App\Models\Setting;
@@ -77,28 +78,25 @@ class EmailSettingController extends Controller
             'fromName' => 'required|string',
         ]);
 
-        updateSetting('email_provider', $validated['provider']);
-        updateSetting('email_driver', $validated['driver']);
+        Settings::update('email_provider', $validated['provider']);
+        Settings::update('email_driver', $validated['driver']);
         if (!empty($validated['host'])) {
-            updateSetting('email_host', $validated['host']);
+            Settings::update('email_host', $validated['host']);
         }
         if (!empty($validated['port'])) {
-            updateSetting('email_port', $validated['port']);
+            Settings::update('email_port', $validated['port']);
         }
         if (!empty($validated['username'])) {
-            updateSetting('email_username', $validated['username']);
+            Settings::update('email_username', $validated['username']);
         }
-        
-        // Only update password if provided and not masked
         if (!empty($validated['password']) && $validated['password'] !== '••••••••••••') {
-            updateSetting('email_password', $validated['password']);
+            Settings::update('email_password', $validated['password']);
         }
-        
         if (!empty($validated['encryption'])) {
-            updateSetting('email_encryption', $validated['encryption']);
+            Settings::update('email_encryption', $validated['encryption']);
         }
-        updateSetting('email_from_address', $validated['fromAddress']);
-        updateSetting('email_from_name', $validated['fromName']);
+        Settings::update('email_from_address', $validated['fromAddress']);
+        Settings::update('email_from_name', $validated['fromName']);
 
         return redirect()->back()->with('success', __('Email settings updated successfully'));
     }

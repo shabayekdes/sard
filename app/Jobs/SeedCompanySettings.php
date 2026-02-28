@@ -59,8 +59,8 @@ class SeedCompanySettings implements ShouldQueue
         // Settings to copy from superadmin (system settings only, not theme settings)
         $settingsToCopy = [
             'defaultCountry', 'defaultLanguage', 'dateFormat', 'timeFormat', 'calendarStartDay',
-            'defaultTimezone', 'ENABLE_EMAIL_VERIFICATION', 'landingPageEnabled',
-            'logoDark', 'logoLight', 'favicon', 'titleText', 'footerText'
+            'defaultTimezone', 'EMAIL_VERIFICATION_ENABLED', 'landingPageEnabled',
+            'LOGO_DARK', 'LOGO_LIGHT', 'FAVICON', 'TITLE_TEXT_EN', 'TITLE_TEXT_AR', 'FOOTER_TEXT_EN', 'FOOTER_TEXT_AR',
         ];
 
         $superAdminSettings = Setting::where('tenant_id', $superAdmin->id)

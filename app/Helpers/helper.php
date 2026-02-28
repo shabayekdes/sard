@@ -231,29 +231,10 @@ if (! function_exists('IsDemo')) {
     }
 }
 
-if (! function_exists('updateSetting')) {
-    function updateSetting($key, $value, $tenant_id = null)
-    {
-        if (is_null($tenant_id)) {
-            if (auth()->user()) {
-                $tenant_id = auth()->user()->tenant_id;
-            } else {
-                $user = User::where('type', 'superadmin')->first();
-                $tenant_id = $user ? $user->tenant_id : null;
-            }
-        }
-
-        return Setting::updateOrCreate(
-            ['tenant_id' => $tenant_id, 'key' => $key],
-            ['value' => $value]
-        );
-    }
-}
-
 if (! function_exists('isLandingPageEnabled')) {
     function isLandingPageEnabled()
     {
-        return getSetting('landingPageEnabled', true) === true || getSetting('landingPageEnabled', true) === '1';
+        return \App\Facades\Settings::boolean('LANDING_PAGE_ENABLED', false);
     }
 }
 
@@ -1153,7 +1134,7 @@ if (! function_exists('defaultSettings')) {
             'TIME_FORMAT' => 'H:i',
             'CALENDAR_START_DAY' => 'sunday',
             'DEFAULT_TIMEZONE' => 'Asia/Riyadh',
-            'ENABLE_EMAIL_VERIFICATION' => true,
+            'EMAIL_VERIFICATION_ENABLED' => true,
             'LANDING_PAGE_ENABLED' => false,
             'DEFAULT_TAX_RATE' => '15',
             'RECAPTCHA_ENABLED' => config('services.recaptcha.enabled'),
@@ -1165,8 +1146,10 @@ if (! function_exists('defaultSettings')) {
             'LOGO_DARK' => '/images/logos/logo-dark.png',
             'LOGO_LIGHT' => '/images/logos/logo-light.png',
             'FAVICON' => '/images/logos/favicon.ico',
-            'TITLE_TEXT' => 'Sard app - تطبيق سرد',
-            'FOOTER_TEXT' => '© 2026 Sard . All rights reserved. - جميع الحقوق محفوظة لشركة سرد 2026',
+            'TITLE_TEXT_EN' => 'Sard App',
+            'TITLE_TEXT_AR' => 'تطبيق سرد',
+            'FOOTER_TEXT_EN' => '© 2026 Sard. All rights reserved.',
+            'FOOTER_TEXT_AR' => 'جميع الحقوق محفوظة لشركة سرد 2026',
             'THEME_COLOR' => 'green',
             'CUSTOM_COLOR' => '#205341',
             'SIDEBAR_VARIANT' => 'inset',
@@ -1593,6 +1576,8 @@ if (! function_exists('isSlackEnabled')) {
      *
      * @param int|null $userId
      * @return bool
+     *
+     * @deprecated
      */
     function isSlackEnabled($userId = null)
     {
@@ -1610,6 +1595,8 @@ if (! function_exists('getSlackWebhookUrl')) {
      *
      * @param int|null $userId
      * @return string
+     *
+     * @deprecated
      */
     function getSlackWebhookUrl($userId = null)
     {
@@ -1628,7 +1615,7 @@ if (! function_exists('updateSlackSetting')) {
      * @param string $key
      * @param mixed $value
      * @param int|null $userId
-     * @return \App\Models\Setting
+     * @return void
      */
     function updateSlackSetting($key, $value, $userId = null)
     {
@@ -1636,9 +1623,7 @@ if (! function_exists('updateSlackSetting')) {
             $userId = createdBy();
         }
 
-        return updateSetting($key, $value, $userId);
+        \App\Facades\Settings::update($key, $value, $userId);
     }
 }
-
-
 

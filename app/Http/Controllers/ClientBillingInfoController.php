@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Facades\Settings;
 use App\Models\Client;
 use App\Models\ClientBillingInfo;
 use App\Models\Currency;
@@ -90,8 +91,7 @@ class ClientBillingInfoController extends Controller
 
         $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
-        $defaultCurrency = getSetting('defaultCurrency')
-            ?: Currency::where('status', true)->value('code');
+        $defaultCurrency = Settings::string('DEFAULT_CURRENCY');
         $validated['currency'] = $validated['currency'] ?? $defaultCurrency ?? 'USD';
 
         // Check if client belongs to the current user's company

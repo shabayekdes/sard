@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Facades\Settings;
 use App\Models\Hearing;
 use App\Models\CaseTimeline;
 use App\Models\Task;
@@ -239,7 +240,7 @@ class CalendarController extends BaseController
             ],
             'systemSettings' => settings(),
             'googleCalendarAuthorized' => $this->googleCalendarService->isAuthorized(createdBy()),
-            'googleCalendarEnabled' => getSetting('googleCalendarEnabled', '0') === '1'
+            'googleCalendarEnabled' => Settings::boolean('GOOGLE_CALENDAR_ENABLED', false)
         ]);
     }
 

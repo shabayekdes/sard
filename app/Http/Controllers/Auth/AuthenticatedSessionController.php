@@ -41,7 +41,7 @@ class AuthenticatedSessionController extends Controller
         $this->logLoginHistory($request);
 
         // Check if email verification is enabled and user is not verified
-        $emailVerificationEnabled = Settings::boolean('ENABLE_EMAIL_VERIFICATION');
+        $emailVerificationEnabled = Settings::boolean('EMAIL_VERIFICATION_ENABLED');
         if ($emailVerificationEnabled && ! $request->user()->hasVerifiedEmail()) {
             // Redirect to verification on current host (tenant or central) to avoid sending to SaaS domain
             return redirect()->away($request->getSchemeAndHttpHost() . '/verify-email');

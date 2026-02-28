@@ -3,7 +3,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Save, Download } from 'lucide-react';
 import { SettingsSection } from '@/components/settings-section';
 import { useTranslation } from 'react-i18next';
@@ -40,44 +40,29 @@ export default function CookieSettings({ settings = {} }: CookieSettingsProps) {
     ? settings 
     : (pageProps.settings || {});
   
-  // Initialize state with merged settings
-  const [cookieSettings, setCookieSettings] = useState(() => ({
-      enableLogging: settingsData.enableLogging === '1' || settingsData.enableLogging === true || defaultSettings.enableLogging,
-      strictlyNecessaryCookies:
-          settingsData.strictlyNecessaryCookies === '1' || settingsData.strictlyNecessaryCookies === true || defaultSettings.strictlyNecessaryCookies,
-      cookieTitleEn: settingsData.cookieTitleEn || settingsData.cookieTitle || defaultSettings.cookieTitleEn,
-      cookieTitleAr: settingsData.cookieTitleAr || defaultSettings.cookieTitleAr,
-      strictlyCookieTitleEn: settingsData.strictlyCookieTitleEn || settingsData.strictlyCookieTitle || defaultSettings.strictlyCookieTitleEn,
-      strictlyCookieTitleAr: settingsData.strictlyCookieTitleAr || defaultSettings.strictlyCookieTitleAr,
-      cookieDescriptionEn: settingsData.cookieDescriptionEn || settingsData.cookieDescription || defaultSettings.cookieDescriptionEn,
-      cookieDescriptionAr: settingsData.cookieDescriptionAr || defaultSettings.cookieDescriptionAr,
-      strictlyCookieDescriptionEn:
-          settingsData.strictlyCookieDescriptionEn || settingsData.strictlyCookieDescription || defaultSettings.strictlyCookieDescriptionEn,
-      strictlyCookieDescriptionAr: settingsData.strictlyCookieDescriptionAr || defaultSettings.strictlyCookieDescriptionAr,
-      contactUsDescriptionEn: settingsData.contactUsDescriptionEn || settingsData.contactUsDescription || defaultSettings.contactUsDescriptionEn,
-      contactUsDescriptionAr: settingsData.contactUsDescriptionAr || defaultSettings.contactUsDescriptionAr,
-      contactUsUrl: settingsData.contactUsUrl || defaultSettings.contactUsUrl,
-  }));
-  
-  // Update state when settings change
+  const getMergedCookie = () => ({
+    enableLogging: settingsData.enableLogging === '1' || settingsData.enableLogging === true || defaultSettings.enableLogging,
+    strictlyNecessaryCookies: settingsData.strictlyNecessaryCookies === '1' || settingsData.strictlyNecessaryCookies === true || defaultSettings.strictlyNecessaryCookies,
+    cookieTitleEn: settingsData.cookieTitleEn || settingsData.cookieTitle || defaultSettings.cookieTitleEn,
+    cookieTitleAr: settingsData.cookieTitleAr || defaultSettings.cookieTitleAr,
+    strictlyCookieTitleEn: settingsData.strictlyCookieTitleEn || settingsData.strictlyCookieTitle || defaultSettings.strictlyCookieTitleEn,
+    strictlyCookieTitleAr: settingsData.strictlyCookieTitleAr || defaultSettings.strictlyCookieTitleAr,
+    cookieDescriptionEn: settingsData.cookieDescriptionEn || settingsData.cookieDescription || defaultSettings.cookieDescriptionEn,
+    cookieDescriptionAr: settingsData.cookieDescriptionAr || defaultSettings.cookieDescriptionAr,
+    strictlyCookieDescriptionEn: settingsData.strictlyCookieDescriptionEn || settingsData.strictlyCookieDescription || defaultSettings.strictlyCookieDescriptionEn,
+    strictlyCookieDescriptionAr: settingsData.strictlyCookieDescriptionAr || defaultSettings.strictlyCookieDescriptionAr,
+    contactUsDescriptionEn: settingsData.contactUsDescriptionEn || settingsData.contactUsDescription || defaultSettings.contactUsDescriptionEn,
+    contactUsDescriptionAr: settingsData.contactUsDescriptionAr || defaultSettings.contactUsDescriptionAr,
+    contactUsUrl: settingsData.contactUsUrl || defaultSettings.contactUsUrl,
+  });
+  const [cookieSettings, setCookieSettings] = useState(() => getMergedCookie());
+  const initialValuesRef = useRef(getMergedCookie());
+
   useEffect(() => {
     if (Object.keys(settingsData).length > 0) {
-      setCookieSettings(prevSettings => ({
-        ...prevSettings,
-        enableLogging: settingsData.enableLogging === '1' || settingsData.enableLogging === true || defaultSettings.enableLogging,
-        strictlyNecessaryCookies: settingsData.strictlyNecessaryCookies === '1' || settingsData.strictlyNecessaryCookies === true || defaultSettings.strictlyNecessaryCookies,
-        cookieTitleEn: settingsData.cookieTitleEn || settingsData.cookieTitle || defaultSettings.cookieTitleEn,
-        cookieTitleAr: settingsData.cookieTitleAr || defaultSettings.cookieTitleAr,
-        strictlyCookieTitleEn: settingsData.strictlyCookieTitleEn || settingsData.strictlyCookieTitle || defaultSettings.strictlyCookieTitleEn,
-        strictlyCookieTitleAr: settingsData.strictlyCookieTitleAr || defaultSettings.strictlyCookieTitleAr,
-        cookieDescriptionEn: settingsData.cookieDescriptionEn || settingsData.cookieDescription || defaultSettings.cookieDescriptionEn,
-        cookieDescriptionAr: settingsData.cookieDescriptionAr || defaultSettings.cookieDescriptionAr,
-        strictlyCookieDescriptionEn: settingsData.strictlyCookieDescriptionEn || settingsData.strictlyCookieDescription || defaultSettings.strictlyCookieDescriptionEn,
-        strictlyCookieDescriptionAr: settingsData.strictlyCookieDescriptionAr || defaultSettings.strictlyCookieDescriptionAr,
-        contactUsDescriptionEn: settingsData.contactUsDescriptionEn || settingsData.contactUsDescription || defaultSettings.contactUsDescriptionEn,
-        contactUsDescriptionAr: settingsData.contactUsDescriptionAr || defaultSettings.contactUsDescriptionAr,
-        contactUsUrl: settingsData.contactUsUrl || settingsData.contactUsUrl || defaultSettings.contactUsUrl,
-      }));
+      const merged = getMergedCookie();
+      setCookieSettings(merged);
+      initialValuesRef.current = { ...merged };
     }
   }, [settingsData]);
 
@@ -92,11 +77,21 @@ export default function CookieSettings({ settings = {} }: CookieSettingsProps) {
   // Handle cookie settings form submission
   const submitCookieSettings = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Submit to backend using Inertia
-    router.post(route('settings.cookie.update'), cookieSettings, {
+    const init = initialValuesRef.current;
+    const changed: Record<string, string | boolean> = {};
+    (Object.keys(cookieSettings) as (keyof typeof cookieSettings)[]).forEach((key) => {
+      if (cookieSettings[key] !== init[key]) {
+        changed[key] = cookieSettings[key];
+      }
+    });
+    if (Object.keys(changed).length === 0) {
+      toast.info(t('No changes to save'));
+      return;
+    }
+    router.post(route('settings.cookie.update'), changed, {
       preserveScroll: true,
       onSuccess: (page: any) => {
+        initialValuesRef.current = { ...cookieSettings };
         const successMessage = page.props.flash?.success;
         const errorMessage = page.props.flash?.error;
         

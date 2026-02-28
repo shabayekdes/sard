@@ -25,14 +25,14 @@ export default function Calendar() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [activeCalendar, setActiveCalendar] = useState<'local' | 'google'>('local');
   const [googleEvents, setGoogleEvents] = useState<any[]>([]);
-  const [isGoogleCalendarSyncTested, setIsGoogleCalendarSyncTested] = useState(systemSettings?.is_googlecalendar_sync === '1');
+  const [isGoogleCalendarSyncTested, setIsGoogleCalendarSyncTested] = useState(systemSettings?.IS_GOOGLE_CALENDAR_SYNC === '1' || systemSettings?.is_googlecalendar_sync === '1');
 
   // Fetch current sync status
   const fetchSyncStatus = async () => {
     try {
       const response = await fetch(route('settings.api'));
       const data = await response.json();
-      const syncTested = data.settings?.is_googlecalendar_sync === '1';
+      const syncTested = data.settings?.IS_GOOGLE_CALENDAR_SYNC === '1' || data.settings?.is_googlecalendar_sync === '1';
       setIsGoogleCalendarSyncTested(syncTested);
       
       // Reset to local calendar if sync is no longer tested

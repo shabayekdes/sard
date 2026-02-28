@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Save } from 'lucide-react';
 import { SettingsSection } from '@/components/settings-section';
 import { useTranslation } from 'react-i18next';
@@ -32,12 +32,14 @@ export default function RecaptchaSettings({ settings = {} }: RecaptchaSettingsPr
     : (pageProps.systemSettings || {});
   
   // Initialize state with merged settings
-  const [recaptchaSettings, setRecaptchaSettings] = useState(() => ({
+  const initial = {
     recaptchaEnabled: settingsData.recaptchaEnabled === 'true' || settingsData.recaptchaEnabled === true || settingsData.recaptchaEnabled === 1 || settingsData.recaptchaEnabled === '1',
     recaptchaVersion: settingsData.recaptchaVersion || defaultSettings.recaptchaVersion,
     recaptchaSiteKey: settingsData.recaptchaSiteKey || defaultSettings.recaptchaSiteKey,
     recaptchaSecretKey: settingsData.recaptchaSecretKey || defaultSettings.recaptchaSecretKey
-  }));
+  };
+  const [recaptchaSettings, setRecaptchaSettings] = useState(() => ({ ...initial }));
+  const initialValuesRef = useRef(initial);
 
   // Handle form changes
   const handleSettingsChange = (field: string, value: string | boolean) => {
@@ -47,22 +49,28 @@ export default function RecaptchaSettings({ settings = {} }: RecaptchaSettingsPr
     }));
   };
 
-  // Handle form submission
+  // Handle form submission (only send changed fields)
   const submitRecaptchaSettings = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Submit to backend using Inertia
-    router.post(route('settings.recaptcha.update'), recaptchaSettings, {
+    const init = initialValuesRef.current;
+    const changed: Record<string, string | boolean> = {};
+    (Object.keys(recaptchaSettings) as (keyof typeof recaptchaSettings)[]).forEach((key) => {
+      if (recaptchaSettings[key] !== init[key]) {
+        changed[key] = recaptchaSettings[key];
+      }
+    });
+    if (Object.keys(changed).length === 0) {
+      toast.info(t('No changes to save'));
+      return;
+    }
+    router.post(route('settings.recaptcha.update'), changed, {
       preserveScroll: true,
       onSuccess: (page) => {
+        initialValuesRef.current = { ...recaptchaSettings };
         const successMessage = page.props.flash?.success;
         const errorMessage = page.props.flash?.error;
-        
-        if (successMessage) {
-          toast.success(successMessage);
-        } else if (errorMessage) {
-          toast.error(errorMessage);
-        }
+        if (successMessage) toast.success(successMessage);
+        else if (errorMessage) toast.error(errorMessage);
       },
       onError: (errors) => {
         const errorMessage = errors.error || Object.values(errors).join(', ') || t('Failed to update ReCaptcha settings');

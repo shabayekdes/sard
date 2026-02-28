@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Facades\Settings;
 use App\Models\Currency;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -95,7 +96,7 @@ class ClientBillingCurrencyController extends Controller
 
     public function destroy(Currency $clientBillingCurrency)
     {
-        if (getSetting('defaultCurrency') === $clientBillingCurrency->code) {
+        if (Settings::string('DEFAULT_CURRENCY') === $clientBillingCurrency->code) {
             return redirect()->back()->with('error', 'Cannot delete the default currency.');
         }
 

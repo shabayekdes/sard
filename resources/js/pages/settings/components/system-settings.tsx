@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { useLayout } from '@/contexts/LayoutContext';
 import { router, usePage } from '@inertiajs/react';
 import { Save } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ReactCountryFlag from 'react-country-flag';
 import { useTranslation } from 'react-i18next';
 interface SystemSettingsProps {
@@ -42,7 +42,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
         defaultTaxRate: '',
     };
 
-    // Combine settings from props and page props
+    // Combine settings from props and page props (keys are UPPERCASE from backend)
     const settingsData = Object.keys(settings).length > 0 ? settings : pageProps.settings || {};
 
     const normalizeCountryValue = (value: unknown) => {
@@ -66,55 +66,53 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
         return name[currentLocale] || name.en || name.ar || '';
     };
 
-    // Initialize state with merged settings
-    const [systemSettings, setSystemSettings] = useState(() => ({
-        defaultCountry: normalizeCountryValue(settingsData.defaultCountry ?? defaultSettings.defaultCountry),
-        defaultLanguage: settingsData.defaultLanguage || defaultSettings.defaultLanguage,
-        dateFormat: settingsData.dateFormat || defaultSettings.dateFormat,
-        timeFormat: settingsData.timeFormat || defaultSettings.timeFormat,
-        calendarStartDay: settingsData.calendarStartDay || defaultSettings.calendarStartDay,
-        defaultTimezone: settingsData.defaultTimezone || defaultSettings.defaultTimezone,
-        defaultTaxRate: normalizeTaxRateValue(settingsData.defaultTaxRate ?? defaultSettings.defaultTaxRate),
-        emailVerification: settingsData.emailVerification === 'true' || settingsData.emailVerification === true || defaultSettings.emailVerification,
+    const initialValues = {
+        defaultCountry: normalizeCountryValue(settingsData['DEFAULT_COUNTRY'] ?? defaultSettings.defaultCountry),
+        defaultLanguage: settingsData['DEFAULT_LANGUAGE'] || defaultSettings.defaultLanguage,
+        dateFormat: settingsData['DATE_FORMAT'] || defaultSettings.dateFormat,
+        timeFormat: settingsData['TIME_FORMAT'] || defaultSettings.timeFormat,
+        calendarStartDay: settingsData['CALENDAR_START_DAY'] || defaultSettings.calendarStartDay,
+        defaultTimezone: settingsData['DEFAULT_TIMEZONE'] || defaultSettings.defaultTimezone,
+        defaultTaxRate: normalizeTaxRateValue(settingsData['DEFAULT_TAX_RATE'] ?? defaultSettings.defaultTaxRate),
+        emailVerification: settingsData['EMAIL_VERIFICATION_ENABLED'] === 'true' || settingsData['EMAIL_VERIFICATION_ENABLED'] === true || settingsData['EMAIL_VERIFICATION_ENABLED'] === '1' || defaultSettings.emailVerification,
         landingPageEnabled:
-            settingsData.landingPageEnabled === 'true' ||
-            settingsData.landingPageEnabled === true ||
-            settingsData.landingPageEnabled === '1' ||
-            (settingsData.landingPageEnabled === undefined ? defaultSettings.landingPageEnabled : false),
-        strictlyNecessaryCookies: settingsData.strictlyNecessaryCookies === 'true' || settingsData.strictlyNecessaryCookies === true || settingsData.strictlyNecessaryCookies === '1' || defaultSettings.strictlyNecessaryCookies,
-    }));
+            settingsData['LANDING_PAGE_ENABLED'] === 'true' ||
+            settingsData['LANDING_PAGE_ENABLED'] === true ||
+            settingsData['LANDING_PAGE_ENABLED'] === '1' ||
+            (settingsData['LANDING_PAGE_ENABLED'] === undefined ? defaultSettings.landingPageEnabled : false),
+        strictlyNecessaryCookies: settingsData['ENABLE_LOGGING'] === 'true' || settingsData['ENABLE_LOGGING'] === true || settingsData['ENABLE_LOGGING'] === '1' || defaultSettings.strictlyNecessaryCookies,
+    };
 
-    // Update state when settings change
+    const [systemSettings, setSystemSettings] = useState(() => ({ ...initialValues }));
+    const initialValuesRef = useRef(initialValues);
+
+    // Update state when settings change (read from UPPERCASE keys)
     useEffect(() => {
         if (Object.keys(settingsData).length > 0) {
-            // Create merged settings object
-            const mergedSettings = Object.keys(defaultSettings).reduce(
-                (acc, key) => {
-                    acc[key] = settingsData[key] || defaultSettings[key];
-                    return acc;
-                },
-                {} as Record<string, string>,
-            );
-
-            setSystemSettings((prevSettings) => ({
-                ...prevSettings,
-                ...mergedSettings,
-                defaultCountry: normalizeCountryValue(settingsData.defaultCountry ?? defaultSettings.defaultCountry),
-                defaultTaxRate: normalizeTaxRateValue(settingsData.defaultTaxRate ?? defaultSettings.defaultTaxRate),
+            const next = {
+                defaultCountry: normalizeCountryValue(settingsData['DEFAULT_COUNTRY'] ?? defaultSettings.defaultCountry),
+                defaultLanguage: settingsData['DEFAULT_LANGUAGE'] || defaultSettings.defaultLanguage,
+                dateFormat: settingsData['DATE_FORMAT'] || defaultSettings.dateFormat,
+                timeFormat: settingsData['TIME_FORMAT'] || defaultSettings.timeFormat,
+                calendarStartDay: settingsData['CALENDAR_START_DAY'] || defaultSettings.calendarStartDay,
+                defaultTimezone: settingsData['DEFAULT_TIMEZONE'] || defaultSettings.defaultTimezone,
+                defaultTaxRate: normalizeTaxRateValue(settingsData['DEFAULT_TAX_RATE'] ?? defaultSettings.defaultTaxRate),
                 emailVerification:
-                    mergedSettings.emailVerification === 'true' ||
-                    mergedSettings.emailVerification === true ||
-                    mergedSettings.emailVerification === '1',
+                    settingsData['EMAIL_VERIFICATION_ENABLED'] === 'true' ||
+                    settingsData['EMAIL_VERIFICATION_ENABLED'] === true ||
+                    settingsData['EMAIL_VERIFICATION_ENABLED'] === '1',
                 landingPageEnabled:
-                    mergedSettings.landingPageEnabled === 'true' ||
-                    mergedSettings.landingPageEnabled === true ||
-                    mergedSettings.landingPageEnabled === '1' ||
-                    (mergedSettings.landingPageEnabled === undefined ? defaultSettings.landingPageEnabled : false),
+                    settingsData['LANDING_PAGE_ENABLED'] === 'true' ||
+                    settingsData['LANDING_PAGE_ENABLED'] === true ||
+                    settingsData['LANDING_PAGE_ENABLED'] === '1' ||
+                    (settingsData['LANDING_PAGE_ENABLED'] === undefined ? defaultSettings.landingPageEnabled : false),
                 strictlyNecessaryCookies:
-                    mergedSettings.strictlyNecessaryCookies === 'true' ||
-                    mergedSettings.strictlyNecessaryCookies === true ||
-                    mergedSettings.strictlyNecessaryCookies === '1',
-            }));
+                    settingsData['ENABLE_LOGGING'] === 'true' ||
+                    settingsData['ENABLE_LOGGING'] === true ||
+                    settingsData['ENABLE_LOGGING'] === '1',
+            };
+            setSystemSettings(next);
+            initialValuesRef.current = next;
         }
     }, [settingsData]);
 
@@ -126,12 +124,11 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
         }));
     };
 
-    // Handle system settings form submission
+    // Handle system settings form submission (only send changed fields)
     const submitSystemSettings = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Create clean settings object
-        const cleanSettings = {
+        const current = {
             defaultCountry: systemSettings.defaultCountry,
             defaultLanguage: systemSettings.defaultLanguage,
             dateFormat: systemSettings.dateFormat,
@@ -143,13 +140,25 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
             landingPageEnabled: Boolean(systemSettings.landingPageEnabled),
             strictlyNecessaryCookies: Boolean(systemSettings.strictlyNecessaryCookies),
         };
+        const initial = initialValuesRef.current;
 
-        // Submit to backend using Inertia
-        router.post(route('settings.system.update'), cleanSettings, {
+        const changed: Record<string, unknown> = {};
+        (Object.keys(current) as (keyof typeof current)[]).forEach((key) => {
+            if (current[key] !== initial[key]) {
+                changed[key] = current[key];
+            }
+        });
+
+        if (Object.keys(changed).length === 0) {
+            toast.info(t('No changes to save'));
+            return;
+        }
+
+        router.post(route('settings.system.update'), changed as Record<string, string | boolean | null>, {
             preserveScroll: true,
             onSuccess: (page) => {
-                const successMessage = page.props.flash?.success;
-                const errorMessage = page.props.flash?.error;
+                const successMessage = (page.props as any).flash?.success;
+                const errorMessage = (page.props as any).flash?.error;
 
                 if (successMessage) {
                     toast.success(successMessage);
@@ -323,7 +332,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
                         </Select>
                     </div>
 
-                    <div className="grid gap-2 md:col-span-2">
+                    <div className="grid gap-2">
                         <Label htmlFor="defaultTimezone">{t('Default Timezone')}</Label>
                         <Select
                             value={systemSettings.defaultTimezone}
@@ -351,7 +360,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
                         </Select>
                     </div>
 
-                    <div className="grid gap-2 md:col-span-2">
+                    <div className="grid gap-2">
                         <Label htmlFor="defaultTaxRate">{t('Default Tax Rate')}</Label>
                         <Select
                             value={systemSettings.defaultTaxRate || noTaxRateValue}

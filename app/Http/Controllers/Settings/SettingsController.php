@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Facades\Settings;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Auth;
@@ -29,7 +30,7 @@ class SettingsController extends Controller
     public function index()
     {
         // Get system settings using helper function
-        $systemSettings = sanitizeSettingsForUi(settings());
+        $systemSettings = Settings::sanitize();
         $currencies = CurrencyResource::collection(
             Currency::where('status', true)->get()
         )->resolve();
@@ -99,7 +100,6 @@ class SettingsController extends Controller
 
         return Inertia::render('settings/index', [
             'systemSettings' => $systemSettings,
-            'settings' => $systemSettings, // For helper functions
             'cacheSize' => getCacheSize(),
             'currencies' => $currencies,
             'timezones' => config('timezones'),
