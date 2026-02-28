@@ -177,10 +177,6 @@ class CompanyController extends Controller
 
         $company->save();
 
-        // Assign role and settings to the user
-        //TODO: change default values to listener
-        defaultRoleAndSetting($company);
-
         $companyRole = Role::where('name', 'company')->first();
 
         if ($companyRole) {

@@ -149,10 +149,6 @@ class RegisteredUserController extends Controller
         //     language: 'en'
         // );
 
-        // Assign role and settings to the user
-        //TODO: change default values to listener
-        defaultRoleAndSetting($user);
-
         $companyRole = Role::where('name', 'company')->first();
 
         if ($companyRole) {
