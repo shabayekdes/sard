@@ -86,10 +86,6 @@ class SeedDefaultCompanyData implements ShouldQueue
         // Example additions (uncomment when ready):
         // SeedCourtTypes::dispatch($this->tenant_id);
         // SeedHearingTypes::dispatch($this->tenant_id);
-
-        Log::info("SeedDefaultCompanyData: All seeding jobs dispatched", [
-            'company_id' => $this->tenant_id
-        ]);
     }
 
     /**
@@ -98,7 +94,6 @@ class SeedDefaultCompanyData implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         Log::error("SeedDefaultCompanyData: Job failed", [
-            'company_id' => $this->tenant_id,
             'error' => $exception->getMessage(),
             'trace' => $exception->getTraceAsString()
         ]);
