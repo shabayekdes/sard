@@ -136,4 +136,15 @@ class EventServiceProvider extends ServiceProvider
     {
         return false;
     }
+
+    /**
+     * Do not register the email verification listener here.
+     * The framework's EventServiceProvider (registered in ApplicationBuilder::withEvents())
+     * already registers SendEmailVerificationNotification for the Registered event.
+     * Without this override, both providers would register it and the verification email would be sent twice.
+     */
+    protected function configureEmailVerification(): void
+    {
+        // Intentionally empty – listener is registered by the framework's EventServiceProvider
+    }
 }

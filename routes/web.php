@@ -62,7 +62,7 @@ require __DIR__ . '/central.php';
 // AamarPay invoice success route - must be outside CSRF protection
 Route::match(['GET', 'POST'], 'aamarpay/invoice/success', [AamarpayPaymentController::class, 'invoiceSuccess'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])->name('aamarpay.invoice.success');
 
-Route::get('/', [LandingPageController::class, 'show'])->name('home');
+Route::get('/', [LandingPageController::class, 'show'])->middleware('landing.enabled')->name('home');
 Route::get('/directory', [DirectoryController::class, 'index'])->name('directory.index');
 
 // Payment gateway invoice success routes - completely bypass CSRF

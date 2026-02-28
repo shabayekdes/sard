@@ -11,16 +11,25 @@ export { default as i18next } from 'i18next';
 
 // Apply layout direction and persist locale from current language (no API).
 // Deferred to avoid running during React commit (prevents Radix Portal removeChild errors).
+function normalizeLocaleForCookie(locale) {
+  if (!locale || typeof locale !== 'string') return 'en';
+  const base = locale.split('-')[0];
+  return base === 'ar' || base === 'he' ? base : 'en';
+}
+
 function applyDirectionForLocale(locale) {
   if (typeof document === 'undefined' || !locale) return;
-  const layoutDirection = ['ar', 'he'].includes(locale) ? 'right' : 'left';
+  const base = locale.split('-')[0];
+  const layoutDirection = base === 'ar' || base === 'he' ? 'right' : 'left';
   const domDirection = layoutDirection === 'right' ? 'rtl' : 'ltr';
+  const localeForCookie = normalizeLocaleForCookie(locale);
+  const maxAge = 60 * 60 * 24 * 30;
+  document.cookie = `app_direction=${layoutDirection}; path=/; max-age=${maxAge}; SameSite=Lax`;
+  document.cookie = `app_language=${localeForCookie}; path=/; max-age=${maxAge}; SameSite=Lax`;
   const run = () => {
     document.documentElement.dir = domDirection;
     document.documentElement.setAttribute('dir', domDirection);
     if (typeof localStorage !== 'undefined') localStorage.setItem('layoutDirection', layoutDirection);
-    document.cookie = `app_direction=${layoutDirection}; path=/; max-age=${60 * 60 * 24 * 30}`;
-    document.cookie = `app_language=${locale}; path=/; max-age=${60 * 60 * 24}`;
     document.documentElement.classList.add('direction-changed');
     setTimeout(() => document.documentElement.classList.remove('direction-changed'), 100);
   };

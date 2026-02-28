@@ -134,6 +134,9 @@ export interface SelectExtraOption {
 /** Options as id => name map (e.g. { '': 'Select Client', '1': 'Name 1' }). */
 export type SelectOptionsRecord = Record<string, string>
 
+/** Option shape passed to renderOption (includes extra fields when option is an object). */
+export type SelectOptionWithExtras = SelectOption & Record<string, unknown>
+
 export interface SelectProps {
   value: string | null | undefined
   onValueChange: (value: string) => void
@@ -141,6 +144,8 @@ export interface SelectProps {
   /** Options: array of { id, name }, [id, name] tuple, or string; or record key = id, value = name. */
   options: (SelectOption | [string | number | null, string] | string)[] | SelectOptionsRecord
   extraOptions?: SelectExtraOption[]
+  /** Custom render for each option (e.g. icon + label for currency SAR). Receives option with id, name, and any extra fields. */
+  renderOption?: (option: SelectOptionWithExtras) => React.ReactNode
   label?: string
   required?: boolean
   disabled?: boolean
@@ -158,6 +163,7 @@ export function Select({
   placeholder,
   options,
   extraOptions,
+  renderOption,
   label,
   required,
   disabled,
@@ -187,12 +193,13 @@ export function Select({
             const name = typeof o === 'string' ? o : Array.isArray(o) ? o[1] : o.name
             const isPlaceholder = id == null || id === ''
             const optionValue = isPlaceholder ? SELECT_PLACEHOLDER_VALUE : String(id)
+            const optionObj: SelectOptionWithExtras = typeof o === 'string' ? { id: null, name: o } : Array.isArray(o) ? { id: o[0] ?? null, name: o[1] } : { ...o }
             return (
               <Item
                 key={isPlaceholder ? 'placeholder' : String(id)}
                 value={optionValue}
               >
-                {name}
+                {renderOption ? renderOption(optionObj) : name}
               </Item>
             )
           })}

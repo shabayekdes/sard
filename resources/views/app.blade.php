@@ -1,5 +1,9 @@
+@php
+    $locale = app()->getLocale();
+    $isRtl = in_array($locale, ['ar'], true);
+@endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
+<html lang="{{ str_replace('_', '-', $locale) }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -53,6 +57,8 @@
         <script src="{{ asset('js/jquery.min.js') }}"></script>
         @routes
         <script>
+            // Backend locale first so i18next uses same language (avoids backend en / frontend ar RTL mismatch)
+            window.initialLocale = '{{ $locale }}';
             // Force Ziggy base URL to current origin (avoids CORS when on tenant domain vs central)
             if (typeof Ziggy !== 'undefined') {
                 Ziggy.url = window.location.origin;
@@ -66,16 +72,6 @@
             // Base URL from current request (central or tenant domain) for Inertia/Ziggy/assets
             window.baseUrl = '{{ url('/') }}';
             window.APP_URL = '{{ url('/') }}';
-
-            // Set initial locale for i18next
-            {{--fetch('{{ route("initial-locale") }}')--}}
-            {{--    .then(response => response.text())--}}
-            {{--    .then(locale => {--}}
-            {{--        window.initialLocale = locale;--}}
-            {{--    })--}}
-            {{--    .catch(() => {--}}
-            {{--        window.initialLocale = 'en';--}}
-            {{--    });--}}
         </script>
         @inertiaHead
     </head>

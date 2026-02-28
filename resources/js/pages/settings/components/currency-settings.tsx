@@ -1,10 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select as FormSelect } from '@/components/forms/select';
 import { Switch } from '@/components/ui/switch';
 import { useState, useEffect } from 'react';
 import { Save, DollarSign, Check, Info } from 'lucide-react';
+import { CurrencyAmount } from '@/components/currency-amount';
 import { SettingsSection } from '@/components/settings-section';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -25,15 +26,15 @@ export default function CurrencySettings() {
     const { t } = useTranslation();
     const { currencies = [], systemSettings = {} } = usePage().props as any;
 
-    // Currency Settings form state
+    // Currency Settings form state (backend sends uppercase keys: DECIMAL_FORMAT, etc.)
     const [currencySettings, setCurrencySettings] = useState({
-        decimalFormat: systemSettings.decimalFormat || '2',
-        defaultCurrency: systemSettings.defaultCurrency || 'USD',
-        decimalSeparator: systemSettings.decimalSeparator || '.',
-        thousandsSeparator: systemSettings.thousandsSeparator || ',',
-        floatNumber: systemSettings.floatNumber === '0' ? false : true,
-        currencySymbolSpace: systemSettings.currencySymbolSpace === '1',
-        currencySymbolPosition: systemSettings.currencySymbolPosition || 'before',
+        decimalFormat: systemSettings.DECIMAL_FORMAT ?? '2',
+        defaultCurrency: systemSettings.DEFAULT_CURRENCY ?? 'USD',
+        decimalSeparator: systemSettings.DECIMAL_SEPARATOR ?? '.',
+        thousandsSeparator: systemSettings.THOUSANDS_SEPARATOR ?? ',',
+        floatNumber: systemSettings.FLOAT_NUMBER === '0' ? false : true,
+        currencySymbolSpace: systemSettings.CURRENCY_SYMBOL_SPACE === '1',
+        currencySymbolPosition: systemSettings.CURRENCY_SYMBOL_POSITION ?? 'before',
         currencyName: ''
     });
 
@@ -70,48 +71,6 @@ export default function CurrencySettings() {
             defaultCurrency: value,
             currencyName: selectedCurrency?.name || value
         }));
-    };
-
-    // Format the preview amount based on current settings
-    const formattedPreview = () => {
-        try {
-            // Parse the preview amount
-            let amount = previewAmount;
-
-            // Format the number with the specified decimal places
-            const decimalPlaces = parseInt(currencySettings.decimalFormat);
-
-            // Handle float number setting
-            if (!currencySettings.floatNumber) {
-                amount = Math.floor(amount);
-            }
-
-            // Format the number with the specified separators
-            const parts = amount.toFixed(decimalPlaces).split('.');
-
-            // Format the integer part with thousands separator
-            if (currencySettings.thousandsSeparator !== 'none') {
-                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, currencySettings.thousandsSeparator);
-            }
-
-            // Join with decimal separator
-            let formattedNumber = parts.join(currencySettings.decimalSeparator);
-
-            // Get currency symbol from the currencies array
-            const selectedCurrency = currencies.find((c: CurrencyProps) => c.code === currencySettings.defaultCurrency);
-            const symbol = selectedCurrency?.symbol || '$';
-
-            // Add currency symbol with proper positioning and spacing
-            const space = currencySettings.currencySymbolSpace ? ' ' : '';
-
-            if (currencySettings.currencySymbolPosition === 'before') {
-                return `${symbol}${space}${formattedNumber}`;
-            } else {
-                return `${formattedNumber}${space}${symbol}`;
-            }
-        } catch (error) {
-            return 'Invalid format';
-        }
     };
 
     // Handle currency settings form submission
@@ -175,7 +134,7 @@ export default function CurrencySettings() {
                                     <div className="p-4 bg-muted/30 rounded-md border flex flex-col md:flex-row items-center justify-between">
                                         <div className="flex flex-col items-center md:items-start mb-3 md:mb-0">
                                             <div className="text-2xl font-semibold mb-1">
-                                                {formattedPreview()}
+                                                <CurrencyAmount amount={previewAmount} iconSize={28} className="text-2xl" />
                                             </div>
                                             <div className="text-xs text-muted-foreground">
                                                 {currencySettings.currencyName} ({currencySettings.defaultCurrency})
@@ -209,35 +168,26 @@ export default function CurrencySettings() {
                                             <div className="flex items-center justify-between">
                                                 <Label htmlFor="defaultCurrency" className="font-medium">{t("Default Currency")}</Label>
                                                 <Badge variant="outline" className="font-mono">
-                                                    {currencySettings.defaultCurrency}
+                                                    <CurrencyAmount amount={0} iconSize={14} />
                                                 </Badge>
                                             </div>
-                                            <Select
+                                            <FormSelect
                                                 value={currencySettings.defaultCurrency}
                                                 onValueChange={handleCurrencyChange}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder={t("Select currency")} />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <div className="max-h-[300px] overflow-y-auto">
-                                                        {currencies && currencies.length > 0 ? (
-                                                            currencies.map((currency: CurrencyProps) => (
-                                                                <SelectItem key={currency.id} value={currency.code}>
-                                                                    <div className="flex items-center">
-                                                                        <span className="w-8 text-center">{currency.symbol}</span>
-                                                                        <span>{currency.code} - {currency.name}</span>
-                                                                    </div>
-                                                                </SelectItem>
-                                                            ))
-                                                        ) : (
-                                                            <div className="p-2 text-center text-muted-foreground">
-                                                                {t("No currencies found")}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </SelectContent>
-                                            </Select>
+                                                placeholder={t("Select currency")}
+                                                options={currencies?.length ? currencies.map((c: CurrencyProps) => ({ id: c.code, name: `${c.symbol} ${c.code} - ${c.name}`, code: c.code, currencyName: c.name })) : []}
+                                                contentClassName="max-h-[300px] overflow-y-auto"
+                                                renderOption={(option) =>
+                                                    option.code === 'SAR' ? (
+                                                        <span className="flex items-center gap-2">
+                                                            <CurrencyAmount amount={0} iconSize={18} />
+                                                            <span>{option.id} - {(option as { currencyName?: string }).currencyName}</span>
+                                                        </span>
+                                                    ) : (
+                                                        option.name
+                                                    )
+                                                }
+                                            />
                                         </div>
 
                                         <div className="space-y-3">
@@ -254,21 +204,18 @@ export default function CurrencySettings() {
                                                     </Tooltip>
                                                 </TooltipProvider>
                                             </div>
-                                            <Select
+                                            <FormSelect
                                                 value={currencySettings.decimalFormat}
                                                 onValueChange={(value) => handleCurrencySettingsChange('decimalFormat', value)}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select decimal format" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="0">0 (e.g., 1234)</SelectItem>
-                                                    <SelectItem value="1">1 (e.g., 1234.5)</SelectItem>
-                                                    <SelectItem value="2">2 (e.g., 1234.56)</SelectItem>
-                                                    <SelectItem value="3">3 (e.g., 1234.567)</SelectItem>
-                                                    <SelectItem value="4">4 (e.g., 1234.5678)</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                                placeholder={t("Select decimal format")}
+                                                options={[
+                                                    { id: '0', name: '0 (e.g., 1234)' },
+                                                    { id: '1', name: '1 (e.g., 1234.5)' },
+                                                    { id: '2', name: '2 (e.g., 1234.56)' },
+                                                    { id: '3', name: '3 (e.g., 1234.567)' },
+                                                    { id: '4', name: '4 (e.g., 1234.5678)' },
+                                                ]}
+                                            />
                                         </div>
 
                                         <div className="space-y-3">
@@ -365,20 +312,17 @@ export default function CurrencySettings() {
                                                     </Tooltip>
                                                 </TooltipProvider>
                                             </div>
-                                            <Select
+                                            <FormSelect
                                                 value={currencySettings.thousandsSeparator}
                                                 onValueChange={(value) => handleCurrencySettingsChange('thousandsSeparator', value)}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder={t("Select thousands separator")} />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value=",">Comma (1,234.56)</SelectItem>
-                                                    <SelectItem value=".">Dot (1.234,56)</SelectItem>
-                                                    <SelectItem value=" ">Space (1 234.56)</SelectItem>
-                                                    <SelectItem value="none">None (123456.78)</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                                placeholder={t("Select thousands separator")}
+                                                options={[
+                                                    { id: ',', name: 'Comma (1,234.56)' },
+                                                    { id: '.', name: 'Dot (1.234,56)' },
+                                                    { id: ' ', name: 'Space (1 234.56)' },
+                                                    { id: 'none', name: 'None (123456.78)' },
+                                                ]}
+                                            />
                                         </div>
 
                                         <div className="space-y-3 border rounded-md p-4">

@@ -798,11 +798,4 @@ Route::middleware([
             Route::post('impersonate/leave', [Controllers\ImpersonateController::class, 'leave'])->name('impersonate.leave');
         }); // End plan.access middleware group
     });
-    Route::get('/', function () {
-        $settings = Settings::all();
-
-        dd($settings);
-        return 'This is your multi-tenant application. The id of the current tenant is ' . tenant('id');
-    });
-
 });

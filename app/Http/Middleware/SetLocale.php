@@ -4,24 +4,32 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cookie;
 use Symfony\Component\HttpFoundation\Response;
 
 class SetLocale
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
+    private const ALLOWED = ['en', 'ar'];
+
     public function handle(Request $request, Closure $next): Response
     {
-        // Get locale from cookie, user preference, or default to 'en'
-        $locale = Cookie::get('app_language') ?? (auth()->check() ? auth()->user()->lang : null) ?? 'en';
+        $locale = $this->validLocale(auth()->check() ? auth()->user()->lang : null)
+            ?? $this->validLocale($request->cookie('app_language'))
+            ?? 'en';
 
-        // Set the application locale
         app()->setLocale($locale);
 
-        return $next($request);
+        $response = $next($request);
+
+        return $response->cookie('app_language', $locale, 60 * 24 * 30, '/');
+    }
+
+    /** Return normalized locale if allowed, null otherwise. */
+    private function validLocale(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        $base = strtolower(trim(explode('-', $value)[0] ?? $value));
+        return in_array($base, self::ALLOWED, true) ? $base : null;
     }
 }

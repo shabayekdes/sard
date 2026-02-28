@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -60,6 +61,20 @@ class ProfileController extends Controller
         $request->user()->save();
 
         return to_route('profile');
+    }
+
+    /**
+     * Update the user's preferred locale (so language persists on refresh).
+     */
+    public function updateLocale(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'locale' => ['required', 'string', 'in:en,ar,he'],
+        ]);
+
+        $request->user()->update(['lang' => $validated['locale']]);
+
+        return response()->json(['ok' => true, 'locale' => $validated['locale']]);
     }
 
     /**

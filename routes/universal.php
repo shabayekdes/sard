@@ -6,6 +6,7 @@ use Inertia\Inertia;
 
 Route::middleware([
     'universal',
+    \App\Http\Middleware\SetLocale::class
 ])->group(function () {
 
     require __DIR__ . '/settings.php';

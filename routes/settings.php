@@ -26,12 +26,13 @@ use Inertia\Inertia;
 |
 */
 
-// Payment routes accessible without plan check
+// Payment routes + locale update (no plan.access so language switch works for all logged-in users)
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/payment-methods', [PaymentSettingController::class, 'getPaymentMethods'])->name('payment.methods');
     Route::get('/enabled-payment-methods', [PaymentSettingController::class, 'getEnabledMethods'])->name('payment.enabled-methods');
     Route::post('/plan-orders', [PlanOrderController::class, 'create'])->name('plan-orders.create');
     Route::post('/stripe-payment', [StripePaymentController::class, 'processPayment'])->name('settings.stripe.payment');
+    Route::post('/user/locale', [ProfileController::class, 'updateLocale'])->name('user.locale.update');
 });
 
 Route::middleware(['auth', 'verified', 'plan.access'])->group(function () {

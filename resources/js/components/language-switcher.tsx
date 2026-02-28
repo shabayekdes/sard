@@ -11,7 +11,8 @@ import {
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Globe } from 'lucide-react';
-import { usePage, router } from '@inertiajs/react';
+import { Loader } from '@/components/ui/loader';
+import { usePage } from '@inertiajs/react';
 import { hasRole } from '@/utils/authorization';
 import { useLayout } from '@/contexts/LayoutContext';
 import { CreateLanguageModal } from '@/components/create-language-modal';
@@ -26,10 +27,12 @@ interface Language {
 import languageData from '@lang/language.json';
 
 export const LanguageSwitcher: React.FC = () => {
-    const { i18n } = useTranslation();
+    const { i18n, t } = useTranslation();
     const { auth } = usePage().props as any;
     const { updatePosition } = useLayout();
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [isSwitching, setIsSwitching] = useState(false);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
     const currentLanguage = React.useMemo(() => {
         const currentLang = i18n.language;
         // Try exact match first
@@ -57,76 +60,118 @@ export const LanguageSwitcher: React.FC = () => {
     const rtlLanguages = ['ar', 'he'];
 
     const handleLanguageChange = async (languageCode: string) => {
+        if (isSwitching) return;
+        setIsSwitching(true);
+        setDropdownOpen(false);
+        const overlayStart = Date.now();
+        window.dispatchEvent(new CustomEvent('language-switch-start'));
+
+        // Let the overlay paint (flushSync in overlay + one frame)
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+
         try {
-            // Change the language
+            const base = languageCode.split('-')[0];
+            const localeForCookie = base === 'ar' ? 'ar' : base === 'he' ? 'he' : 'en';
+
+            const maxAge = 60 * 60 * 24 * 30;
+            document.cookie = `app_language=${localeForCookie}; path=/; max-age=${maxAge}; SameSite=Lax`;
+
             await i18n.changeLanguage(languageCode);
 
-            // Determine if the new language is RTL
-            const isRtl = rtlLanguages.includes(languageCode);
+            if (isAuthenticated && ['en', 'ar'].includes(localeForCookie)) {
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                await fetch(route('user.locale.update'), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': csrf || '',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify({ locale: localeForCookie }),
+                }).catch(() => {});
+            }
 
-            // Update document direction immediately (RTL for Arabic/Hebrew, LTR for others)
+            const isRtl = rtlLanguages.includes(languageCode);
             document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
             document.documentElement.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
 
-            // Update sidebar position: 'right' for RTL languages, 'left' for others
             const newPosition = isRtl ? 'right' : 'left';
             updatePosition(newPosition as 'left' | 'right');
 
-            // Force a re-render by dispatching a custom event
             window.dispatchEvent(new CustomEvent('languageChanged', {
                 detail: { language: languageCode, direction: isRtl ? 'rtl' : 'ltr' }
             }));
-
-            // Force layout recalculation
             window.dispatchEvent(new Event('resize'));
-
         } catch (error) {
             console.error('Error changing language:', error);
+        } finally {
+            // Keep overlay visible at least 400ms so it's noticeable
+            const minDisplay = 400;
+            const elapsed = Date.now() - overlayStart;
+            if (elapsed < minDisplay) {
+                await new Promise((r) => setTimeout(r, minDisplay - elapsed));
+            }
+            setIsSwitching(false);
+            window.dispatchEvent(new CustomEvent('language-switch-finish'));
         }
     };
 
     return (
         <>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center gap-2 h-8 rounded-md">
-                        <Globe className="h-4 w-4" />
+            <DropdownMenu open={dropdownOpen} onOpenChange={(open) => { if (!open && isSwitching) return; setDropdownOpen(open); }}>
+                <DropdownMenuTrigger asChild disabled={isSwitching}>
+                    <Button variant="ghost" className="flex items-center gap-2 h-8 rounded-md" disabled={isSwitching}>
+                        {isSwitching ? (
+                            <Loader size="sm" className="shrink-0" />
+                        ) : (
+                            <Globe className="h-4 w-4 shrink-0" />
+                        )}
                         <span className="text-sm font-medium hidden md:inline-block">
-                            {currentLanguage.name}
+                            {isSwitching ? '...' : currentLanguage.name}
                         </span>
-                        <ReactCountryFlag
-                            countryCode={currentLanguage.countryCode}
-                            svg
-                            style={{
-                                width: '1.2em',
-                                height: '1.2em',
-                            }}
-                        />
+                        {!isSwitching && (
+                            <ReactCountryFlag
+                                countryCode={currentLanguage.countryCode}
+                                svg
+                                style={{
+                                    width: '1.2em',
+                                    height: '1.2em',
+                                }}
+                            />
+                        )}
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                    <DropdownMenuGroup>
-                        {languageData
-                            .filter((language: any) => language.enabled !== false)
-                            .map((language) => (
-                                <DropdownMenuItem
-                                    key={language.code}
-                                    onClick={() => handleLanguageChange(language.code)}
-                                    className="flex items-center gap-2"
-                                >
-                                    <ReactCountryFlag
-                                        countryCode={language.countryCode}
-                                        svg
-                                        style={{
-                                            width: '1.2em',
-                                            height: '1.2em',
-                                        }}
-                                    />
-                                    <span>{language.name}</span>
-                                </DropdownMenuItem>
-                            ))}
-                    </DropdownMenuGroup>
-                    {isSuperAdmin && (
+                <DropdownMenuContent className="w-56" align="end" forceMount onCloseAutoFocus={(e) => { if (isSwitching) e.preventDefault(); }}>
+                    {isSwitching ? (
+                        <div className="flex items-center justify-center gap-2 py-6 px-4">
+                            <Loader size="sm" />
+                            <span className="text-sm text-muted-foreground">{t('Switching...')}</span>
+                        </div>
+                    ) : (
+                        <DropdownMenuGroup>
+                            {languageData
+                                .filter((language: any) => language.enabled !== false)
+                                .map((language) => (
+                                    <DropdownMenuItem
+                                        key={language.code}
+                                        onClick={() => handleLanguageChange(language.code)}
+                                        className="flex items-center gap-2"
+                                    >
+                                        <ReactCountryFlag
+                                            countryCode={language.countryCode}
+                                            svg
+                                            style={{
+                                                width: '1.2em',
+                                                height: '1.2em',
+                                            }}
+                                        />
+                                        <span>{language.name}</span>
+                                    </DropdownMenuItem>
+                                ))}
+                        </DropdownMenuGroup>
+                    )}
+                    {isSuperAdmin && !isSwitching && (
                         <>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem

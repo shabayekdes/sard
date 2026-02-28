@@ -15,9 +15,10 @@ class CheckLandingPageEnabled
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // If accessing home and landing page is disabled, redirect to login
+        // If accessing home and landing page is disabled, redirect to login on same domain (avoid 127.0.0.1 when behind proxy)
         if (!\App\Facades\Settings::boolean('LANDING_PAGE_ENABLED') && $request->route()->getName() === 'home') {
-            return redirect()->route('login');
+            $baseUrl = $request->getSchemeAndHttpHost();
+            return redirect()->away($baseUrl . '/login');
         }
 
         return $next($request);

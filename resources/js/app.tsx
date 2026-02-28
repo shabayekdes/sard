@@ -7,6 +7,7 @@ import '../css/app.css';
 import '../css/dark-mode.css';
 import { initializeTheme } from '@/hooks/use-appearance';
 import { CustomToast } from '@/components/custom-toast';
+import { GlobalLoaderOverlay } from '@/components/global-loader-overlay';
 import { LayoutProvider } from '@/contexts/LayoutContext';
 import { SidebarProvider } from '@/contexts/SidebarContext';
 import { BrandProvider } from '@/contexts/BrandContext';
@@ -115,20 +116,21 @@ createInertiaApp({
             const Page = module.default;
             Page.layout =
                 Page.layout ||
-                ((page: React.ReactNode) => (
-                    <LayoutKeyWrapper>
-                        <ModalStackProvider>
-                            <LayoutProvider>
-                                <SidebarProvider>
-                                    <BrandProvider>
-                                        {page}
-                                        <CustomToast />
-                                    </BrandProvider>
-                                </SidebarProvider>
-                            </LayoutProvider>
-                        </ModalStackProvider>
-                    </LayoutKeyWrapper>
-                ));
+                                ((page: React.ReactNode) => (
+                                    <LayoutKeyWrapper>
+                                        <ModalStackProvider>
+                                            <LayoutProvider>
+                                                <SidebarProvider>
+                                                    <BrandProvider>
+                                                        {page}
+                                                        <CustomToast />
+                                                        <GlobalLoaderOverlay />
+                                                    </BrandProvider>
+                                                </SidebarProvider>
+                                            </LayoutProvider>
+                                        </ModalStackProvider>
+                                    </LayoutKeyWrapper>
+                                ));
             return module;
         }),
     setup({ el, App, props }) {

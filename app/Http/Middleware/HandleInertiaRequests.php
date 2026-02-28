@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Facades\Settings;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -51,7 +52,7 @@ class HandleInertiaRequests extends Middleware
         $tenantId = function_exists('tenant') ? (tenant()?->getTenantKey() ?? null) : null;
 
         // Get system settings
-        $settings = sanitizeSettingsForUi(settings());
+        $settings = Settings::sanitize();
         // Get currency symbol
         $currencyCode = $settings['DEFAULT_CURRENCY'] ?? 'USD';
         $currency = Currency::where('code', $currencyCode)->first();
@@ -126,6 +127,7 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            'locale' => app()->getLocale(),
             'base_url' => $baseUrl,
             'image_url' => $baseUrl,
             'isCentralDomain' => $isCentralDomain,

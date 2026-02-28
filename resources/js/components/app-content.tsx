@@ -1,6 +1,5 @@
 import { router } from '@inertiajs/react';
 import { SidebarInset } from '@/components/ui/sidebar';
-import { Loader } from '@/components/ui/loader';
 import { cn } from '@/lib/utils';
 import * as React from 'react';
 
@@ -14,30 +13,16 @@ export function AppContent({ variant = 'header', children, className, ...props }
     React.useEffect(() => {
         const removeStart = router.on('start', () => setIsNavigating(true));
         const removeFinish = router.on('finish', () => setIsNavigating(false));
-
         return () => {
             removeStart();
             removeFinish();
         };
     }, []);
 
-    const loaderOverlay = (
-        <div
-            className={cn(
-                'fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm transition-opacity duration-200',
-                isNavigating ? 'opacity-100' : 'pointer-events-none opacity-0',
-            )}
-            aria-hidden={!isNavigating}
-        >
-            <Loader size="lg" />
-        </div>
-    );
-
     if (variant === 'sidebar') {
         return (
             <SidebarInset {...props} className={className} aria-busy={isNavigating}>
                 {children}
-                {loaderOverlay}
             </SidebarInset>
         );
     }
@@ -52,7 +37,6 @@ export function AppContent({ variant = 'header', children, className, ...props }
             aria-busy={isNavigating}
         >
             {children}
-            {loaderOverlay}
         </main>
     );
 }
