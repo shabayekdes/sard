@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Cache;
 
 class SettingService
 {
-    private ?string $tenant_id = null;
+    private ?string $tenant_id;
+    private ?string $group = null;
 
     public function __construct()
     {
@@ -180,9 +181,16 @@ class SettingService
      */
     public function all(): array
     {
-        $cacheKey = 'settings' .  ($this->tenant_id ? '.' . $this->tenant_id : '');
+        $cacheKey = $this->getCacheKey();
         return Cache::remember($cacheKey, 60 * 60, fn() => $this->settings());
     }
+
+    public function group(string $group): self
+    {
+        $this->group = $group;
+        return $this;
+    }
+
     /**
      * @return array
      */
@@ -191,6 +199,7 @@ class SettingService
         $saasSettings = Setting::query()
             ->select(['key', 'value'])
             ->whereNull('tenant_id')
+            ->when($this->group, fn (Builder $query, $group) => $query->where('group', $group))
             ->pluck('value', 'key')
             ->toArray();
 
@@ -199,10 +208,24 @@ class SettingService
             $tenantSettings = Setting::query()
                 ->select(['key', 'value'])
                 ->where('tenant_id', $this->tenant_id)
+                ->when($this->group, fn (Builder $query, $group) => $query->where('group', $group))
                 ->pluck('value', 'key')
                 ->toArray();
         }
 
         return array_merge($saasSettings, $tenantSettings);
+    }
+
+    /**
+     * @return string
+     */
+    private function getCacheKey(): string
+    {
+        $cacheKey = 'settings' . ($this->tenant_id ? '.' . $this->tenant_id : '');
+        // append group to cache key if group is set
+        if ($this->group) {
+            $cacheKey .= ".group.$this->group";
+        }
+        return $cacheKey;
     }
 }

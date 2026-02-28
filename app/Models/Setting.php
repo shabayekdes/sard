@@ -13,6 +13,7 @@ class Setting extends BaseModel
         'tenant_id',
         'key',
         'value',
+        'group',
     ];
 
     /**

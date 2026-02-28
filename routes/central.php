@@ -9,9 +9,9 @@ foreach (config('tenancy.central_domains') as $domain) {
 
         require __DIR__ . '/auth.php';
 
-        Route::get('/', function () {
-            return 'This is the central domain';
-        });
+        // Route::get('/', function () {
+        //     return 'This is the central domain';
+        // });
 
 
         Route::middleware([

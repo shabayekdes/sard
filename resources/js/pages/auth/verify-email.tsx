@@ -42,21 +42,6 @@ export default function VerifyEmail({ status }: { status?: string }) {
                         <LanguageSwitcher />
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-2 rounded-lg border border-slate-200 bg-white p-1 text-sm font-medium">
-                    <div
-                        className="flex items-center justify-center rounded-md px-3 py-2"
-                        style={{ backgroundColor: `${primaryColor}1A`, color: primaryColor }}
-                        aria-current="page"
-                    >
-                        {t('Verify email')}
-                    </div>
-                    <TextLink
-                        href={route('login')}
-                        className="flex items-center justify-center rounded-md px-3 py-2 text-slate-600 transition-colors duration-200"
-                    >
-                        {t('Log in')}
-                    </TextLink>
-                </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                     {t('Please verify your email address by clicking on the link we just emailed to you.')}
                 </p>

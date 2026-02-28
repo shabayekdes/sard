@@ -15,18 +15,12 @@ class SaasSettingSeeder extends Seeder
         $settings = require database_path('seeders/data/settings.php');
 
         foreach ($settings as $item) {
-            $key = $item['key'];
-            $value = $item['value'];
-            $value = is_bool($value) ? ($value ? '1' : '0') : (string) $value;
-
             Setting::updateOrCreate(
                 [
                     'tenant_id' => null,
-                    'key' => $key,
+                    'key' => $item['key'],
                 ],
-                [
-                    'value' => $value,
-                ]
+                $item
             );
         }
     }

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignUuid('tenant_id')->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
             $table->string('key');
             $table->text('value')->nullable();
+            $table->string('group')->default('system');
             $table->timestamps();
             
             // Unique constraint to prevent duplicate settings for a user

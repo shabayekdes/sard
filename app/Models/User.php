@@ -16,7 +16,6 @@ use App\Models\Plan;
 use App\Models\PlanOrder;
 use App\Models\Referral;
 use App\Models\PayoutRequest;
-use App\Services\MailConfigService;
 use App\Traits\AutoApplyPermissionCheck;
 
 class User extends BaseAuthenticatable implements MustVerifyEmail
@@ -276,7 +275,6 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
      */
     public function sendEmailVerificationNotification()
     {
-        MailConfigService::setDynamicConfig();
         $this->notify(new CustomVerifyEmail());
     }
 
@@ -285,7 +283,6 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
      */
     public function sendPasswordResetNotification($token)
     {
-        MailConfigService::setDynamicConfig();
         $this->notify(new CustomResetPassword($token));
     }
 
