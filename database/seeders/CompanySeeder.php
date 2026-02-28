@@ -71,9 +71,6 @@ class CompanySeeder extends Seeder
             
             // Assign company role
             $user->assignRole('company');
-
-            // Seed all default company data (settings, roles, notification templates, and all data types)
-            \App\Jobs\SeedDefaultCompanyData::dispatch($tenant->id);
         }
         
         $this->command->info('Created ' . count($companyNames) . ' company users successfully!');
