@@ -26,21 +26,8 @@ class CompanySeeder extends Seeder
         // Company names
         $companyNames = [
             'Demo Company',
+            'Dev Industries',
             'Acme Corporation',
-            'Globex Industries',
-            'Stark Enterprises',
-            'Wayne Enterprises',
-            'Umbrella Corporation',
-            'Cyberdyne Systems',
-            'Soylent Corp',
-            'Initech Technologies',
-            'Massive Dynamic',
-            'Oscorp Industries',
-            'Aperture Science',
-            'Weyland-Yutani Corp',
-            'Tyrell Corporation',
-            'Rekall Inc',
-            'Virtucon Industries'
         ];
         
         // Create company users

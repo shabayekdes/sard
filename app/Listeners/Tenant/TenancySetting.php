@@ -5,6 +5,7 @@ namespace App\Listeners\Tenant;
 use App\Facades\Settings;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\File;
 
 class TenancySetting
 {
@@ -44,6 +45,7 @@ class TenancySetting
                     'url' => $settings['AWS_URL'] ?? null,
                     'endpoint' => $settings['AWS_ENDPOINT'] ?? null,
                     'use_path_style_endpoint' => !empty($settings['AWS_ENDPOINT']),
+                    'visibility' => 'public',
                 ],
                 'filesystems.disks.wasabi' => [
                     'driver' => 's3',
@@ -53,8 +55,15 @@ class TenancySetting
                     'bucket' => $settings['WASABI_BUCKET'] ?? null,
                     'endpoint' => !empty($settings['WASABI_REGION']) ? 'https://s3.' . $settings['WASABI_REGION'] . '.wasabisys.com' : null,
                     'use_path_style_endpoint' => false,
+                    'visibility' => 'public',
                 ],
             ]);
+
+            // Ensure tenant public storage directory exists so uploads (e.g. media/3/) can create subdirs
+            $publicRoot = storage_path('app/public');
+            if (!File::isDirectory($publicRoot)) {
+                File::ensureDirectoryExists($publicRoot, 0755);
+            }
         }
     }
 }

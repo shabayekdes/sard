@@ -136,21 +136,21 @@ export default function StorageSettings({ settings = {} }: StorageSettingsProps)
   };
   
   const initialStorage: StorageSettings = {
-    storageType: (settings.storage_type as StorageType) || 'local',
-    allowedFileTypes: settings.storage_file_types || 'jpg,png,webp,gif',
-    maxUploadSize: settings.storage_max_upload_size || '2048',
-    awsAccessKeyId: settings.aws_access_key_id || '',
-    awsSecretAccessKey: settings.aws_secret_access_key || '',
-    awsDefaultRegion: settings.aws_default_region || 'us-east-1',
-    awsBucket: settings.aws_bucket || '',
-    awsUrl: settings.aws_url || '',
-    awsEndpoint: settings.aws_endpoint || '',
-    wasabiAccessKey: settings.wasabi_access_key || '',
-    wasabiSecretKey: settings.wasabi_secret_key || '',
-    wasabiRegion: settings.wasabi_region || 'us-east-1',
-    wasabiBucket: settings.wasabi_bucket || '',
-    wasabiUrl: settings.wasabi_url || '',
-    wasabiRoot: settings.wasabi_root || ''
+    storageType: (settings.STORAGE_TYPE as StorageType) || 'local',
+    allowedFileTypes: settings.STORAGE_FILE_TYPES || 'jpg,png,webp,gif',
+    maxUploadSize: settings.STORAGE_MAX_UPLOAD_SIZE || '2048',
+    awsAccessKeyId: settings.AWS_ACCESS_KEY_ID || '',
+    awsSecretAccessKey: settings.AWS_SECRET_ACCESS_KEY || '',
+    awsDefaultRegion: settings.AWS_DEFAULT_REGION || 'us-east-1',
+    awsBucket: settings.AWS_BUCKET || '',
+    awsUrl: settings.AWS_URL || '',
+    awsEndpoint: settings.AWS_ENDPOINT || '',
+    wasabiAccessKey: settings.WASABI_ACCESS_KEY || '',
+    wasabiSecretKey: settings.WASABI_SECRET_KEY || '',
+    wasabiRegion: settings.WASABI_REGION || 'us-east-1',
+    wasabiBucket: settings.WASABI_BUCKET || '',
+    wasabiUrl: settings.WASABI_URL || '',
+    wasabiRoot: settings.WASABI_ROOT || ''
   };
   const [storageSettings, setStorageSettings] = useState<StorageSettings>(initialStorage);
   const initialValuesRef = useRef<StorageSettings>(initialStorage);
