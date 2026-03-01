@@ -166,15 +166,14 @@ class SettingService
         if ($setting) {
             $setting->update(['value' => $value]);
         } else {
-            Setting::create([
+            $setting = Setting::create([
                 'key' => $key,
                 'value' => $value,
                 'tenant_id' => $tenant_id,
             ]);
         }
 
-        $cacheKey = 'settings' . ($tenant_id ? '.' . $tenant_id : '');
-        Cache::forget($cacheKey);
+        $this->forgetSettingsCache($tenant_id, $setting->group);
     }
     /**
      * @return array
@@ -182,7 +181,8 @@ class SettingService
     public function all(): array
     {
         $cacheKey = $this->getCacheKey();
-        return Cache::remember($cacheKey, 60 * 60, fn() => $this->settings());
+        return $this->settings();
+        // return Cache::remember($cacheKey, 60 * 60, fn() => $this->settings());
     }
 
     public function group(string $group): self
@@ -217,15 +217,31 @@ class SettingService
     }
 
     /**
-     * @return string
+     * Build cache key for a given tenant and group (same logic for reading and forgetting).
      */
+    private function buildCacheKey(?string $tenant_id, ?string $group = null): string
+    {
+        $key = 'settings' . ($tenant_id ? '.' . $tenant_id : '');
+        if ($group) {
+            $key .= ".group.{$group}";
+        }
+        return $key;
+    }
+
     private function getCacheKey(): string
     {
-        $cacheKey = 'settings' . ($this->tenant_id ? '.' . $this->tenant_id : '');
-        // append group to cache key if group is set
-        if ($this->group) {
-            $cacheKey .= ".group.$this->group";
+        return $this->buildCacheKey($this->tenant_id, $this->group);
+    }
+
+    /**
+     * Forget cached settings for the given tenant so the next all() refetches.
+     * Forgets both the base key and the key with the setting's group so all readers see fresh data.
+     */
+    private function forgetSettingsCache(?string $tenant_id, ?string $group = null): void
+    {
+        Cache::forget($this->buildCacheKey($tenant_id, null));
+        if ($group !== null && $group !== '') {
+            Cache::forget($this->buildCacheKey($tenant_id, $group));
         }
-        return $cacheKey;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Enums\SettingKey;
 use App\Facades\Settings;
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
@@ -30,7 +31,9 @@ class CurrencySettingController extends Controller
                 'currencySymbolPosition' => 'required|string|in:before,after',
             ]);
 
-            foreach ($validated as $key => $value) {
+            foreach ($validated as $requestKey => $value) {
+                $keyEnum = SettingKey::match($requestKey);
+                $key = $keyEnum?->value ?? $requestKey;
                 Settings::update($key, is_bool($value) ? ($value ? '1' : '0') : $value);
             }
 

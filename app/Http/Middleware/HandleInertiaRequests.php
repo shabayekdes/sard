@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Facades\Settings;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 use App\Models\Currency;
@@ -51,10 +52,10 @@ class HandleInertiaRequests extends Middleware
         $tenantDomain = $isCentralDomain ? null : $request->getHost();
         $tenantId = function_exists('tenant') ? (tenant()?->getTenantKey() ?? null) : null;
 
-        // Get system settings
+        // Get system settings (DB may store camelCase keys from currency form)
+        // Cache::flush();
         $settings = Settings::sanitize();
-        // Get currency symbol
-        $currencyCode = $settings['DEFAULT_CURRENCY'] ?? 'USD';
+        $currencyCode = $settings['DEFAULT_CURRENCY'] ?? $settings['defaultCurrency'] ?? 'USD';
         $currency = Currency::where('code', $currencyCode)->first();
         $currencySettings = [];
         if ($currency) {
