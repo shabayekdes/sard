@@ -97,8 +97,6 @@ export default function CaseStatuses() {
 
     const handleFormSubmit = (formData: any) => {
         if (formMode === 'create') {
-            toast.loading(t('Creating case status...'));
-
             router.post(route('setup.case-statuses.store'), formData, {
                 onSuccess: (page) => {
                     setIsFormModalOpen(false);
@@ -111,12 +109,14 @@ export default function CaseStatuses() {
                 },
                 onError: (errors) => {
                     toast.dismiss();
-                    toast.error(`Failed to create case status: ${Object.values(errors).join(', ')}`);
+                    if (typeof errors === 'string') {
+                        toast.error(errors);
+                    } else {
+                        toast.error(t('Failed to create {{model}}: {{errors}}', { model: t('Case Status'), errors: Object.values(errors).join(', ') }));
+                    }
                 },
             });
         } else if (formMode === 'edit') {
-            toast.loading(t('Updating case status...'));
-
             router.put(route('setup.case-statuses.update', currentItem.id), formData, {
                 onSuccess: (page) => {
                     setIsFormModalOpen(false);
@@ -136,8 +136,6 @@ export default function CaseStatuses() {
     };
 
     const handleDeleteConfirm = () => {
-        toast.loading(t('Deleting case status...'));
-
         router.delete(route('setup.case-statuses.destroy', currentItem.id), {
             onSuccess: (page) => {
                 setIsDeleteModalOpen(false);
@@ -150,15 +148,16 @@ export default function CaseStatuses() {
             },
             onError: (errors) => {
                 toast.dismiss();
-                toast.error(`Failed to delete case status: ${Object.values(errors).join(', ')}`);
+                if (typeof errors === 'string') {
+                    toast.error(errors);
+                } else {
+                    toast.error(t('Failed to delete {{model}}: {{errors}}', { model: t('Case Status'), errors: Object.values(errors).join(', ') }));
+                }
             },
         });
     };
 
     const handleToggleStatus = (caseStatus: any) => {
-        const newStatus = caseStatus.status === 'active' ? 'inactive' : 'active';
-        toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} case status...`);
-
         router.put(
             route('setup.case-statuses.toggle-status', caseStatus.id),
             {},
@@ -173,7 +172,11 @@ export default function CaseStatuses() {
                 },
                 onError: (errors) => {
                     toast.dismiss();
-                    toast.error(`Failed to update case status: ${Object.values(errors).join(', ')}`);
+                    if (typeof errors === 'string') {
+                        toast.error(errors);
+                    } else {
+                        toast.error(t('Failed to update {{model}} status: {{errors}}', { model: t('Case Status'), errors: Object.values(errors).join(', ') }));
+                    }
                 },
             },
         );
@@ -289,17 +292,9 @@ export default function CaseStatuses() {
         {
             key: 'status',
             label: t('Status'),
-            render: (value: string) => (
-                <span
-                    className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${
-                        value === 'active'
-                            ? 'bg-green-50 text-green-700 ring-1 ring-green-600/20 ring-inset'
-                            : 'bg-red-50 text-red-700 ring-1 ring-red-600/20 ring-inset'
-                    }`}
-                >
-                    {value === 'active' ? t('Active') : t('Inactive')}
-                </span>
-            ),
+            type: 'switch',
+            switchAction: 'toggle-status',
+            switchPermission: 'edit-case-statuses',
         },
     ];
 
@@ -315,13 +310,6 @@ export default function CaseStatuses() {
             label: t('Edit'),
             icon: 'Edit',
             action: 'edit',
-            className: 'text-amber-500',
-            requiredPermission: 'edit-case-statuses',
-        },
-        {
-            label: t('Toggle Status'),
-            icon: 'Lock',
-            action: 'toggle-status',
             className: 'text-amber-500',
             requiredPermission: 'edit-case-statuses',
         },
@@ -413,7 +401,7 @@ export default function CaseStatuses() {
                 formConfig={{
                     fields: [
                         { name: 'name.en', label: t('Name (English)'), type: 'text', required: true },
-                        { name: 'name.ar', label: t('Name (Arabic)'), type: 'text', required: false },
+                        { name: 'name.ar', label: t('Name (Arabic)'), type: 'text', required: true },
                         { name: 'description.en', label: t('Description (English)'), type: 'textarea' },
                         { name: 'description.ar', label: t('Description (Arabic)'), type: 'textarea' },
                         { name: 'color', label: t('Color'), type: 'color', defaultValue: '#10B981' },
@@ -478,7 +466,7 @@ export default function CaseStatuses() {
                           ? (currentItem.name[currentLocale] || currentItem.name.en || currentItem.name.ar || '')
                           : (currentItem?.name ?? '')
                 }
-                entityName="case status"
+                entityName="Case Status"
             />
         </PageTemplate>
     );

@@ -379,7 +379,7 @@ export default function TaskStatuses() {
               formConfig={{
                   fields: [
                       { name: 'name.en', label: t('Name (English)'), type: 'text', required: true },
-                      { name: 'name.ar', label: t('Name (Arabic)'), type: 'text' },
+                      { name: 'name.ar', label: t('Name (Arabic)'), type: 'text', required: true },
                       { name: 'color', label: t('Color'), type: 'color', required: true, defaultValue: '#6B7280' },
                       {
                           name: 'is_completed',

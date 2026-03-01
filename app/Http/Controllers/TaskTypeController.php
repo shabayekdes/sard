@@ -79,7 +79,7 @@ class TaskTypeController extends BaseController
         $validated = $request->validate([
             'name' => 'required|array',
             'name.en' => 'required|string|max:255',
-            'name.ar' => 'nullable|string|max:255',
+            'name.ar' => 'required|string|max:255',
             'description' => 'nullable|array',
             'description.en' => 'nullable|string',
             'description.ar' => 'nullable|string',
@@ -103,12 +103,12 @@ class TaskTypeController extends BaseController
             ->exists();
 
         if ($exists) {
-            return redirect()->back()->with('error', 'Task type with this name already exists.');
+            return redirect()->back()->with('error', __(':model with this name already exists.', ['model' => __('Task Type')]));
         }
 
         TaskType::create($validated);
 
-        return redirect()->back()->with('success', 'Task type created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Task Type')]));
     }
 
     public function update(Request $request, $taskTypeId)
@@ -118,13 +118,13 @@ class TaskTypeController extends BaseController
             ->first();
 
         if (!$taskType) {
-            return redirect()->back()->with('error', 'Task type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Task Type')]));
         }
 
         $validated = $request->validate([
             'name' => 'required|array',
             'name.en' => 'required|string|max:255',
-            'name.ar' => 'nullable|string|max:255',
+            'name.ar' => 'required|string|max:255',
             'description' => 'nullable|array',
             'description.en' => 'nullable|string',
             'description.ar' => 'nullable|string',
@@ -146,12 +146,12 @@ class TaskTypeController extends BaseController
             ->exists();
 
         if ($exists) {
-            return redirect()->back()->with('error', 'Task type with this name already exists.');
+            return redirect()->back()->with('error', __(':model with this name already exists.', ['model' => __('Task Type')]));
         }
 
         $taskType->update($validated);
 
-        return redirect()->back()->with('success', 'Task type updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Task Type')]));
     }
 
     public function destroy($taskTypeId)
@@ -161,14 +161,14 @@ class TaskTypeController extends BaseController
             ->first();
 
         if (!$taskType) {
-            return redirect()->back()->with('error', 'Task type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Task Type')]));
         }
 
         try {
             $taskType->delete();
-            return redirect()->back()->with('success', 'Task type deleted successfully.');
+            return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Task Type')]));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to delete task type.');
+            return redirect()->back()->with('error', __('Failed to delete :model', ['model' => __('Task Type')]));
         }
     }
 
@@ -179,16 +179,16 @@ class TaskTypeController extends BaseController
             ->first();
 
         if (!$taskType) {
-            return redirect()->back()->with('error', 'Task type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Task Type')]));
         }
 
         try {
             $taskType->status = $taskType->status === 'active' ? 'inactive' : 'active';
             $taskType->save();
 
-            return redirect()->back()->with('success', 'Task type status updated successfully.');
+            return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Task Type')]));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update task type status.');
+            return redirect()->back()->with('error', __('Failed to update :model status', ['model' => __('Task Type')]));
         }
     }
 }

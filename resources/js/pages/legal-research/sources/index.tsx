@@ -370,7 +370,7 @@ export default function ResearchSources() {
               formConfig={{
                   fields: [
                       { name: 'source_name.en', label: t('Source Name (English)'), type: 'text', required: true },
-                      { name: 'source_name.ar', label: t('Source Name (Arabic)'), type: 'text' },
+                      { name: 'source_name.ar', label: t('Source Name (Arabic)'), type: 'text', required: true },
                       {
                           name: 'source_type',
                           label: t('Source Type'),

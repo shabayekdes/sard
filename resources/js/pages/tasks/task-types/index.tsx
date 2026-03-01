@@ -104,7 +104,7 @@ export default function TaskTypes() {
               if (typeof errors === 'string') {
                   toast.error(errors);
               } else {
-                  toast.error(`Failed to create task type: ${Object.values(errors).join(', ')}`);
+                  toast.error(t('Failed to create {{model}}: {{errors}}', { model: t('Task Type'), errors: Object.values(errors).join(', ') }));
               }
           },
       });
@@ -124,7 +124,7 @@ export default function TaskTypes() {
               if (typeof errors === 'string') {
                   toast.error(errors);
               } else {
-                  toast.error(`Failed to update task type: ${Object.values(errors).join(', ')}`);
+                  toast.error(t('Failed to update {{model}}: {{errors}}', { model: t('Task Type'), errors: Object.values(errors).join(', ') }));
               }
           },
       });
@@ -147,7 +147,7 @@ export default function TaskTypes() {
             if (typeof errors === 'string') {
                 toast.error(errors);
             } else {
-                toast.error(`Failed to delete task type: ${Object.values(errors).join(', ')}`);
+                toast.error(t('Failed to delete {{model}}: {{errors}}', { model: t('Task Type'), errors: Object.values(errors).join(', ') }));
             }
         },
     });
@@ -171,7 +171,7 @@ export default function TaskTypes() {
                 if (typeof errors === 'string') {
                     toast.error(errors);
                 } else {
-                    toast.error(`Failed to update task type status: ${Object.values(errors).join(', ')}`);
+                    toast.error(t('Failed to update {{model}} status: {{errors}}', { model: t('Task Type'), errors: Object.values(errors).join(', ') }));
                 }
             },
         },
@@ -259,14 +259,9 @@ export default function TaskTypes() {
     {
       key: 'status',
       label: t('Status'),
-      render: (value: string) => (
-        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'active'
-          ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
-          : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
-          }`}>
-          {value === 'active' ? t('Active') : t('Inactive')}
-        </span>
-      )
+      type: 'switch',
+      switchAction: 'toggle-status',
+      switchPermission: 'edit-task-types',
     },
     {
       key: 'created_at',
@@ -283,13 +278,6 @@ export default function TaskTypes() {
       action: 'edit',
       className: 'text-amber-500',
       requiredPermission: 'edit-task-types'
-    },
-    {
-      label: t('Toggle Status'),
-      icon: 'Lock',
-      action: 'toggle-status',
-      className: 'text-amber-500',
-      requiredPermission: 'toggle-status-task-types'
     },
     {
       label: t('Delete'),

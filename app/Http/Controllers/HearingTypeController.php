@@ -72,12 +72,12 @@ class HearingTypeController extends Controller
             ->exists();
 
         if ($exists) {
-            return redirect()->back()->with('error', 'Hearing type with this name already exists.');
+            return redirect()->back()->with('error', __(':model with this name already exists.', ['model' => __('Hearing Type')]));
         }
 
         HearingType::create($validated);
 
-        return redirect()->back()->with('success', 'Hearing type created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Hearing Type')]));
     }
 
     public function update(Request $request, $hearingTypeId)
@@ -132,7 +132,7 @@ class HearingTypeController extends Controller
             ->first();
 
         if (!$hearingType) {
-            return redirect()->route('setup.hearing-types.index')->with('error', 'Hearing type not found.');
+            return redirect()->route('setup.hearing-types.index')->with('error', __(':model not found.', ['model' => __('Hearing Type')]));
         }
 
         return Inertia::render('hearing-types/show', [
@@ -149,12 +149,12 @@ class HearingTypeController extends Controller
         if ($hearingType) {
             try {
                 $hearingType->delete();
-                return redirect()->back()->with('success', 'Hearing type deleted successfully');
+                return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Hearing Type')]));
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to delete hearing type');
+                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to delete :model', ['model' => __('Hearing Type')]));
             }
         } else {
-            return redirect()->back()->with('error', 'Hearing type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Hearing Type')]));
         }
     }
 
@@ -169,12 +169,12 @@ class HearingTypeController extends Controller
                 $hearingType->status = $hearingType->status === 'active' ? 'inactive' : 'active';
                 $hearingType->save();
 
-                return redirect()->back()->with('success', 'Hearing type status updated successfully');
+                return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Hearing Type')]));
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to update hearing type status');
+                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to update :model status', ['model' => __('Hearing Type')]));
             }
         } else {
-            return redirect()->back()->with('error', 'Hearing type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Hearing Type')]));
         }
     }
 }

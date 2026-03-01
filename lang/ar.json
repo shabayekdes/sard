@@ -4005,5 +4005,9 @@
     "Source Name (Arabic)": "اسم المصدر (العربية)",
   "Approval": "الموافقة",
   "Approval Status": "حالة الموافقة",
-  "Verify email": "تحقق من البريد الإلكتروني"
+  "Verify email": "تحقق من البريد الإلكتروني",
+  "Case type": "نوع القضية",
+  "Invalid case category selected.": "فئة القضية المحددة غير صالحة.",
+  "Please select a subcategory (child category), not a parent category.": "يرجى اختيار تصنيف فرعي (فئة فرعية)، وليس الفئة الرئيسية.",
+  "Please select a case subcategory.": "يرجى اختيار تصنيف فرعي للقضية."
 }

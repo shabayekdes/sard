@@ -83,7 +83,7 @@ class ResearchSourceController extends Controller
     {
         $validated = $request->validate([
             'source_name' => 'required|array',
-            'source_name.ar' => 'nullable|string|max:255',
+            'source_name.ar' => 'required|string|max:255',
             'source_name.en' => 'required_with:source_name|string|max:255',
             'source_type' => 'required|string|in:' . implode(',', array_column(ResearchSourceType::cases(), 'value')),
             'description' => 'nullable|array',
@@ -113,7 +113,7 @@ class ResearchSourceController extends Controller
 
         $validated = $request->validate([
             'source_name' => 'required|array',
-            'source_name.ar' => 'nullable|string|max:255',
+            'source_name.ar' => 'required|string|max:255',
             'source_name.en' => 'required_with:source_name|string|max:255',
             'source_type' => 'required|string|in:' . implode(',', array_column(ResearchSourceType::cases(), 'value')),
             'description' => 'nullable|array',

@@ -72,7 +72,7 @@ class TaskStatusController extends BaseController
         $validated = $request->validate([
             'name' => 'required|array',
             'name.en' => 'required|string|max:255',
-            'name.ar' => 'nullable|string|max:255',
+            'name.ar' => 'required|string|max:255',
             'color' => 'required|string|size:7|regex:/^#[0-9A-Fa-f]{6}$/',
             'is_completed' => 'nullable|boolean',
             'status' => 'nullable|in:active,inactive',
@@ -115,7 +115,7 @@ class TaskStatusController extends BaseController
         $validated = $request->validate([
             'name' => 'required|array',
             'name.en' => 'required|string|max:255',
-            'name.ar' => 'nullable|string|max:255',
+            'name.ar' => 'required|string|max:255',
             'color' => 'required|string|size:7|regex:/^#[0-9A-Fa-f]{6}$/',
             'is_completed' => 'required|boolean',
             'status' => 'required|in:active,inactive',

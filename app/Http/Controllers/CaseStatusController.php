@@ -70,7 +70,7 @@ class CaseStatusController extends Controller
         $validated = $request->validate([
             'name' => 'required|array',
             'name.en' => 'required|string|max:255',
-            'name.ar' => 'nullable|string|max:255',
+            'name.ar' => 'required|string|max:255',
             'description' => 'nullable|array',
             'description.en' => 'nullable|string',
             'description.ar' => 'nullable|string',
@@ -93,7 +93,7 @@ class CaseStatusController extends Controller
 
         CaseStatus::create($validated);
 
-        return redirect()->back()->with('success', 'Case status created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Case Status')]));
     }
 
     public function update(Request $request, $caseStatusId)
@@ -101,13 +101,13 @@ class CaseStatusController extends Controller
         $caseStatus = CaseStatus::where('id', $caseStatusId)->where('tenant_id', createdBy())->first();
 
         if (!$caseStatus) {
-            return redirect()->back()->with('error', 'Case status not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Case Status')]));
         }
 
         $validated = $request->validate([
             'name' => 'required|array',
             'name.en' => 'required|string|max:255',
-            'name.ar' => 'nullable|string|max:255',
+            'name.ar' => 'required|string|max:255',
             'description' => 'nullable|array',
             'description.en' => 'nullable|string',
             'description.ar' => 'nullable|string',
@@ -128,7 +128,7 @@ class CaseStatusController extends Controller
 
         $caseStatus->update($validated);
 
-        return redirect()->back()->with('success', 'Case status updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Case Status')]));
     }
 
     public function destroy($caseStatusId)
@@ -136,16 +136,16 @@ class CaseStatusController extends Controller
         $caseStatus = CaseStatus::where('id', $caseStatusId)->where('tenant_id', createdBy())->first();
 
         if (!$caseStatus) {
-            return redirect()->back()->with('error', 'Case status not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Case Status')]));
         }
 
         if ($caseStatus->cases()->count() > 0) {
-            return redirect()->back()->with('error', 'Cannot delete case status that has associated cases.');
+            return redirect()->back()->with('error', __('Cannot delete :model with assigned :relation.', ['model' => __('Case Status'), 'relation' => __('cases')]));
         }
 
         $caseStatus->delete();
 
-        return redirect()->back()->with('success', 'Case status deleted successfully.');
+        return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Case Status')]));
     }
 
     public function toggleStatus($caseStatusId)
@@ -153,12 +153,12 @@ class CaseStatusController extends Controller
         $caseStatus = CaseStatus::where('id', $caseStatusId)->where('tenant_id', createdBy())->first();
 
         if (!$caseStatus) {
-            return redirect()->back()->with('error', 'Case status not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Case Status')]));
         }
 
         $caseStatus->status = $caseStatus->status === 'active' ? 'inactive' : 'active';
         $caseStatus->save();
 
-        return redirect()->back()->with('success', 'Case status updated successfully.');
+        return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Case Status')]));
     }
 }

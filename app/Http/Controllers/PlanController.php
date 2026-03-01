@@ -154,7 +154,7 @@ class PlanController extends Controller
             'is_plan_enable' => 'nullable|in:on,off',
             'is_default' => 'nullable|boolean',
             'name.en' => 'nullable|string|max:100',
-            'name.ar' => 'nullable|string|max:100',
+            'name.ar' => 'required|string|max:100',
             'description.en' => 'nullable|string',
             'description.ar' => 'nullable|string',
         ]);
@@ -225,7 +225,7 @@ class PlanController extends Controller
             'is_plan_enable' => 'nullable|in:on,off',
             'is_default' => 'nullable|boolean',
             'name.en' => 'nullable|string|max:100',
-            'name.ar' => 'nullable|string|max:100',
+            'name.ar' => 'required|string|max:100',
             'description.en' => 'nullable|string',
             'description.ar' => 'nullable|string',
         ]);

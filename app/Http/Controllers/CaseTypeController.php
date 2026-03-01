@@ -98,7 +98,7 @@ class CaseTypeController extends Controller
         $validated = $request->validate([
             'name' => 'required|array',
             'name.en' => 'required|string|max:255',
-            'name.ar' => 'nullable|string|max:255',
+            'name.ar' => 'required|string|max:255',
             'description' => 'nullable|array',
             'description.en' => 'nullable|string',
             'description.ar' => 'nullable|string',
@@ -113,12 +113,12 @@ class CaseTypeController extends Controller
             ->first();
         
         if (!$category) {
-            return redirect()->back()->with('error', 'Invalid case category selected.');
+            return redirect()->back()->with('error', __('Invalid case category selected.'));
         }
 
         // Ensure it's a subcategory (has a parent)
         if (!$category->parent_id) {
-            return redirect()->back()->with('error', 'Please select a subcategory (child category), not a parent category.');
+            return redirect()->back()->with('error', __('Please select a subcategory (child category), not a parent category.'));
         }
 
         $validated['tenant_id'] = createdBy();
@@ -127,7 +127,7 @@ class CaseTypeController extends Controller
 
         CaseType::create($validated);
 
-        return redirect()->back()->with('success', 'Case type created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Case type')]));
     }
 
     public function update(Request $request, $caseTypeId)
@@ -135,13 +135,13 @@ class CaseTypeController extends Controller
         $caseType = CaseType::where('id', $caseTypeId)->where('tenant_id', createdBy())->first();
 
         if (!$caseType) {
-            return redirect()->back()->with('error', 'Case type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Case type')]));
         }
 
         $validated = $request->validate([
             'name' => 'required|array',
             'name.en' => 'required|string|max:255',
-            'name.ar' => 'nullable|string|max:255',
+            'name.ar' => 'required|string|max:255',
             'description' => 'nullable|array',
             'description.en' => 'nullable|string',
             'description.ar' => 'nullable|string',
@@ -156,19 +156,19 @@ class CaseTypeController extends Controller
             ->first();
         
         if (!$category) {
-            return redirect()->back()->with('error', 'Invalid case category selected.');
+            return redirect()->back()->with('error', __('Invalid case category selected.'));
         }
 
         // Ensure it's a subcategory (has a parent)
         if (!$category->parent_id) {
-            return redirect()->back()->with('error', 'Please select a subcategory (child category), not a parent category.');
+            return redirect()->back()->with('error', __('Please select a subcategory (child category), not a parent category.'));
         }
 
         $validated['color'] = $validated['color'] ?? '#3B82F6';
 
         $caseType->update($validated);
 
-        return redirect()->back()->with('success', 'Case type updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Case type')]));
     }
 
     public function destroy($caseTypeId)
@@ -176,16 +176,16 @@ class CaseTypeController extends Controller
         $caseType = CaseType::where('id', $caseTypeId)->where('tenant_id', createdBy())->first();
 
         if (!$caseType) {
-            return redirect()->back()->with('error', 'Case type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Case type')]));
         }
 
         if ($caseType->cases()->count() > 0) {
-            return redirect()->back()->with('error', 'Cannot delete case type that has associated cases.');
+            return redirect()->back()->with('error', __('Cannot delete :model with assigned :relation.', ['model' => __('Case type'), 'relation' => __('cases')]));
         }
 
         $caseType->delete();
 
-        return redirect()->back()->with('success', 'Case type deleted successfully.');
+        return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Case type')]));
     }
 
     public function toggleStatus($caseTypeId)
@@ -193,12 +193,12 @@ class CaseTypeController extends Controller
         $caseType = CaseType::where('id', $caseTypeId)->where('tenant_id', createdBy())->first();
 
         if (!$caseType) {
-            return redirect()->back()->with('error', 'Case type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Case type')]));
         }
 
         $caseType->status = $caseType->status === 'active' ? 'inactive' : 'active';
         $caseType->save();
 
-        return redirect()->back()->with('success', 'Case type status updated successfully.');
+        return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Case type')]));
     }
 }

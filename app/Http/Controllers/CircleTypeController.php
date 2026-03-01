@@ -79,7 +79,7 @@ class CircleTypeController extends Controller
 
         CircleType::create($validated);
 
-        return redirect()->back()->with('success', 'Circle type created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Circle Type')]));
     }
 
     public function update(Request $request, $id)
@@ -89,7 +89,7 @@ class CircleTypeController extends Controller
             ->first();
 
         if (!$circleType) {
-            return redirect()->back()->with('error', 'Circle type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Circle Type')]));
         }
 
         $validated = $request->validate([
@@ -105,7 +105,7 @@ class CircleTypeController extends Controller
 
         $circleType->update($validated);
 
-        return redirect()->back()->with('success', 'Circle type updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Circle Type')]));
     }
 
     public function destroy($id)
@@ -115,7 +115,7 @@ class CircleTypeController extends Controller
             ->first();
 
         if (!$circleType) {
-            return redirect()->back()->with('error', 'Circle type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Circle Type')]));
         }
 
         // Check if any court is mapped with this circle type (only check courts created by the same user/company)
@@ -130,7 +130,7 @@ class CircleTypeController extends Controller
 
         $circleType->delete();
 
-        return redirect()->back()->with('success', 'Circle type deleted successfully.');
+        return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Circle Type')]));
     }
 
     public function toggleStatus($id)
@@ -140,13 +140,13 @@ class CircleTypeController extends Controller
             ->first();
 
         if (!$circleType) {
-            return redirect()->back()->with('error', 'Circle type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Circle Type')]));
         }
 
         $circleType->status = $circleType->status === 'active' ? 'inactive' : 'active';
         $circleType->save();
 
-        return redirect()->back()->with('success', 'Circle type status updated successfully.');
+        return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Circle Type')]));
     }
 }
 

@@ -87,7 +87,7 @@ export default function CircleTypes() {
 
     const handleToggleStatus = (item: any) => {
         const newStatus = item.status === 'active' ? 'inactive' : 'active';
-        toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} circle type...`);
+        toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} ${t('Circle Type')}...`);
 
         router.put(
             route('setup.circle-types.toggle-status', item.id),
@@ -104,7 +104,11 @@ export default function CircleTypes() {
                 },
                 onError: (errors) => {
                     toast.dismiss();
-                    toast.error(t('Failed to update status'));
+                    if (typeof errors === 'string') {
+                        toast.error(errors);
+                    } else {
+                        toast.error(t('Failed to update {{model}} status: {{errors}}', { model: t('Circle Type'), errors: Object.values(errors || {}).join(', ') }));
+                    }
                 },
             },
         );
@@ -122,7 +126,11 @@ export default function CircleTypes() {
                 },
                 onError: (errors) => {
                     toast.dismiss();
-                    toast.error(`${t('Failed to create circle type')}: ${Object.values(errors).join(', ')}`);
+                    if (typeof errors === 'string') {
+                        toast.error(errors);
+                    } else {
+                        toast.error(t('Failed to create {{model}}: {{errors}}', { model: t('Circle Type'), errors: Object.values(errors).join(', ') }));
+                    }
                 },
             });
         } else if (formMode === 'edit') {
@@ -136,7 +144,11 @@ export default function CircleTypes() {
                 },
                 onError: (errors) => {
                     toast.dismiss();
-                    toast.error(`${t('Failed to update circle type')}: ${Object.values(errors).join(', ')}`);
+                    if (typeof errors === 'string') {
+                        toast.error(errors);
+                    } else {
+                        toast.error(t('Failed to update {{model}}: {{errors}}', { model: t('Circle Type'), errors: Object.values(errors).join(', ') }));
+                    }
                 },
             });
         }
@@ -157,8 +169,12 @@ export default function CircleTypes() {
             },
             onError: (errors) => {
                 toast.dismiss();
-                const errorMessage = errors.message || Object.values(errors).join(', ') || t('Failed to delete circle type');
-                toast.error(errorMessage);
+                if (typeof errors === 'string') {
+                    toast.error(errors);
+                } else {
+                    const errStr = errors?.message || Object.values(errors || {}).join(', ');
+                    toast.error(errStr || t('Failed to delete {{model}}: {{errors}}', { model: t('Circle Type'), errors: '' }));
+                }
             },
         });
     };
@@ -246,14 +262,9 @@ export default function CircleTypes() {
         {
             key: 'status',
             label: t('Status'),
-            render: (value: string) => (
-                <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'active'
-                    ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
-                    : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
-                    }`}>
-                    {value === 'active' ? t('Active') : t('Inactive')}
-                </span>
-            )
+            type: 'switch',
+            switchAction: 'toggle-status',
+            switchPermission: 'edit-circle-types',
         },
         {
             key: 'created_at',
@@ -266,7 +277,6 @@ export default function CircleTypes() {
     const actions = [
         { label: t('View'), icon: 'Eye', action: 'view', className: 'text-blue-500', requiredPermission: 'view-circle-types' },
         { label: t('Edit'), icon: 'Edit', action: 'edit', className: 'text-amber-500', requiredPermission: 'edit-circle-types' },
-        { label: t('Toggle Status'), icon: 'Lock', action: 'toggle-status', className: 'text-amber-500', requiredPermission: 'edit-circle-types' },
         { label: t('Delete'), icon: 'Trash2', action: 'delete', className: 'text-red-500', requiredPermission: 'delete-circle-types' }
     ];
 

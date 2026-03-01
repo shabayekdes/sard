@@ -80,7 +80,7 @@ class ResearchTypeController extends Controller
         $validated = $request->validate([
             'code' => 'required|string|max:50',
             'name' => 'required|array',
-            'name.ar' => 'nullable|string|max:255',
+            'name.ar' => 'required|string|max:255',
             'name.en' => 'required_with:name|string|max:255',
             'description' => 'nullable|array',
             'description.ar' => 'nullable|string',
@@ -112,7 +112,7 @@ class ResearchTypeController extends Controller
                 $validated = $request->validate([
                     'code' => 'required|string|max:50',
                     'name' => 'required|array',
-                    'name.ar' => 'nullable|string|max:255',
+                    'name.ar' => 'required|string|max:255',
                     'name.en' => 'required_with:name|string|max:255',
                     'description' => 'nullable|array',
                     'description.ar' => 'nullable|string',

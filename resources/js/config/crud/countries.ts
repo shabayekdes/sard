@@ -85,6 +85,7 @@ export const countriesConfig: CrudConfig = {
                 name: 'nationality_name.ar',
                 label: t('Nationality Name (Arabic)'),
                 type: 'text',
+                required: true,
             },
             {
                 name: 'country_code',

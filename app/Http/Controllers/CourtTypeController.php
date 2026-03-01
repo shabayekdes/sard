@@ -78,7 +78,7 @@ class CourtTypeController extends Controller
 
         CourtType::create($validated);
 
-        return redirect()->back()->with('success', 'Court type created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Court Type')]));
     }
 
     public function update(Request $request, $id)
@@ -88,7 +88,7 @@ class CourtTypeController extends Controller
             ->first();
 
         if (!$courtType) {
-            return redirect()->back()->with('error', 'Court type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Court Type')]));
         }
 
         $validated = $request->validate([
@@ -104,7 +104,7 @@ class CourtTypeController extends Controller
 
         $courtType->update($validated);
 
-        return redirect()->back()->with('success', 'Court type updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Court Type')]));
     }
 
     public function destroy($id)
@@ -114,12 +114,12 @@ class CourtTypeController extends Controller
             ->first();
 
         if (!$courtType) {
-            return redirect()->back()->with('error', 'Court type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Court Type')]));
         }
 
         $courtType->delete();
 
-        return redirect()->back()->with('success', 'Court type deleted successfully.');
+        return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Court Type')]));
     }
 
     public function toggleStatus($id)
@@ -129,12 +129,12 @@ class CourtTypeController extends Controller
             ->first();
 
         if (!$courtType) {
-            return redirect()->back()->with('error', 'Court type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Court Type')]));
         }
 
         $courtType->status = $courtType->status === 'active' ? 'inactive' : 'active';
         $courtType->save();
 
-        return redirect()->back()->with('success', 'Court type status updated successfully.');
+        return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Court Type')]));
     }
 }
