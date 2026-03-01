@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FileText, Calendar, User, Building2, Clock, Banknote, CreditCard, IndianRupee, Wallet, Coins, Copy, Download, List } from 'lucide-react';
+import { FileText, User, Building2, Clock, Banknote, CreditCard, IndianRupee, Wallet, Coins, Copy, Download } from 'lucide-react';
 import { toast } from '@/components/custom-toast';
 import { PaymentGatewaySelection } from '@/components/payment-gateway-selection';
 import { StripePaymentModal } from '@/components/payment-modals/stripe-payment-modal';
@@ -416,94 +416,6 @@ export default function InvoicePayment() {
                             </div>
                         </CardContent>
                     </Card>
-
-                    {/* State cards: 2 rows × 3 cols — Total, Paid, Due | Due Date, Invoice Date, Products */}
-                    <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-                        <Card className="border border-[#F1F1F4] bg-white shadow-sm">
-                            <CardContent className="p-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-100">
-                                        <Wallet className="h-5 w-5 text-gray-400" strokeWidth={1.5} />
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-medium text-gray-500">{t('Total Amount')}</p>
-                                        <p className="mt-1 text-xl font-bold text-gray-900"><CurrencyAmount amount={totalAmount} /></p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="border border-[#F1F1F4] bg-white shadow-sm">
-                            <CardContent className="p-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-100">
-                                        <Wallet className="h-5 w-5 text-gray-400" strokeWidth={1.5} />
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-medium text-gray-500">{t('Paid Amount')}</p>
-                                        <p className="mt-1 text-xl font-bold text-gray-900"><CurrencyAmount amount={round2(Number(invoice?.total_amount ?? 0) - remainingAmountRounded)} /></p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="border border-[#F1F1F4] bg-white shadow-sm">
-                            <CardContent className="p-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-100">
-                                        <Wallet className="h-5 w-5 text-gray-400" strokeWidth={1.5} />
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-medium text-gray-500">{t('Due Amount')}</p>
-                                        <p className="mt-1 text-xl font-bold text-gray-900"><CurrencyAmount amount={remainingAmountRounded} /></p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="border border-[#F1F1F4] bg-white shadow-sm">
-                            <CardContent className="p-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-100">
-                                        <Calendar className="h-5 w-5 text-gray-400" strokeWidth={1.5} />
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-medium text-gray-500">{t('Due Date')}:</p>
-                                        <p className="mt-1 text-xl font-bold text-gray-900">{new Date(invoice.due_date).toLocaleDateString('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="border border-[#F1F1F4] bg-white shadow-sm">
-                            <CardContent className="p-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-100">
-                                        <Calendar className="h-5 w-5 text-gray-400" strokeWidth={1.5} />
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-medium text-gray-500">{t('Invoice Date')}:</p>
-                                        <p className="mt-1 text-xl font-bold text-gray-900">{new Date(invoice.invoice_date).toLocaleDateString('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="border border-[#F1F1F4] bg-white shadow-sm">
-                            <CardContent className="p-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-100">
-                                        <List className="h-5 w-5 text-gray-400" strokeWidth={1.5} />
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-medium text-gray-500">{t('Products')}</p>
-                                        <p className="mt-1 text-xl font-bold text-gray-900">{invoice.line_items?.length ?? 0}</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
                     <div className="grid grid-cols-1 gap-8 xl:grid-cols-1">
                         {/* Invoice Details - Left Side */}
                         <div className="space-y-6 xl:col-span-3">

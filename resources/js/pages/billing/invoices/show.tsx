@@ -53,14 +53,20 @@ export default function ShowInvoice() {
     };
 
     const handleCopyLink = () => {
-        if (invoice.payment_token) {
-            const paymentUrl = route('invoice.payment', invoice.payment_token);
+        if (!invoice.payment_token) {
+            toast.error(t('Payment link not available'));
+            return;
+        }
+        const paymentUrl = route('invoice.payment', invoice.payment_token);
+        if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
             navigator.clipboard.writeText(paymentUrl).then(
                 () => toast.success(t('Payment link copied to clipboard')),
                 () => toast.error(t('Failed to copy payment link')),
             );
         } else {
-            toast.error(t('Payment link not available'));
+            // Workaround for local HTTP: open in new tab so user can copy URL from address bar
+            window.open(paymentUrl, '_blank', 'noopener,noreferrer');
+            toast.success(t('Payment link opened in new tab — copy the URL from the address bar'));
         }
     };
 
