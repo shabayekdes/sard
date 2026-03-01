@@ -109,7 +109,7 @@ export default function TaskStatuses() {
               if (typeof errors === 'string') {
                   toast.error(errors);
               } else {
-                  toast.error(`Failed to create task status: ${Object.values(errors).join(', ')}`);
+                  toast.error(t('Failed to create {{model}}: {{errors}}', { model: t('Task Status'), errors: Object.values(errors).join(', ') }));
               }
           },
       });
@@ -129,7 +129,7 @@ export default function TaskStatuses() {
               if (typeof errors === 'string') {
                   toast.error(errors);
               } else {
-                  toast.error(`Failed to update task status: ${Object.values(errors).join(', ')}`);
+                  toast.error(t('Failed to update {{model}}: {{errors}}', { model: t('Task Status'), errors: Object.values(errors).join(', ') }));
               }
           },
       });
@@ -152,7 +152,7 @@ export default function TaskStatuses() {
             if (typeof errors === 'string') {
                 toast.error(errors);
             } else {
-                toast.error(`Failed to delete task status: ${Object.values(errors).join(', ')}`);
+                toast.error(t('Failed to delete {{model}}: {{errors}}', { model: t('Task Status'), errors: Object.values(errors).join(', ') }));
             }
         },
     });
@@ -176,7 +176,7 @@ export default function TaskStatuses() {
                 if (typeof errors === 'string') {
                     toast.error(errors);
                 } else {
-                    toast.error(`Failed to update task status: ${Object.values(errors).join(', ')}`);
+                    toast.error(t('Failed to update {{model}} status: {{errors}}', { model: t('Task Status'), errors: Object.values(errors).join(', ') }));
                 }
             },
         },
@@ -257,14 +257,9 @@ export default function TaskStatuses() {
     {
       key: 'status',
       label: t('Status'),
-      render: (value: string) => (
-        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'active'
-          ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
-          : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
-          }`}>
-          {value === 'active' ? t('Active') : t('Inactive')}
-        </span>
-      )
+      type: 'switch',
+      switchAction: 'toggle-status',
+      switchPermission: 'toggle-status-task-statuses',
     },
     {
       key: 'created_at',
@@ -281,13 +276,6 @@ export default function TaskStatuses() {
       action: 'edit',
       className: 'text-amber-500',
       requiredPermission: 'edit-task-statuses'
-    },
-    {
-      label: t('Toggle Status'),
-      icon: 'Lock',
-      action: 'toggle-status',
-      className: 'text-amber-500',
-      requiredPermission: 'toggle-status-task-statuses'
     },
     {
       label: t('Delete'),
@@ -426,7 +414,7 @@ export default function TaskStatuses() {
               onClose={() => setIsDeleteModalOpen(false)}
               onConfirm={handleDeleteConfirm}
               itemName={getTranslatedValue(currentItem?.name) || ''}
-              entityName="task status"
+              entityName="Task Status"
           />
       </PageTemplate>
   );

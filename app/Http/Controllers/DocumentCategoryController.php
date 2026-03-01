@@ -88,7 +88,7 @@ class DocumentCategoryController extends Controller
 
         DocumentCategory::create($validated);
 
-        return redirect()->back()->with('success', 'Document category created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Document Category')]));
     }
 
     public function update(Request $request, $id)
@@ -96,7 +96,7 @@ class DocumentCategoryController extends Controller
         $category = DocumentCategory::where('id', $id)->where('tenant_id', createdBy())->first();
 
         if (!$category) {
-            return redirect()->back()->with('error', 'Document category not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Document Category')]));
         }
 
         $validated = $request->validate([
@@ -112,7 +112,7 @@ class DocumentCategoryController extends Controller
 
         $category->update($validated);
 
-        return redirect()->back()->with('success', 'Document category updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Document Category')]));
     }
 
     public function destroy($id)
@@ -120,12 +120,12 @@ class DocumentCategoryController extends Controller
         $category = DocumentCategory::where('id', $id)->where('tenant_id', createdBy())->first();
 
         if (!$category) {
-            return redirect()->back()->with('error', 'Document category not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Document Category')]));
         }
 
         $category->delete();
 
-        return redirect()->back()->with('success', 'Document category deleted successfully.');
+        return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Document Category')]));
     }
 
     public function toggleStatus($id)
@@ -133,12 +133,12 @@ class DocumentCategoryController extends Controller
         $category = DocumentCategory::where('id', $id)->where('tenant_id', createdBy())->first();
 
         if (!$category) {
-            return redirect()->back()->with('error', 'Document category not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Document Category')]));
         }
 
         $category->status = $category->status === 'active' ? 'inactive' : 'active';
         $category->save();
 
-        return redirect()->back()->with('success', 'Document category status updated successfully.');
+        return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Document Category')]));
     }
 }

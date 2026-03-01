@@ -69,7 +69,31 @@ export default function ExpenseCategories() {
       case 'delete':
         setIsDeleteModalOpen(true);
         break;
+      case 'toggle-status':
+        handleToggleStatus(item);
+        break;
     }
+  };
+
+  const handleToggleStatus = (item: any) => {
+    router.put(route('setup.expense-categories.toggle-status', item.id), {}, {
+      onSuccess: (page) => {
+        toast.dismiss();
+        if (page.props.flash.success) {
+          toast.success(page.props.flash.success);
+        } else if (page.props.flash.error) {
+          toast.error(page.props.flash.error);
+        }
+      },
+      onError: (errors) => {
+        toast.dismiss();
+        if (typeof errors === 'string') {
+          toast.error(errors);
+        } else {
+          toast.error(t('Failed to update {{model}} status: {{errors}}', { model: t('Expense Category'), errors: Object.values(errors).join(', ') }));
+        }
+      },
+    });
   };
 
   const handleAddNew = () => {
@@ -86,11 +110,13 @@ export default function ExpenseCategories() {
               toast.dismiss();
               if (page.props.flash.success) {
                   toast.success(page.props.flash.success);
+              } else if (page.props.flash.error) {
+                  toast.error(page.props.flash.error);
               }
           },
           onError: (errors) => {
               toast.dismiss();
-              toast.error(`Failed to create expense category: ${Object.values(errors).join(', ')}`);
+              toast.error(t('Failed to create {{model}}: {{errors}}', { model: t('Expense Category'), errors: Object.values(errors).join(', ') }));
           },
       });
     } else if (formMode === 'edit') {
@@ -100,11 +126,13 @@ export default function ExpenseCategories() {
               toast.dismiss();
               if (page.props.flash.success) {
                   toast.success(page.props.flash.success);
+              } else if (page.props.flash.error) {
+                  toast.error(page.props.flash.error);
               }
           },
           onError: (errors) => {
               toast.dismiss();
-              toast.error(`Failed to update expense category: ${Object.values(errors).join(', ')}`);
+              toast.error(t('Failed to update {{model}}: {{errors}}', { model: t('Expense Category'), errors: Object.values(errors).join(', ') }));
           },
       });
     }
@@ -117,11 +145,13 @@ export default function ExpenseCategories() {
             toast.dismiss();
             if (page.props.flash.success) {
                 toast.success(page.props.flash.success);
+            } else if (page.props.flash.error) {
+                toast.error(page.props.flash.error);
             }
         },
         onError: (errors) => {
             toast.dismiss();
-            toast.error(`Failed to delete expense category: ${Object.values(errors).join(', ')}`);
+            toast.error(t('Failed to delete {{model}}: {{errors}}', { model: t('Expense Category'), errors: Object.values(errors).join(', ') }));
         },
     });
   };
@@ -218,14 +248,9 @@ export default function ExpenseCategories() {
     {
       key: 'status',
       label: t('Status'),
-      render: (value: string) => (
-        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'active'
-          ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
-          : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
-          }`}>
-          {value === 'active' ? t('Active') : t('Inactive')}
-        </span>
-      )
+      type: 'switch',
+      switchAction: 'toggle-status',
+      switchPermission: 'toggle-status-expense-categories',
     },
     {
       key: 'created_at',
@@ -446,7 +471,7 @@ export default function ExpenseCategories() {
                             : currentItem.name
                         : ''
               }
-              entityName="expense category"
+              entityName="Expense Category"
           />
       </PageTemplate>
   );

@@ -6,6 +6,7 @@ use App\Models\MediaItem;
 use App\Models\User;
 use App\Services\StorageConfigService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class MediaController extends BaseController
@@ -129,6 +130,23 @@ class MediaController extends BaseController
         return $baseUrl . $url;
     }
 
+    /**
+     * Ensure tenant public storage path exists with writable permissions (0775).
+     * Prevents "Unable to create directory" on live when web server needs to create media/3 etc.
+     */
+    private function ensureUploadStoragePathExists(): void
+    {
+        $disk = StorageConfigService::getActiveDisk();
+        if ($disk !== 'public') {
+            return;
+        }
+
+        $publicRoot = storage_path('app/public');
+        if (!File::isDirectory($publicRoot)) {
+            File::ensureDirectoryExists($publicRoot, 0775);
+        }
+    }
+
     private function getUserFriendlyError(\Exception $e, $fileName): string
     {
         $message = $e->getMessage();
@@ -202,6 +220,9 @@ class MediaController extends BaseController
                 'errors' => $errors
             ], 422);
         }
+
+        // Ensure tenant/local public storage path exists and is writable (fixes "Unable to create directory" on live)
+        $this->ensureUploadStoragePathExists();
 
         $uploadedMedia = [];
         $errors = [];

@@ -136,11 +136,17 @@ export default function DocumentTypes() {
                 toast.dismiss();
                 if (page.props.flash.success) {
                     toast.success(page.props.flash.success);
+                } else if (page.props.flash.error) {
+                    toast.error(page.props.flash.error);
                 }
             },
             onError: (errors) => {
                 toast.dismiss();
-                toast.error('Failed to update status');
+                if (typeof errors === 'string') {
+                    toast.error(errors);
+                } else {
+                    toast.error(t('Failed to update {{model}} status: {{errors}}', { model: t('Document Type'), errors: Object.values(errors).join(', ') }));
+                }
             },
         },
     );
@@ -154,11 +160,17 @@ export default function DocumentTypes() {
               toast.dismiss();
               if (page.props.flash.success) {
                   toast.success(page.props.flash.success);
+              } else if (page.props.flash.error) {
+                  toast.error(page.props.flash.error);
               }
           },
           onError: (errors) => {
               toast.dismiss();
-              toast.error(`Failed to create document type: ${Object.values(errors).join(', ')}`);
+              if (typeof errors === 'string') {
+                  toast.error(errors);
+              } else {
+                  toast.error(t('Failed to create {{model}}: {{errors}}', { model: t('Document Type'), errors: Object.values(errors).join(', ') }));
+              }
           },
       });
     } else if (formMode === 'edit') {
@@ -185,11 +197,17 @@ export default function DocumentTypes() {
             toast.dismiss();
             if (page.props.flash.success) {
                 toast.success(page.props.flash.success);
+            } else if (page.props.flash.error) {
+                toast.error(page.props.flash.error);
             }
         },
         onError: (errors) => {
             toast.dismiss();
-            toast.error('Failed to delete document type');
+            if (typeof errors === 'string') {
+                toast.error(errors);
+            } else {
+                toast.error(t('Failed to delete {{model}}: {{errors}}', { model: t('Document Type'), errors: Object.values(errors).join(', ') }));
+            }
         },
     });
   };
@@ -271,14 +289,9 @@ export default function DocumentTypes() {
     {
       key: 'status',
       label: t('Status'),
-      render: (value: string) => (
-        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'active'
-          ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
-          : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
-          }`}>
-          {value === 'active' ? t('Active') : t('Inactive')}
-        </span>
-      )
+      type: 'switch',
+      switchAction: 'toggle-status',
+      switchPermission: 'edit-document-types',
     },
     {
       key: 'created_at',
@@ -291,7 +304,6 @@ export default function DocumentTypes() {
   const actions = [
     { label: t('View'), icon: 'Eye', action: 'view', className: 'text-blue-500', requiredPermission: 'view-document-types' },
     { label: t('Edit'), icon: 'Edit', action: 'edit', className: 'text-amber-500', requiredPermission: 'edit-document-types' },
-    { label: t('Toggle Status'), icon: 'Lock', action: 'toggle-status', className: 'text-amber-500', requiredPermission: 'edit-document-types' },
     { label: t('Delete'), icon: 'Trash2', action: 'delete', className: 'text-red-500', requiredPermission: 'delete-document-types' }
   ];
 
@@ -469,7 +481,7 @@ export default function DocumentTypes() {
                           : currentItem.name
                       : ''
               }
-              entityName="document type"
+              entityName="Document Type"
           />
       </PageTemplate>
   );

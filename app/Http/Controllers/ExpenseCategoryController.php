@@ -99,12 +99,12 @@ class ExpenseCategoryController extends Controller
             ->exists();
 
         if ($exists) {
-            return redirect()->back()->with('error', 'Expense category with this name already exists.');
+            return redirect()->back()->with('error', __(':model with this name already exists.', ['model' => __('Expense Category')]));
         }
 
         ExpenseCategory::create($validated);
 
-        return redirect()->back()->with('success', 'Expense category created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Expense Category')]));
     }
 
     public function update(Request $request, $expenseCategoryId)
@@ -132,17 +132,17 @@ class ExpenseCategoryController extends Controller
                     ->exists();
 
                 if ($exists) {
-                    return redirect()->back()->with('error', 'Expense category with this name already exists.');
+                    return redirect()->back()->with('error', __(':model with this name already exists.', ['model' => __('Expense Category')]));
                 }
 
                 $expenseCategory->update($validated);
 
-                return redirect()->back()->with('success', 'Expense category updated successfully');
+                return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Expense Category')]));
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to update expense category');
+                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to update :model', ['model' => __('Expense Category')]));
             }
         } else {
-            return redirect()->back()->with('error', 'Expense category not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Expense Category')]));
         }
     }
 
@@ -155,12 +155,12 @@ class ExpenseCategoryController extends Controller
         if ($expenseCategory) {
             try {
                 $expenseCategory->delete();
-                return redirect()->back()->with('success', 'Expense category deleted successfully');
+                return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Expense Category')]));
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to delete expense category');
+                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to delete :model', ['model' => __('Expense Category')]));
             }
         } else {
-            return redirect()->back()->with('error', 'Expense category not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Expense Category')]));
         }
     }
 
@@ -175,12 +175,12 @@ class ExpenseCategoryController extends Controller
                 $expenseCategory->status = $expenseCategory->status === 'active' ? 'inactive' : 'active';
                 $expenseCategory->save();
 
-                return redirect()->back()->with('success', 'Expense category status updated successfully');
+                return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Expense Category')]));
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to update expense category status');
+                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to update :model status', ['model' => __('Expense Category')]));
             }
         } else {
-            return redirect()->back()->with('error', 'Expense category not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Expense Category')]));
         }
     }
 }

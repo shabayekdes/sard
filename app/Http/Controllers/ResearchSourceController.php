@@ -100,7 +100,7 @@ class ResearchSourceController extends Controller
 
         ResearchSource::create($validated);
 
-        return redirect()->back()->with('success', 'Research source created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Research Source')]));
     }
 
     public function update(Request $request, $sourceId)
@@ -108,7 +108,7 @@ class ResearchSourceController extends Controller
         $source = ResearchSource::where('id', $sourceId)->where('tenant_id', createdBy())->first();
 
         if (!$source) {
-            return redirect()->back()->with('error', 'Research source not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Research Source')]));
         }
 
         $validated = $request->validate([
@@ -127,7 +127,7 @@ class ResearchSourceController extends Controller
 
         $source->update($validated);
 
-        return redirect()->back()->with('success', 'Research source updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Research Source')]));
     }
 
     public function destroy($sourceId)
@@ -135,12 +135,12 @@ class ResearchSourceController extends Controller
         $source = ResearchSource::where('id', $sourceId)->where('tenant_id', createdBy())->first();
 
         if (!$source) {
-            return redirect()->back()->with('error', 'Research source not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Research Source')]));
         }
 
         $source->delete();
 
-        return redirect()->back()->with('success', 'Research source deleted successfully.');
+        return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Research Source')]));
     }
 
     public function toggleStatus($sourceId)
@@ -148,12 +148,12 @@ class ResearchSourceController extends Controller
         $source = ResearchSource::where('id', $sourceId)->where('tenant_id', createdBy())->first();
 
         if (!$source) {
-            return redirect()->back()->with('error', 'Research source not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Research Source')]));
         }
 
         $source->status = $source->status === 'active' ? 'inactive' : 'active';
         $source->save();
 
-        return redirect()->back()->with('success', 'Research source status updated successfully.');
+        return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Research Source')]));
     }
 }

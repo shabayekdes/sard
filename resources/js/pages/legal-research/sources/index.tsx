@@ -85,9 +85,6 @@ export default function ResearchSources() {
   };
 
   const handleToggleStatus = (source: any) => {
-    const newStatus = source.status === 'active' ? 'inactive' : 'active';
-    toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} source...`);
-
     router.put(
         route('setup.research-sources.toggle-status', source.id),
         {},
@@ -96,11 +93,17 @@ export default function ResearchSources() {
                 toast.dismiss();
                 if (page.props.flash.success) {
                     toast.success(page.props.flash.success);
+                } else if (page.props.flash.error) {
+                    toast.error(page.props.flash.error);
                 }
             },
             onError: (errors) => {
                 toast.dismiss();
-                toast.error(`Failed to update source status: ${Object.values(errors).join(', ')}`);
+                if (typeof errors === 'string') {
+                    toast.error(errors);
+                } else {
+                    toast.error(t('Failed to update {{model}} status: {{errors}}', { model: t('Research Source'), errors: Object.values(errors).join(', ') }));
+                }
             },
         },
     );
@@ -123,11 +126,21 @@ export default function ResearchSources() {
         toast.dismiss();
         if (page.props.flash.success) {
           toast.success(page.props.flash.success);
+        } else if (page.props.flash.error) {
+          toast.error(page.props.flash.error);
         }
       },
       onError: (errors) => {
         toast.dismiss();
-        toast.error(`Failed to ${action} research source: ${Object.values(errors).join(', ')}`);
+        if (typeof errors === 'string') {
+          toast.error(errors);
+        } else {
+          toast.error(
+            formMode === 'create'
+              ? t('Failed to create {{model}}: {{errors}}', { model: t('Research Source'), errors: Object.values(errors).join(', ') })
+              : t('Failed to update {{model}}: {{errors}}', { model: t('Research Source'), errors: Object.values(errors).join(', ') })
+          );
+        }
       }
     });
   };
@@ -139,11 +152,17 @@ export default function ResearchSources() {
             toast.dismiss();
             if (page.props.flash.success) {
                 toast.success(page.props.flash.success);
+            } else if (page.props.flash.error) {
+                toast.error(page.props.flash.error);
             }
         },
         onError: (errors) => {
             toast.dismiss();
-            toast.error(`Failed to delete research source: ${Object.values(errors).join(', ')}`);
+            if (typeof errors === 'string') {
+                toast.error(errors);
+            } else {
+                toast.error(t('Failed to delete {{model}}: {{errors}}', { model: t('Research Source'), errors: Object.values(errors).join(', ') }));
+            }
         },
     });
   };
@@ -235,14 +254,9 @@ export default function ResearchSources() {
     {
       key: 'status',
       label: t('Status'),
-      render: (value: string) => (
-        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'active'
-          ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
-          : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
-        }`}>
-          {value === 'active' ? t('Active') : t('Inactive')}
-        </span>
-      )
+      type: 'switch',
+      switchAction: 'toggle-status',
+      switchPermission: 'edit-research-sources',
     }
   ];
 
@@ -259,13 +273,6 @@ export default function ResearchSources() {
       icon: 'Edit',
       action: 'edit',
       className: 'text-amber-500',
-      requiredPermission: 'edit-research-sources'
-    },
-    {
-      label: t('Toggle Status'),
-      icon: 'ToggleLeft',
-      action: 'toggle-status',
-      className: 'text-green-500',
       requiredPermission: 'edit-research-sources'
     },
     {
@@ -435,7 +442,7 @@ export default function ResearchSources() {
               itemName={currentItem?.source_name_translations
                 ? (currentItem.source_name_translations[currentLocale] || currentItem.source_name_translations.en || currentItem.source_name_translations.ar || '')
                 : (typeof currentItem?.source_name === 'object' ? (currentItem.source_name?.[currentLocale] || currentItem.source_name?.en || currentItem.source_name?.ar) : currentItem?.source_name) || ''}
-              entityName="research source"
+              entityName="Research Source"
           />
       </PageTemplate>
   );

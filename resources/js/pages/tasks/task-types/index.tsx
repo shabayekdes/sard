@@ -433,7 +433,7 @@ export default function TaskTypes() {
                     ? (currentItem.name[currentLocale] || currentItem.name?.en || currentItem.name?.ar || '')
                     : (currentItem?.name || '')
               }
-              entityName="task type"
+              entityName="Task Type"
           />
       </PageTemplate>
   );

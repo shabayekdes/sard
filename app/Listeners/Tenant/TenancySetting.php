@@ -59,11 +59,36 @@ class TenancySetting
                 ],
             ]);
 
-            // Ensure tenant public storage directory exists so uploads (e.g. media/3/) can create subdirs
+            // Ensure tenant public storage directory exists so uploads (e.g. media/3/) can create subdirs (0775 for live web server)
             $publicRoot = storage_path('app/public');
             if (!File::isDirectory($publicRoot)) {
-                File::ensureDirectoryExists($publicRoot, 0755);
+                File::ensureDirectoryExists($publicRoot, 0775);
             }
+
+            // Ensure tenant storage symlink exists (public/storage/tenant{id} → tenant storage) so URLs work
+            $this->ensureTenantStorageLink($tenantSuffix, $publicRoot);
         }
+    }
+
+    /**
+     * Create symlink public/storage/tenant{id} → tenant storage so tenant media URLs are publicly accessible.
+     */
+    private function ensureTenantStorageLink(string $tenantSuffix, string $targetPath): void
+    {
+        if (windows_os()) {
+            return;
+        }
+
+        $linkPath = public_path('storage' . DIRECTORY_SEPARATOR . $tenantSuffix);
+        if (File::exists($linkPath)) {
+            return;
+        }
+
+        $linkDir = dirname($linkPath);
+        if (!File::isDirectory($linkDir)) {
+            File::ensureDirectoryExists($linkDir);
+        }
+
+        @symlink($targetPath, $linkPath);
     }
 }

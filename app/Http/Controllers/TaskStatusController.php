@@ -94,12 +94,12 @@ class TaskStatusController extends BaseController
             ->exists();
 
         if ($exists) {
-            return redirect()->back()->with('error', 'Task status with this name already exists.');
+            return redirect()->back()->with('error', __(':model with this name already exists.', ['model' => __('Task Status')]));
         }
 
         TaskStatus::create($validated);
 
-        return redirect()->back()->with('success', 'Task status created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Task Status')]));
     }
 
     public function update(Request $request, $taskStatusId)
@@ -109,7 +109,7 @@ class TaskStatusController extends BaseController
             ->first();
 
         if (!$taskStatus) {
-            return redirect()->back()->with('error', 'Task status not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Task Status')]));
         }
 
         $validated = $request->validate([
@@ -134,12 +134,12 @@ class TaskStatusController extends BaseController
             ->exists();
 
         if ($exists) {
-            return redirect()->back()->with('error', 'Task status with this name already exists.');
+            return redirect()->back()->with('error', __(':model with this name already exists.', ['model' => __('Task Status')]));
         }
 
         $taskStatus->update($validated);
 
-        return redirect()->back()->with('success', 'Task status updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Task Status')]));
     }
 
     public function destroy($taskStatusId)
@@ -149,14 +149,14 @@ class TaskStatusController extends BaseController
             ->first();
 
         if (!$taskStatus) {
-            return redirect()->back()->with('error', 'Task status not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Task Status')]));
         }
 
         try {
             $taskStatus->delete();
-            return redirect()->back()->with('success', 'Task status deleted successfully.');
+            return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Task Status')]));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to delete task status.');
+            return redirect()->back()->with('error', __('Failed to delete :model', ['model' => __('Task Status')]));
         }
     }
 
@@ -167,16 +167,16 @@ class TaskStatusController extends BaseController
             ->first();
 
         if (!$taskStatus) {
-            return redirect()->back()->with('error', 'Task status not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Task Status')]));
         }
 
         try {
             $taskStatus->status = $taskStatus->status === 'active' ? 'inactive' : 'active';
             $taskStatus->save();
 
-            return redirect()->back()->with('success', 'Task status updated successfully.');
+            return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Task Status')]));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update task status.');
+            return redirect()->back()->with('error', __('Failed to update :model status', ['model' => __('Task Status')]));
         }
     }
 }

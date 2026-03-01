@@ -93,12 +93,12 @@ class ResearchTypeController extends Controller
 
         $exists = ResearchType::where('tenant_id', createdBy())->where('code', $validated['code'])->exists();
         if ($exists) {
-            return redirect()->back()->with('error', __('Research type with this code already exists.'));
+            return redirect()->back()->with('error', __(':model with this code already exists.', ['model' => __('Research Type')]));
         }
 
         ResearchType::create($validated);
 
-        return redirect()->back()->with('success', __('Research type created successfully.'));
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Research Type')]));
     }
 
     public function update(Request $request, $researchTypeId)
@@ -125,17 +125,17 @@ class ResearchTypeController extends Controller
                     ->where('code', $validated['code'])
                     ->exists();
                 if ($exists) {
-                    return redirect()->back()->with('error', __('Research type with this code already exists.'));
+                    return redirect()->back()->with('error', __(':model with this code already exists.', ['model' => __('Research Type')]));
                 }
 
                 $researchType->update($validated);
 
-                return redirect()->back()->with('success', __('Research type updated successfully.'));
+                return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Research Type')]));
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to update research type.'));
+                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to update :model', ['model' => __('Research Type')]));
             }
         } else {
-            return redirect()->back()->with('error', __('Research type not found.'));
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Research Type')]));
         }
     }
 
@@ -150,16 +150,16 @@ class ResearchTypeController extends Controller
                 // Check if research type has research projects
                 $projectCount = $researchType->researchProjects()->count();
                 if ($projectCount > 0) {
-                    return response()->json(['message' => __('Cannot delete research type with assigned research projects.')], 400);
+                    return response()->json(['message' => __('Cannot delete :model with assigned :relation.', ['model' => __('Research Type'), 'relation' => __('research projects')])], 400);
                 }
                 
                 $researchType->delete();
-                return redirect()->back()->with('success', __('Research type deleted successfully.'));
+                return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Research Type')]));
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to delete research type.'));
+                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to delete :model', ['model' => __('Research Type')]));
             }
         } else {
-            return redirect()->back()->with('error', __('Research type not found.'));
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Research Type')]));
         }
     }
 
@@ -174,12 +174,12 @@ class ResearchTypeController extends Controller
                 $researchType->status = $researchType->status === 'active' ? 'inactive' : 'active';
                 $researchType->save();
 
-                return redirect()->back()->with('success', __('Research type status updated successfully.'));
+                return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Research Type')]));
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to update research type status.'));
+                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to update :model status', ['model' => __('Research Type')]));
             }
         } else {
-            return redirect()->back()->with('error', __('Research type not found.'));
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Research Type')]));
         }
     }
 }

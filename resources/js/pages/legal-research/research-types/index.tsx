@@ -111,7 +111,7 @@ export default function ResearchTypes() {
               if (typeof errors === 'string') {
                   toast.error(errors);
               } else {
-                  toast.error(`Failed to create research type: ${Object.values(errors).join(', ')}`);
+                  toast.error(t('Failed to create {{model}}: {{errors}}', { model: t('Research Type'), errors: Object.values(errors).join(', ') }));
               }
           },
       });
@@ -131,7 +131,7 @@ export default function ResearchTypes() {
               if (typeof errors === 'string') {
                   toast.error(errors);
               } else {
-                  toast.error(`Failed to update research type: ${Object.values(errors).join(', ')}`);
+                  toast.error(t('Failed to update {{model}}: {{errors}}', { model: t('Research Type'), errors: Object.values(errors).join(', ') }));
               }
           },
       });
@@ -154,7 +154,7 @@ export default function ResearchTypes() {
             if (typeof errors === 'string') {
                 toast.error(errors);
             } else {
-                toast.error(`Failed to delete research type: ${Object.values(errors).join(', ')}`);
+                toast.error(t('Failed to delete {{model}}: {{errors}}', { model: t('Research Type'), errors: Object.values(errors).join(', ') }));
             }
         },
     });
@@ -257,16 +257,9 @@ export default function ResearchTypes() {
     {
       key: 'status',
       label: t('Status'),
-      render: (value: string) => {
-        return (
-          <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'active'
-            ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
-            : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
-            }`}>
-            {value === 'active' ? t('Active') : t('Inactive')}
-          </span>
-        );
-      }
+      type: 'switch',
+      switchAction: 'toggle-status',
+      switchPermission: 'edit-research-types',
     },
     {
       key: 'created_at',
@@ -289,13 +282,6 @@ export default function ResearchTypes() {
       label: t('Edit'),
       icon: 'Edit',
       action: 'edit',
-      className: 'text-amber-500',
-      requiredPermission: 'edit-research-types'
-    },
-    {
-      label: t('Toggle Status'),
-      icon: 'Lock',
-      action: 'toggle-status',
       className: 'text-amber-500',
       requiredPermission: 'edit-research-types'
     },

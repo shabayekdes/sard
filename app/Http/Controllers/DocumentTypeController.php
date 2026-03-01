@@ -99,7 +99,7 @@ class DocumentTypeController extends Controller
 
         DocumentType::create($validated);
 
-        return redirect()->back()->with('success', 'Document type created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Document Type')]));
     }
 
     public function update(Request $request, $id)
@@ -109,7 +109,7 @@ class DocumentTypeController extends Controller
             ->first();
 
         if (! $documentType) {
-            return redirect()->back()->with('error', 'Document type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Document Type')]));
         }
 
         $validated = $request->validate([
@@ -125,7 +125,7 @@ class DocumentTypeController extends Controller
 
         $documentType->update($validated);
 
-        return redirect()->back()->with('success', 'Document type updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Document Type')]));
     }
 
     public function destroy($id)
@@ -135,12 +135,12 @@ class DocumentTypeController extends Controller
             ->first();
 
         if (! $documentType) {
-            return redirect()->back()->with('error', 'Document type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Document Type')]));
         }
 
         $documentType->delete();
 
-        return redirect()->back()->with('success', 'Document type deleted successfully.');
+        return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Document Type')]));
     }
 
     public function toggleStatus($id)
@@ -150,12 +150,12 @@ class DocumentTypeController extends Controller
             ->first();
 
         if (! $documentType) {
-            return redirect()->back()->with('error', 'Document type not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Document Type')]));
         }
 
         $documentType->status = $documentType->status === 'active' ? 'inactive' : 'active';
         $documentType->save();
 
-        return redirect()->back()->with('success', 'Document type status updated successfully.');
+        return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Document Type')]));
     }
 }
