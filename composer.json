@@ -29,7 +29,7 @@
         "razorpay/razorpay": "^2.8",
         "salla/zatca": "^3.0",
         "spatie/laravel-medialibrary": "^11.13",
-        "spatie/laravel-pdf": "^1.8",
+        "spatie/laravel-pdf": "^2.2",
         "spatie/laravel-permission": "^6.18",
         "spatie/laravel-translatable": "^6.12",
         "stancl/tenancy": "^3.9",

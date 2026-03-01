@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Facades\Settings;
 use App\Models\CompanyProfile;
 use App\Models\Invoice;
 use Illuminate\Support\Carbon;
@@ -74,10 +75,11 @@ class InvoicePdfService
         $sellerVatNumber = config('invoice_pdf.seller_vat_number')
             ?: ($companyProfile?->registration_number ?? '');
 
-        $logoPath = getSetting('logoDark', null, $invoice->tenant_id)
-            ?: getSetting('logoLight', null, $invoice->tenant_id);
+        $logoPath = Settings::string('LOGO_DARK');
+
         $logoUrl = $this->buildLogoDataUri($logoPath);
 
+        dd(url($logoPath));
         $qrCode = $this->buildQrCodeDataUri(
             $companyProfile?->name ?? ($invoice->creator?->name ?? ''),
             $sellerVatNumber,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Jobs\CreateTenantStorageLink;
 use App\Jobs\SeedDefaultCompanyData;
 use App\Listeners\Tenant\TenancySetting;
 use Illuminate\Support\Facades\Event;
@@ -27,10 +28,8 @@ class TenancyServiceProvider extends ServiceProvider
             Events\CreatingTenant::class => [],
             Events\TenantCreated::class => [
                 JobPipeline::make([
-                    SeedDefaultCompanyData::class
-                    // Your own jobs to prepare the tenant.
-                    // Provision API keys, create S3 buckets, anything you want!
-
+                    SeedDefaultCompanyData::class,
+                    CreateTenantStorageLink::class,
                 ])->send(function (Events\TenantCreated $event) {
                     return $event->tenant;
                 })->shouldBeQueued(false), // `false` by default, but you probably want to make this `true` for production.

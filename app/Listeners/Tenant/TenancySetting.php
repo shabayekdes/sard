@@ -15,7 +15,7 @@ class TenancySetting
     {
         if ($event) {
 
-            $settings = Settings::group('mail')->all();
+            $settings = Settings::group(['mail', 'storage'])->all();
 
             config([
                 'mail.mailers.smtp.host' => $settings['EMAIL_HOST'],
@@ -23,6 +23,37 @@ class TenancySetting
                 'mail.mailers.smtp.username' => $settings['EMAIL_USERNAME'],
                 'mail.mailers.smtp.password' => $settings['EMAIL_PASSWORD'],
                 'mail.mailers.smtp.encryption' => $settings['EMAIL_ENCRYPTION'],
+            ]);
+
+            $suffixBase = config('tenancy.filesystem.suffix_base', 'tenant');
+            $tenantSuffix = $suffixBase . tenant()->getTenantKey();
+            $publicDiskUrl = rtrim(config('app.url'), '/') . '/storage/' . $tenantSuffix;
+
+            config([
+                'filesystems.default' => $settings['STORAGE_DISK'] ?? 'public',
+                'filesystems.disks.public' => array_merge(
+                    config('filesystems.disks.public', []),
+                    ['url' => $publicDiskUrl]
+                ),
+                'filesystems.disks.s3' => [
+                    'driver' => 's3',
+                    'key' => $settings['AWS_ACCESS_KEY_ID'] ?? null,
+                    'secret' => $settings['AWS_SECRET_ACCESS_KEY'] ?? null,
+                    'region' => $settings['AWS_DEFAULT_REGION'] ?? null,
+                    'bucket' => $settings['AWS_BUCKET'] ?? null,
+                    'url' => $settings['AWS_URL'] ?? null,
+                    'endpoint' => $settings['AWS_ENDPOINT'] ?? null,
+                    'use_path_style_endpoint' => !empty($settings['AWS_ENDPOINT']),
+                ],
+                'filesystems.disks.wasabi' => [
+                    'driver' => 's3',
+                    'key' => $settings['WASABI_ACCESS_KEY'] ?? null,
+                    'secret' => $settings['WASABI_SECRET_KEY'] ?? null,
+                    'region' => $settings['WASABI_REGION'] ?? null,
+                    'bucket' => $settings['WASABI_BUCKET'] ?? null,
+                    'endpoint' => !empty($settings['WASABI_REGION']) ? 'https://s3.' . $settings['WASABI_REGION'] . '.wasabisys.com' : null,
+                    'use_path_style_endpoint' => false,
+                ],
             ]);
         }
     }

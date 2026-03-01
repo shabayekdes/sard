@@ -78,12 +78,5 @@ class AppServiceProvider extends ServiceProvider
 
         // Register CasePolicy for CaseModel (Laravel would look for CaseModelPolicy by convention)
         Gate::policy(CaseModel::class, CasePolicy::class);
-
-        // Configure dynamic storage disks
-        try {
-            \App\Services\DynamicStorageService::configureDynamicDisks();
-        } catch (\Exception $e) {
-            // Silently fail during migrations or when database is not ready
-        }
     }
 }

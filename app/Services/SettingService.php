@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Cache;
 class SettingService
 {
     private ?string $tenant_id;
-    private ?string $group = null;
+    private ?array $group = null;
 
     public function __construct()
     {
@@ -185,8 +185,10 @@ class SettingService
         // return Cache::remember($cacheKey, 60 * 60, fn() => $this->settings());
     }
 
-    public function group(string $group): self
+    public function group(string|array $group): self
     {
+        $group = is_string($group) ? [$group] : $group;
+
         $this->group = $group;
         return $this;
     }
@@ -199,7 +201,7 @@ class SettingService
         $saasSettings = Setting::query()
             ->select(['key', 'value'])
             ->whereNull('tenant_id')
-            ->when($this->group, fn (Builder $query, $group) => $query->where('group', $group))
+            ->when($this->group, fn (Builder $query, $group) => $query->whereIn('group', $group))
             ->pluck('value', 'key')
             ->toArray();
 
@@ -208,7 +210,7 @@ class SettingService
             $tenantSettings = Setting::query()
                 ->select(['key', 'value'])
                 ->where('tenant_id', $this->tenant_id)
-                ->when($this->group, fn (Builder $query, $group) => $query->where('group', $group))
+                ->when($this->group, fn (Builder $query, $group) => $query->whereIn('group', $group))
                 ->pluck('value', 'key')
                 ->toArray();
         }
@@ -219,11 +221,11 @@ class SettingService
     /**
      * Build cache key for a given tenant and group (same logic for reading and forgetting).
      */
-    private function buildCacheKey(?string $tenant_id, ?string $group = null): string
+    private function buildCacheKey(?string $tenant_id, ?array $group = null): string
     {
         $key = 'settings' . ($tenant_id ? '.' . $tenant_id : '');
         if ($group) {
-            $key .= ".group.{$group}";
+            $key .= ".group." . implode(',', $group);
         }
         return $key;
     }

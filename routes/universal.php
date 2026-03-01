@@ -3,10 +3,12 @@
 use App\Http\Controllers;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Stancl\Tenancy\Middleware\InitializeTenancyByDomainOrSubdomain;
 
 Route::middleware([
     'universal',
-    \App\Http\Middleware\SetLocale::class
+    InitializeTenancyByDomainOrSubdomain::class,
+    \App\Http\Middleware\SetLocale::class,
 ])->group(function () {
 
     require __DIR__ . '/settings.php';

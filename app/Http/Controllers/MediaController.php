@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\MediaItem;
 use App\Models\User;
 use App\Services\StorageConfigService;
-use App\Services\DynamicStorageService;
 use Illuminate\Http\Request;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 class MediaController extends BaseController
