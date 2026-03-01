@@ -79,7 +79,6 @@ class InvoicePdfService
 
         $logoUrl = $this->buildLogoDataUri($logoPath);
 
-        dd(url($logoPath));
         $qrCode = $this->buildQrCodeDataUri(
             $companyProfile?->name ?? ($invoice->creator?->name ?? ''),
             $sellerVatNumber,
