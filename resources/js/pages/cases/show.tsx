@@ -1982,7 +1982,7 @@ export default function CaseShow() {
                                                 { value: 'all', label: t('All Types') },
                                                 ...(taskTypes?.map((type: any) => ({
                                                     value: type.id.toString(),
-                                                    label: type.name,
+                                                    label: getTranslatedValue(type.name),
                                                 })) || []),
                                             ],
                                         },
@@ -2081,7 +2081,7 @@ export default function CaseShow() {
                                         label: t('Type'),
                                         render: (value: any) => (
                                             <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
-                                                {value?.name || '-'}
+                                                {getTranslatedValue(value?.name) || '-'}
                                             </span>
                                         ),
                                     },
@@ -2421,7 +2421,7 @@ export default function CaseShow() {
                                     <div className="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
                                         <CrudTable
                                             columns={[
-                                                { key: 'title', label: t('Project Title'), sortable: true },
+                                                { key: 'title', label: t('Project Title'), sortable: true, render: (value: any) => getTranslatedValue(value) || '-' },
                                                 { key: 'research_id', label: t('Project ID'), sortable: true },
                                                 {
                                                     key: 'priority',
@@ -2466,7 +2466,7 @@ export default function CaseShow() {
                                             onAction={(action, project) => {
                                                 if (action === 'view') {
                                                     setSelectedProject(project);
-                                                    setProjectSubTab('details');
+                                                    setProjectSubTab('notes');
                                                 }
                                             }}
                                             permissions={permissions}
@@ -2480,7 +2480,7 @@ export default function CaseShow() {
                                 <div>
                                     <div className="mb-6 flex items-center justify-between">
                                         <div>
-                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{selectedProject.title}</h3>
+                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{getTranslatedValue(selectedProject.title)}</h3>
                                             <p className="text-sm text-gray-600 dark:text-gray-400">{selectedProject.research_id}</p>
                                         </div>
                                         <Button
@@ -2499,7 +2499,7 @@ export default function CaseShow() {
                                         <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
                                             <div>
                                                 <span className="font-medium text-gray-500 dark:text-gray-400">{t('Research Type')}:</span>
-                                                <p className="text-gray-900 dark:text-white">{selectedProject.research_type?.name || '-'}</p>
+                                                <p className="text-gray-900 dark:text-white">{getTranslatedValue(selectedProject.research_type?.name) || '-'}</p>
                                             </div>
                                             <div>
                                                 <span className="font-medium text-gray-500 dark:text-gray-400">{t('Due Date')}:</span>
@@ -2655,7 +2655,7 @@ export default function CaseShow() {
                                                                     </span>
                                                                 ),
                                                             },
-                                                            { key: 'source', label: t('Source'), render: (value: any) => value?.source_name || '-' },
+                                                            { key: 'source', label: t('Source'), render: (value: any) => getTranslatedValue(value?.source_name) || '-' },
                                                             {
                                                                 key: 'created_at',
                                                                 label: t('Created'),
@@ -3093,7 +3093,7 @@ export default function CaseShow() {
                                 options: [
                                     ...(taskTypes?.map((type: any) => ({
                                         value: type.id.toString(),
-                                        label: type.name,
+                                        label: getTranslatedValue(type.name),
                                     })) || []),
                                 ],
                             },
@@ -3104,7 +3104,7 @@ export default function CaseShow() {
                                 options: [
                                     ...(taskStatuses?.map((status: any) => ({
                                         value: status.id.toString(),
-                                        label: status.name,
+                                        label: getTranslatedValue(status.name),
                                     })) || []),
                                 ],
                             },
@@ -3166,8 +3166,8 @@ export default function CaseShow() {
                             currentItem?.assigned_user?.name ||
                             users?.find((u: any) => u.id.toString() === currentItem?.assigned_to?.toString())?.name ||
                             '-',
-                        task_type_name: currentItem?.taskType?.name || currentItem?.task_type?.name || '-',
-                        task_status_name: currentItem?.taskStatus?.name || currentItem?.task_status?.name || '-',
+                        task_type_name: getTranslatedValue(currentItem?.taskType?.name ?? currentItem?.task_type?.name) || '-',
+                        task_status_name: getTranslatedValue(currentItem?.taskStatus?.name ?? currentItem?.task_status?.name) || '-',
                         created_at: currentItem?.created_at
                             ? window.appSettings?.formatDate(currentItem.created_at) || new Date(currentItem.created_at).toLocaleDateString()
                             : '-',
@@ -3236,7 +3236,7 @@ export default function CaseShow() {
                 }}
                 initialData={{
                     ...selectedCitation,
-                    source_name: selectedCitation?.source?.source_name || '-',
+                    source_name: getTranslatedValue(selectedCitation?.source?.source_name) || '-',
                     created_at: selectedCitation?.created_at ? new Date(selectedCitation.created_at).toLocaleDateString() : '-',
                 }}
                 title={t('Citation Details')}
