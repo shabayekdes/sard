@@ -351,7 +351,7 @@ class CaseController extends BaseController
             ])
             ->where('case_id', $case->id)
             ->orderByRaw('CASE WHEN hearing_date >= CURDATE() THEN 0 ELSE 1 END')
-            ->orderBy('hearing_date', 'desc')
+            ->orderBy('hearing_date')
             ->orderBy('hearing_time', 'desc')
             ->first();
 
