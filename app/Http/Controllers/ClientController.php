@@ -508,7 +508,7 @@ class ClientController extends Controller
                     }
                 }
 
-                return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Client')]));
+                return redirect()->route('clients.index')->with('success', __(':model updated successfully.', ['model' => __('Client')]));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to update :model', ['model' => __('Client')]));
         }

@@ -63,7 +63,7 @@ export default function EditCase() {
     const [formData, setFormData] = useState(() => {
         const oppositeParties = caseProp?.opposite_parties?.length
             ? caseProp.opposite_parties
-            : [{ name: '', id_number: '', nationality_id: '', lawyer_name: '' }];
+            : [];
         return {
             ...defaultFormData,
             ...caseProp,
@@ -239,7 +239,7 @@ export default function EditCase() {
 
     const oppositePartyFields: RepeaterField[] = [
         { name: 'lawyer_name', label: t('Lawyer Name'), type: 'text' },
-        { name: 'name', label: t('Full Name'), type: 'text', required: true },
+        { name: 'name', label: t('Full Name'), type: 'text' },
         {
             name: 'nationality_id',
             label: t('Nationality'),
@@ -428,7 +428,7 @@ export default function EditCase() {
                             fields={oppositePartyFields}
                             value={formData.opposite_parties}
                             onChange={(value) => updateField('opposite_parties', value)}
-                            minItems={1}
+                            minItems={0}
                             maxItems={-1}
                             addButtonText={t('Add Opposite Party')}
                             removeButtonText={t('Remove')}

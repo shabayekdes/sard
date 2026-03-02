@@ -402,11 +402,14 @@ export default function ClientShow() {
     const documentsPaginated = documents?.data !== undefined;
     const documentsData = documentsPaginated ? documents.data : (documents || []);
     const documentsTotal = documents?.total ?? documentsData.length;
-    const currentLocale = i18n.language || document.documentElement.lang || 'en';
+    const currentLocale = (i18n.language || document.documentElement.lang || 'en').split('-')[0];
+    const localeKey = currentLocale === 'ar' ? 'ar' : 'en';
     const getDocTypeName = (docType: any) => {
         if (!docType) return '-';
         if (typeof docType.name === 'string') return docType.name;
-        return docType.name_translations?.[currentLocale] || docType.name?.en || docType.name?.ar || '-';
+        const fromTranslations = docType.name_translations?.[localeKey] ?? docType.name_translations?.[currentLocale];
+        const fromName = docType.name?.[localeKey] ?? docType.name?.[currentLocale] ?? docType.name?.en ?? docType.name?.ar;
+        return fromTranslations ?? fromName ?? '-';
     };
 
     const handleDocumentSearch = (e: React.FormEvent) => {

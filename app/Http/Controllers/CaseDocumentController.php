@@ -91,7 +91,7 @@ class CaseDocumentController extends Controller
             'document_type_id' => $validated['document_type_id'],
             'description' => $validated['description'] ?? null,
             'confidentiality' => $validated['confidentiality'],
-            'document_date' => $validated['document_date'],
+            'document_date' => $validated['document_date'] ?? now(),
             'case_id' => $validated['case_id'],
             'status' => $validated['status'] ?? 'active',
             'file_path' => $validated['file'],
