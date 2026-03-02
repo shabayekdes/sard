@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('hearing_notifications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('hearing_id')->constrained('hearings')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('tenant_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->enum('type', ['email', 'sms', 'system'])->default('system');
             $table->integer('minutes_before');
             $table->enum('status', ['pending', 'sent', 'failed'])->default('pending');

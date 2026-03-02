@@ -12,7 +12,7 @@ class HearingNotification extends BaseModel
 
     protected $fillable = [
         'hearing_id',
-        'user_id',
+        'tenant_id',
         'type',
         'minutes_before',
         'status',

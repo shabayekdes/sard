@@ -247,7 +247,7 @@ class HearingController extends BaseController
         foreach ($reminderTimes as $minutes) {
             \App\Models\HearingNotification::create([
                 'hearing_id' => $hearing->id,
-                'user_id' => createdBy(),
+                'tenant_id' => createdBy(),
                 'type' => 'system',
                 'minutes_before' => $minutes,
                 'scheduled_at' => $hearingDateTime->copy()->subMinutes($minutes),
