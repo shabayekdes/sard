@@ -173,7 +173,7 @@ class SettingService
             ]);
         }
 
-        $this->forgetSettingsCache($tenant_id, $setting->group);
+        // $this->forgetSettingsCache($tenant_id, $setting->group);
     }
     /**
      * @return array
@@ -239,7 +239,7 @@ class SettingService
      * Forget cached settings for the given tenant so the next all() refetches.
      * Forgets both the base key and the key with the setting's group so all readers see fresh data.
      */
-    private function forgetSettingsCache(?string $tenant_id, ?string $group = null): void
+    private function forgetSettingsCache(?string $tenant_id, ?array $group = null): void
     {
         Cache::forget($this->buildCacheKey($tenant_id, null));
         if ($group !== null && $group !== '') {
