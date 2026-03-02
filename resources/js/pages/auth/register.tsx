@@ -1,5 +1,5 @@
 import { useForm, usePage } from '@inertiajs/react';
-import { FormEventHandler, useState } from 'react';
+import { FormEventHandler } from 'react';
 
 import AuthButton from '@/components/auth/auth-button';
 import InputError from '@/components/input-error';
@@ -35,7 +35,6 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
     const { t } = useTranslation();
     const { position } = useLayout();
 
-    const [recaptchaToken, setRecaptchaToken] = useState<string>('');
     const { themeColor, customColor, logoLight, logoDark } = useBrand();
     const { appearance } = useAppearance();
     const primaryColor = themeColor === 'custom' ? customColor : THEME_COLORS[themeColor as keyof typeof THEME_COLORS];
@@ -50,7 +49,7 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
     const defaultPhoneCountry =
         phoneCountriesByCode.get(String(defaultCountry).toLowerCase()) || phoneCountriesByCode.get('sa') || (phoneCountries || [])[0];
 
-    const { data, setData, post, processing, errors, reset } = useForm<RegisterForm>({
+    const { data, setData, post, processing, errors, reset, setError } = useForm<RegisterForm>({
         name: '',
         domain: '',
         phone: '',
@@ -59,14 +58,18 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
         password: '',
         password_confirmation: '',
         terms: false,
+        recaptcha_token: '',
         plan_id: planId,
         referral_code: referralCode,
     });
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
+        if (!data.terms) {
+            setError('terms', t('You must agree to the terms and conditions and privacy policy'));
+            return;
+        }
         post(route('register'), {
-            data: { ...data, recaptcha_token: recaptchaToken },
             onFinish: () => reset('password', 'password_confirmation'),
         });
     };
@@ -272,13 +275,18 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
                             >
                                 {t('privacy policy')}
                             </a>
+                            <span className="text-red-500"> *</span>
                         </Label>
                     </div>
                     <InputError message={errors.terms} />
                 </div>
 
                 <div className="origin-top scale-90">
-                    <Recaptcha onVerify={setRecaptchaToken} onExpired={() => setRecaptchaToken('')} onError={() => setRecaptchaToken('')} />
+                    <Recaptcha
+                        onVerify={(token) => setData('recaptcha_token', token)}
+                        onExpired={() => setData('recaptcha_token', '')}
+                        onError={() => setData('recaptcha_token', '')}
+                    />
                 </div>
 
                 <AuthButton

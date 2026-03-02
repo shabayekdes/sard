@@ -11,8 +11,18 @@ import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 
+function resolveTranslatable(val: unknown, locale: string): string {
+  if (val == null || typeof val === 'string') return val as string ?? '';
+  const o = val as Record<string, string>;
+  if (typeof o === 'object' && (o.en !== undefined || o.ar !== undefined)) {
+    return o[locale] || o.en || o.ar || '';
+  }
+  return String(val);
+}
+
 export default function ViewResearchProject() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLocale = i18n.language?.startsWith('ar') ? 'ar' : 'en';
   const { auth, project, notes, citations, sources, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
 
@@ -183,7 +193,7 @@ export default function ViewResearchProject() {
     { title: t('Dashboard'), href: route('dashboard') },
     { title: t('Case Management'), href: route('cases.index') },
     { title: t('Research Projects'), href: route('legal-research.projects.index') },
-    { title: project?.title || t('View Project') }
+    { title: resolveTranslatable(project?.title, currentLocale) || t('View Project') }
   ];
 
   const notesColumns = [
@@ -235,7 +245,7 @@ export default function ViewResearchProject() {
         );
       }
     },
-    { key: 'source', label: t('Source'), render: (value: any) => value?.source_name || '-' },
+    { key: 'source', label: t('Source'), render: (value: any) => (value?.source_name != null ? resolveTranslatable(value.source_name, currentLocale) : '-') || '-' },
     { key: 'page_number', label: t('Page'), render: (value: string) => value || '-' },
     { key: 'created_at', label: t('Created'), 
         type: 'date', }
@@ -249,7 +259,7 @@ export default function ViewResearchProject() {
 
   return (
     <PageTemplate
-      title={project?.title || t('Research Project')}
+      title={resolveTranslatable(project?.title, currentLocale) || t('Research Project')}
       url={`/legal-research/projects/${project?.id}`}
       breadcrumbs={breadcrumbs}
       actions={[
@@ -271,11 +281,11 @@ export default function ViewResearchProject() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('Research Type')}</label>
-            <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{project?.research_type?.name || '-'}</p>
+            <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{resolveTranslatable(project?.research_type?.name, currentLocale) || '-'}</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('Associated Case')}</label>
-            <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{project?.case?.title || t('No Case')}</p>
+            <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{resolveTranslatable(project?.case?.title, currentLocale) || t('No Case')}</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('Priority')}</label>
@@ -435,7 +445,7 @@ export default function ViewResearchProject() {
                       onChange: setCitationsSource,
                       options: [
                         { value: 'all', label: t('All Sources') },
-                        ...(sources || []).map((source: any) => ({ value: source.id.toString(), label: source.source_name }))
+                        ...(sources || []).map((source: any) => ({ value: source.id.toString(), label: resolveTranslatable(source.source_name, currentLocale) }))
                       ]
                     }
                   ]}
@@ -542,7 +552,7 @@ export default function ViewResearchProject() {
               type: formMode === 'view' ? 'text' : 'select',
               options: formMode === 'view' ? undefined : [
                 { value: null, label: t('No Source') },
-                ...(sources || []).map((source: any) => ({ value: source.id, label: source.source_name }))
+                ...(sources || []).map((source: any) => ({ value: source.id, label: resolveTranslatable(source.source_name, currentLocale) }))
               ],
               readOnly: formMode === 'view'
             },
@@ -553,7 +563,7 @@ export default function ViewResearchProject() {
         }}
         initialData={currentItem ? {
           ...currentItem,
-          source_id: currentItem.source?.source_name || currentItem.source_id
+          source_id: currentItem.source ? resolveTranslatable(currentItem.source.source_name, currentLocale) || currentItem.source_id : currentItem.source_id
         } : null}
         title={
           formMode === 'create'

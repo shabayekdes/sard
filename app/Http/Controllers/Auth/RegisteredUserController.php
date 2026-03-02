@@ -80,6 +80,7 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'terms' => 'accepted',
             'domain' => [
                 'required',
                 'string',

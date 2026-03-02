@@ -568,7 +568,13 @@ export default function Tasks() {
                   ),
                   modalSize: 'xl',
               }}
-              initialData={currentItem}
+              initialData={currentItem ? {
+                ...currentItem,
+                case_id: currentItem.case_id != null ? String(currentItem.case_id) : (currentItem.case?.id != null ? String(currentItem.case.id) : ''),
+                assigned_to: currentItem.assigned_to != null ? String(currentItem.assigned_to) : (currentItem.assigned_user?.id != null ? String(currentItem.assigned_user.id) : ''),
+                task_type_id: currentItem.task_type_id != null ? String(currentItem.task_type_id) : (currentItem.task_type?.id != null ? String(currentItem.task_type.id) : ''),
+                task_status_id: currentItem.task_status_id != null ? String(currentItem.task_status_id) : (currentItem.task_status?.id != null ? String(currentItem.task_status.id) : ''),
+              } : undefined}
               title={formMode === 'create' ? t('Add New Task') : formMode === 'edit' ? t('Edit Task') : t('View Task')}
               mode={formMode}
           />
