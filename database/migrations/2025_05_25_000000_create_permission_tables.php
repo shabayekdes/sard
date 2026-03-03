@@ -29,8 +29,8 @@ return new class extends Migration
             $table->string('module')->nullable();
             $table->string('name');       // For MySQL 8.0 use string('name', 125);
             $table->string('guard_name'); // For MySQL 8.0 use string('guard_name', 125);
-            $table->string('label')->nullable();
-            $table->text('description')->nullable();
+            $table->json('label')->nullable();
+            $table->json('description')->nullable();
             $table->timestamps();
 
             $table->unique(['name', 'guard_name']);

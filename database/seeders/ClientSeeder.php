@@ -145,8 +145,22 @@ class ClientSeeder extends Seeder
                 'view-legal-precedents'
             ]);
 
-            // Get client types for this company
+            // Get client types for this company (ensure at least one exists)
             $clientTypes = ClientType::where('tenant_id', $companyUser->tenant_id)->get();
+            if ($clientTypes->isEmpty()) {
+                ClientType::firstOrCreate(
+                    ['tenant_id' => $companyUser->tenant_id],
+                    [
+                        'name' => ['en' => 'General', 'ar' => 'عام'],
+                        'description' => ['en' => 'General client type', 'ar' => 'نوع عميل عام'],
+                        'status' => 'active',
+                    ]
+                );
+                $clientTypes = ClientType::where('tenant_id', $companyUser->tenant_id)->get();
+            }
+            if ($clientTypes->isEmpty()) {
+                continue; // skip this company if still no client types
+            }
 
             // Create 3-5 clients for each company
             $clientCount = rand(3, 5);

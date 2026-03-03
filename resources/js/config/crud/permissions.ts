@@ -75,14 +75,49 @@ export const permissionsConfig: CrudConfig = {
   form: {
     fields: [
       { name: 'module', label: t('Module'), type: 'text', required: true },
-      { 
-        name: 'label', 
-        label: t('Label'), 
-        type: 'text', 
-        required: true, 
-        description: t('The name field will be automatically generated from this label') 
+      {
+        name: 'label.en',
+        label: t('Label (English)'),
+        type: 'text',
+        required: true,
+        description: t('The name field will be automatically generated from this label')
       },
-      { name: 'description', label: t('Description'), type: 'textarea' }
-    ]
+      {
+        name: 'label.ar',
+        label: t('Label (Arabic)'),
+        type: 'text',
+        required: true
+      },
+      {
+        name: 'description.en',
+        label: t('Description (English)'),
+        type: 'textarea'
+      },
+      {
+        name: 'description.ar',
+        label: t('Description (Arabic)'),
+        type: 'textarea'
+      }
+    ],
+    transformData: (data: any) => {
+      const transformed: any = { ...data };
+      if (transformed['label.en'] != null || transformed['label.ar'] != null) {
+        transformed.label = {
+          en: transformed['label.en'] ?? '',
+          ar: transformed['label.ar'] ?? ''
+        };
+        delete transformed['label.en'];
+        delete transformed['label.ar'];
+      }
+      if (transformed['description.en'] != null || transformed['description.ar'] != null) {
+        transformed.description = {
+          en: transformed['description.en'] ?? '',
+          ar: transformed['description.ar'] ?? ''
+        };
+        delete transformed['description.en'];
+        delete transformed['description.ar'];
+      }
+      return transformed;
+    }
   }
 };

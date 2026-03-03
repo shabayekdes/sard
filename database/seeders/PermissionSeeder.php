@@ -800,8 +800,14 @@ class PermissionSeeder extends Seeder
                 ['name' => $permission['name'], 'guard_name' => 'web'],
                 [
                     'module' => $permission['module'],
-                    'label' => $permission['label'],
-                    'description' => $permission['description'],
+                    'label' => [
+                        'en' => $permission['label'],
+                        'ar' => $permission['label'],
+                    ],
+                    'description' => [
+                        'en' => $permission['description'],
+                        'ar' => $permission['description'],
+                    ],
                 ]
             );
         }

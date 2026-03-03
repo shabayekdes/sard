@@ -19,6 +19,26 @@ class PermissionController extends BaseController
     public function index()
     {
         $permissions = Permission::withPermissionCheck()->latest()->paginate(10);
+        $permissions->getCollection()->transform(function ($permission) {
+            $labelTranslations = $permission->getTranslations('label');
+            $descriptionTranslations = $permission->getTranslations('description');
+            return [
+                'id' => $permission->id,
+                'module' => $permission->module,
+                'name' => $permission->name,
+                'guard_name' => $permission->guard_name,
+                'label' => $permission->label,
+                'label_translations' => $labelTranslations,
+                'label.en' => $labelTranslations['en'] ?? '',
+                'label.ar' => $labelTranslations['ar'] ?? '',
+                'description' => $permission->description,
+                'description_translations' => $descriptionTranslations,
+                'description.en' => $descriptionTranslations['en'] ?? '',
+                'description.ar' => $descriptionTranslations['ar'] ?? '',
+                'created_at' => $permission->created_at,
+                'updated_at' => $permission->updated_at,
+            ];
+        });
         return Inertia::render('permissions/index', [
             'permissions' => $permissions,
         ]);
@@ -38,11 +58,11 @@ class PermissionController extends BaseController
     public function store(PermissionRequest $request)
     {
         $permission = Permission::create([
-            'module'      => $request->module,
-            'label'       => $request->label,
-            'name'        => Str::slug($request->label),
+            'module' => $request->module,
+            'label' => $request->label,
+            'name' => Str::slug($request->label['en'] ?? $request->label),
             'description' => $request->description,
-            'tenant_id'  => createdBy(),
+            'guard_name' => 'web',
         ]);
 
         if ($permission) {
@@ -73,9 +93,9 @@ class PermissionController extends BaseController
     public function update(PermissionRequest $request, Permission $permission)
     {
         if ($permission) {
-            $permission->module      = $request->module;
-            $permission->label       = $request->label;
-            $permission->name        = Str::slug($request->label);
+            $permission->module = $request->module;
+            $permission->label = $request->label;
+            $permission->name = Str::slug($request->label['en'] ?? $request->label);
             $permission->description = $request->description;
 
             $permission->save();
