@@ -36,10 +36,8 @@ class SeedCaseCategories implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        public string $tenant_id
-    )
-    {
-
+        public \App\Models\Tenant $tenant
+    ) {
     }
 
     /**
@@ -47,6 +45,8 @@ class SeedCaseCategories implements ShouldQueue
      */
     public function handle(): void
     {
+        tenancy()->initialize($this->tenant);
+
         $seedData = [
             [
                 "name" => [
@@ -684,7 +684,7 @@ class SeedCaseCategories implements ShouldQueue
             $category = CaseCategory::create([
                 'name' => $item['name'],
                 'parent_id' => null,
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'status' => 'active',
             ]);
 
@@ -692,7 +692,7 @@ class SeedCaseCategories implements ShouldQueue
                 $subCategoryRecord = CaseCategory::create([
                     'name' => $subcategory['name'],
                     'parent_id' => $category->id,
-                    'tenant_id' => $this->tenant_id,
+                    'tenant_id' => $this->tenant->id,
                     'status' => 'active',
                 ]);
 
@@ -700,7 +700,7 @@ class SeedCaseCategories implements ShouldQueue
                     CaseType::create([
                         'name' => $type['name'],
                         'case_category_id' => $subCategoryRecord->id,
-                        'tenant_id' => $this->tenant_id,
+                        'tenant_id' => $this->tenant->id,
                         'status' => 'active',
                     ]);
                 }
@@ -708,7 +708,7 @@ class SeedCaseCategories implements ShouldQueue
         }
 
         Log::info('SeedCaseCategories: Completed', [
-            'company_id' => $this->tenant_id,
+            'company_id' => $this->tenant->id,
         ]);
     }
 
@@ -718,7 +718,7 @@ class SeedCaseCategories implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         Log::error('SeedCaseCategories: Job failed', [
-            'company_id' => $this->tenant_id,
+            'company_id' => $this->tenant->id,
             'error' => $exception->getMessage(),
         ]);
     }

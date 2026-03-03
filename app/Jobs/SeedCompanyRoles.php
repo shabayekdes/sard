@@ -4,7 +4,6 @@ namespace App\Jobs;
 
 use App\Models\ClientType;
 use App\Models\Role;
-use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -39,9 +38,8 @@ class SeedCompanyRoles implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        public string $tenant_id
+        public \App\Models\Tenant $tenant
     ) {
-
     }
 
     /**
@@ -49,20 +47,11 @@ class SeedCompanyRoles implements ShouldQueue
      */
     public function handle(): void
     {
-        $companyUser = Tenant::find($this->tenant_id);
-        
-        if (!$companyUser) {
-            Log::warning("SeedCompanyRoles: Company user not found or invalid", [
-                'user_id' => $this->tenant_id
-            ]);
-            return;
-        }
-
         // Create client role
         $clientRole = Role::firstOrCreate([
             'name' => 'client',
             'guard_name' => 'web',
-            'tenant_id' => $this->tenant_id
+            'tenant_id' => $this->tenant->id
         ], [
             'label' => [
                 'en' => 'Client',
@@ -157,7 +146,7 @@ class SeedCompanyRoles implements ShouldQueue
         $teamRole = Role::firstOrCreate([
             'name' => 'team_member',
             'guard_name' => 'web',
-            'tenant_id' => $this->tenant_id
+            'tenant_id' => $this->tenant->id
         ], [
             'label' => [
                 'en' => 'Team Member',
@@ -280,7 +269,7 @@ class SeedCompanyRoles implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         Log::error("SeedCompanyRoles: Job failed", [
-            'company_id' => $this->tenant_id,
+            'company_id' => $this->tenant->id,
             'error' => $exception->getMessage()
         ]);
     }

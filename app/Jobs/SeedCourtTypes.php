@@ -35,9 +35,8 @@ class SeedCourtTypes implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        public string $tenant_id
+        public \App\Models\Tenant $tenant
     ) {
-
     }
 
     /**
@@ -45,12 +44,14 @@ class SeedCourtTypes implements ShouldQueue
      */
     public function handle(): void
     {
+        tenancy()->initialize($this->tenant);
+
         $courtTypes = [
             [
                 'name' => '{"en":"General Court","ar":"المحكمة العامة"}',
                 'color' => '#10B981',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -58,7 +59,7 @@ class SeedCourtTypes implements ShouldQueue
                 'name' => '{"en":"Criminal Court","ar":"المحكمة الجزائية"}',
                 'color' => '#EF4444',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -66,7 +67,7 @@ class SeedCourtTypes implements ShouldQueue
                 'name' => '{"en":"Personal Status Court","ar":"محكمة الأحوال الشخصية"}',
                 'color' => '#8B5CF6',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -74,7 +75,7 @@ class SeedCourtTypes implements ShouldQueue
                 'name' => '{"en":"Execution Court","ar":"المحكمة التنفيذ"}',
                 'color' => '#F59E0B',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -82,7 +83,7 @@ class SeedCourtTypes implements ShouldQueue
                 'name' => '{"en":"Court of Appeal","ar":"محكمة الإستئناف"}',
                 'color' => '#DC2626',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -90,7 +91,7 @@ class SeedCourtTypes implements ShouldQueue
                 'name' => '{"en":"Notary Public","ar":"كتابة العدل"}',
                 'color' => '#3B82F6',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -98,7 +99,7 @@ class SeedCourtTypes implements ShouldQueue
                 'name' => '{"en":"Criminal Court","ar":"محكمة الجزائية"}',
                 'color' => '#059669',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -106,7 +107,7 @@ class SeedCourtTypes implements ShouldQueue
                 'name' => '{"en":"Auditing Authority (Endowments and Inheritance Division)","ar":"هيئة التدقيق (لدائرة الأوقاف والمواريث)"}',
                 'color' => '#F97316',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -114,7 +115,7 @@ class SeedCourtTypes implements ShouldQueue
                 'name' => '{"en":"Execution Court","ar":"محكمة التنفيذ"}',
                 'color' => '#84CC16',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -122,7 +123,7 @@ class SeedCourtTypes implements ShouldQueue
                 'name' => '{"en":"Commercial Court","ar":"المحكمة التجارية"}',
                 'color' => '#06B6D4',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -130,7 +131,7 @@ class SeedCourtTypes implements ShouldQueue
                 'name' => '{"en":"Seizure and Execution Court","ar":"محكمة للحجز والتنفيذ"}',
                 'color' => '#6B7280',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -139,7 +140,7 @@ class SeedCourtTypes implements ShouldQueue
         CourtType::insert($courtTypes);
 
         Log::info("SeedCourtTypes: Completed", [
-            'company_id' => $this->tenant_id,
+            'company_id' => $this->tenant->id,
             'created' => count($courtTypes)
         ]);
     }
@@ -150,7 +151,7 @@ class SeedCourtTypes implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         Log::error("SeedCourtTypes: Job failed", [
-            'company_id' => $this->tenant_id,
+            'company_id' => $this->tenant->id,
             'error' => $exception->getMessage()
         ]);
     }

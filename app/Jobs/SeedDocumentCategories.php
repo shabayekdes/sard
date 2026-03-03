@@ -22,13 +22,14 @@ class SeedDocumentCategories implements ShouldQueue
     public $backoff = 30;
 
     public function __construct(
-        public string $tenant_id
+        public \App\Models\Tenant $tenant
     ) {
-
     }
 
     public function handle(): void
     {
+        tenancy()->initialize($this->tenant);
+
         $documentCategories = [
             [
                 'category_id' => 'DOCTP0001',
@@ -36,7 +37,7 @@ class SeedDocumentCategories implements ShouldQueue
                 'description' => '{"ar":"جميع أنواع العقود التجارية والمدنية، اتفاقيات الشراكة، مذكرات التفاهم، واتفاقيات عدم الإفصاح","en":"Commercial and civil contracts, partnership agreements, MOUs, NDAs"}',
                 'color' => '#3b82f6',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -46,7 +47,7 @@ class SeedDocumentCategories implements ShouldQueue
                 'description' => '{"ar":"مذكرات الدعوى، اللوائح الجوابية، الاعتراضات، الاستئناف، والنقض","en":"Statements of claim, defense briefs, objections, appeals, cassation filings"}',
                 'color' => '#10b981',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -56,7 +57,7 @@ class SeedDocumentCategories implements ShouldQueue
                 'description' => '{"ar":"صحيفة الدعوى، الطلبات المستعجلة، الطلبات العارضة، طلبات التنفيذ","en":"Court claims, urgent petitions, incidental requests, enforcement requests"}',
                 'color' => '#f59e0b',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -66,7 +67,7 @@ class SeedDocumentCategories implements ShouldQueue
                 'description' => '{"ar":"الأحكام، محاضر الجلسات، القرارات القضائية، إشعارات التبليغ","en":"Judgments, hearing minutes, court decisions, service notices"}',
                 'color' => '#ef4444',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -76,7 +77,7 @@ class SeedDocumentCategories implements ShouldQueue
                 'description' => '{"ar":"السندات التنفيذية، أوامر التنفيذ، قرارات المادة 34، أوامر الحجز والإفصاح","en":"Executive titles, enforcement orders, Article 34 decisions, seizure and disclosure orders"}',
                 'color' => '#8b5cf6',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -86,7 +87,7 @@ class SeedDocumentCategories implements ShouldQueue
                 'description' => '{"ar":"عقود التأسيس، قرارات الشركاء، محاضر الاجتماعات، التعديلات النظامية","en":"Articles of association, shareholders\' resolutions, meeting minutes, amendments"}',
                 'color' => '#059669',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -96,7 +97,7 @@ class SeedDocumentCategories implements ShouldQueue
                 'description' => '{"ar":"وكالات شرعية (ناجز)، تفويضات رسمية، تخويل التمثيل القانوني","en":"Legal POAs (Najiz), official authorizations, legal representation mandates"}',
                 'color' => '#dc2626',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -106,7 +107,7 @@ class SeedDocumentCategories implements ShouldQueue
                 'description' => '{"ar":"الفواتير، سندات القبض، المطالبات المالية، كشوف الحساب","en":"Invoices, payment receipts, financial claims, account statements"}',
                 'color' => '#6b7280',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -116,7 +117,7 @@ class SeedDocumentCategories implements ShouldQueue
                 'description' => '{"ar":"البينات، المستندات الداعمة، تقارير الخبرة، المستندات الرسمية","en":"Evidence files, supporting documents, expert reports, official documents"}',
                 'color' => '#f97316',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -126,7 +127,7 @@ class SeedDocumentCategories implements ShouldQueue
                 'description' => '{"ar":"خطابات الإنذار، المراسلات مع العملاء، إشعارات رسمية","en":"Legal notices, client correspondence, formal communications"}',
                 'color' => '#84cc16',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -136,7 +137,7 @@ class SeedDocumentCategories implements ShouldQueue
                 'description' => '{"ar":"الأبحاث القانونية، السوابق القضائية، الآراء والاستشارات","en":"Legal research, case law precedents, legal opinions and advisory memos"}',
                 'color' => '#06b6d4',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -146,7 +147,7 @@ class SeedDocumentCategories implements ShouldQueue
                 'description' => '{"ar":"عقود العمل، مطالبات الرواتب، شكاوى العمل، قرارات التسوية","en":"Employment contracts, wage claims, labor complaints, settlement decisions"}',
                 'color' => '#ec4899',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -156,7 +157,7 @@ class SeedDocumentCategories implements ShouldQueue
                 'description' => '{"ar":"لوائح الاتهام، مذكرات الدفاع، محاضر الضبط، تقارير الجهات المختصة","en":"Indictments, defense briefs, police reports, official investigation reports"}',
                 'color' => '#a855f7',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -166,7 +167,7 @@ class SeedDocumentCategories implements ShouldQueue
                 'description' => '{"ar":"دعاوى ديوان المظالم، الطعون الإدارية، مراسلات الجهات الحكومية","en":"Administrative court claims, government appeals, official correspondence"}',
                 'color' => '#64748b',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -176,7 +177,7 @@ class SeedDocumentCategories implements ShouldQueue
                 'description' => '{"ar":"الهوية، السجل التجاري، عقد الخدمات القانونية، العنوان الوطني","en":"ID copies, commercial registration, legal service agreements, national address"}',
                 'color' => '#14b8a6',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -185,7 +186,7 @@ class SeedDocumentCategories implements ShouldQueue
         DocumentCategory::insert($documentCategories);
 
         Log::info('SeedDocumentCategories: Completed', [
-            'company_id' => $this->tenant_id,
+            'company_id' => $this->tenant->id,
             'total' => count($documentCategories),
         ]);
     }
@@ -193,7 +194,7 @@ class SeedDocumentCategories implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         Log::error('SeedDocumentCategories: Job failed', [
-            'company_id' => $this->tenant_id,
+            'company_id' => $this->tenant->id,
             'error' => $exception->getMessage(),
         ]);
     }

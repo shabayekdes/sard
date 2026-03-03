@@ -22,13 +22,14 @@ class SeedTaskTypes implements ShouldQueue
     public $backoff = 30;
 
     public function __construct(
-        public string $tenant_id
+        public \App\Models\Tenant $tenant
     ) {
-
     }
 
     public function handle(): void
     {
+        tenancy()->initialize($this->tenant);
+
         $taskTypes = [
             [
                 'name' => '{"en":"Meeting","ar":"اجتماع"}',
@@ -36,7 +37,7 @@ class SeedTaskTypes implements ShouldQueue
                 'color' => '#3B82F6',
                 'default_duration' => 90,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -46,7 +47,7 @@ class SeedTaskTypes implements ShouldQueue
                 'color' => '#3B82F6',
                 'default_duration' => 30,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -56,7 +57,7 @@ class SeedTaskTypes implements ShouldQueue
                 'color' => '#3B82F6',
                 'default_duration' => 120,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -66,7 +67,7 @@ class SeedTaskTypes implements ShouldQueue
                 'color' => '#3B82F6',
                 'default_duration' => 180,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -76,7 +77,7 @@ class SeedTaskTypes implements ShouldQueue
                 'color' => '#3B82F6',
                 'default_duration' => 120,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -86,7 +87,7 @@ class SeedTaskTypes implements ShouldQueue
                 'color' => '#3B82F6',
                 'default_duration' => 60,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -96,7 +97,7 @@ class SeedTaskTypes implements ShouldQueue
                 'color' => '#3B82F6',
                 'default_duration' => 180,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -106,7 +107,7 @@ class SeedTaskTypes implements ShouldQueue
                 'color' => '#3B82F6',
                 'default_duration' => 60,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -116,7 +117,7 @@ class SeedTaskTypes implements ShouldQueue
                 'color' => '#3B82F6',
                 'default_duration' => 150,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -126,7 +127,7 @@ class SeedTaskTypes implements ShouldQueue
                 'color' => '#3B82F6',
                 'default_duration' => 60,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -136,7 +137,7 @@ class SeedTaskTypes implements ShouldQueue
                 'color' => '#3B82F6',
                 'default_duration' => 45,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -146,7 +147,7 @@ class SeedTaskTypes implements ShouldQueue
                 'color' => '#3B82F6',
                 'default_duration' => 120,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -156,7 +157,7 @@ class SeedTaskTypes implements ShouldQueue
                 'color' => '#3B82F6',
                 'default_duration' => 120,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -166,7 +167,7 @@ class SeedTaskTypes implements ShouldQueue
                 'color' => '#3B82F6',
                 'default_duration' => 120,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -176,7 +177,7 @@ class SeedTaskTypes implements ShouldQueue
                 'color' => '#3B82F6',
                 'default_duration' => 60,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -185,14 +186,14 @@ class SeedTaskTypes implements ShouldQueue
         TaskType::insert($taskTypes);
 
         Log::info('SeedTaskTypes: Completed', [
-            'company_id' => $this->tenant_id,
+            'company_id' => $this->tenant->id,
         ]);
     }
 
     public function failed(\Throwable $exception): void
     {
         Log::error('SeedTaskTypes: Job failed', [
-            'company_id' => $this->tenant_id,
+            'company_id' => $this->tenant->id,
             'error' => $exception->getMessage(),
         ]);
     }

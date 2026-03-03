@@ -35,9 +35,8 @@ class SeedCircleTypes implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        public string $tenant_id
+        public \App\Models\Tenant $tenant
     ) {
-
     }
 
     /**
@@ -45,6 +44,8 @@ class SeedCircleTypes implements ShouldQueue
      */
     public function handle(): void
     {
+        tenancy()->initialize($this->tenant);
+
         // Color palette for circle types
         $colors = [
             '#3B82F6', '#10B981', '#EF4444', '#8B5CF6', '#F59E0B',
@@ -62,7 +63,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[0],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -71,7 +72,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[1],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -80,7 +81,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[2],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -89,7 +90,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[3],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -98,7 +99,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[4],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -107,7 +108,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[5],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -116,7 +117,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[6],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -125,7 +126,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[7],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -134,7 +135,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[8],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -143,7 +144,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[9],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -152,7 +153,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[10],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -161,7 +162,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[11],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -170,7 +171,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[12],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -179,7 +180,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[13],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -188,7 +189,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[14],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -197,7 +198,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[15],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -206,7 +207,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[16],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -215,7 +216,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[17],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -224,7 +225,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[18],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -233,7 +234,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[19],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -242,7 +243,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[20],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -251,7 +252,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[21],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -260,7 +261,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[22],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -269,7 +270,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[23],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -278,7 +279,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[24],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -287,7 +288,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[25],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -296,7 +297,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[26],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -305,7 +306,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[27],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -314,7 +315,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[28],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -323,7 +324,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[29],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -332,7 +333,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[30],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -341,7 +342,7 @@ class SeedCircleTypes implements ShouldQueue
                 'description' => null,
                 'color' => $colors[31],
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -350,7 +351,7 @@ class SeedCircleTypes implements ShouldQueue
         CircleType::insert($circleTypes);
 
         Log::info("SeedCircleTypes: Completed", [
-            'company_id' => $this->tenant_id,
+            'company_id' => $this->tenant->id,
             'created' => count($circleTypes)
         ]);
     }
@@ -361,7 +362,7 @@ class SeedCircleTypes implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         Log::error("SeedCircleTypes: Job failed", [
-            'company_id' => $this->tenant_id,
+            'company_id' => $this->tenant->id,
             'error' => $exception->getMessage()
         ]);
     }

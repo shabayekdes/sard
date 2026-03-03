@@ -23,13 +23,14 @@ class SeedResearchSources implements ShouldQueue
     public $backoff = 30;
 
     public function __construct(
-        public string $tenant_id
+        public \App\Models\Tenant $tenant
     ) {
-
     }
 
     public function handle(): void
     {
+        tenancy()->initialize($this->tenant);
+
         $now = now();
         $sources = [
             [
@@ -40,7 +41,7 @@ class SeedResearchSources implements ShouldQueue
                 'access_info' => null,
                 'credentials' => null,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -52,7 +53,7 @@ class SeedResearchSources implements ShouldQueue
                 'access_info' => null,
                 'credentials' => null,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -64,7 +65,7 @@ class SeedResearchSources implements ShouldQueue
                 'access_info' => null,
                 'credentials' => null,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -76,7 +77,7 @@ class SeedResearchSources implements ShouldQueue
                 'access_info' => null,
                 'credentials' => null,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -88,7 +89,7 @@ class SeedResearchSources implements ShouldQueue
                 'access_info' => null,
                 'credentials' => null,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -100,7 +101,7 @@ class SeedResearchSources implements ShouldQueue
                 'access_info' => null,
                 'credentials' => null,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -112,7 +113,7 @@ class SeedResearchSources implements ShouldQueue
                 'access_info' => null,
                 'credentials' => null,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -124,7 +125,7 @@ class SeedResearchSources implements ShouldQueue
                 'access_info' => null,
                 'credentials' => null,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -136,7 +137,7 @@ class SeedResearchSources implements ShouldQueue
                 'access_info' => null,
                 'credentials' => null,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -148,7 +149,7 @@ class SeedResearchSources implements ShouldQueue
                 'access_info' => null,
                 'credentials' => null,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -160,7 +161,7 @@ class SeedResearchSources implements ShouldQueue
                 'access_info' => null,
                 'credentials' => null,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -172,7 +173,7 @@ class SeedResearchSources implements ShouldQueue
                 'access_info' => null,
                 'credentials' => null,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -184,7 +185,7 @@ class SeedResearchSources implements ShouldQueue
                 'access_info' => null,
                 'credentials' => null,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -196,7 +197,7 @@ class SeedResearchSources implements ShouldQueue
                 'access_info' => null,
                 'credentials' => null,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -208,7 +209,7 @@ class SeedResearchSources implements ShouldQueue
                 'access_info' => null,
                 'credentials' => null,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -220,7 +221,7 @@ class SeedResearchSources implements ShouldQueue
                 'access_info' => null,
                 'credentials' => null,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -232,7 +233,7 @@ class SeedResearchSources implements ShouldQueue
                 'access_info' => null,
                 'credentials' => null,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -244,7 +245,7 @@ class SeedResearchSources implements ShouldQueue
                 'access_info' => null,
                 'credentials' => null,
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -253,14 +254,14 @@ class SeedResearchSources implements ShouldQueue
         ResearchSource::insert($sources);
 
         Log::info('SeedResearchSources: Completed', [
-            'company_id' => $this->tenant_id,
+            'company_id' => $this->tenant->id,
         ]);
     }
 
     public function failed(\Throwable $exception): void
     {
         Log::error('SeedResearchSources: Job failed', [
-            'company_id' => $this->tenant_id,
+            'company_id' => $this->tenant->id,
             'error' => $exception->getMessage(),
         ]);
     }

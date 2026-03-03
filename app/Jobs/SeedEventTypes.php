@@ -35,9 +35,8 @@ class SeedEventTypes implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        public string $tenant_id
+        public \App\Models\Tenant $tenant
     ) {
-
     }
 
     /**
@@ -45,13 +44,15 @@ class SeedEventTypes implements ShouldQueue
      */
     public function handle(): void
     {
+        tenancy()->initialize($this->tenant);
+
         $eventTypes = [
             [
                 'name' => '{"en":"Case Registration","ar":"تسجيل قضية"}',
                 'description' => '{"en":"Creating and registering the case officially","ar":"إنشاء وقيد القضية رسميًا"}',
                 'color' => '#10B981',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -60,7 +61,7 @@ class SeedEventTypes implements ShouldQueue
                 'description' => '{"en":"Accepting the case and giving it an official number","ar":"قبول الدعوى وإعطاؤها رقم رسمي"}',
                 'color' => '#EF4444',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -69,7 +70,7 @@ class SeedEventTypes implements ShouldQueue
                 'description' => '{"en":"Setting a date for a court session","ar":"تحديد موعد جلسة قضائية"}',
                 'color' => '#3B82F6',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -78,7 +79,7 @@ class SeedEventTypes implements ShouldQueue
                 'description' => '{"en":"Holding the session","ar":"عقد الجلسة"}',
                 'color' => '#8B5CF6',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -87,7 +88,7 @@ class SeedEventTypes implements ShouldQueue
                 'description' => '{"en":"Mandatory date for submitting an action (memorandum / document)","ar":"تاريخ إلزامي لتقديم إجراء (مذكرة / مستند)"}',
                 'color' => '#F59E0B',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -96,7 +97,7 @@ class SeedEventTypes implements ShouldQueue
                 'description' => '{"en":"Submitting a memorandum or response","ar":"تقديم مذكرة أو رد"}',
                 'color' => '#6B7280',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -105,7 +106,7 @@ class SeedEventTypes implements ShouldQueue
                 'description' => '{"en":"Issuing the judgment","ar":"صدور الحكم"}',
                 'color' => '#DC2626',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -114,7 +115,7 @@ class SeedEventTypes implements ShouldQueue
                 'description' => '{"en":"Internal meeting or with the client regarding the case","ar":"اجتماع داخلي أو مع العميل بخصوص القضية"}',
                 'color' => '#059669',
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -123,7 +124,7 @@ class SeedEventTypes implements ShouldQueue
         EventType::insert($eventTypes);
 
         Log::info("SeedEventTypes: Completed", [
-            'company_id' => $this->tenant_id,
+            'company_id' => $this->tenant->id,
             'created' => count($eventTypes)
         ]);
     }
@@ -134,7 +135,7 @@ class SeedEventTypes implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         Log::error("SeedEventTypes: Job failed", [
-            'company_id' => $this->tenant_id,
+            'company_id' => $this->tenant->id,
             'error' => $exception->getMessage()
         ]);
     }

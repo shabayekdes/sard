@@ -22,13 +22,14 @@ class SeedResearchTypes implements ShouldQueue
     public $backoff = 30;
 
     public function __construct(
-        public string $tenant_id
+        public \App\Models\Tenant $tenant
     ) {
-
     }
 
     public function handle(): void
     {
+        tenancy()->initialize($this->tenant);
+
         $researchTypes = [
             ['code' => 'RT01', 'name' => ['ar' => 'بحث قانوني عام', 'en' => 'General Legal Research'], 'description' => ['ar' => 'بحث في الأنظمة واللوائح والمواد النظامية وتحليلها لدعم قضية أو استشارة', 'en' => 'Research on laws, regulations, and legal provisions to support a case or opinion']],
             ['code' => 'RT02', 'name' => ['ar' => 'تحليل السوابق القضائية', 'en' => 'Case Law & Precedent Analysis'], 'description' => ['ar' => 'دراسة الأحكام السابقة والاجتهادات القضائية وتحليل اتجاهات القضاء', 'en' => 'Analysis of court precedents, judgments, and judicial trends']],
@@ -47,7 +48,7 @@ class SeedResearchTypes implements ShouldQueue
             ['code' => 'RT15', 'name' => ['ar' => 'بحث تشريعي', 'en' => 'Legislative Analysis'], 'description' => ['ar' => 'دراسة التعديلات النظامية والمشاريع التشريعية الجديدة', 'en' => 'Analysis of new or amended legislation']],
         ];
 
-        $existingCodes = ResearchType::where('tenant_id', $this->tenant_id)->pluck('code')->flip()->all();
+        $existingCodes = ResearchType::where('tenant_id', $this->tenant->id)->pluck('code')->flip()->all();
 
         $toInsert = [];
         foreach ($researchTypes as $row) {
@@ -60,7 +61,7 @@ class SeedResearchTypes implements ShouldQueue
                 'name' => json_encode($row['name']),
                 'description' => json_encode($row['description']),
                 'status' => 'active',
-                'tenant_id' => $this->tenant_id,
+                'tenant_id' => $this->tenant->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -72,7 +73,7 @@ class SeedResearchTypes implements ShouldQueue
         }
 
         Log::info('SeedResearchTypes: Completed', [
-            'company_id' => $this->tenant_id,
+            'company_id' => $this->tenant->id,
             'created' => count($toInsert),
             'total' => count($researchTypes),
         ]);
@@ -81,7 +82,7 @@ class SeedResearchTypes implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         Log::error('SeedResearchTypes: Job failed', [
-            'company_id' => $this->tenant_id,
+            'company_id' => $this->tenant->id,
             'error' => $exception->getMessage(),
         ]);
     }
