@@ -65,11 +65,11 @@ return [
     // Email Settings
     ['key' => 'EMAIL_PROVIDER', 'group' => 'mail', 'value' => 'smtp'],
     ['key' => 'EMAIL_DRIVER', 'group' => 'mail', 'value' => 'smtp'],
-    ['key' => 'EMAIL_HOST', 'group' => 'mail', 'value' => 'smtp.emailit.com'],
-    ['key' => 'EMAIL_PORT', 'group' => 'mail', 'value' => '587'],
-    ['key' => 'EMAIL_USERNAME', 'group' => 'mail', 'value' => 'emailit'],
+    ['key' => 'EMAIL_HOST', 'group' => 'mail', 'value' => config('mail.mailers.smtp.host')],
+    ['key' => 'EMAIL_PORT', 'group' => 'mail', 'value' => config('mail.mailers.smtp.port')],
+    ['key' => 'EMAIL_USERNAME', 'group' => 'mail', 'value' => config('mail.mailers.smtp.username')],
     ['key' => 'EMAIL_PASSWORD', 'group' => 'mail', 'value' => config('mail.mailers.smtp.password')],
-    ['key' => 'EMAIL_ENCRYPTION', 'group' => 'mail', 'value' => 'tls'],
+    ['key' => 'EMAIL_ENCRYPTION', 'group' => 'mail', 'value' => config('mail.mailers.smtp.encryption')],
     ['key' => 'EMAIL_FROM_ADDRESS', 'group' => 'mail', 'value' => 'no-reply@sard.app'],
     ['key' => 'EMAIL_FROM_NAME', 'group' => 'mail', 'value' => 'Sard'],
 
