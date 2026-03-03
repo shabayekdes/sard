@@ -38,25 +38,6 @@ class CompanyProfile extends BaseModel
     ];
 
     /**
-     * Boot method to auto-generate company ID
-     */
-    protected static function boot()
-    {
-        parent::boot();
-        
-        static::creating(function ($profile) {
-            if (!$profile->company_id) {
-                $profile->company_id = 'CP' . str_pad(
-                    (CompanyProfile::max('id') ?? 0) + 1, 
-                    6, 
-                    '0', 
-                    STR_PAD_LEFT
-                );
-            }
-        });
-    }
-
-    /**
      * Get the user who created the company profile.
      */
     public function creator()

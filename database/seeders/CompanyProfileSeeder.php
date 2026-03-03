@@ -37,6 +37,7 @@ class CompanyProfileSeeder extends Seeder
                 // Contact Details
                 'email' => $companyUser->email,
                 'phone' => '+966-5' . rand(10000000, 99999999),
+                'company_id' => 'COMP-' . str_pad($companyUser->id, 6, '0', STR_PAD_LEFT),
                 'address' => 'Prince Turki St, Al Khobar ' . (31952 + $index),
                 
                 // Business Details
