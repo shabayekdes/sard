@@ -251,7 +251,7 @@ export function GlobalQuickActionModals() {
             {
               name: 'case_subcategory_id',
               label: t('Case Sub Category'),
-              apiEndpoint: '/case/case-categories/{case_category_id}/subcategories',
+              apiEndpoint: '/setup/case-categories/{case_category_id}/subcategories',
               showCurrentValue: true,
             },
           ],

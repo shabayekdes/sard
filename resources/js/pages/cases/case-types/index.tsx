@@ -437,7 +437,7 @@ export default function CaseTypes() {
                 {
                   name: 'case_subcategory_id',
                   label: t('Case Subcategory'),
-                  apiEndpoint: '/case/case-categories/{case_category_id}/subcategories',
+                  apiEndpoint: '/setup/case-categories/{case_category_id}/subcategories',
                   showCurrentValue: true
                 }
               ]
