@@ -22,7 +22,6 @@ class TaxRateSeeder extends Seeder
                 'ar' => 'ضريبة قيمة مضافة بنسبة صفر.',
             ],
             'rate' => 0,
-            'is_active' => true,
         ]);
 
         TaxRate::create([
@@ -35,7 +34,6 @@ class TaxRateSeeder extends Seeder
                     'ar' => 'نسبة ضريبة القيمة المضافة القياسية في السعودية.',
                 ],
             'rate' => 15.00,
-                'is_active' => true,
         ]);
 
     }
