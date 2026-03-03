@@ -1159,7 +1159,9 @@ class PermissionSeeder extends Seeder
             'task_statuses',
         ];
 
+        $names = [];
         foreach ($permissions as $permission) {
+            $names[] = $permission['name'];
             Permission::firstOrCreate(
                 ['name' => $permission['name'], 'guard_name' => 'web'],
                 [
@@ -1168,5 +1170,7 @@ class PermissionSeeder extends Seeder
                 ]
             );
         }
+
+        Permission::whereNotIn('name', $names)->delete();
     }
 }
