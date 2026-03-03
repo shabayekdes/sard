@@ -37,7 +37,7 @@ class SeedExpenseCategories implements ShouldQueue
     public function __construct(
         public string $tenant_id
     ) {
-        $this->onQueue('default');
+
     }
 
     /**

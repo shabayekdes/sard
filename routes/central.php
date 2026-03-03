@@ -9,9 +9,19 @@ foreach (config('tenancy.central_domains') as $domain) {
 
         require __DIR__ . '/auth.php';
 
-        // Route::get('/', function () {
-        //     return 'This is the central domain';
-        // });
+        Route::middleware(['guest', 'landing.enabled'])->group(function () {
+            Route::get('register', [Controllers\Auth\RegisteredUserController::class, 'create'])
+                ->name('register');
+            Route::post('register', [Controllers\Auth\RegisteredUserController::class, 'store']);
+        });
+
+        Route::middleware(['auth'])->group(function () {
+            // Email verification link: allow without auth (signed URL + hash validate identity)
+            Route::get('verify-email/{id}/{hash}', Controllers\Auth\VerifyEmailController::class)
+                ->middleware(['signed', 'throttle:6,1'])
+                ->name('verification.verify');
+
+        });
 
 
         Route::middleware([

@@ -39,7 +39,7 @@ class SeedCaseCategories implements ShouldQueue
         public string $tenant_id
     )
     {
-        $this->onQueue('default');
+
     }
 
     /**

@@ -39,8 +39,6 @@ class SeedDefaultCompanyData implements ShouldQueue
     public function __construct(
         public Tenant $tenant
     ) {
-        // Set queue name if needed
-        $this->onQueue('default');
     }
 
     /**

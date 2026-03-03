@@ -24,7 +24,7 @@ class SeedDocumentCategories implements ShouldQueue
     public function __construct(
         public string $tenant_id
     ) {
-        $this->onQueue('default');
+
     }
 
     public function handle(): void
