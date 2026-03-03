@@ -35,7 +35,6 @@ class CompanyEmailNotificationController extends Controller
             return [
                 'id' => $template->id,
                 'name' => $template->name,
-                'is_active' => $tenantSettings[$template->id] ?? true,
                 'template' => [
                     'id' => $template->id,
                     'name' => $template->name,

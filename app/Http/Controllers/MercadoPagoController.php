@@ -59,7 +59,7 @@ class MercadoPagoController extends Controller
             if ($couponCode) {
                 // Get coupon and apply discount
                 $coupon = Coupon::where('code', strtoupper($couponCode))
-                    ->where('is_active', '1')
+                    ->where('status', 'active')
                     ->first();
                     
                 if ($coupon) {

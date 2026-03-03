@@ -41,7 +41,6 @@ class FeeStructureSeeder extends Seeder
                     'description' => 'Fee structure #' . $i . ' for ' . $company->name . '. ' . $feeType->description . '.',
                     'effective_date' => $effectiveDate,
                     'end_date' => $endDate,
-                    'is_active' => rand(1, 10) > 2, // 80% chance active
                 ];
                 
                 FeeStructure::firstOrCreate([

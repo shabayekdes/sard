@@ -37,7 +37,7 @@ class PayHerePaymentController extends Controller
 
             if ($validated['coupon_code']) {
                 $coupon = \App\Models\Coupon::where('code', $validated['coupon_code'])
-                    ->where('is_active', true)
+                    ->where('status', 'active')
                     ->first();
                 if ($coupon) {
                     $amount = $coupon->discount_type === 'percentage'

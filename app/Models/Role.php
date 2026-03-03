@@ -14,7 +14,6 @@ class Role extends BaseSpatieRole
         'name',
         'label',
         'description',
-        'is_active',
         'guard_name',
         'tenant_id'
     ];

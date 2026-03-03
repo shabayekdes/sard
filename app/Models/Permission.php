@@ -10,7 +10,6 @@ class Permission extends BaseSpatiePermission
         'name',
         'label',
         'description',
-        'is_active',
         'guard_name'
     ];
 }

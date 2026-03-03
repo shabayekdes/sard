@@ -112,7 +112,6 @@ class RegisteredUserController extends Controller
             'city' => $request->city,
             'password' => Hash::make($request->password),
             'type' => 'company',
-            'is_active' => 1,
             'is_enable_login' => 1,
             'plan_is_active' => 0,
             'tenant_id' => $tenant->id,

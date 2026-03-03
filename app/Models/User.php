@@ -83,7 +83,6 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
             'plan_expire_date' => 'date',
             'trial_expire_date' => 'date',
             'plan_is_active' => 'integer',
-            'is_active' => 'integer',
             'is_enable_login' => 'integer',
             'google2fa_enable' => 'integer',
             'storage_limit' => 'float',
