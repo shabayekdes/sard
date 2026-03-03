@@ -23,7 +23,7 @@ class FeeStructure extends BaseModel
         'description',
         'effective_date',
         'end_date',
-        'is_active',
+        'status',
     ];
 
     protected $casts = [
@@ -32,7 +32,6 @@ class FeeStructure extends BaseModel
         'hourly_rate' => 'decimal:2',
         'effective_date' => 'date',
         'end_date' => 'date',
-        'is_active' => 'boolean',
     ];
 
     protected static function booted()

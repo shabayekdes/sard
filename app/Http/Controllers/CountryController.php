@@ -56,7 +56,7 @@ class CountryController extends Controller
                 'nationality_name_translations' => $country->getTranslations('nationality_name'), // Full translations for editing
                 'country_code' => $country->country_code,
                 'phone_code' => $country->phone_code,
-                'is_active' => $country->is_active,
+                'status' => $country->status,
                 'created_at' => $country->created_at,
                 'updated_at' => $country->updated_at,
             ];
@@ -82,7 +82,7 @@ class CountryController extends Controller
             'nationality_name.ar' => 'required|string|max:255',
             'country_code' => 'nullable|string|size:2|unique:countries,country_code',
             'phone_code' => 'nullable|string|max:8',
-            'is_active' => 'boolean',
+            'status' => 'required|in:active,inactive',
         ]);
 
         Country::create($validated);
@@ -104,7 +104,7 @@ class CountryController extends Controller
             'nationality_name.ar' => 'required|string|max:255',
             'country_code' => 'nullable|string|size:2|unique:countries,country_code,'.$country->id,
             'phone_code' => 'nullable|string|max:8',
-            'is_active' => 'boolean',
+            'status' => 'required|in:active,inactive',
         ]);
 
         $country->update($validated);

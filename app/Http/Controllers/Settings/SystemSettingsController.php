@@ -619,7 +619,7 @@ class SystemSettingsController extends Controller
                                 'template_id' => $templateId,
                                 'type' => 'slack'
                             ],
-                            ['is_active' => $validated[$templateName]]
+                            ['status' => $validated[$templateName] ? 'active' : 'inactive']
                         );
                     }
                 }
@@ -705,7 +705,7 @@ class SystemSettingsController extends Controller
                                 'template_id' => $templateId,
                                 'type' => 'slack'
                             ],
-                            ['is_active' => $validated[$templateName]]
+                            ['status' => $validated[$templateName] ? 'active' : 'inactive']
                         );
                     }
                 }
@@ -732,7 +732,7 @@ class SystemSettingsController extends Controller
                 ->where('type', 'slack')
             ->first();
 
-            $settings[$template->name] = $tenantTemplate ? $tenantTemplate->is_active : false;
+            $settings[$template->name] = $tenantTemplate ? ($tenantTemplate->status === 'active') : false;
         }
 
         return response()->json($settings);
@@ -766,7 +766,7 @@ class SystemSettingsController extends Controller
                 ->where('type', 'twilio')
                 ->first();
 
-            $settings[$template->name] = $tenantTemplate ? $tenantTemplate->is_active : false;
+            $settings[$template->name] = $tenantTemplate ? ($tenantTemplate->status === 'active') : false;
         }
 
         return response()->json($settings);
@@ -813,7 +813,7 @@ public function updateTwilioNotifications(Request $request)
                                 'template_id' => $templateId,
                                 'type' => 'twilio'
                             ],
-                            ['is_active' => $validated[$templateName]]
+                            ['status' => $validated[$templateName] ? 'active' : 'inactive']
                         );
                     }
                 }

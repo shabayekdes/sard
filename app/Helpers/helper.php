@@ -837,7 +837,7 @@ if (! function_exists('calculatePlanPricing')) {
 
         if ($couponCode) {
             $coupon = Coupon::where('code', $couponCode)
-                ->where('status', 1)
+                ->where('status', 'active')
                 ->first();
 
             if ($coupon) {
@@ -1259,7 +1259,7 @@ if (! function_exists('isEmailTemplateEnabled')) {
             ->where('template_id', $template->id)
             ->first();
 
-        return $tenantTemplate ? $tenantTemplate->is_active : false;
+        return $tenantTemplate ? ($tenantTemplate->status === 'active') : false;
     }
 }
 
@@ -1390,7 +1390,7 @@ if (! function_exists('isNotificationTemplateEnabled')) {
 
         $tenantTemplate = $query->first();
 
-        return $tenantTemplate ? (bool) $tenantTemplate->is_active : false;
+        return $tenantTemplate ? ($tenantTemplate->status === 'active') : false;
     }
 }
 
@@ -1455,7 +1455,7 @@ if (! function_exists('createDefaultNotificationSettings')) {
                         'template_id' => $template->id,
                         'type' => $type
                     ],
-                    ['is_active' => false] // Default to disabled
+                    ['status' => 'inactive'] // Default to disabled
                 );
             }
         }

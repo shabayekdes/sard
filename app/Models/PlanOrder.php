@@ -110,7 +110,7 @@ class PlanOrder extends Model
         $this->discount_amount = 0;
         $this->final_price = $planPrice;
 
-        if ($coupon && $coupon->status) {
+        if ($coupon && $coupon->status === 'active') {
             if ($coupon->type === 'percentage') {
                 $this->discount_amount = ($planPrice * $coupon->discount_amount) / 100;
             } else {

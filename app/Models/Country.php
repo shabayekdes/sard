@@ -16,10 +16,6 @@ class Country extends Model
         'nationality_name',
         'country_code',
         'phone_code',
-        'is_active',
-    ];
-
-    protected $casts = [
-        'is_active' => 'boolean',
+        'status',
     ];
 }

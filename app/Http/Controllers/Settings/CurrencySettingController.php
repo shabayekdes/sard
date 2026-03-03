@@ -19,7 +19,7 @@ class CurrencySettingController extends Controller
     {
         try {
             $defaultCurrencyRule = Rule::exists('currencies', 'code')
-                ->where('status', true);
+                ->where('status', 'active');
 
             $validated = $request->validate([
                 'decimalFormat' => 'required|string|in:0,1,2,3,4',

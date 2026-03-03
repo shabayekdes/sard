@@ -49,7 +49,7 @@ class CouponRequest extends FormRequest
                 Rule::unique('coupons', 'code')->ignore($couponId)
             ],
             'code_type' => 'required|in:manual,auto',
-            'status' => 'boolean'
+            'status' => 'nullable|in:active,inactive'
         ];
     }
 

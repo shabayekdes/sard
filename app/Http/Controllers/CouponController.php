@@ -150,7 +150,7 @@ class CouponController extends BaseController
         ]);
         
         $coupon = Coupon::where('code', $request->coupon_code)
-            ->where('status', 1)
+            ->where('status', 'active')
             ->first();
             
         if (!$coupon) {
@@ -200,14 +200,13 @@ class CouponController extends BaseController
      */
     public function toggleStatus(Coupon $coupon)
     {
-        $coupon->update([
-            'status' => !$coupon->status
-        ]);
+        $newStatus = $coupon->status === 'active' ? 'inactive' : 'active';
+        $coupon->update(['status' => $newStatus]);
 
         return response()->json([
             'success' => true,
             'message' => __('Coupon status updated successfully!'),
-            'status' => $coupon->status
+            'status' => $coupon->fresh()->status
         ]);
     }
 

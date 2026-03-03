@@ -48,7 +48,7 @@ class TaxRateController extends Controller
                 'description' => $taxRate->description,
                 'description_translations' => $taxRate->getTranslations('description'),
                 'rate' => $taxRate->rate,
-                'is_active' => $taxRate->is_active,
+                'status' => $taxRate->status,
                 'created_at' => $taxRate->created_at,
                 'updated_at' => $taxRate->updated_at,
             ];
@@ -73,7 +73,7 @@ class TaxRateController extends Controller
             'description' => 'nullable|array',
             'description.en' => 'nullable|string',
             'description.ar' => 'nullable|string',
-            'is_active' => 'boolean',
+            'status' => 'required|in:active,inactive',
         ]);
 
         TaxRate::create($validated);
@@ -94,7 +94,7 @@ class TaxRateController extends Controller
             'description' => 'nullable|array',
             'description.en' => 'nullable|string',
             'description.ar' => 'nullable|string',
-            'is_active' => 'boolean',
+            'status' => 'required|in:active,inactive',
         ]);
 
         $taxRate->update($validated);

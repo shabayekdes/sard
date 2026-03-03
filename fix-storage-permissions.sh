@@ -1,20 +1,33 @@
 #!/usr/bin/env bash
-# Fix storage and cache permissions for Laravel (run on live/server)
-# Usage: sudo bash fix-storage-permissions.sh [web-user]
-# Example: sudo bash fix-storage-permissions.sh www-data
+# Fix Laravel storage & cache permissions (run on live server)
+# Usage: sudo bash fix-storage-permissions.sh [path]
+# Example: sudo bash fix-storage-permissions.sh /var/www/sard
 
 set -e
-WEB_USER="${1:-www-data}"
-APP_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+APP_PATH="${1:-/var/www/sard}"
 
-echo "Setting ownership to $WEB_USER for storage and bootstrap/cache..."
-chown -R "$WEB_USER:$WEB_USER" "$APP_ROOT/storage" "$APP_ROOT/bootstrap/cache"
+if [[ ! -d "$APP_PATH" ]]; then
+  echo "Error: App path $APP_PATH does not exist."
+  exit 1
+fi
 
-echo "Setting directory permissions (775)..."
-find "$APP_ROOT/storage" "$APP_ROOT/bootstrap/cache" -type d -exec chmod 775 {} \;
+# Common web server user (use www-data for Apache/Nginx, or your deploy user)
+WEB_USER="${WEB_USER:-www-data}"
 
-echo "Setting file permissions (664)..."
-find "$APP_ROOT/storage" "$APP_ROOT/bootstrap/cache" -type f -exec chmod 664 {} \;
+echo "Fixing permissions for $APP_PATH (user: $WEB_USER)"
 
-echo "Done. You can now run: php artisan migrate:fresh --seed (as $WEB_USER or a user in group $WEB_USER)"
-echo "Or run: sudo -u $WEB_USER php artisan migrate:fresh --seed"
+# Create dirs if missing
+mkdir -p "$APP_PATH/storage/logs"
+mkdir -p "$APP_PATH/storage/framework/cache"
+mkdir -p "$APP_PATH/storage/framework/sessions"
+mkdir -p "$APP_PATH/storage/framework/views"
+mkdir -p "$APP_PATH/bootstrap/cache"
+
+# Ownership: web user and group
+chown -R "$WEB_USER:$WEB_USER" "$APP_PATH/storage" "$APP_PATH/bootstrap/cache"
+
+# Directories 775, files 664
+chmod -R 775 "$APP_PATH/storage" "$APP_PATH/bootstrap/cache"
+find "$APP_PATH/storage" "$APP_PATH/bootstrap/cache" -type f -exec chmod 664 {} \;
+
+echo "Done. Run: php artisan config:clear && php artisan cache:clear"

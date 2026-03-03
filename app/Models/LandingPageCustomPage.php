@@ -13,12 +13,11 @@ class LandingPageCustomPage extends BaseModel
         'content',
         'meta_title',
         'meta_description',
-        'is_active',
+        'status',
         'sort_order'
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
         'sort_order' => 'integer'
     ];
 
@@ -29,7 +28,7 @@ class LandingPageCustomPage extends BaseModel
 
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
+        return $query->where('status', 'active');
     }
 
     protected static function boot()

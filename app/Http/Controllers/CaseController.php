@@ -92,7 +92,7 @@ class CaseController extends BaseController
         
         // Get countries for nationality dropdown - ordered by nationality_name
         $locale = app()->getLocale();
-        $countries = Country::where('is_active', true)
+        $countries = Country::where('status', 'active')
             ->orderByRaw("JSON_EXTRACT(nationality_name, '$.{$locale}')")
             ->orderByRaw("JSON_EXTRACT(nationality_name, '$.en')")
             ->get(['id', 'name', 'nationality_name'])
@@ -499,7 +499,7 @@ class CaseController extends BaseController
             ->toArray();
 
         $locale = app()->getLocale();
-        $countries = Country::where('is_active', true)
+        $countries = Country::where('status', 'active')
             ->orderByRaw("JSON_EXTRACT(nationality_name, '$.{$locale}')")
             ->orderByRaw("JSON_EXTRACT(nationality_name, '$.en')")
             ->get(['id', 'name', 'nationality_name'])
@@ -624,7 +624,7 @@ class CaseController extends BaseController
             ->toArray();
 
         $locale = app()->getLocale();
-        $countries = Country::where('is_active', true)
+        $countries = Country::where('status', 'active')
             ->orderByRaw("JSON_EXTRACT(nationality_name, '$.{$locale}')")
             ->orderByRaw("JSON_EXTRACT(nationality_name, '$.en')")
             ->get(['id', 'name', 'nationality_name'])

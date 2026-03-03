@@ -39,12 +39,12 @@ class EmailNotificationController extends Controller
                 $tenantSetting = TenantEmailTemplate::create([
                     'template_id' => $template->id,
                     'tenant_id' => $tenantId,
-                    'is_active' => 0
+                    'status' => 'inactive'
                 ]);
             }
 
-            // Switch ON only if is_active = 1
-            $isEnabled = $tenantSetting->is_active == 1;
+            // Switch ON only if status = active
+            $isEnabled = $tenantSetting->status === 'active';
 
             return [
                 'id' => $template->id,
@@ -82,7 +82,7 @@ class EmailNotificationController extends Controller
                         'template_id' => $setting['template_id']
                     ],
                     [
-                        'is_active' => $setting['is_enabled'] ?? false
+                        'status' => ($setting['is_enabled'] ?? false) ? 'active' : 'inactive'
                     ]
                 );
             }

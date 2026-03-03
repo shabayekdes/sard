@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('template_id');
             $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-            $table->boolean('is_active')->default(1);
+            $table->enum('status', ['active', 'inactive'])->default('inactive');
             $table->timestamps();
 
             $table->foreign('template_id')->references('id')->on('email_templates')->onDelete('cascade');

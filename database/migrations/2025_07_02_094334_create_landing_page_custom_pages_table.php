@@ -15,7 +15,7 @@ return new class extends Migration
             $table->longText('content');
             $table->string('meta_title')->nullable();
             $table->text('meta_description')->nullable();
-            $table->boolean('is_active')->default(true);
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->integer('sort_order')->default(0);
             $table->timestamps();
         });

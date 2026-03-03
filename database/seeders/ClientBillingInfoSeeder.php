@@ -25,7 +25,7 @@ class ClientBillingInfoSeeder extends Seeder
             $clients = Client::where('tenant_id', $companyUser->tenant_id)->get();
             
             // Get currencies for this company
-            $currencies = \App\Models\Currency::where('status', true)->get();
+            $currencies = \App\Models\Currency::where('status', 'active')->get();
             $currencyCodes = $currencies->pluck('code')->toArray();
             $defaultCurrency = $currencyCodes[0] ?? 'USD';
             

@@ -21,8 +21,8 @@ class WorkflowController extends BaseController
             });
         }
 
-        if ($request->has('is_active') && $request->is_active !== 'all') {
-            $query->where('is_active', $request->is_active === 'true');
+        if ($request->has('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
         }
 
         if ($request->has('sort_field') && !empty($request->sort_field)) {
@@ -35,7 +35,7 @@ class WorkflowController extends BaseController
 
         return Inertia::render('tasks/workflows/index', [
             'workflows' => $workflows,
-            'filters' => $request->all(['search', 'is_active', 'sort_field', 'sort_direction', 'per_page']),
+            'filters' => $request->all(['search', 'status', 'sort_field', 'sort_direction', 'per_page']),
         ]);
     }
 
@@ -45,11 +45,11 @@ class WorkflowController extends BaseController
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'trigger_event' => 'nullable|string|max:255',
-            'is_active' => 'nullable|boolean',
+            'status' => 'nullable|in:active,inactive',
         ]);
 
         $validated['tenant_id'] = createdBy();
-        $validated['is_active'] = $validated['is_active'] ?? true;
+        $validated['status'] = $validated['status'] ?? 'active';
 
         Workflow::create($validated);
 
@@ -70,7 +70,7 @@ class WorkflowController extends BaseController
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'trigger_event' => 'nullable|string|max:255',
-            'is_active' => 'required|boolean',
+            'status' => 'required|in:active,inactive',
         ]);
 
         $workflow->update($validated);
@@ -107,7 +107,7 @@ class WorkflowController extends BaseController
         }
 
         try {
-            $workflow->is_active = !$workflow->is_active;
+            $workflow->status = $workflow->status === 'active' ? 'inactive' : 'active';
             $workflow->save();
 
             return redirect()->back()->with('success', 'Workflow status updated successfully.');

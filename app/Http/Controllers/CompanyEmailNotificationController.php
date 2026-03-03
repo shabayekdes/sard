@@ -26,7 +26,8 @@ class CompanyEmailNotificationController extends Controller
 
         // Get tenant's notification settings
         $tenantSettings = TenantEmailTemplate::where('tenant_id', $tenantId)
-            ->pluck('is_active', 'template_id')
+            ->get()
+            ->mapWithKeys(fn ($t) => [$t->template_id => $t->status === 'active'])
             ->toArray();
 
         // Format templates with settings
@@ -70,13 +71,14 @@ class CompanyEmailNotificationController extends Controller
         foreach ($settings as $setting) {
             $template = EmailTemplate::find($setting['template_id'] ?? null);
 
+            $enabled = $setting['is_enabled'] ?? $setting['is_active'] ?? true;
             TenantEmailTemplate::updateOrCreate(
                 [
                     'tenant_id' => $tenantId,
                     'template_id' => $setting['template_id']
                 ],
                 [
-                    'is_active' => $setting['is_enabled'] ?? $setting['is_active'] ?? true
+                    'status' => $enabled ? 'active' : 'inactive'
                 ]
             );
         }

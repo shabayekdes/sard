@@ -22,7 +22,7 @@ interface CustomPage {
   content: string;
   meta_title?: string;
   meta_description?: string;
-  is_active: boolean;
+  status: string;
   sort_order: number;
 }
 
@@ -45,7 +45,7 @@ export default function CustomPagesIndex() {
     content: '',
     meta_title: '',
     meta_description: '',
-    is_active: true,
+    status: 'active',
     sort_order: 0
   });
 
@@ -77,7 +77,7 @@ export default function CustomPagesIndex() {
       content: page.content,
       meta_title: page.meta_title || '',
       meta_description: page.meta_description || '',
-      is_active: page.is_active,
+      status: page.status || 'active',
       sort_order: page.sort_order || 0
     });
     setEditingPage(page);
@@ -148,11 +148,11 @@ export default function CustomPagesIndex() {
       )
     },
     { 
-      key: 'is_active', 
+      key: 'status', 
       label: 'Status',
-      render: (value: boolean) => (
+      render: (value: string) => (
         <div className="flex items-center space-x-1">
-          {value ? (
+          {value === 'active' ? (
             <><Eye className="w-4 h-4 text-green-600" /><span className="text-green-600">Active</span></>
           ) : (
             <><EyeOff className="w-4 h-4 text-gray-400" /><span className="text-gray-400">Inactive</span></>
@@ -292,8 +292,8 @@ export default function CustomPagesIndex() {
                       </div>
 
                       <div className="flex items-center space-x-2">
-                          <Switch id="edit_is_active" checked={data.is_active} onCheckedChange={(checked) => setData('is_active', checked)} />
-                          <Label htmlFor="edit_is_active">Active</Label>
+                          <Switch id="edit_status" checked={data.status === 'active'} onCheckedChange={(checked) => setData('status', checked ? 'active' : 'inactive')} />
+                          <Label htmlFor="edit_status">Active</Label>
                       </div>
 
                       <div className="flex justify-end space-x-2">
@@ -354,8 +354,8 @@ export default function CustomPagesIndex() {
                       </div>
 
                       <div className="flex items-center space-x-2">
-                          <Switch id="is_active" checked={data.is_active} onCheckedChange={(checked) => setData('is_active', checked)} />
-                          <Label htmlFor="is_active">Active</Label>
+                          <Switch id="status" checked={data.status === 'active'} onCheckedChange={(checked) => setData('status', checked ? 'active' : 'inactive')} />
+                          <Label htmlFor="status">Active</Label>
                       </div>
 
                       <div className="flex justify-end space-x-2">

@@ -1,5 +1,6 @@
 // config/crud/countries.ts
 import { CrudConfig } from '@/types/crud';
+import { columnRenderers } from '@/utils/columnRenderers';
 import { t } from '@/utils/i18n';
 
 export const countriesConfig: CrudConfig = {
@@ -39,9 +40,9 @@ export const countriesConfig: CrudConfig = {
                 label: t('Phone Code'),
             },
             {
-                key: 'is_active',
-                label: t('Active'),
-                type: 'boolean',
+                key: 'status',
+                label: t('Status'),
+                render: columnRenderers.status(),
             },
         ],
         actions: [
@@ -98,9 +99,15 @@ export const countriesConfig: CrudConfig = {
                 type: 'text',
             },
             {
-                name: 'is_active',
-                label: t('Active'),
-                type: 'checkbox',
+                name: 'status',
+                label: t('Status'),
+                type: 'select',
+                required: true,
+                defaultValue: 'active',
+                options: [
+                    { value: 'active', label: t('Active') },
+                    { value: 'inactive', label: t('Inactive') },
+                ],
             },
         ],
         transformData: (data: any) => {

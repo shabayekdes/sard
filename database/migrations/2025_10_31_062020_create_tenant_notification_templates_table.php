@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('template_id');
             $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-            $table->boolean('is_active')->default(0);
+            $table->enum('status', ['active', 'inactive'])->default('inactive');
             $table->string('type')->default('slack'); // twilio, slack, email
             $table->timestamps();
 

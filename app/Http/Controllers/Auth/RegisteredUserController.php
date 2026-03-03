@@ -49,7 +49,7 @@ class RegisteredUserController extends Controller
                 ->first();
         }
 
-        $phoneCountries = Country::where('is_active', true)
+        $phoneCountries = Country::where('status', 'active')
             ->whereNotNull('country_code')
             ->get(['id', 'name', 'country_code'])
             ->map(function ($country) {

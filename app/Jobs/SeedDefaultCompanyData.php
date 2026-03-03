@@ -93,10 +93,22 @@ class SeedDefaultCompanyData implements ShouldQueue
      */
     public function failed(\Throwable $exception): void
     {
-        Log::error("SeedDefaultCompanyData: Job failed", [
+        $this->safeLog('error', "SeedDefaultCompanyData: Job failed", [
             'error' => $exception->getMessage(),
             'trace' => $exception->getTraceAsString()
         ]);
+    }
+
+    /**
+     * Log without throwing if the log stream is not writable (e.g. permission denied).
+     */
+    private function safeLog(string $level, string $message, array $context = []): void
+    {
+        try {
+            Log::log($level, $message, $context);
+        } catch (\Throwable $e) {
+            // Ignore logging failures so they don't crash the job
+        }
     }
 }
 

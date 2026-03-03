@@ -80,7 +80,7 @@ class InvoiceController extends BaseController
             ->select('id', 'title', 'client_id')
             ->get();
         $templates = \App\Models\EmailTemplate::select('id', 'name')->get();
-        $currencies = Currency::where('status', true)
+        $currencies = Currency::where('status', 'active')
             ->select('id', 'name', 'code', 'symbol')
             ->get();
         $timeEntries = \App\Models\TimeEntry::withPermissionCheck()
@@ -126,7 +126,7 @@ class InvoiceController extends BaseController
             ->select('client_id', 'currency', 'payment_terms', 'custom_payment_terms')
             ->get()
             ->keyBy('client_id');
-        $currencies = Currency::where('status', true)
+        $currencies = Currency::where('status', 'active')
             ->select('id', 'name', 'code', 'symbol')
             ->get();
 
@@ -151,7 +151,7 @@ class InvoiceController extends BaseController
             ->select('id', 'case_id', 'title', 'client_id')
             ->get();
         $templates = \App\Models\EmailTemplate::select('id', 'name')->get();
-        $currencies = Currency::where('status', true)
+        $currencies = Currency::where('status', 'active')
             ->select('id', 'name', 'code', 'symbol')
             ->get();
 
@@ -184,7 +184,7 @@ class InvoiceController extends BaseController
             'email_template_id' => 'nullable|exists:email_templates,id',
             'currency_id' => [
                 'nullable',
-                Rule::exists('currencies', 'id')->where('status', true),
+                Rule::exists('currencies', 'id')->where('status', 'active'),
             ],
             'subtotal' => 'nullable|numeric|min:0',
             'tax_amount' => 'nullable|numeric|min:0',
@@ -263,7 +263,7 @@ class InvoiceController extends BaseController
             'email_template_id' => 'nullable|exists:email_templates,id',
             'currency_id' => [
                 'nullable',
-                Rule::exists('currencies', 'id')->where('status', true),
+                Rule::exists('currencies', 'id')->where('status', 'active'),
             ],
             'subtotal' => 'nullable|numeric|min:0',
             'tax_amount' => 'nullable|numeric|min:0',
@@ -367,7 +367,7 @@ class InvoiceController extends BaseController
             ->select('client_id', 'currency')
             ->get()
             ->keyBy('client_id');
-        $currencies = Currency::where('status', true)
+        $currencies = Currency::where('status', 'active')
             ->select('id', 'name', 'code', 'symbol')
             ->get();
 

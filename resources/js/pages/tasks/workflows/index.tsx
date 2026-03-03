@@ -17,7 +17,7 @@ export default function Workflows() {
   const permissions = auth?.permissions || [];
 
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
-  const [selectedActive, setSelectedActive] = useState(pageFilters.is_active || 'all');
+  const [selectedActive, setSelectedActive] = useState(pageFilters.status || 'all');
   const [showFilters, setShowFilters] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -41,7 +41,7 @@ export default function Workflows() {
     router.get(route('tasks.workflows.index'), {
       page: 1,
       search: searchTerm || undefined,
-      is_active: selectedActive !== 'all' ? selectedActive : undefined,
+      status: selectedActive !== 'all' ? selectedActive : undefined,
       per_page: pageFilters.per_page
     }, { preserveState: true, preserveScroll: true });
   };
@@ -54,7 +54,7 @@ export default function Workflows() {
       sort_direction: direction,
       page: 1,
       search: searchTerm || undefined,
-      is_active: selectedActive !== 'all' ? selectedActive : undefined,
+      status: selectedActive !== 'all' ? selectedActive : undefined,
       per_page: pageFilters.per_page
     }, { preserveState: true, preserveScroll: true });
   };
@@ -152,7 +152,7 @@ export default function Workflows() {
   };
 
   const handleToggleStatus = (workflow: any) => {
-    const newStatus = workflow.is_active ? 'inactive' : 'active';
+    const newStatus = workflow.status === 'active' ? 'inactive' : 'active';
     toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} workflow...`);
 
     router.put(route('tasks.workflows.toggle-status', workflow.id), {}, {
@@ -220,14 +220,14 @@ export default function Workflows() {
     },
 
     {
-      key: 'is_active',
+      key: 'status',
       label: t('Status'),
-      render: (value: boolean) => (
-        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value
+      render: (value: string) => (
+        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'active'
           ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
           : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
           }`}>
-          {value ? t('Active') : t('Inactive')}
+          {value === 'active' ? t('Active') : t('Inactive')}
         </span>
       )
     },
@@ -265,8 +265,8 @@ export default function Workflows() {
 
   const activeOptions = [
     { value: 'all', label: t('All Statuses') },
-    { value: 'true', label: t('Active') },
-    { value: 'false', label: t('Inactive') }
+    { value: 'active', label: t('Active') },
+    { value: 'inactive', label: t('Inactive') }
   ];
 
   return (
@@ -278,7 +278,7 @@ export default function Workflows() {
                   onSearch={handleSearch}
                   filters={[
                       {
-                          name: 'is_active',
+                          name: 'status',
                           label: t('Status'),
                           type: 'select',
                           value: selectedActive,
@@ -329,7 +329,7 @@ export default function Workflows() {
                               page: 1,
                               per_page: parseInt(value),
                               search: searchTerm || undefined,
-                              is_active: selectedActive !== 'all' ? selectedActive : undefined,
+                              status: selectedActive !== 'all' ? selectedActive : undefined,
                           },
                           { preserveState: true, preserveScroll: true },
                       );
@@ -347,10 +347,14 @@ export default function Workflows() {
                       { name: 'description', label: t('Description'), type: 'textarea' },
                       { name: 'trigger_event', label: t('Trigger Event'), type: 'text' },
                       {
-                          name: 'is_active',
-                          label: t('Active'),
-                          type: 'checkbox',
-                          defaultValue: true,
+                          name: 'status',
+                          label: t('Status'),
+                          type: 'select',
+                          defaultValue: 'active',
+                          options: [
+                            { value: 'active', label: t('Active') },
+                            { value: 'inactive', label: t('Inactive') },
+                          ],
                       },
                   ],
                   modalSize: 'lg',

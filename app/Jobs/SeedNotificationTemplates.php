@@ -46,7 +46,7 @@ class SeedNotificationTemplates implements ShouldQueue
     {
         $this->createDefaultNotificationSettings();
 
-        Log::info("SeedNotificationTemplates: Completed", [
+        $this->safeLog('info', "SeedNotificationTemplates: Completed", [
             'company_id' => $this->tenant_id
         ]);
     }
@@ -67,7 +67,7 @@ class SeedNotificationTemplates implements ShouldQueue
                         'template_id' => $template->id,
                         'type' => $type
                     ],
-                    ['is_active' => false] // Default to disabled
+                    ['status' => 'inactive'] // Default to disabled
                 );
             }
         }
@@ -78,10 +78,22 @@ class SeedNotificationTemplates implements ShouldQueue
      */
     public function failed(\Throwable $exception): void
     {
-        Log::error("SeedNotificationTemplates: Job failed", [
+        $this->safeLog('error', "SeedNotificationTemplates: Job failed", [
             'company_id' => $this->tenant_id,
             'error' => $exception->getMessage()
         ]);
+    }
+
+    /**
+     * Log without throwing if the log stream is not writable (e.g. permission denied).
+     */
+    private function safeLog(string $level, string $message, array $context = []): void
+    {
+        try {
+            Log::log($level, $message, $context);
+        } catch (\Throwable $e) {
+            // Ignore logging failures (e.g. storage/logs not writable) so they don't crash the job
+        }
     }
 }
 

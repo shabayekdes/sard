@@ -13,12 +13,12 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->string('trigger_event')->nullable(); // case_created, task_completed, etc.
-            $table->boolean('is_active')->default(true);
+            $table->enum('status', ['active', 'inactive'])->default('active');
 
             $table->foreignUuid('tenant_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             
-            $table->index(['tenant_id', 'is_active']);
+            $table->index(['tenant_id', 'status']);
         });
     }
 

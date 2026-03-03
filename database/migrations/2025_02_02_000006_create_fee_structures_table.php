@@ -19,13 +19,13 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->date('effective_date');
             $table->date('end_date')->nullable();
-            $table->boolean('is_active')->default(true);
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
 
             $table->foreignUuid('tenant_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
             $table->foreign('fee_type_id')->references('id')->on('fee_types')->onDelete('cascade');
-            $table->index(['tenant_id', 'is_active']);
+            $table->index(['tenant_id', 'status']);
         });
     }
 

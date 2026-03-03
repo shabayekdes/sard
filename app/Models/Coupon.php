@@ -30,7 +30,6 @@ class Coupon extends Model
         'maximum_spend' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'expiry_date' => 'date',
-        'status' => 'boolean'
     ];
 
     public function creator()

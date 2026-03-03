@@ -11,7 +11,7 @@ interface CustomPage {
   content: string;
   meta_title?: string;
   meta_description?: string;
-  is_active: boolean;
+  status: string;
 }
 
 interface CustomPageData {

@@ -13,7 +13,7 @@ return new class extends Migration
             $table->json('name');
             $table->decimal('rate', 5, 2)->default(0);
             $table->json('description')->nullable();
-            $table->boolean('is_active')->default(true);
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
         });
     }

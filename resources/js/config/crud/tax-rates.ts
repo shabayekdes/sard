@@ -1,4 +1,5 @@
 import { CrudConfig } from '@/types/crud';
+import { columnRenderers } from '@/utils/columnRenderers';
 import { t } from '@/utils/i18n';
 
 export const taxRatesConfig: CrudConfig = {
@@ -29,9 +30,9 @@ export const taxRatesConfig: CrudConfig = {
                 label: t('Description'),
             },
             {
-                key: 'is_active',
-                label: t('Active'),
-                type: 'boolean',
+                key: 'status',
+                label: t('Status'),
+                render: columnRenderers.status(),
             },
         ],
         actions: [
@@ -86,9 +87,15 @@ export const taxRatesConfig: CrudConfig = {
                 type: 'textarea',
             },
             {
-                name: 'is_active',
-                label: t('Active'),
-                type: 'checkbox',
+                name: 'status',
+                label: t('Status'),
+                type: 'select',
+                required: true,
+                defaultValue: 'active',
+                options: [
+                    { value: 'active', label: t('Active') },
+                    { value: 'inactive', label: t('Inactive') },
+                ],
             },
         ],
         transformData: (data: any) => {

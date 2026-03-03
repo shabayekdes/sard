@@ -11,11 +11,7 @@ class TenantEmailTemplate extends BaseModel
     protected $fillable = [
         'template_id',
         'tenant_id',
-        'is_active',
-    ];
-
-    protected $casts = [
-        'is_active' => 'boolean',
+        'status',
     ];
 
     public function emailTemplate(): BelongsTo

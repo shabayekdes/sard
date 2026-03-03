@@ -23,7 +23,7 @@ return new class extends Migration
             $table->date('expiry_date')->nullable();
             $table->string('code')->unique();
             $table->enum('code_type', ['manual', 'auto'])->default('manual');
-            $table->boolean('status')->default(true);
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->foreignUuid('tenant_id')->nullable()->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
 

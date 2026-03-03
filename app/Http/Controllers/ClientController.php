@@ -162,7 +162,7 @@ class ClientController extends Controller
             });
 
         // Get countries for nationality dropdown
-        $countries = Country::where('is_active', true)
+        $countries = Country::where('status', 'active')
             ->orderByRaw("JSON_EXTRACT(name, '$.en')")
             ->get(['id', 'name', 'nationality_name', 'country_code'])
             ->map(function ($country) {
@@ -174,7 +174,7 @@ class ClientController extends Controller
                 ];
             });
 
-        $phoneCountries = Country::where('is_active', true)
+        $phoneCountries = Country::where('status', 'active')
             ->whereNotNull('country_code')
             ->get(['id', 'name', 'country_code'])
             ->map(function ($country) {
@@ -721,7 +721,7 @@ class ClientController extends Controller
             ->get();
 
         // Currencies for billing info edit modal
-        $currencies = \App\Models\Currency::where('status', true)
+        $currencies = \App\Models\Currency::where('status', 'active')
             ->orderBy('code')
             ->get(['id', 'name', 'code', 'symbol'])
             ->map(fn ($c) => ['value' => $c->code, 'label' => $c->name.' ('.$c->code.')']);

@@ -49,7 +49,7 @@ class CustomPageController extends Controller
             'content' => 'required|string',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
-            'is_active' => 'boolean',
+            'status' => 'required|in:active,inactive',
             'sort_order' => 'nullable|integer'
         ]);
 
@@ -65,7 +65,7 @@ class CustomPageController extends Controller
             'content' => 'required|string',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
-            'is_active' => 'boolean',
+            'status' => 'required|in:active,inactive',
             'sort_order' => 'nullable|integer'
         ]);
 
@@ -82,7 +82,7 @@ class CustomPageController extends Controller
 
     public function show($slug)
     {
-        $page = LandingPageCustomPage::where('slug', $slug)->where('is_active', true)->firstOrFail();
+        $page = LandingPageCustomPage::where('slug', $slug)->where('status', 'active')->firstOrFail();
         $landingSettings = \App\Models\LandingPageSetting::getSettings();
         
 

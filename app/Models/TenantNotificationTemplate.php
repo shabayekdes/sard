@@ -12,12 +12,8 @@ class TenantNotificationTemplate extends Model
     protected $fillable = [
         'template_id',
         'tenant_id',
-        'is_active',
+        'status',
         'type',
-    ];
-
-    protected $casts = [
-        'is_active' => 'boolean',
     ];
 
     public function notificationTemplate(): BelongsTo
@@ -35,7 +31,8 @@ class TenantNotificationTemplate extends Model
         return self::where('tenant_id', $tenantId)
             ->with('notificationTemplate')
             ->get()
-            ->pluck('is_active', 'notificationTemplate.name')
+            ->pluck('status', 'notificationTemplate.name')
+            ->map(fn ($status) => $status === 'active')
             ->toArray();
     }
 
@@ -49,7 +46,7 @@ class TenantNotificationTemplate extends Model
         return self::where('tenant_id', $tenantId)
             ->where('template_id', $template->id)
             ->where('type', $type)
-            ->where('is_active', true)
+            ->where('status', 'active')
             ->exists();
     }
 
@@ -66,7 +63,7 @@ class TenantNotificationTemplate extends Model
                 'template_id' => $template->id,
                 'type' => $type
             ],
-            ['is_active' => $isActive]
+            ['status' => $isActive ? 'active' : 'inactive']
         );
     }
 }

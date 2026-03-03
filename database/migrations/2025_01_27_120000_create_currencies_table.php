@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('code', 10);
             $table->string('symbol', 10)->nullable();
             $table->json('description')->nullable();
-            $table->boolean('status')->default(true);
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
 
             $table->unique(['code']);

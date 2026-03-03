@@ -30,8 +30,8 @@ class FeeStructureController extends Controller
             $query->where('client_id', $request->client_id);
         }
 
-        if ($request->status !== null) {
-            $query->where('is_active', $request->status);
+        if ($request->status !== null && $request->status !== 'all') {
+            $query->where('status', $request->status);
         }
 
         $feeStructures = $query->orderBy('created_at', 'desc')->paginate(10);
@@ -78,7 +78,7 @@ class FeeStructureController extends Controller
             'description' => $validated['description'],
             'effective_date' => $validated['effective_date'],
             'end_date' => $validated['end_date'],
-            'is_active' => true,
+            'status' => 'active',
         ]);
 
         return redirect()->back()->with('success', 'Fee structure created successfully.');
@@ -121,7 +121,7 @@ class FeeStructureController extends Controller
 
     public function toggleStatus(FeeStructure $feeStructure)
     {
-        $feeStructure->update(['is_active' => !$feeStructure->is_active]);
+        $feeStructure->update(['status' => $feeStructure->status === 'active' ? 'inactive' : 'active']);
         return redirect()->back()->with('success', 'Fee structure status updated successfully.');
     }
 }

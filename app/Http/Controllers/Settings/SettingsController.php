@@ -32,7 +32,7 @@ class SettingsController extends Controller
         // Get system settings using helper function
         $systemSettings = Settings::sanitize();
         $currencies = CurrencyResource::collection(
-            Currency::where('status', true)->get()
+            Currency::where('status', 'active')->get()
         )->resolve();
         $paymentSettings = sanitizeSettingsForUi(
             PaymentSetting::getUserSettings(createdBy()),
@@ -40,10 +40,10 @@ class SettingsController extends Controller
         );
         $webhooks = Webhook::where('user_id', auth()->id())->get();
         $companySettings = CompanySetting::where('tenant_id', createdBy())->get();
-        $taxRates = TaxRate::where('is_active', true)
+        $taxRates = TaxRate::where('status', 'active')
             ->orderByRaw("JSON_EXTRACT(name, '$.en')")
             ->get(['id', 'name', 'rate']);
-        $countries = Country::where('is_active', true)
+        $countries = Country::where('status', 'active')
             ->orderByRaw("JSON_EXTRACT(name, '$.en')")
             ->get(['country_code', 'name'])
             ->map(function ($country) {
@@ -80,14 +80,14 @@ class SettingsController extends Controller
                     $tenantSetting = TenantEmailTemplate::create([
                         'template_id' => $template->id,
                         'tenant_id' => Auth::user()->tenant_id,
-                        'is_active' => 0
+                        'status' => 'inactive'
                     ]);
                 }
 
                 return [
                     'id' => $template->id,
                     'name' => $name,
-                    'is_active' => $tenantSetting->is_active,
+                    'is_active' => $tenantSetting->status === 'active',
                     'template' => [
                         'id' => $template->id,
                         'name' => $name,

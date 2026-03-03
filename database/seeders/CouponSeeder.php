@@ -33,7 +33,7 @@ class CouponSeeder extends Seeder
                 'expiry_date' => now()->addMonths(3),
                 'code' => 'NEWLAW20',
                 'code_type' => 'manual',
-                'status' => true,
+                'status' => 'active',
                 'tenant_id' => $user->tenant_id,
             ],
             [
@@ -47,7 +47,7 @@ class CouponSeeder extends Seeder
                 'expiry_date' => now()->addMonths(6),
                 'code' => 'LEGAL10',
                 'code_type' => 'manual',
-                'status' => true,
+                'status' => 'active',
                 'tenant_id' => $user->tenant_id,
             ],
             [
@@ -61,7 +61,7 @@ class CouponSeeder extends Seeder
                 'expiry_date' => now()->addWeeks(2),
                 'code' => 'FLASH15',
                 'code_type' => 'manual',
-                'status' => true,
+                'status' => 'active',
                 'tenant_id' => $user->tenant_id,
             ],
             [
@@ -75,7 +75,7 @@ class CouponSeeder extends Seeder
                 'expiry_date' => now()->addMonths(1),
                 'code' => 'AUTO5OFF',
                 'code_type' => 'auto',
-                'status' => false,
+                'status' => 'inactive',
                 'tenant_id' => $user->tenant_id,
             ]
         ];
@@ -93,7 +93,7 @@ class CouponSeeder extends Seeder
                 'expiry_date' => now()->addMonths(2),
                 'code' => 'BLACKFRI30',
                 'code_type' => 'manual',
-                'status' => true,
+                'status' => 'active',
                 'tenant_id' => $user->tenant_id,
             ],
             [
@@ -107,7 +107,7 @@ class CouponSeeder extends Seeder
                 'expiry_date' => now()->addMonths(4),
                 'code' => 'HOLIDAY25',
                 'code_type' => 'manual',
-                'status' => true,
+                'status' => 'active',
                 'tenant_id' => $user->tenant_id,
             ],
             [
@@ -121,7 +121,7 @@ class CouponSeeder extends Seeder
                 'expiry_date' => now()->addMonths(12),
                 'code' => 'STUDENT10',
                 'code_type' => 'manual',
-                'status' => true,
+                'status' => 'active',
                 'tenant_id' => $user->tenant_id,
             ],
             [
@@ -135,7 +135,7 @@ class CouponSeeder extends Seeder
                 'expiry_date' => now()->addMonths(6),
                 'code' => 'VIP50BONUS',
                 'code_type' => 'manual',
-                'status' => false,
+                'status' => 'inactive',
                 'tenant_id' => $user->tenant_id,
             ],
             [
@@ -149,7 +149,7 @@ class CouponSeeder extends Seeder
                 'expiry_date' => now()->addWeeks(8),
                 'code' => 'WEEKEND12',
                 'code_type' => 'manual',
-                'status' => true,
+                'status' => 'active',
                 'tenant_id' => $user->tenant_id,
             ]
         ];

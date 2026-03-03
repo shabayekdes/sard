@@ -79,7 +79,7 @@ class CurrencyController extends Controller
             'description.ar' => 'nullable|string',
         ]);
 
-        $validated['status'] = true;
+        $validated['status'] = 'active';
 
         Currency::create($validated);
 

@@ -15,11 +15,10 @@ class TaxRate extends Model
         'name',
         'rate',
         'description',
-        'is_active',
+        'status',
     ];
 
     protected $casts = [
         'rate' => 'decimal:2',
-        'is_active' => 'boolean',
     ];
 }

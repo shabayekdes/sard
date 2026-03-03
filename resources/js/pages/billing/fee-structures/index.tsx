@@ -20,7 +20,7 @@ export default function FeeStructures() {
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
   const [selectedClient, setSelectedClient] = useState(pageFilters.client_id || 'all');
   const [selectedFeeType, setSelectedFeeType] = useState(pageFilters.fee_type_id || 'all');
-  const [selectedStatus, setSelectedStatus] = useState(pageFilters.is_active || 'all');
+  const [selectedStatus, setSelectedStatus] = useState(pageFilters.status || 'all');
   const [showFilters, setShowFilters] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -139,7 +139,7 @@ export default function FeeStructures() {
   };
 
   const handleToggleStatus = (feeStructure: any) => {
-    const newStatus = feeStructure.is_active ? 'inactive' : 'active';
+    const newStatus = feeStructure.status === 'active' ? 'inactive' : 'active';
     toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} fee structure...`);
 
     router.put(route('billing.fee-structures.toggle-status', feeStructure.id), {}, {
@@ -243,15 +243,15 @@ export default function FeeStructures() {
       render: (value: string) => value ? (window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()) : '-'
     },
     {
-      key: 'is_active',
+      key: 'status',
       label: t('Status'),
-      render: (value: boolean) => (
+      render: (value: string) => (
         <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${
-          value 
+          value === 'active'
             ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
             : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
         }`}>
-          {value ? t('Active') : t('Inactive')}
+          {value === 'active' ? t('Active') : t('Inactive')}
         </span>
       )
     }
@@ -309,8 +309,8 @@ export default function FeeStructures() {
 
   const statusOptions = [
     { value: 'all', label: t('All Statuses') },
-    { value: '1', label: t('Active') },
-    { value: '0', label: t('Inactive') }
+    { value: 'active', label: t('Active') },
+    { value: 'inactive', label: t('Inactive') }
   ];
 
   return (
@@ -339,7 +339,7 @@ export default function FeeStructures() {
                           options: feeTypeOptions,
                       },
                       {
-                          name: 'is_active',
+                          name: 'status',
                           label: t('Status'),
                           type: 'select',
                           value: selectedStatus,
@@ -442,14 +442,14 @@ export default function FeeStructures() {
                       { name: 'effective_date', label: t('Effective Date'), type: 'date', required: true },
                       { name: 'end_date', label: t('End Date'), type: 'date' },
                       {
-                          name: 'is_active',
+                          name: 'status',
                           label: t('Status'),
                           type: 'select',
                           options: [
-                              { value: true, label: t('Active') },
-                              { value: false, label: t('Inactive') },
+                              { value: 'active', label: t('Active') },
+                              { value: 'inactive', label: t('Inactive') },
                           ],
-                          defaultValue: true,
+                          defaultValue: 'active',
                       },
                   ],
                   modalSize: 'xl',
@@ -502,12 +502,12 @@ export default function FeeStructures() {
                       { name: 'effective_date', label: t('Effective Date'), type: 'text' },
                       { name: 'end_date', label: t('End Date'), type: 'text' },
                       {
-                          name: 'is_active',
+                          name: 'status',
                           label: t('Status'),
                           type: 'text',
                           render: () => {
-                              const isActive = currentItem?.is_active;
-                              return <div className="rounded-md border bg-gray-50 p-2">{isActive ? t('Active') : t('Inactive')}</div>;
+                              const status = currentItem?.status;
+                              return <div className="rounded-md border bg-gray-50 p-2">{status === 'active' ? t('Active') : t('Inactive')}</div>;
                           },
                       },
                   ],

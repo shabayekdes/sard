@@ -15,12 +15,8 @@ class Workflow extends BaseModel
         'name',
         'description',
         'trigger_event',
-        'is_active',
+        'status',
         'tenant_id'
-    ];
-
-    protected $casts = [
-        'is_active' => 'boolean',
     ];
 
     public function creator()

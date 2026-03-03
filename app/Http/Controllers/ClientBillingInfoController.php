@@ -58,7 +58,7 @@ class ClientBillingInfoController extends Controller
             ->get(['id', 'name']);
 
         // Get currencies for form dropdown
-        $currencies = Currency::where('status', true)
+        $currencies = Currency::where('status', 'active')
             ->orderByRaw("JSON_EXTRACT(name, '$.ar') ASC")
             ->get(['id', 'name', 'code', 'symbol']);
 
@@ -83,7 +83,7 @@ class ClientBillingInfoController extends Controller
             'currency' => [
                 'nullable',
                 Rule::exists('currencies', 'code')
-                    ->where('status', true),
+                    ->where('status', 'active'),
             ],
             'billing_notes' => 'nullable|string',
             'status' => 'nullable|in:active,suspended,closed',
@@ -129,7 +129,7 @@ class ClientBillingInfoController extends Controller
                     'currency' => [
                         'nullable',
                         Rule::exists('currencies', 'code')
-                            ->where('status', true),
+                            ->where('status', 'active'),
                     ],
                     'billing_notes' => 'nullable|string',
                     'status' => 'nullable|in:active,suspended,closed',

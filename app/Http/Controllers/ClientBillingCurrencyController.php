@@ -58,7 +58,7 @@ class ClientBillingCurrencyController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $validated['status'] = true;
+        $validated['status'] = 'active';
         $validated['name'] = ['en' => $validated['name'], 'ar' => $validated['name']];
         if (!empty($validated['description'])) {
             $validated['description'] = ['en' => $validated['description'], 'ar' => $validated['description']];
@@ -108,7 +108,7 @@ class ClientBillingCurrencyController extends Controller
     public function getAllCurrencies()
     {
         $locale = app()->getLocale();
-        $currencies = Currency::where('status', true)
+        $currencies = Currency::where('status', 'active')
             ->orderByRaw("JSON_EXTRACT(name, '$.{$locale}') ASC")
             ->get(['id', 'name', 'code', 'symbol']);
         

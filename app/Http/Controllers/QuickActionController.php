@@ -51,7 +51,7 @@ class QuickActionController extends Controller
             ->get(['id', 'name']);
 
         $locale = app()->getLocale();
-        $countries = Country::where('is_active', true)
+        $countries = Country::where('status', 'active')
             ->orderByRaw("JSON_EXTRACT(nationality_name, '$.{$locale}')")
             ->orderByRaw("JSON_EXTRACT(nationality_name, '$.en')")
             ->get(['id', 'name', 'nationality_name'])
@@ -103,7 +103,7 @@ class QuickActionController extends Controller
                 ];
             });
 
-        $countryModels = Country::where('is_active', true)
+        $countryModels = Country::where('status', 'active')
             ->orderBy('id')
             ->get(['id', 'name', 'nationality_name', 'country_code']);
 
@@ -120,7 +120,7 @@ class QuickActionController extends Controller
             ];
         });
 
-        $phoneCountries = Country::where('is_active', true)
+        $phoneCountries = Country::where('status', 'active')
             ->whereNotNull('country_code')
             ->get(['id', 'name', 'country_code'])
             ->map(function ($country) {

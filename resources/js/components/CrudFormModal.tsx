@@ -702,10 +702,12 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
 
             case 'switch':
                 // Don't render any label here, it will be handled by the parent component
+                // Support both boolean and string status ('active'/'inactive') for checked display
+                const switchChecked = formData[field.name] === true || formData[field.name] === 'active';
                 return (
                     <Switch
                         id={field.name}
-                        checked={!!formData[field.name]}
+                        checked={switchChecked}
                         onCheckedChange={(checked) => handleChange(field.name, checked)}
                         disabled={mode === 'view' || field.disabled}
                     />

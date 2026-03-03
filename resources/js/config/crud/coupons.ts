@@ -7,8 +7,8 @@ import { toast } from '@/components/custom-toast';
 import { t } from '@/utils/i18n';
 
 // Separate component for status toggle to properly handle hooks
-const StatusToggle = ({ initialValue, rowId }: { initialValue: boolean, rowId: number }) => {
-  const [isChecked, setIsChecked] = React.useState(initialValue);
+const StatusToggle = ({ initialValue, rowId }: { initialValue: string; rowId: number }) => {
+  const [isChecked, setIsChecked] = React.useState(initialValue === 'active');
 
   const handleToggle = async () => {
     try {
@@ -57,7 +57,7 @@ const StatusToggle = ({ initialValue, rowId }: { initialValue: boolean, rowId: n
 
       if (response.ok) {
         const data = await response.json();
-        setIsChecked(data.status);
+        setIsChecked(data.status === 'active');
         toast.success(data.message || 'Status updated successfully');
       } else {
         const errorData = await response.text();
@@ -138,9 +138,9 @@ export const couponsConfig: CrudConfig = {
       {
         key: 'status',
         label: t('Status'),
-        render: (value, row) => {
+        render: (value: string, row) => {
           // Use a component to properly handle hooks
-          return React.createElement(StatusToggle, { initialValue: !!value, rowId: row.id });
+          return React.createElement(StatusToggle, { initialValue: value || 'inactive', rowId: row.id });
         }
       }
     ],
@@ -188,8 +188,8 @@ export const couponsConfig: CrudConfig = {
       type: 'select',
       options: [
         { value: 'all', label: t('All Status') },
-        { value: '1', label: t('Active') },
-        { value: '0', label: t('Inactive') }
+        { value: 'active', label: t('Active') },
+        { value: 'inactive', label: t('Inactive') }
       ]
     }
   ],
@@ -331,9 +331,16 @@ export const couponsConfig: CrudConfig = {
         label: t('Status'),
         type: 'switch',
         colSpan: 6,
-        defaultValue: true,
+        defaultValue: 'active',
         placeholder: t('Enable or disable this coupon')
       }
-    ]
+    ],
+    transformData: (data: any) => {
+      const transformed = { ...data };
+      if (transformed.status !== undefined) {
+        transformed.status = transformed.status === true || transformed.status === 'active' ? 'active' : 'inactive';
+      }
+      return transformed;
+    }
   }
 };
