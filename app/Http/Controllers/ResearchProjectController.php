@@ -72,7 +72,7 @@ class ResearchProjectController extends Controller
             'status' => 'nullable|in:active,completed,on_hold,cancelled',
         ]);
 
-        if ($validated['case_id']) {
+        if ($request->input('case_id')) {
             $case = CaseModel::where('id', $validated['case_id'])->where('tenant_id', createdBy())->first();
             if (!$case) {
                 return redirect()->back()->with('error', __('Invalid case selection.'));

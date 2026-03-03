@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
-            $table->string('message_id')->unique();
+            $table->string('message_id');
             $table->unsignedBigInteger('sender_id');
             $table->unsignedBigInteger('recipient_id')->nullable();
             $table->unsignedBigInteger('conversation_id')->nullable();
@@ -32,6 +32,8 @@ return new class extends Migration
 
             $table->index(['tenant_id', 'recipient_id', 'is_read']);
             $table->index(['conversation_id', 'created_at']);
+
+            $table->unique(['tenant_id', 'message_id']);
         });
     }
 

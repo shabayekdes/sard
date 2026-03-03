@@ -265,7 +265,17 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
                             style={{ '--tw-ring-color': primaryColor, color: primaryColor } as React.CSSProperties}
                         />
                         <Label htmlFor="terms" className="text-xs leading-relaxed text-gray-600 dark:text-gray-400">
-                            {t('I agree to the terms and conditions and ')}
+                            {t('I agree to the ')}
+                            <a
+                                href="https://sard.app/terms-and-conditions"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline hover:opacity-80"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                {t('terms and conditions')}
+                            </a>
+                            {t(' and ')}
                             <a
                                 href="https://sard.app/privacy-policy"
                                 target="_blank"

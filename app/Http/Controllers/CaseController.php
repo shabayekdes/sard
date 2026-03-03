@@ -857,7 +857,7 @@ class CaseController extends BaseController
             'case_category_id' => 'nullable|exists:case_categories,id',
             'case_subcategory_id' => 'nullable|exists:case_categories,id',
             'case_status_id' => ['required', Rule::exists('case_statuses', 'id')->where('tenant_id', createdBy())],
-            'court_id' => ['nullabl', Rule::exists('courts', 'id')->where('tenant_id', createdBy())],
+            'court_id' => ['nullable', Rule::exists('courts', 'id')->where('tenant_id', createdBy())],
             'priority' => 'required|in:low,medium,high',
             'filing_date' => 'nullable|date',
             'expected_completion_date' => 'nullable|date',

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('dashboards', function (Blueprint $table) {
             $table->id();
-            $table->string('dashboard_id')->unique(); // Auto-generated dashboard ID
+            $table->string('dashboard_id'); // Auto-generated dashboard ID
             $table->string('name');
             $table->text('description')->nullable();
             $table->json('layout_config')->nullable(); // Widget layout configuration
@@ -29,6 +29,8 @@ return new class extends Migration
             $table->index(['tenant_id', 'status']);
             $table->index(['user_id']);
             $table->index(['dashboard_type']);
+
+            $table->unique(['tenant_id', 'dashboard_id']);
         });
     }
 

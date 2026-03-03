@@ -21,6 +21,8 @@ return new class extends Migration
             $table->date('invoice_date');
             $table->date('due_date');
             $table->text('notes')->nullable();
+            $table->string('payment_token', 32)->unique()->nullable();
+
             $table->timestamps();
 
             $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();

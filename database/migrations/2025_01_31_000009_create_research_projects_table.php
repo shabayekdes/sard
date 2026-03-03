@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('research_projects', function (Blueprint $table) {
             $table->id();
-            $table->string('research_id')->unique();
+            $table->string('research_id');
             $table->string('title');
             $table->text('description')->nullable();
             // research_type field removed - using research_type_id foreign key instead
@@ -25,6 +25,8 @@ return new class extends Migration
             $table->index(['tenant_id', 'status']);
             $table->index(['case_id']);
             $table->index(['assigned_to']);
+
+            $table->unique(['research_id', 'tenant_id']);
         });
     }
 
