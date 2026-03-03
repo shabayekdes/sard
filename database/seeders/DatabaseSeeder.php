@@ -36,7 +36,7 @@ class DatabaseSeeder extends Seeder
 
                 // Advocate module seeders
                 CompanyProfileSeeder::class,
-                PracticeAreaSeeder::class,
+                // PracticeAreaSeeder::class,
 
                 // Client documents
                 ClientDocumentSeeder::class,

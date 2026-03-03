@@ -213,84 +213,52 @@ class PermissionSeeder extends Seeder
 
             // Client Document management
             ['name' => 'manage-client-documents', 'module' => 'client_documents', 'label' => ['en' => 'Manage Client Documents', 'ar' => 'إدارة مستندات العملاء']],
-
             ['name' => 'manage-any-client-documents', 'module' => 'client_documents', 'label' => ['en' => 'Manage All Client Documents', 'ar' => 'إدارة جميع مستندات العملاء']],
-
             ['name' => 'manage-own-client-documents', 'module' => 'client_documents', 'label' => ['en' => 'Manage Own Client Documents', 'ar' => 'إدارة مستندات العملاء الخاصة']],
-
             ['name' => 'view-client-documents', 'module' => 'client_documents', 'label' => ['en' => 'View Client Documents', 'ar' => 'عرض مستندات العملاء']],
-
             ['name' => 'create-client-documents', 'module' => 'client_documents', 'label' => ['en' => 'Create Client Documents', 'ar' => 'إنشاء مستندات العملاء']],
-
             ['name' => 'edit-client-documents', 'module' => 'client_documents', 'label' => ['en' => 'Edit Client Documents', 'ar' => 'تعديل مستندات العملاء']],
-
             ['name' => 'delete-client-documents', 'module' => 'client_documents', 'label' => ['en' => 'Delete Client Documents', 'ar' => 'حذف مستندات العملاء']],
-
             ['name' => 'download-client-documents', 'module' => 'client_documents', 'label' => ['en' => 'Download Client Documents', 'ar' => 'تحميل مستندات العملاء']],
 
             // Client Billing Info management
             ['name' => 'manage-client-billing', 'module' => 'client_billing', 'label' => ['en' => 'Manage Client Billing', 'ar' => 'إدارة فوترة العملاء']],
-
             ['name' => 'manage-any-client-billing', 'module' => 'client_billing', 'label' => ['en' => 'Manage All Client Billing', 'ar' => 'إدارة جميع فوترة العملاء']],
-
             ['name' => 'manage-own-client-billing', 'module' => 'client_billing', 'label' => ['en' => 'Manage Own Client Billing', 'ar' => 'إدارة فوترة العملاء الخاصة']],
-
             ['name' => 'view-client-billing', 'module' => 'client_billing', 'label' => ['en' => 'View Client Billing', 'ar' => 'عرض فوترة العملاء']],
-
             ['name' => 'create-client-billing', 'module' => 'client_billing', 'label' => ['en' => 'Create Client Billing', 'ar' => 'إنشاء فوترة العملاء']],
-
             ['name' => 'edit-client-billing', 'module' => 'client_billing', 'label' => ['en' => 'Edit Client Billing', 'ar' => 'تعديل فوترة العملاء']],
-
             ['name' => 'delete-client-billing', 'module' => 'client_billing', 'label' => ['en' => 'Delete Client Billing', 'ar' => 'حذف فوترة العملاء']],
 
             // Company Profile management
             ['name' => 'manage-company-profiles', 'module' => 'company_profiles', 'label' => ['en' => 'Manage Company Profiles', 'ar' => 'إدارة ملفات الشركات']],
-
             ['name' => 'manage-any-company-profiles', 'module' => 'company_profiles', 'label' => ['en' => 'Manage All Company Profiles', 'ar' => 'إدارة جميع ملفات الشركات']],
-
             ['name' => 'manage-own-company-profiles', 'module' => 'company_profiles', 'label' => ['en' => 'Manage Own Company Profiles', 'ar' => 'إدارة ملفات الشركات الخاصة']],
-
             ['name' => 'view-company-profiles', 'module' => 'company_profiles', 'label' => ['en' => 'View Company Profiles', 'ar' => 'عرض ملفات الشركات']],
-
             ['name' => 'create-company-profiles', 'module' => 'company_profiles', 'label' => ['en' => 'Create Company Profiles', 'ar' => 'إنشاء ملفات الشركات']],
-
             ['name' => 'edit-company-profiles', 'module' => 'company_profiles', 'label' => ['en' => 'Edit Company Profiles', 'ar' => 'تعديل ملفات الشركات']],
-
             ['name' => 'delete-company-profiles', 'module' => 'company_profiles', 'label' => ['en' => 'Delete Company Profiles', 'ar' => 'حذف ملفات الشركات']],
-
             ['name' => 'toggle-status-company-profiles', 'module' => 'company_profiles', 'label' => ['en' => 'Toggle Status Company Profiles', 'ar' => 'تبديل حالة ملفات الشركات']],
 
             // Practice Area management
-            ['name' => 'manage-practice-areas', 'module' => 'practice_areas', 'label' => ['en' => 'Manage Practice Areas', 'ar' => 'إدارة مجالات الممارسة']],
-
-            ['name' => 'manage-any-practice-areas', 'module' => 'practice_areas', 'label' => ['en' => 'Manage All Practice Areas', 'ar' => 'إدارة جميع مجالات الممارسة']],
-
-            ['name' => 'manage-own-practice-areas', 'module' => 'practice_areas', 'label' => ['en' => 'Manage Own Practice Areas', 'ar' => 'إدارة مجالات الممارسة الخاصة']],
-
-            ['name' => 'view-practice-areas', 'module' => 'practice_areas', 'label' => ['en' => 'View Practice Areas', 'ar' => 'عرض مجالات الممارسة']],
-
-            ['name' => 'create-practice-areas', 'module' => 'practice_areas', 'label' => ['en' => 'Create Practice Areas', 'ar' => 'إنشاء مجالات الممارسة']],
-
-            ['name' => 'edit-practice-areas', 'module' => 'practice_areas', 'label' => ['en' => 'Edit Practice Areas', 'ar' => 'تعديل مجالات الممارسة']],
-
-            ['name' => 'delete-practice-areas', 'module' => 'practice_areas', 'label' => ['en' => 'Delete Practice Areas', 'ar' => 'حذف مجالات الممارسة']],
-
-            ['name' => 'toggle-status-practice-areas', 'module' => 'practice_areas', 'label' => ['en' => 'Toggle Status Practice Areas', 'ar' => 'تبديل حالة مجالات الممارسة']],
+            // ['name' => 'manage-practice-areas', 'module' => 'practice_areas', 'label' => ['en' => 'Manage Practice Areas', 'ar' => 'إدارة مجالات الممارسة']],
+            // ['name' => 'manage-any-practice-areas', 'module' => 'practice_areas', 'label' => ['en' => 'Manage All Practice Areas', 'ar' => 'إدارة جميع مجالات الممارسة']],
+            // ['name' => 'manage-own-practice-areas', 'module' => 'practice_areas', 'label' => ['en' => 'Manage Own Practice Areas', 'ar' => 'إدارة مجالات الممارسة الخاصة']],
+            // ['name' => 'view-practice-areas', 'module' => 'practice_areas', 'label' => ['en' => 'View Practice Areas', 'ar' => 'عرض مجالات الممارسة']],
+            // ['name' => 'create-practice-areas', 'module' => 'practice_areas', 'label' => ['en' => 'Create Practice Areas', 'ar' => 'إنشاء مجالات الممارسة']],
+            // ['name' => 'edit-practice-areas', 'module' => 'practice_areas', 'label' => ['en' => 'Edit Practice Areas', 'ar' => 'تعديل مجالات الممارسة']],
+            // ['name' => 'delete-practice-areas', 'module' => 'practice_areas', 'label' => ['en' => 'Delete Practice Areas', 'ar' => 'حذف مجالات الممارسة']],
+            // ['name' => 'toggle-status-practice-areas', 'module' => 'practice_areas', 'label' => ['en' => 'Toggle Status Practice Areas', 'ar' => 'تبديل حالة مجالات الممارسة']],
 
             // Company Setting management
             ['name' => 'manage-company-settings', 'module' => 'company_settings', 'label' => ['en' => 'Manage Company Settings', 'ar' => 'إدارة إعدادات الشركة']],
-
             ['name' => 'manage-any-company-settings', 'module' => 'company_settings', 'label' => ['en' => 'Manage All Company Settings', 'ar' => 'إدارة جميع إعدادات الشركة']],
-
             ['name' => 'manage-own-company-settings', 'module' => 'company_settings', 'label' => ['en' => 'Manage Own Company Settings', 'ar' => 'إدارة إعدادات الشركة الخاصة']],
-
             ['name' => 'view-company-settings', 'module' => 'company_settings', 'label' => ['en' => 'View Company Settings', 'ar' => 'عرض إعدادات الشركة']],
-
             ['name' => 'edit-company-settings', 'module' => 'company_settings', 'label' => ['en' => 'Edit Company Settings', 'ar' => 'تعديل إعدادات الشركة']],
 
             // Case Document management
             ['name' => 'manage-case-documents', 'module' => 'case_documents', 'label' => ['en' => 'Manage Case Documents', 'ar' => 'إدارة مستندات القضايا']],
-
             ['name' => 'manage-any-case-documents', 'module' => 'case_documents', 'label' => ['en' => 'Manage All Case Documents', 'ar' => 'إدارة جميع مستندات القضايا']],
 
             ['name' => 'manage-own-case-documents', 'module' => 'case_documents', 'label' => ['en' => 'Manage Own Case Documents', 'ar' => 'إدارة مستندات القضايا الخاصة']],
@@ -668,38 +636,38 @@ class PermissionSeeder extends Seeder
             ['name' => 'toggle-status-research-categories', 'module' => 'research_categories', 'label' => ['en' => 'Toggle Status Research Categories', 'ar' => 'تبديل حالة فئات البحث']],
 
             // Knowledge Articles
-            ['name' => 'manage-knowledge-articles', 'module' => 'knowledge_articles', 'label' => ['en' => 'Manage Knowledge Articles', 'ar' => 'إدارة مقالات المعرفة']],
-
-            ['name' => 'manage-any-knowledge-articles', 'module' => 'knowledge_articles', 'label' => ['en' => 'Manage All Knowledge Articles', 'ar' => 'إدارة جميع مقالات المعرفة']],
-
-            ['name' => 'manage-own-knowledge-articles', 'module' => 'knowledge_articles', 'label' => ['en' => 'Manage Own Knowledge Articles', 'ar' => 'إدارة مقالات المعرفة الخاصة']],
-
-            ['name' => 'view-knowledge-articles', 'module' => 'knowledge_articles', 'label' => ['en' => 'View Knowledge Articles', 'ar' => 'عرض مقالات المعرفة']],
-
-            ['name' => 'create-knowledge-articles', 'module' => 'knowledge_articles', 'label' => ['en' => 'Create Knowledge Articles', 'ar' => 'إنشاء مقالات المعرفة']],
-
-            ['name' => 'edit-knowledge-articles', 'module' => 'knowledge_articles', 'label' => ['en' => 'Edit Knowledge Articles', 'ar' => 'تعديل مقالات المعرفة']],
-
-            ['name' => 'delete-knowledge-articles', 'module' => 'knowledge_articles', 'label' => ['en' => 'Delete Knowledge Articles', 'ar' => 'حذف مقالات المعرفة']],
-
-            ['name' => 'publish-knowledge-articles', 'module' => 'knowledge_articles', 'label' => ['en' => 'Publish Knowledge Articles', 'ar' => 'نشر مقالات المعرفة']],
+            // ['name' => 'manage-knowledge-articles', 'module' => 'knowledge_articles', 'label' => ['en' => 'Manage Knowledge Articles', 'ar' => 'إدارة مقالات المعرفة']],
+            //
+            // ['name' => 'manage-any-knowledge-articles', 'module' => 'knowledge_articles', 'label' => ['en' => 'Manage All Knowledge Articles', 'ar' => 'إدارة جميع مقالات المعرفة']],
+            //
+            // ['name' => 'manage-own-knowledge-articles', 'module' => 'knowledge_articles', 'label' => ['en' => 'Manage Own Knowledge Articles', 'ar' => 'إدارة مقالات المعرفة الخاصة']],
+            //
+            // ['name' => 'view-knowledge-articles', 'module' => 'knowledge_articles', 'label' => ['en' => 'View Knowledge Articles', 'ar' => 'عرض مقالات المعرفة']],
+            //
+            // ['name' => 'create-knowledge-articles', 'module' => 'knowledge_articles', 'label' => ['en' => 'Create Knowledge Articles', 'ar' => 'إنشاء مقالات المعرفة']],
+            //
+            // ['name' => 'edit-knowledge-articles', 'module' => 'knowledge_articles', 'label' => ['en' => 'Edit Knowledge Articles', 'ar' => 'تعديل مقالات المعرفة']],
+            //
+            // ['name' => 'delete-knowledge-articles', 'module' => 'knowledge_articles', 'label' => ['en' => 'Delete Knowledge Articles', 'ar' => 'حذف مقالات المعرفة']],
+            //
+            // ['name' => 'publish-knowledge-articles', 'module' => 'knowledge_articles', 'label' => ['en' => 'Publish Knowledge Articles', 'ar' => 'نشر مقالات المعرفة']],
 
             // Legal Precedents
-            ['name' => 'manage-legal-precedents', 'module' => 'legal_precedents', 'label' => ['en' => 'Manage Legal Precedents', 'ar' => 'إدارة السوابق القانونية']],
-
-            ['name' => 'manage-any-legal-precedents', 'module' => 'legal_precedents', 'label' => ['en' => 'Manage All Legal Precedents', 'ar' => 'إدارة جميع السوابق القانونية']],
-
-            ['name' => 'manage-own-legal-precedents', 'module' => 'legal_precedents', 'label' => ['en' => 'Manage Own Legal Precedents', 'ar' => 'إدارة السوابق القانونية الخاصة']],
-
-            ['name' => 'view-legal-precedents', 'module' => 'legal_precedents', 'label' => ['en' => 'View Legal Precedents', 'ar' => 'عرض السوابق القانونية']],
-
-            ['name' => 'create-legal-precedents', 'module' => 'legal_precedents', 'label' => ['en' => 'Create Legal Precedents', 'ar' => 'إنشاء السوابق القانونية']],
-
-            ['name' => 'edit-legal-precedents', 'module' => 'legal_precedents', 'label' => ['en' => 'Edit Legal Precedents', 'ar' => 'تعديل السوابق القانونية']],
-
-            ['name' => 'delete-legal-precedents', 'module' => 'legal_precedents', 'label' => ['en' => 'Delete Legal Precedents', 'ar' => 'حذف السوابق القانونية']],
-
-            ['name' => 'toggle-status-legal-precedents', 'module' => 'legal_precedents', 'label' => ['en' => 'Toggle Status Legal Precedents', 'ar' => 'تبديل حالة السوابق القانونية']],
+            // ['name' => 'manage-legal-precedents', 'module' => 'legal_precedents', 'label' => ['en' => 'Manage Legal Precedents', 'ar' => 'إدارة السوابق القانونية']],
+            //
+            // ['name' => 'manage-any-legal-precedents', 'module' => 'legal_precedents', 'label' => ['en' => 'Manage All Legal Precedents', 'ar' => 'إدارة جميع السوابق القانونية']],
+            //
+            // ['name' => 'manage-own-legal-precedents', 'module' => 'legal_precedents', 'label' => ['en' => 'Manage Own Legal Precedents', 'ar' => 'إدارة السوابق القانونية الخاصة']],
+            //
+            // ['name' => 'view-legal-precedents', 'module' => 'legal_precedents', 'label' => ['en' => 'View Legal Precedents', 'ar' => 'عرض السوابق القانونية']],
+            //
+            // ['name' => 'create-legal-precedents', 'module' => 'legal_precedents', 'label' => ['en' => 'Create Legal Precedents', 'ar' => 'إنشاء السوابق القانونية']],
+            //
+            // ['name' => 'edit-legal-precedents', 'module' => 'legal_precedents', 'label' => ['en' => 'Edit Legal Precedents', 'ar' => 'تعديل السوابق القانونية']],
+            //
+            // ['name' => 'delete-legal-precedents', 'module' => 'legal_precedents', 'label' => ['en' => 'Delete Legal Precedents', 'ar' => 'حذف السوابق القانونية']],
+            //
+            // ['name' => 'toggle-status-legal-precedents', 'module' => 'legal_precedents', 'label' => ['en' => 'Toggle Status Legal Precedents', 'ar' => 'تبديل حالة السوابق القانونية']],
 
             // Research Notes
             ['name' => 'manage-research-notes', 'module' => 'research_notes', 'label' => ['en' => 'Manage Research Notes', 'ar' => 'إدارة ملاحظات البحث']],
@@ -717,19 +685,19 @@ class PermissionSeeder extends Seeder
             ['name' => 'delete-research-notes', 'module' => 'research_notes', 'label' => ['en' => 'Delete Research Notes', 'ar' => 'حذف ملاحظات البحث']],
 
             // Research Citations
-            ['name' => 'manage-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Manage Research Citations', 'ar' => 'إدارة استشهادات البحث']],
-
-            ['name' => 'manage-any-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Manage All Research Citations', 'ar' => 'إدارة جميع استشهادات البحث']],
-
-            ['name' => 'manage-own-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Manage Own Research Citations', 'ar' => 'إدارة استشهادات البحث الخاصة']],
-
-            ['name' => 'view-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'View Research Citations', 'ar' => 'عرض استشهادات البحث']],
-
-            ['name' => 'create-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Create Research Citations', 'ar' => 'إنشاء استشهادات البحث']],
-
-            ['name' => 'edit-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Edit Research Citations', 'ar' => 'تعديل استشهادات البحث']],
-
-            ['name' => 'delete-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Delete Research Citations', 'ar' => 'حذف استشهادات البحث']],
+            // ['name' => 'manage-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Manage Research Citations', 'ar' => 'إدارة استشهادات البحث']],
+            //
+            // ['name' => 'manage-any-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Manage All Research Citations', 'ar' => 'إدارة جميع استشهادات البحث']],
+            //
+            // ['name' => 'manage-own-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Manage Own Research Citations', 'ar' => 'إدارة استشهادات البحث الخاصة']],
+            //
+            // ['name' => 'view-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'View Research Citations', 'ar' => 'عرض استشهادات البحث']],
+            //
+            // ['name' => 'create-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Create Research Citations', 'ar' => 'إنشاء استشهادات البحث']],
+            //
+            // ['name' => 'edit-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Edit Research Citations', 'ar' => 'تعديل استشهادات البحث']],
+            //
+            // ['name' => 'delete-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Delete Research Citations', 'ar' => 'حذف استشهادات البحث']],
 
             // Research Types
             ['name' => 'manage-research-types', 'module' => 'research_types', 'label' => ['en' => 'Manage Research Types', 'ar' => 'إدارة أنواع البحث']],
@@ -749,187 +717,187 @@ class PermissionSeeder extends Seeder
             ['name' => 'toggle-status-research-types', 'module' => 'research_types', 'label' => ['en' => 'Toggle Status Research Types', 'ar' => 'تبديل حالة أنواع البحث']],
 
             // Compliance Requirements
-            ['name' => 'manage-compliance-requirements', 'module' => 'compliance_requirements', 'label' => ['en' => 'Manage Compliance Requirements', 'ar' => 'إدارة متطلبات الامتثال']],
-
-            ['name' => 'manage-any-compliance-requirements', 'module' => 'compliance_requirements', 'label' => ['en' => 'Manage All Compliance Requirements', 'ar' => 'إدارة جميع متطلبات الامتثال']],
-
-            ['name' => 'manage-own-compliance-requirements', 'module' => 'compliance_requirements', 'label' => ['en' => 'Manage Own Compliance Requirements', 'ar' => 'إدارة متطلبات الامتثال الخاصة']],
-
-            ['name' => 'view-compliance-requirements', 'module' => 'compliance_requirements', 'label' => ['en' => 'View Compliance Requirements', 'ar' => 'عرض متطلبات الامتثال']],
-
-            ['name' => 'create-compliance-requirements', 'module' => 'compliance_requirements', 'label' => ['en' => 'Create Compliance Requirements', 'ar' => 'إنشاء متطلبات الامتثال']],
-
-            ['name' => 'edit-compliance-requirements', 'module' => 'compliance_requirements', 'label' => ['en' => 'Edit Compliance Requirements', 'ar' => 'تعديل متطلبات الامتثال']],
-
-            ['name' => 'delete-compliance-requirements', 'module' => 'compliance_requirements', 'label' => ['en' => 'Delete Compliance Requirements', 'ar' => 'حذف متطلبات الامتثال']],
-
-            ['name' => 'toggle-status-compliance-requirements', 'module' => 'compliance_requirements', 'label' => ['en' => 'Toggle Status Compliance Requirements', 'ar' => 'تبديل حالة متطلبات الامتثال']],
+            // ['name' => 'manage-compliance-requirements', 'module' => 'compliance_requirements', 'label' => ['en' => 'Manage Compliance Requirements', 'ar' => 'إدارة متطلبات الامتثال']],
+            //
+            // ['name' => 'manage-any-compliance-requirements', 'module' => 'compliance_requirements', 'label' => ['en' => 'Manage All Compliance Requirements', 'ar' => 'إدارة جميع متطلبات الامتثال']],
+            //
+            // ['name' => 'manage-own-compliance-requirements', 'module' => 'compliance_requirements', 'label' => ['en' => 'Manage Own Compliance Requirements', 'ar' => 'إدارة متطلبات الامتثال الخاصة']],
+            //
+            // ['name' => 'view-compliance-requirements', 'module' => 'compliance_requirements', 'label' => ['en' => 'View Compliance Requirements', 'ar' => 'عرض متطلبات الامتثال']],
+            //
+            // ['name' => 'create-compliance-requirements', 'module' => 'compliance_requirements', 'label' => ['en' => 'Create Compliance Requirements', 'ar' => 'إنشاء متطلبات الامتثال']],
+            //
+            // ['name' => 'edit-compliance-requirements', 'module' => 'compliance_requirements', 'label' => ['en' => 'Edit Compliance Requirements', 'ar' => 'تعديل متطلبات الامتثال']],
+            //
+            // ['name' => 'delete-compliance-requirements', 'module' => 'compliance_requirements', 'label' => ['en' => 'Delete Compliance Requirements', 'ar' => 'حذف متطلبات الامتثال']],
+            //
+            // ['name' => 'toggle-status-compliance-requirements', 'module' => 'compliance_requirements', 'label' => ['en' => 'Toggle Status Compliance Requirements', 'ar' => 'تبديل حالة متطلبات الامتثال']],
 
             // Compliance Categories
-            ['name' => 'manage-compliance-categories', 'module' => 'compliance_categories', 'label' => ['en' => 'Manage Compliance Categories', 'ar' => 'إدارة فئات الامتثال']],
-
-            ['name' => 'manage-any-compliance-categories', 'module' => 'compliance_categories', 'label' => ['en' => 'Manage All Compliance Categories', 'ar' => 'إدارة جميع فئات الامتثال']],
-
-            ['name' => 'manage-own-compliance-categories', 'module' => 'compliance_categories', 'label' => ['en' => 'Manage Own Compliance Categories', 'ar' => 'إدارة فئات الامتثال الخاصة']],
-
-            ['name' => 'view-compliance-categories', 'module' => 'compliance_categories', 'label' => ['en' => 'View Compliance Categories', 'ar' => 'عرض فئات الامتثال']],
-
-            ['name' => 'create-compliance-categories', 'module' => 'compliance_categories', 'label' => ['en' => 'Create Compliance Categories', 'ar' => 'إنشاء فئات الامتثال']],
-
-            ['name' => 'edit-compliance-categories', 'module' => 'compliance_categories', 'label' => ['en' => 'Edit Compliance Categories', 'ar' => 'تعديل فئات الامتثال']],
-
-            ['name' => 'delete-compliance-categories', 'module' => 'compliance_categories', 'label' => ['en' => 'Delete Compliance Categories', 'ar' => 'حذف فئات الامتثال']],
-
-            ['name' => 'toggle-status-compliance-categories', 'module' => 'compliance_categories', 'label' => ['en' => 'Toggle Status Compliance Categories', 'ar' => 'تبديل حالة فئات الامتثال']],
+            // ['name' => 'manage-compliance-categories', 'module' => 'compliance_categories', 'label' => ['en' => 'Manage Compliance Categories', 'ar' => 'إدارة فئات الامتثال']],
+            //
+            // ['name' => 'manage-any-compliance-categories', 'module' => 'compliance_categories', 'label' => ['en' => 'Manage All Compliance Categories', 'ar' => 'إدارة جميع فئات الامتثال']],
+            //
+            // ['name' => 'manage-own-compliance-categories', 'module' => 'compliance_categories', 'label' => ['en' => 'Manage Own Compliance Categories', 'ar' => 'إدارة فئات الامتثال الخاصة']],
+            //
+            // ['name' => 'view-compliance-categories', 'module' => 'compliance_categories', 'label' => ['en' => 'View Compliance Categories', 'ar' => 'عرض فئات الامتثال']],
+            //
+            // ['name' => 'create-compliance-categories', 'module' => 'compliance_categories', 'label' => ['en' => 'Create Compliance Categories', 'ar' => 'إنشاء فئات الامتثال']],
+            //
+            // ['name' => 'edit-compliance-categories', 'module' => 'compliance_categories', 'label' => ['en' => 'Edit Compliance Categories', 'ar' => 'تعديل فئات الامتثال']],
+            //
+            // ['name' => 'delete-compliance-categories', 'module' => 'compliance_categories', 'label' => ['en' => 'Delete Compliance Categories', 'ar' => 'حذف فئات الامتثال']],
+            //
+            // ['name' => 'toggle-status-compliance-categories', 'module' => 'compliance_categories', 'label' => ['en' => 'Toggle Status Compliance Categories', 'ar' => 'تبديل حالة فئات الامتثال']],
 
             // Compliance Frequencies
-            ['name' => 'manage-compliance-frequencies', 'module' => 'compliance_frequencies', 'label' => ['en' => 'Manage Compliance Frequencies', 'ar' => 'إدارة ترددات الامتثال']],
-
-            ['name' => 'manage-any-compliance-frequencies', 'module' => 'compliance_frequencies', 'label' => ['en' => 'Manage All Compliance Frequencies', 'ar' => 'إدارة جميع ترددات الامتثال']],
-
-            ['name' => 'manage-own-compliance-frequencies', 'module' => 'compliance_frequencies', 'label' => ['en' => 'Manage Own Compliance Frequencies', 'ar' => 'إدارة ترددات الامتثال الخاصة']],
-
-            ['name' => 'view-compliance-frequencies', 'module' => 'compliance_frequencies', 'label' => ['en' => 'View Compliance Frequencies', 'ar' => 'عرض ترددات الامتثال']],
-
-            ['name' => 'create-compliance-frequencies', 'module' => 'compliance_frequencies', 'label' => ['en' => 'Create Compliance Frequencies', 'ar' => 'إنشاء ترددات الامتثال']],
-
-            ['name' => 'edit-compliance-frequencies', 'module' => 'compliance_frequencies', 'label' => ['en' => 'Edit Compliance Frequencies', 'ar' => 'تعديل ترددات الامتثال']],
-
-            ['name' => 'delete-compliance-frequencies', 'module' => 'compliance_frequencies', 'label' => ['en' => 'Delete Compliance Frequencies', 'ar' => 'حذف ترددات الامتثال']],
-
-            ['name' => 'toggle-status-compliance-frequencies', 'module' => 'compliance_frequencies', 'label' => ['en' => 'Toggle Status Compliance Frequencies', 'ar' => 'تبديل حالة ترددات الامتثال']],
+            // ['name' => 'manage-compliance-frequencies', 'module' => 'compliance_frequencies', 'label' => ['en' => 'Manage Compliance Frequencies', 'ar' => 'إدارة ترددات الامتثال']],
+            //
+            // ['name' => 'manage-any-compliance-frequencies', 'module' => 'compliance_frequencies', 'label' => ['en' => 'Manage All Compliance Frequencies', 'ar' => 'إدارة جميع ترددات الامتثال']],
+            //
+            // ['name' => 'manage-own-compliance-frequencies', 'module' => 'compliance_frequencies', 'label' => ['en' => 'Manage Own Compliance Frequencies', 'ar' => 'إدارة ترددات الامتثال الخاصة']],
+            //
+            // ['name' => 'view-compliance-frequencies', 'module' => 'compliance_frequencies', 'label' => ['en' => 'View Compliance Frequencies', 'ar' => 'عرض ترددات الامتثال']],
+            //
+            // ['name' => 'create-compliance-frequencies', 'module' => 'compliance_frequencies', 'label' => ['en' => 'Create Compliance Frequencies', 'ar' => 'إنشاء ترددات الامتثال']],
+            //
+            // ['name' => 'edit-compliance-frequencies', 'module' => 'compliance_frequencies', 'label' => ['en' => 'Edit Compliance Frequencies', 'ar' => 'تعديل ترددات الامتثال']],
+            //
+            // ['name' => 'delete-compliance-frequencies', 'module' => 'compliance_frequencies', 'label' => ['en' => 'Delete Compliance Frequencies', 'ar' => 'حذف ترددات الامتثال']],
+            //
+            // ['name' => 'toggle-status-compliance-frequencies', 'module' => 'compliance_frequencies', 'label' => ['en' => 'Toggle Status Compliance Frequencies', 'ar' => 'تبديل حالة ترددات الامتثال']],
 
             // Professional Licenses
-            ['name' => 'manage-professional-licenses', 'module' => 'professional_licenses', 'label' => ['en' => 'Manage Professional Licenses', 'ar' => 'إدارة التراخيص المهنية']],
-
-            ['name' => 'manage-any-professional-licenses', 'module' => 'professional_licenses', 'label' => ['en' => 'Manage All Professional Licenses', 'ar' => 'إدارة جميع التراخيص المهنية']],
-
-            ['name' => 'manage-own-professional-licenses', 'module' => 'professional_licenses', 'label' => ['en' => 'Manage Own Professional Licenses', 'ar' => 'إدارة التراخيص المهنية الخاصة']],
-
-            ['name' => 'view-professional-licenses', 'module' => 'professional_licenses', 'label' => ['en' => 'View Professional Licenses', 'ar' => 'عرض التراخيص المهنية']],
-
-            ['name' => 'create-professional-licenses', 'module' => 'professional_licenses', 'label' => ['en' => 'Create Professional Licenses', 'ar' => 'Create Professional Licenses']],
-
-            ['name' => 'edit-professional-licenses', 'module' => 'professional_licenses', 'label' => ['en' => 'Edit Professional Licenses', 'ar' => 'تعديل التراخيص المهنية']],
-
-            ['name' => 'delete-professional-licenses', 'module' => 'professional_licenses', 'label' => ['en' => 'Delete Professional Licenses', 'ar' => 'Delete Professional Licenses']],
-
-            ['name' => 'toggle-status-professional-licenses', 'module' => 'professional_licenses', 'label' => ['en' => 'Toggle Status Professional Licenses', 'ar' => 'تبديل حالة التراخيص المهنية']],
+            // ['name' => 'manage-professional-licenses', 'module' => 'professional_licenses', 'label' => ['en' => 'Manage Professional Licenses', 'ar' => 'إدارة التراخيص المهنية']],
+            //
+            // ['name' => 'manage-any-professional-licenses', 'module' => 'professional_licenses', 'label' => ['en' => 'Manage All Professional Licenses', 'ar' => 'إدارة جميع التراخيص المهنية']],
+            //
+            // ['name' => 'manage-own-professional-licenses', 'module' => 'professional_licenses', 'label' => ['en' => 'Manage Own Professional Licenses', 'ar' => 'إدارة التراخيص المهنية الخاصة']],
+            //
+            // ['name' => 'view-professional-licenses', 'module' => 'professional_licenses', 'label' => ['en' => 'View Professional Licenses', 'ar' => 'عرض التراخيص المهنية']],
+            //
+            // ['name' => 'create-professional-licenses', 'module' => 'professional_licenses', 'label' => ['en' => 'Create Professional Licenses', 'ar' => 'Create Professional Licenses']],
+            //
+            // ['name' => 'edit-professional-licenses', 'module' => 'professional_licenses', 'label' => ['en' => 'Edit Professional Licenses', 'ar' => 'تعديل التراخيص المهنية']],
+            //
+            // ['name' => 'delete-professional-licenses', 'module' => 'professional_licenses', 'label' => ['en' => 'Delete Professional Licenses', 'ar' => 'Delete Professional Licenses']],
+            //
+            // ['name' => 'toggle-status-professional-licenses', 'module' => 'professional_licenses', 'label' => ['en' => 'Toggle Status Professional Licenses', 'ar' => 'تبديل حالة التراخيص المهنية']],
 
             // Regulatory Bodies
-            ['name' => 'manage-regulatory-bodies', 'module' => 'regulatory_bodies', 'label' => ['en' => 'Manage Regulatory Bodies', 'ar' => 'إدارة الهيئات التنظيمية']],
-
-            ['name' => 'manage-any-regulatory-bodies', 'module' => 'regulatory_bodies', 'label' => ['en' => 'Manage All Regulatory Bodies', 'ar' => 'إدارة جميع الهيئات التنظيمية']],
-
-            ['name' => 'manage-own-regulatory-bodies', 'module' => 'regulatory_bodies', 'label' => ['en' => 'Manage Own Regulatory Bodies', 'ar' => 'Manage Own Regulatory Bodies']],
-
-            ['name' => 'view-regulatory-bodies', 'module' => 'regulatory_bodies', 'label' => ['en' => 'View Regulatory Bodies', 'ar' => 'عرض الهيئات التنظيمية']],
-
-            ['name' => 'create-regulatory-bodies', 'module' => 'regulatory_bodies', 'label' => ['en' => 'Create Regulatory Bodies', 'ar' => 'إنشاء الهيئات التنظيمية']],
-
-            ['name' => 'edit-regulatory-bodies', 'module' => 'regulatory_bodies', 'label' => ['en' => 'Edit Regulatory Bodies', 'ar' => 'تعديل الهيئات التنظيمية']],
-
-            ['name' => 'delete-regulatory-bodies', 'module' => 'regulatory_bodies', 'label' => ['en' => 'Delete Regulatory Bodies', 'ar' => 'حذف الهيئات التنظيمية']],
-
-            ['name' => 'toggle-status-regulatory-bodies', 'module' => 'regulatory_bodies', 'label' => ['en' => 'Toggle Status Regulatory Bodies', 'ar' => 'Toggle Status Regulatory Bodies']],
+            // ['name' => 'manage-regulatory-bodies', 'module' => 'regulatory_bodies', 'label' => ['en' => 'Manage Regulatory Bodies', 'ar' => 'إدارة الهيئات التنظيمية']],
+            //
+            // ['name' => 'manage-any-regulatory-bodies', 'module' => 'regulatory_bodies', 'label' => ['en' => 'Manage All Regulatory Bodies', 'ar' => 'إدارة جميع الهيئات التنظيمية']],
+            //
+            // ['name' => 'manage-own-regulatory-bodies', 'module' => 'regulatory_bodies', 'label' => ['en' => 'Manage Own Regulatory Bodies', 'ar' => 'Manage Own Regulatory Bodies']],
+            //
+            // ['name' => 'view-regulatory-bodies', 'module' => 'regulatory_bodies', 'label' => ['en' => 'View Regulatory Bodies', 'ar' => 'عرض الهيئات التنظيمية']],
+            //
+            // ['name' => 'create-regulatory-bodies', 'module' => 'regulatory_bodies', 'label' => ['en' => 'Create Regulatory Bodies', 'ar' => 'إنشاء الهيئات التنظيمية']],
+            //
+            // ['name' => 'edit-regulatory-bodies', 'module' => 'regulatory_bodies', 'label' => ['en' => 'Edit Regulatory Bodies', 'ar' => 'تعديل الهيئات التنظيمية']],
+            //
+            // ['name' => 'delete-regulatory-bodies', 'module' => 'regulatory_bodies', 'label' => ['en' => 'Delete Regulatory Bodies', 'ar' => 'حذف الهيئات التنظيمية']],
+            //
+            // ['name' => 'toggle-status-regulatory-bodies', 'module' => 'regulatory_bodies', 'label' => ['en' => 'Toggle Status Regulatory Bodies', 'ar' => 'Toggle Status Regulatory Bodies']],
 
             // Compliance Policies
-            ['name' => 'manage-compliance-policies', 'module' => 'compliance_policies', 'label' => ['en' => 'Manage Compliance Policies', 'ar' => 'إدارة سياسات الامتثال']],
-
-            ['name' => 'manage-any-compliance-policies', 'module' => 'compliance_policies', 'label' => ['en' => 'Manage All Compliance Policies', 'ar' => 'إدارة جميع سياسات الامتثال']],
-
-            ['name' => 'manage-own-compliance-policies', 'module' => 'compliance_policies', 'label' => ['en' => 'Manage Own Compliance Policies', 'ar' => 'إدارة سياسات الامتثال الخاصة']],
-
-            ['name' => 'view-compliance-policies', 'module' => 'compliance_policies', 'label' => ['en' => 'View Compliance Policies', 'ar' => 'عرض سياسات الامتثال']],
-
-            ['name' => 'create-compliance-policies', 'module' => 'compliance_policies', 'label' => ['en' => 'Create Compliance Policies', 'ar' => 'إنشاء سياسات الامتثال']],
-
-            ['name' => 'edit-compliance-policies', 'module' => 'compliance_policies', 'label' => ['en' => 'Edit Compliance Policies', 'ar' => 'تعديل سياسات الامتثال']],
-
-            ['name' => 'delete-compliance-policies', 'module' => 'compliance_policies', 'label' => ['en' => 'Delete Compliance Policies', 'ar' => 'حذف سياسات الامتثال']],
-
-            ['name' => 'toggle-status-compliance-policies', 'module' => 'compliance_policies', 'label' => ['en' => 'Toggle Status Compliance Policies', 'ar' => 'تبديل حالة سياسات الامتثال']],
+            // ['name' => 'manage-compliance-policies', 'module' => 'compliance_policies', 'label' => ['en' => 'Manage Compliance Policies', 'ar' => 'إدارة سياسات الامتثال']],
+            //
+            // ['name' => 'manage-any-compliance-policies', 'module' => 'compliance_policies', 'label' => ['en' => 'Manage All Compliance Policies', 'ar' => 'إدارة جميع سياسات الامتثال']],
+            //
+            // ['name' => 'manage-own-compliance-policies', 'module' => 'compliance_policies', 'label' => ['en' => 'Manage Own Compliance Policies', 'ar' => 'إدارة سياسات الامتثال الخاصة']],
+            //
+            // ['name' => 'view-compliance-policies', 'module' => 'compliance_policies', 'label' => ['en' => 'View Compliance Policies', 'ar' => 'عرض سياسات الامتثال']],
+            //
+            // ['name' => 'create-compliance-policies', 'module' => 'compliance_policies', 'label' => ['en' => 'Create Compliance Policies', 'ar' => 'إنشاء سياسات الامتثال']],
+            //
+            // ['name' => 'edit-compliance-policies', 'module' => 'compliance_policies', 'label' => ['en' => 'Edit Compliance Policies', 'ar' => 'تعديل سياسات الامتثال']],
+            //
+            // ['name' => 'delete-compliance-policies', 'module' => 'compliance_policies', 'label' => ['en' => 'Delete Compliance Policies', 'ar' => 'حذف سياسات الامتثال']],
+            //
+            // ['name' => 'toggle-status-compliance-policies', 'module' => 'compliance_policies', 'label' => ['en' => 'Toggle Status Compliance Policies', 'ar' => 'تبديل حالة سياسات الامتثال']],
 
             // CLE Tracking
-            ['name' => 'manage-cle-tracking', 'module' => 'cle_tracking', 'label' => ['en' => 'Manage CLE Tracking', 'ar' => 'إدارة تتبع CLE']],
-
-            ['name' => 'manage-any-cle-tracking', 'module' => 'cle_tracking', 'label' => ['en' => 'Manage All CLE Tracking', 'ar' => 'إدارة جميع تتبع CLE']],
-
-            ['name' => 'manage-own-cle-tracking', 'module' => 'cle_tracking', 'label' => ['en' => 'Manage Own CLE Tracking', 'ar' => 'إدارة تتبع CLE الخاصة']],
-
-            ['name' => 'view-cle-tracking', 'module' => 'cle_tracking', 'label' => ['en' => 'View CLE Tracking', 'ar' => 'عرض تتبع CLE']],
-
-            ['name' => 'create-cle-tracking', 'module' => 'cle_tracking', 'label' => ['en' => 'Create CLE Tracking', 'ar' => 'إنشاء تتبع CLE']],
-
-            ['name' => 'edit-cle-tracking', 'module' => 'cle_tracking', 'label' => ['en' => 'Edit CLE Tracking', 'ar' => 'تعديل تتبع CLE']],
-
-            ['name' => 'delete-cle-tracking', 'module' => 'cle_tracking', 'label' => ['en' => 'Delete CLE Tracking', 'ar' => 'حذف تتبع CLE']],
-
-            ['name' => 'download-cle-tracking', 'module' => 'cle_tracking', 'label' => ['en' => 'Download CLE Tracking', 'ar' => 'تحميل تتبع CLE']],
+            // ['name' => 'manage-cle-tracking', 'module' => 'cle_tracking', 'label' => ['en' => 'Manage CLE Tracking', 'ar' => 'إدارة تتبع CLE']],
+            //
+            // ['name' => 'manage-any-cle-tracking', 'module' => 'cle_tracking', 'label' => ['en' => 'Manage All CLE Tracking', 'ar' => 'إدارة جميع تتبع CLE']],
+            //
+            // ['name' => 'manage-own-cle-tracking', 'module' => 'cle_tracking', 'label' => ['en' => 'Manage Own CLE Tracking', 'ar' => 'إدارة تتبع CLE الخاصة']],
+            //
+            // ['name' => 'view-cle-tracking', 'module' => 'cle_tracking', 'label' => ['en' => 'View CLE Tracking', 'ar' => 'عرض تتبع CLE']],
+            //
+            // ['name' => 'create-cle-tracking', 'module' => 'cle_tracking', 'label' => ['en' => 'Create CLE Tracking', 'ar' => 'إنشاء تتبع CLE']],
+            //
+            // ['name' => 'edit-cle-tracking', 'module' => 'cle_tracking', 'label' => ['en' => 'Edit CLE Tracking', 'ar' => 'تعديل تتبع CLE']],
+            //
+            // ['name' => 'delete-cle-tracking', 'module' => 'cle_tracking', 'label' => ['en' => 'Delete CLE Tracking', 'ar' => 'حذف تتبع CLE']],
+            //
+            // ['name' => 'download-cle-tracking', 'module' => 'cle_tracking', 'label' => ['en' => 'Download CLE Tracking', 'ar' => 'تحميل تتبع CLE']],
 
             // Risk Categories
-            ['name' => 'manage-risk-categories', 'module' => 'risk_categories', 'label' => ['en' => 'Manage Risk Categories', 'ar' => 'إدارة فئات المخاطر']],
-
-            ['name' => 'manage-any-risk-categories', 'module' => 'risk_categories', 'label' => ['en' => 'Manage All Risk Categories', 'ar' => 'إدارة جميع فئات المخاطر']],
-
-            ['name' => 'manage-own-risk-categories', 'module' => 'risk_categories', 'label' => ['en' => 'Manage Own Risk Categories', 'ar' => 'إدارة فئات المخاطر الخاصة']],
-
-            ['name' => 'view-risk-categories', 'module' => 'risk_categories', 'label' => ['en' => 'View Risk Categories', 'ar' => 'عرض فئات المخاطر']],
-
-            ['name' => 'create-risk-categories', 'module' => 'risk_categories', 'label' => ['en' => 'Create Risk Categories', 'ar' => 'إنشاء فئات المخاطر']],
-
-            ['name' => 'edit-risk-categories', 'module' => 'risk_categories', 'label' => ['en' => 'Edit Risk Categories', 'ar' => 'تعديل فئات المخاطر']],
-
-            ['name' => 'delete-risk-categories', 'module' => 'risk_categories', 'label' => ['en' => 'Delete Risk Categories', 'ar' => 'Delete Risk Categories']],
-
-            ['name' => 'toggle-status-risk-categories', 'module' => 'risk_categories', 'label' => ['en' => 'Toggle Status Risk Categories', 'ar' => 'تبديل حالة فئات المخاطر']],
+            // ['name' => 'manage-risk-categories', 'module' => 'risk_categories', 'label' => ['en' => 'Manage Risk Categories', 'ar' => 'إدارة فئات المخاطر']],
+            //
+            // ['name' => 'manage-any-risk-categories', 'module' => 'risk_categories', 'label' => ['en' => 'Manage All Risk Categories', 'ar' => 'إدارة جميع فئات المخاطر']],
+            //
+            // ['name' => 'manage-own-risk-categories', 'module' => 'risk_categories', 'label' => ['en' => 'Manage Own Risk Categories', 'ar' => 'إدارة فئات المخاطر الخاصة']],
+            //
+            // ['name' => 'view-risk-categories', 'module' => 'risk_categories', 'label' => ['en' => 'View Risk Categories', 'ar' => 'عرض فئات المخاطر']],
+            //
+            // ['name' => 'create-risk-categories', 'module' => 'risk_categories', 'label' => ['en' => 'Create Risk Categories', 'ar' => 'إنشاء فئات المخاطر']],
+            //
+            // ['name' => 'edit-risk-categories', 'module' => 'risk_categories', 'label' => ['en' => 'Edit Risk Categories', 'ar' => 'تعديل فئات المخاطر']],
+            //
+            // ['name' => 'delete-risk-categories', 'module' => 'risk_categories', 'label' => ['en' => 'Delete Risk Categories', 'ar' => 'Delete Risk Categories']],
+            //
+            // ['name' => 'toggle-status-risk-categories', 'module' => 'risk_categories', 'label' => ['en' => 'Toggle Status Risk Categories', 'ar' => 'تبديل حالة فئات المخاطر']],
 
             // Risk Assessments
-            ['name' => 'manage-risk-assessments', 'module' => 'risk_assessments', 'label' => ['en' => 'Manage Risk Assessments', 'ar' => 'إدارة تقييمات المخاطر']],
-
-            ['name' => 'manage-any-risk-assessments', 'module' => 'risk_assessments', 'label' => ['en' => 'Manage All Risk Assessments', 'ar' => 'إدارة جميع تقييمات المخاطر']],
-
-            ['name' => 'manage-own-risk-assessments', 'module' => 'risk_assessments', 'label' => ['en' => 'Manage Own Risk Assessments', 'ar' => 'إدارة تقييمات المخاطر الخاصة']],
-
-            ['name' => 'view-risk-assessments', 'module' => 'risk_assessments', 'label' => ['en' => 'View Risk Assessments', 'ar' => 'عرض تقييمات المخاطر']],
-
-            ['name' => 'create-risk-assessments', 'module' => 'risk_assessments', 'label' => ['en' => 'Create Risk Assessments', 'ar' => 'إنشاء تقييمات المخاطر']],
-
-            ['name' => 'edit-risk-assessments', 'module' => 'risk_assessments', 'label' => ['en' => 'Edit Risk Assessments', 'ar' => 'تعديل تقييمات المخاطر']],
-
-            ['name' => 'delete-risk-assessments', 'module' => 'risk_assessments', 'label' => ['en' => 'Delete Risk Assessments', 'ar' => 'حذف تقييمات المخاطر']],
+            // ['name' => 'manage-risk-assessments', 'module' => 'risk_assessments', 'label' => ['en' => 'Manage Risk Assessments', 'ar' => 'إدارة تقييمات المخاطر']],
+            //
+            // ['name' => 'manage-any-risk-assessments', 'module' => 'risk_assessments', 'label' => ['en' => 'Manage All Risk Assessments', 'ar' => 'إدارة جميع تقييمات المخاطر']],
+            //
+            // ['name' => 'manage-own-risk-assessments', 'module' => 'risk_assessments', 'label' => ['en' => 'Manage Own Risk Assessments', 'ar' => 'إدارة تقييمات المخاطر الخاصة']],
+            //
+            // ['name' => 'view-risk-assessments', 'module' => 'risk_assessments', 'label' => ['en' => 'View Risk Assessments', 'ar' => 'عرض تقييمات المخاطر']],
+            //
+            // ['name' => 'create-risk-assessments', 'module' => 'risk_assessments', 'label' => ['en' => 'Create Risk Assessments', 'ar' => 'إنشاء تقييمات المخاطر']],
+            //
+            // ['name' => 'edit-risk-assessments', 'module' => 'risk_assessments', 'label' => ['en' => 'Edit Risk Assessments', 'ar' => 'تعديل تقييمات المخاطر']],
+            //
+            // ['name' => 'delete-risk-assessments', 'module' => 'risk_assessments', 'label' => ['en' => 'Delete Risk Assessments', 'ar' => 'حذف تقييمات المخاطر']],
 
             // Audit Types
-            ['name' => 'manage-audit-types', 'module' => 'audit_types', 'label' => ['en' => 'Manage Audit Types', 'ar' => 'إدارة أنواع التدقيق']],
-
-            ['name' => 'manage-any-audit-types', 'module' => 'audit_types', 'label' => ['en' => 'Manage All Audit Types', 'ar' => 'إدارة جميع أنواع التدقيق']],
-
-            ['name' => 'manage-own-audit-types', 'module' => 'audit_types', 'label' => ['en' => 'Manage Own Audit Types', 'ar' => 'إدارة أنواع التدقيق الخاصة']],
-
-            ['name' => 'view-audit-types', 'module' => 'audit_types', 'label' => ['en' => 'View Audit Types', 'ar' => 'عرض أنواع التدقيق']],
-
-            ['name' => 'create-audit-types', 'module' => 'audit_types', 'label' => ['en' => 'Create Audit Types', 'ar' => 'إنشاء أنواع التدقيق']],
-
-            ['name' => 'edit-audit-types', 'module' => 'audit_types', 'label' => ['en' => 'Edit Audit Types', 'ar' => 'Edit Audit Types']],
-
-            ['name' => 'delete-audit-types', 'module' => 'audit_types', 'label' => ['en' => 'Delete Audit Types', 'ar' => 'حذف أنواع التدقيق']],
-
-            ['name' => 'toggle-status-audit-types', 'module' => 'audit_types', 'label' => ['en' => 'Toggle Status Audit Types', 'ar' => 'تبديل حالة أنواع التدقيق']],
+            // ['name' => 'manage-audit-types', 'module' => 'audit_types', 'label' => ['en' => 'Manage Audit Types', 'ar' => 'إدارة أنواع التدقيق']],
+            //
+            // ['name' => 'manage-any-audit-types', 'module' => 'audit_types', 'label' => ['en' => 'Manage All Audit Types', 'ar' => 'إدارة جميع أنواع التدقيق']],
+            //
+            // ['name' => 'manage-own-audit-types', 'module' => 'audit_types', 'label' => ['en' => 'Manage Own Audit Types', 'ar' => 'إدارة أنواع التدقيق الخاصة']],
+            //
+            // ['name' => 'view-audit-types', 'module' => 'audit_types', 'label' => ['en' => 'View Audit Types', 'ar' => 'عرض أنواع التدقيق']],
+            //
+            // ['name' => 'create-audit-types', 'module' => 'audit_types', 'label' => ['en' => 'Create Audit Types', 'ar' => 'إنشاء أنواع التدقيق']],
+            //
+            // ['name' => 'edit-audit-types', 'module' => 'audit_types', 'label' => ['en' => 'Edit Audit Types', 'ar' => 'Edit Audit Types']],
+            //
+            // ['name' => 'delete-audit-types', 'module' => 'audit_types', 'label' => ['en' => 'Delete Audit Types', 'ar' => 'حذف أنواع التدقيق']],
+            //
+            // ['name' => 'toggle-status-audit-types', 'module' => 'audit_types', 'label' => ['en' => 'Toggle Status Audit Types', 'ar' => 'تبديل حالة أنواع التدقيق']],
 
             // Compliance Audits
-            ['name' => 'manage-compliance-audits', 'module' => 'compliance_audits', 'label' => ['en' => 'Manage Compliance Audits', 'ar' => 'إدارة تدقيقات الامتثال']],
-
-            ['name' => 'manage-any-compliance-audits', 'module' => 'compliance_audits', 'label' => ['en' => 'Manage All Compliance Audits', 'ar' => 'إدارة جميع تدقيقات الامتثال']],
-
-            ['name' => 'manage-own-compliance-audits', 'module' => 'compliance_audits', 'label' => ['en' => 'Manage Own Compliance Audits', 'ar' => 'إدارة تدقيقات الامتثال الخاصة']],
-
-            ['name' => 'view-compliance-audits', 'module' => 'compliance_audits', 'label' => ['en' => 'View Compliance Audits', 'ar' => 'عرض تدقيقات الامتثال']],
-
-            ['name' => 'create-compliance-audits', 'module' => 'compliance_audits', 'label' => ['en' => 'Create Compliance Audits', 'ar' => 'إنشاء تدقيقات الامتثال']],
-
-            ['name' => 'edit-compliance-audits', 'module' => 'compliance_audits', 'label' => ['en' => 'Edit Compliance Audits', 'ar' => 'تعديل تدقيقات الامتثال']],
-
-            ['name' => 'delete-compliance-audits', 'module' => 'compliance_audits', 'label' => ['en' => 'Delete Compliance Audits', 'ar' => 'حذف تدقيقات الامتثال']],
+            // ['name' => 'manage-compliance-audits', 'module' => 'compliance_audits', 'label' => ['en' => 'Manage Compliance Audits', 'ar' => 'إدارة تدقيقات الامتثال']],
+            //
+            // ['name' => 'manage-any-compliance-audits', 'module' => 'compliance_audits', 'label' => ['en' => 'Manage All Compliance Audits', 'ar' => 'إدارة جميع تدقيقات الامتثال']],
+            //
+            // ['name' => 'manage-own-compliance-audits', 'module' => 'compliance_audits', 'label' => ['en' => 'Manage Own Compliance Audits', 'ar' => 'إدارة تدقيقات الامتثال الخاصة']],
+            //
+            // ['name' => 'view-compliance-audits', 'module' => 'compliance_audits', 'label' => ['en' => 'View Compliance Audits', 'ar' => 'عرض تدقيقات الامتثال']],
+            //
+            // ['name' => 'create-compliance-audits', 'module' => 'compliance_audits', 'label' => ['en' => 'Create Compliance Audits', 'ar' => 'إنشاء تدقيقات الامتثال']],
+            //
+            // ['name' => 'edit-compliance-audits', 'module' => 'compliance_audits', 'label' => ['en' => 'Edit Compliance Audits', 'ar' => 'تعديل تدقيقات الامتثال']],
+            //
+            // ['name' => 'delete-compliance-audits', 'module' => 'compliance_audits', 'label' => ['en' => 'Delete Compliance Audits', 'ar' => 'حذف تدقيقات الامتثال']],
 
             // Time Entries
             ['name' => 'manage-time-entries', 'module' => 'time_entries', 'label' => ['en' => 'Manage Time Entries', 'ar' => 'إدارة قيود الوقت']],
@@ -970,38 +938,38 @@ class PermissionSeeder extends Seeder
             ['name' => 'toggle-status-billing-rates', 'module' => 'billing_rates', 'label' => ['en' => 'Toggle Status Billing Rates', 'ar' => 'تبديل حالة أسعار الفوترة']],
 
             // Fee Types
-            ['name' => 'manage-fee-types', 'module' => 'fee_types', 'label' => ['en' => 'Manage Fee Types', 'ar' => 'إدارة أنواع الرسوم']],
-
-            ['name' => 'manage-any-fee-types', 'module' => 'fee_types', 'label' => ['en' => 'Manage All Fee Types', 'ar' => 'إدارة جميع أنواع الرسوم']],
-
-            ['name' => 'manage-own-fee-types', 'module' => 'fee_types', 'label' => ['en' => 'Manage Own Fee Types', 'ar' => 'إدارة أنواع الرسوم الخاصة']],
-
-            ['name' => 'view-fee-types', 'module' => 'fee_types', 'label' => ['en' => 'View Fee Types', 'ar' => 'عرض أنواع الرسوم']],
-
-            ['name' => 'create-fee-types', 'module' => 'fee_types', 'label' => ['en' => 'Create Fee Types', 'ar' => 'إنشاء أنواع الرسوم']],
-
-            ['name' => 'edit-fee-types', 'module' => 'fee_types', 'label' => ['en' => 'Edit Fee Types', 'ar' => 'تعديل أنواع الرسوم']],
-
-            ['name' => 'delete-fee-types', 'module' => 'fee_types', 'label' => ['en' => 'Delete Fee Types', 'ar' => 'حذف أنواع الرسوم']],
-
-            ['name' => 'toggle-status-fee-types', 'module' => 'fee_types', 'label' => ['en' => 'Toggle Status Fee Types', 'ar' => 'Toggle Status Fee Types']],
+            // ['name' => 'manage-fee-types', 'module' => 'fee_types', 'label' => ['en' => 'Manage Fee Types', 'ar' => 'إدارة أنواع الرسوم']],
+            //
+            // ['name' => 'manage-any-fee-types', 'module' => 'fee_types', 'label' => ['en' => 'Manage All Fee Types', 'ar' => 'إدارة جميع أنواع الرسوم']],
+            //
+            // ['name' => 'manage-own-fee-types', 'module' => 'fee_types', 'label' => ['en' => 'Manage Own Fee Types', 'ar' => 'إدارة أنواع الرسوم الخاصة']],
+            //
+            // ['name' => 'view-fee-types', 'module' => 'fee_types', 'label' => ['en' => 'View Fee Types', 'ar' => 'عرض أنواع الرسوم']],
+            //
+            // ['name' => 'create-fee-types', 'module' => 'fee_types', 'label' => ['en' => 'Create Fee Types', 'ar' => 'إنشاء أنواع الرسوم']],
+            //
+            // ['name' => 'edit-fee-types', 'module' => 'fee_types', 'label' => ['en' => 'Edit Fee Types', 'ar' => 'تعديل أنواع الرسوم']],
+            //
+            // ['name' => 'delete-fee-types', 'module' => 'fee_types', 'label' => ['en' => 'Delete Fee Types', 'ar' => 'حذف أنواع الرسوم']],
+            //
+            // ['name' => 'toggle-status-fee-types', 'module' => 'fee_types', 'label' => ['en' => 'Toggle Status Fee Types', 'ar' => 'Toggle Status Fee Types']],
 
             // Fee Structures
-            ['name' => 'manage-fee-structures', 'module' => 'fee_structures', 'label' => ['en' => 'Manage Fee Structures', 'ar' => 'إدارة هياكل الرسوم']],
-
-            ['name' => 'manage-any-fee-structures', 'module' => 'fee_structures', 'label' => ['en' => 'Manage All Fee Structures', 'ar' => 'إدارة جميع هياكل الرسوم']],
-
-            ['name' => 'manage-own-fee-structures', 'module' => 'fee_structures', 'label' => ['en' => 'Manage Own Fee Structures', 'ar' => 'إدارة هياكل الرسوم الخاصة']],
-
-            ['name' => 'view-fee-structures', 'module' => 'fee_structures', 'label' => ['en' => 'View Fee Structures', 'ar' => 'عرض هياكل الرسوم']],
-
-            ['name' => 'create-fee-structures', 'module' => 'fee_structures', 'label' => ['en' => 'Create Fee Structures', 'ar' => 'إنشاء هياكل الرسوم']],
-
-            ['name' => 'edit-fee-structures', 'module' => 'fee_structures', 'label' => ['en' => 'Edit Fee Structures', 'ar' => 'تعديل هياكل الرسوم']],
-
-            ['name' => 'delete-fee-structures', 'module' => 'fee_structures', 'label' => ['en' => 'Delete Fee Structures', 'ar' => 'حذف هياكل الرسوم']],
-
-            ['name' => 'toggle-status-fee-structures', 'module' => 'fee_structures', 'label' => ['en' => 'Toggle Status Fee Structures', 'ar' => 'Toggle Status Fee Structures']],
+            // ['name' => 'manage-fee-structures', 'module' => 'fee_structures', 'label' => ['en' => 'Manage Fee Structures', 'ar' => 'إدارة هياكل الرسوم']],
+            //
+            // ['name' => 'manage-any-fee-structures', 'module' => 'fee_structures', 'label' => ['en' => 'Manage All Fee Structures', 'ar' => 'إدارة جميع هياكل الرسوم']],
+            //
+            // ['name' => 'manage-own-fee-structures', 'module' => 'fee_structures', 'label' => ['en' => 'Manage Own Fee Structures', 'ar' => 'إدارة هياكل الرسوم الخاصة']],
+            //
+            // ['name' => 'view-fee-structures', 'module' => 'fee_structures', 'label' => ['en' => 'View Fee Structures', 'ar' => 'عرض هياكل الرسوم']],
+            //
+            // ['name' => 'create-fee-structures', 'module' => 'fee_structures', 'label' => ['en' => 'Create Fee Structures', 'ar' => 'إنشاء هياكل الرسوم']],
+            //
+            // ['name' => 'edit-fee-structures', 'module' => 'fee_structures', 'label' => ['en' => 'Edit Fee Structures', 'ar' => 'تعديل هياكل الرسوم']],
+            //
+            // ['name' => 'delete-fee-structures', 'module' => 'fee_structures', 'label' => ['en' => 'Delete Fee Structures', 'ar' => 'حذف هياكل الرسوم']],
+            //
+            // ['name' => 'toggle-status-fee-structures', 'module' => 'fee_structures', 'label' => ['en' => 'Toggle Status Fee Structures', 'ar' => 'Toggle Status Fee Structures']],
 
             // Expenses
             ['name' => 'manage-expenses', 'module' => 'expenses', 'label' => ['en' => 'Manage Expenses', 'ar' => 'إدارة المصروفات']],
