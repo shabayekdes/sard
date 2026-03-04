@@ -21,7 +21,7 @@ return [
         'detail' => env('PAYMENT_BANK_DETAIL', "Bank: ICICI\nA/C No.: **************"),
     ],
     'stripe' => [
-        'enabled' => env('PAYMENT_STRIPE_ENABLED', true),
+        'enabled' => env('PAYMENT_STRIPE_ENABLED', false),
         'name' => [
             'en' => 'Credit Card (Stripe)',
             'ar' => 'بطاقة ائتمان (Stripe)',
@@ -32,7 +32,7 @@ return [
         'secret' => env('PAYMENT_STRIPE_SECRET', ''),
     ],
     'paypal' => [
-        'enabled' => env('PAYMENT_PAYPAL_ENABLED', true),
+        'enabled' => env('PAYMENT_PAYPAL_ENABLED', false),
         'name' => [
             'en' => 'PayPal',
             'ar' => 'باي بال',
@@ -88,7 +88,7 @@ return [
         'secret_key' => env('PAYMENT_FLUTTERWAVE_SECRET_KEY', 'FLWSECK_TEST-b08c1c32a710451237c2372b5bafbeea-X'),
     ],
     'paytabs' => [
-        'enabled' => env('PAYMENT_PAYTABS_ENABLED', true),
+        'enabled' => env('PAYMENT_PAYTABS_ENABLED', false),
         'name' => [
             'en' => 'Paytabs',
             'ar' => 'بايتابس',
@@ -136,7 +136,7 @@ return [
         'mode' => env('PAYMENT_PAYFAST_MODE', 'sandbox'),
     ],
     'tap' => [
-        'enabled' => env('PAYMENT_TAP_ENABLED', true),
+        'enabled' => env('PAYMENT_TAP_ENABLED', false),
         'name' => [
             'en' => 'Tap',
             'ar' => 'تاب',

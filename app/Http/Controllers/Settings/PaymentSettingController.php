@@ -20,20 +20,14 @@ class PaymentSettingController extends Controller
 
     public function getPaymentMethods()
     {
-        $superAdminId = \App\Models\User::where('type', 'superadmin')->first()?->tenant_id;
-        
-        if (!$superAdminId) {
-            return response()->json([]);
-        }
-        
-        $paymentSettings = getPaymentSettings($superAdminId);
-        
+        $paymentSettings = getPaymentSettings();
+
         // Filter out sensitive credentials and only return safe configuration
         $safeSettings = $this->filterSensitiveData($paymentSettings);
         
         // Add default currency to payment settings
-        $settings = settings($superAdminId);
-        $safeSettings['defaultCurrency'] = $settings['DEFAULT_CURRENCY'] ?? 'usd';
+        $settings = settings();
+        $safeSettings['defaultCurrency'] = $settings['DEFAULT_CURRENCY'] ?? 'SAR';
         
         return response()->json($safeSettings);
     }
