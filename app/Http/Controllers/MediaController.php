@@ -21,16 +21,18 @@ class MediaController extends BaseController
 
             // SuperAdmin can see all media
             if ($user->type === 'superadmin') {
-                // No user_id filter for superadmin
+                // No tenant_id filter for superadmin
             }
             // Users with manage-any-media can see all media
             elseif ($user->hasPermissionTo('manage-any-media')) {
-                // No user_id filter for manage-any-media
+                // No tenant_id filter for manage-any-media
             }
-            // Others can only see their own media
-            // else {
-            $mediaQuery = $mediaQuery->where('user_id', $user->id);
-            // }
+            // Others can only see media for their tenant
+            elseif ($user->tenant_id) {
+                $mediaQuery = $mediaQuery->where('tenant_id', $user->tenant_id);
+            } else {
+                $mediaQuery = $mediaQuery->whereIn('id', []);
+            }
             return $mediaQuery->map(function ($media) {
                 try {
                     $originalUrl = $this->getFullUrl($media->getUrl());
@@ -50,7 +52,7 @@ class MediaController extends BaseController
                         'thumb_url' => $thumbUrl,
                         'size' => $media->size,
                         'mime_type' => $media->mime_type,
-                        'user_id' => $media->user_id,
+                        'tenant_id' => $media->tenant_id,
                         'created_at' => $media->created_at,
                     ];
                 } catch (\Exception $e) {
@@ -92,7 +94,7 @@ class MediaController extends BaseController
                     'thumb_url' => config('app.url') . '/storage/media/' . $image,
                     'size' => filesize(public_path('storage/media/' . $image)),
                     'mime_type' => 'image/png',
-                    'user_id' => 1,
+                    'tenant_id' => null,
                     'created_at' => now(),
                 ];
             }
@@ -236,7 +238,7 @@ class MediaController extends BaseController
                 $media = $mediaItem->addMedia($file)
                     ->toMediaCollection('files');
 
-                $media->user_id = auth()->id();
+                $media->tenant_id = auth()->user()->tenant_id;
                 $media->save();
 
                 // Update user storage usage
@@ -266,7 +268,7 @@ class MediaController extends BaseController
                     'thumb_url' => $thumbUrl,
                     'size' => $media->size,
                     'mime_type' => $media->mime_type,
-                    'user_id' => $media->user_id,
+                    'tenant_id' => $media->tenant_id,
                     'created_at' => $media->created_at,
                 ];
             } catch (\Exception $e) {
@@ -305,8 +307,8 @@ class MediaController extends BaseController
         $query = Media::where('id', $id);
 
         // SuperAdmin and users with manage-any-media can download any media
-        if ($user->type !== 'superadmin' && !$user->hasPermissionTo('manage-any-media')) {
-            $query->where('user_id', $user->id);
+        if ($user->type !== 'superadmin' && !$user->hasPermissionTo('manage-any-media') && $user->tenant_id) {
+            $query->where('tenant_id', $user->tenant_id);
         }
 
         $media = $query->firstOrFail();
@@ -330,8 +332,8 @@ class MediaController extends BaseController
         $query = Media::where('id', $id);
 
         // SuperAdmin and users with manage-any-media can delete any media
-        if ($user->type !== 'superadmin' && !$user->hasPermissionTo('manage-any-media')) {
-            $query->where('user_id', $user->id);
+        if ($user->type !== 'superadmin' && !$user->hasPermissionTo('manage-any-media') && $user->tenant_id) {
+            $query->where('tenant_id', $user->tenant_id);
         }
 
         $media = $query->firstOrFail();
