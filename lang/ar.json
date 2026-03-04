@@ -4014,5 +4014,9 @@
   "Case type": "نوع القضية",
   "Invalid case category selected.": "فئة القضية المحددة غير صالحة.",
   "Please select a subcategory (child category), not a parent category.": "يرجى اختيار تصنيف فرعي (فئة فرعية)، وليس الفئة الرئيسية.",
-  "Please select a case subcategory.": "يرجى اختيار تصنيف فرعي للقضية."
+  "Please select a case category.": "يرجى اختيار تصنيف القضية.",
+  "Please select a case subcategory.": "يرجى اختيار تصنيف فرعي للقضية.",
+  "Please select a client.": "يرجى اختيار العميل.",
+  "Please select a case status.": "يرجى اختيار حالة القضية.",
+  "Please select a case type.": "يرجى اختيار نوع القضية."
 }

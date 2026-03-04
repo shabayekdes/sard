@@ -151,6 +151,8 @@ export interface SelectProps {
   disabled?: boolean
   triggerClassName?: string
   contentClassName?: string
+  /** When set, shows invalid state (red border, error message below). */
+  error?: string
 }
 
 /**
@@ -169,6 +171,7 @@ export function Select({
   disabled,
   triggerClassName,
   contentClassName,
+  error,
 }: SelectProps) {
   const dir = (typeof document !== 'undefined' && document.documentElement.getAttribute('dir') === 'rtl')
     ? 'rtl'
@@ -181,10 +184,10 @@ export function Select({
   return (
     <div className="space-y-2">
       {label != null && (
-        <Label required={required}>{label}</Label>
+        <Label required={required} className={cn(error && 'text-destructive')}>{label}</Label>
       )}
       <Root value={normalizedValue} onValueChange={handleChange} disabled={disabled}>
-        <Trigger dir={dir} className={triggerClassName}>
+        <Trigger dir={dir} className={cn(triggerClassName, error && 'border-destructive')}>
           <Value placeholder={placeholder} />
         </Trigger>
         <Content dir={dir} className={contentClassName}>
@@ -210,6 +213,7 @@ export function Select({
           ))}
         </Content>
       </Root>
+      {error && <p className="text-sm text-destructive mt-1">{error}</p>}
     </div>
   )
 }

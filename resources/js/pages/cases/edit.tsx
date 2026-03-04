@@ -88,6 +88,7 @@ export default function EditCase() {
         };
     });
 
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
     const normalizedErrors = useMemo(() => {
         const next: Record<string, string> = {};
         Object.entries(errors || {}).forEach(([key, value]) => {
@@ -96,6 +97,8 @@ export default function EditCase() {
         });
         return next;
     }, [errors]);
+
+    const getFieldError = (field: string) => fieldErrors[field] ?? normalizedErrors[field];
 
     const resolveTranslatableName = (item: any) => {
         if (!item) return '';
@@ -110,6 +113,11 @@ export default function EditCase() {
 
     const updateField = (field: string, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
+        setFieldErrors((prev) => {
+            const next = { ...prev };
+            delete next[field];
+            return next;
+        });
     };
 
     const toIdAndName = (item: any): { id: string | number; name: string } | null => {
@@ -171,6 +179,28 @@ export default function EditCase() {
 
     const handleFormSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        const nextFieldErrors: Record<string, string> = {};
+        if (!formData.client_id || formData.client_id === '') {
+            nextFieldErrors.client_id = t('Please select a client.');
+        }
+        if (!formData.case_status_id || formData.case_status_id === '') {
+            nextFieldErrors.case_status_id = t('Please select a case status.');
+        }
+        if (!formData.case_category_id || formData.case_category_id === '') {
+            nextFieldErrors.case_category_id = t('Please select a case category.');
+        }
+        if (!formData.case_subcategory_id || formData.case_subcategory_id === '') {
+            nextFieldErrors.case_subcategory_id = t('Please select a case subcategory.');
+        }
+        if (!formData.case_type_id || formData.case_type_id === '') {
+            nextFieldErrors.case_type_id = t('Please select a case type.');
+        }
+        if (Object.keys(nextFieldErrors).length > 0) {
+            setFieldErrors(nextFieldErrors);
+            return;
+        }
+        setFieldErrors({});
+
         const filteredDocuments = (formData.documents || []).filter(
             (doc: any) => doc?.document_name && doc?.document_type_id && doc?.confidentiality && doc?.file,
         );
@@ -260,9 +290,8 @@ export default function EditCase() {
                                 fields={clientDropdownFields}
                                 values={{ client_id: formData.client_id ?? '' }}
                                 onChange={(fieldName, value) => updateField(fieldName, value)}
-                                errors={normalizedErrors}
+                                errors={{ client_id: getFieldError('client_id') }}
                             />
-                            {renderError('client_id')}
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="title">{t('Case Title')}</Label>
@@ -302,8 +331,8 @@ export default function EditCase() {
                                 onValueChange={(v) => updateField('case_status_id', v)}
                                 placeholder={t('Select Status')}
                                 options={caseStatuses ?? []}
+                                error={getFieldError('case_status_id')}
                             />
-                            {renderError('case_status_id')}
                         </div>
                         <div className="space-y-2">
                             <Label>{t('Priority')}</Label>
@@ -347,9 +376,9 @@ export default function EditCase() {
                             }}
                             onChange={(fieldName, value) => updateField(fieldName, value)}
                             errors={{
-                                case_category_id: normalizedErrors.case_category_id,
-                                case_subcategory_id: normalizedErrors.case_subcategory_id,
-                                case_type_id: normalizedErrors.case_type_id,
+                                case_category_id: fieldErrors.case_category_id ?? normalizedErrors.case_category_id,
+                                case_subcategory_id: fieldErrors.case_subcategory_id ?? normalizedErrors.case_subcategory_id,
+                                case_type_id: fieldErrors.case_type_id ?? normalizedErrors.case_type_id,
                             }}
                         />
                     </div>

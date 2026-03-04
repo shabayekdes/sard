@@ -3334,5 +3334,9 @@
   "Case type": "Case type",
   "Invalid case category selected.": "Invalid case category selected.",
   "Please select a subcategory (child category), not a parent category.": "Please select a subcategory (child category), not a parent category.",
-  "Please select a case subcategory.": "Please select a case subcategory."
+  "Please select a case category.": "Please select a case category.",
+  "Please select a case subcategory.": "Please select a case subcategory.",
+  "Please select a client.": "Please select a client.",
+  "Please select a case status.": "Please select a case status.",
+  "Please select a case type.": "Please select a case type."
 }
