@@ -21,6 +21,13 @@ import './i18n';
 import './utils/axios-config';
 import i18n from './i18n';
 
+// Reload on 419 Page Expired (CSRF token expired) for Inertia requests
+document.addEventListener('inertia:exception', ((event: CustomEvent<{ exception: { response?: { status?: number } } }>) => {
+    if (event.detail?.exception?.response?.status === 419) {
+        window.location.reload();
+    }
+}) as EventListener);
+
 initPerformanceMonitoring();
 
 // Dev-only: avoid crash when React tries to remove a portal node that was already removed (Radix/React known issue)

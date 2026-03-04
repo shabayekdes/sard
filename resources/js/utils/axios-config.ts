@@ -1,5 +1,18 @@
 import axios from 'axios';
 
+// Reload on 419 for native fetch() calls (used by many components)
+const originalFetch = typeof window !== 'undefined' ? window.fetch : undefined;
+if (originalFetch) {
+    (window as Window & { fetch: typeof fetch }).fetch = function (...args: Parameters<typeof fetch>) {
+        return originalFetch.apply(this, args).then((response) => {
+            if (response.status === 419) {
+                window.location.reload();
+            }
+            return response;
+        });
+    };
+}
+
 // Set CSRF token for all requests
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
@@ -28,5 +41,17 @@ axios.interceptors.request.use((config) => {
   
   return config;
 });
+
+// Reload the page when we get 419 Page Expired (CSRF token expired)
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 419) {
+      window.location.reload();
+      return Promise.reject(error);
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default axios;
