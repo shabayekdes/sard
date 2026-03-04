@@ -15,15 +15,6 @@ foreach (config('tenancy.central_domains') as $domain) {
             Route::post('register', [Controllers\Auth\RegisteredUserController::class, 'store']);
         });
 
-        Route::middleware(['auth'])->group(function () {
-            // Email verification link: allow without auth (signed URL + hash validate identity)
-            Route::get('verify-email/{id}/{hash}', Controllers\Auth\VerifyEmailController::class)
-                ->middleware(['signed', 'throttle:6,1'])
-                ->name('verification.verify');
-
-        });
-
-
         Route::middleware([
             'auth',
             'verified',

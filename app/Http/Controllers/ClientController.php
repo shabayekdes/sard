@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Facades\Settings;
 use App\Models\Client;
+use Illuminate\Auth\Events\Registered;
 use App\Models\ClientType;
 use App\Models\CaseType;
 use App\Models\CaseStatus;
@@ -358,6 +359,16 @@ class ClientController extends Controller
             $clientRole = \Spatie\Permission\Models\Role::where('name', 'client')->first();
             if ($clientRole) {
                 $user->assignRole($clientRole);
+            }
+
+            // Send verification email when email verification is enabled (same as registration)
+            $emailVerificationEnabled = Settings::boolean('EMAIL_VERIFICATION_ENABLED');
+            if ($emailVerificationEnabled) {
+                try {
+                    event(new Registered($user));
+                } catch (\Exception $e) {
+                    session()->flash('email_error', $e->getMessage());
+                }
             }
         }
 
