@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use App\Facades\Settings;
 use Symfony\Component\HttpFoundation\Response;
 
 class SetLocale
@@ -12,9 +13,11 @@ class SetLocale
 
     public function handle(Request $request, Closure $next): Response
     {
+        $defaultLocale = $this->validLocale(config('app.locale')) ?? 'en';
+
         $locale = $this->validLocale(auth()->check() ? auth()->user()->lang : null)
-            ?? $this->validLocale($request->cookie('app_language'))
-            ?? 'en';
+            ?? $this->validLocale(Settings::string('DEFAULT_LANGUAGE'))
+            ?? $defaultLocale;
 
         app()->setLocale($locale);
 

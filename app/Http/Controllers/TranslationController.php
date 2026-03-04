@@ -91,7 +91,7 @@ class TranslationController extends BaseController
     // Add a method to get the initial locale
     public function getInitialLocale()
     {
-        $locale = 'en'; // Default fallback
+        $defaultLocale = $this->validLocale(config('app.locale')) ?? 'en';
 
         // First check cookie for all users for consistency
         $cookieLang = Cookie::get('app_language');
@@ -99,11 +99,13 @@ class TranslationController extends BaseController
             $locale = $cookieLang;
         } elseif (auth()->check()) {
             // For authenticated users, get from user preferences
-            $locale = auth()->user()->lang ?? 'en';
+            $locale = auth()->user()->lang ?? $defaultLocale;
         } elseif (request()->is('login', 'register', 'password/*', 'email/*')) {
-            // For auth pages, get from superadmin
+            // For auth pages, use superadmin language or system default
             $superAdmin = User::where('type', 'superadmin')->first();
-            $locale = $superAdmin->lang ?? 'en';
+            $locale = $superAdmin->lang ?? $defaultLocale;
+        } else {
+            $locale = $defaultLocale;
         }
 
         // Check if the determined language is enabled
@@ -118,7 +120,19 @@ class TranslationController extends BaseController
             // }
         }
 
+        $locale = $this->validLocale($locale) ?? $defaultLocale;
+
         return $locale;
+    }
+
+    /** Return normalized locale if allowed, null otherwise. */
+    private function validLocale(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        $base = strtolower(trim(explode('-', $value)[0] ?? $value));
+        return in_array($base, ['en', 'ar'], true) ? $base : null;
     }
 
     /**

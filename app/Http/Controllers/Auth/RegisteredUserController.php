@@ -85,12 +85,16 @@ class RegisteredUserController extends Controller
                 'required',
                 'string',
                 'max:63',
-                'regex:/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/',
+                'regex:/^[a-z]([a-z0-9-]*[a-z0-9])?$/', // must start with a letter (not a number)
+                'not_in:portal,test,crm,erp,app',
             ],
             'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'phone' => 'nullable|string|max:20',
             'city' => 'nullable|string|max:100',
+        ], [
+            'domain.not_in' => 'validation.domain_invalid',
+            'domain.regex' => __('Domain must start with a letter and contain only lowercase letters, numbers, and hyphens.'),
         ]);
 
         $subdomain = strtolower(trim($request->domain));

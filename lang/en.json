@@ -3338,5 +3338,8 @@
   "Please select a case subcategory.": "Please select a case subcategory.",
   "Please select a client.": "Please select a client.",
   "Please select a case status.": "Please select a case status.",
-  "Please select a case type.": "Please select a case type."
+  "Please select a case type.": "Please select a case type.",
+  "The selected domain is invalid.": "The selected domain is invalid.",
+  "validation.domain_invalid": "The selected domain is invalid.",
+  "Domain must start with a letter and contain only lowercase letters, numbers, and hyphens.": "Domain must start with a letter and contain only lowercase letters, numbers, and hyphens."
 }

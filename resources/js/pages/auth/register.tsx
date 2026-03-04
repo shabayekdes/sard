@@ -138,7 +138,7 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
                                 .sard.app
                             </span>
                         </div>
-                        <InputError message={errors.domain} />
+                        <InputError message={errors.domain ? t(errors.domain) : undefined} />
                     </div>
                     <div className="relative">
                         <Label htmlFor="phone" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
