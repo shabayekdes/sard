@@ -2847,6 +2847,8 @@
   "recent comments": "recent comments",
   "users have access": "users have access",
   "Back to Invoices": "Back to Invoices",
+  "Email notification settings updated successfully.": "Email notification settings updated successfully.",
+  "Tenant context required.": "Tenant context required.",
   "Failed to update email notification settings": "Failed to update email notification settings",
   "Generate PDF": "Generate PDF",
   "Your account is inactive. Please contact administrator.": "Your account is inactive. Please contact administrator.",

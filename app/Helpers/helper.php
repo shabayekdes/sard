@@ -1176,8 +1176,7 @@ if (! function_exists('formatCurrency')) {
 
         $s = (array) \App\Facades\Settings::all();
         $currencyCode = $options['currencyCode'] ?? $s['DEFAULT_CURRENCY']
-            ?? \App\Models\CompanySetting::where('tenant_id', $userId)->where('setting_key', 'currency')->value('setting_value')
-            ?? 'USD';
+            ?? 'SAR';
 
         $position = strtolower(trim((string) ($s['CURRENCY_SYMBOL_POSITION'] ?? 'before')));
         $position = in_array($position, ['before', 'after'], true) ? $position : 'before';
@@ -1243,9 +1242,9 @@ if (! function_exists('isEmailTemplateEnabled')) {
      * @param null $userId
      * @return bool
      */
-    function isEmailTemplateEnabled(EmailTemplateName $templateName, $userId = null): bool
+    function isEmailTemplateEnabled(EmailTemplateName $templateName, $tenant_id = null): bool
     {
-        $tenantId = $userId ? \App\Models\User::find($userId)?->tenant_id : tenant('id');
+        $tenantId = $tenant_id ?? tenant('id');
         if (!$tenantId) {
             return false;
         }
@@ -1357,13 +1356,13 @@ if (! function_exists('isNotificationTemplateEnabled')) {
      * Check if a notification template is enabled for a tenant and specific type
      *
      * @param EmailTemplateName $templateName
-     * @param null $userId
+     * @param null $tenant_id
      * @param null $type (slack, twilio, email)
      * @return bool
      */
-    function isNotificationTemplateEnabled(\App\Enum\EmailTemplateName $templateName, $userId = null, $type = null)
+    function isNotificationTemplateEnabled(\App\Enum\EmailTemplateName $templateName, $tenant_id = null, $type = null)
     {
-        $tenantId = $userId ? \App\Models\User::find($userId)?->tenant_id : tenant('id');
+        $tenantId = $tenant_id ?? tenant('id');
         if (!$tenantId) {
             return false;
         }

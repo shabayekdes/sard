@@ -10,7 +10,6 @@ use Inertia\Inertia;
 use App\Models\Currency;
 use App\Models\PaymentSetting;
 use App\Models\Webhook;
-use App\Models\CompanySetting;
 use App\Models\Country;
 use App\Models\EmailTemplate;
 use App\Models\NotificationTemplate;
@@ -39,7 +38,6 @@ class SettingsController extends Controller
             createdBy()
         );
         $webhooks = Webhook::where('user_id', auth()->id())->get();
-        $companySettings = CompanySetting::where('tenant_id', createdBy())->get();
         $taxRates = TaxRate::where('status', 'active')
             ->orderByRaw("JSON_EXTRACT(name, '$.en')")
             ->get(['id', 'name', 'rate']);
@@ -107,67 +105,12 @@ class SettingsController extends Controller
             'timeFormats' => config('timeformat'),
             'paymentSettings' => $paymentSettings,
             'webhooks' => $webhooks,
-            'companySettings' => $companySettings,
             'taxRates' => $taxRates,
             'countries' => $countries,
             'emailTemplates' => $emailTemplates,
             // 'slackSettings' => $slackSettings,
             'notificationTemplates' => $notificationTemplates,
         ]);
-    }
-
-    public function storeCompanySetting(Request $request)
-    {
-        $validated = $request->validate([
-            'key' => 'required|string|max:255',
-            'value' => 'required|string',
-            'description' => 'nullable|string',
-            'category' => 'nullable|string|max:255'
-        ]);
-
-        CompanySetting::create([
-            'setting_key' => $validated['key'],
-            'setting_value' => $validated['value'],
-            'description' => $validated['description'],
-            'category' => $validated['category'] ?? 'General',
-            'tenant_id' => createdBy()
-        ]);
-
-        return redirect()->back()->with('success', 'Company setting created successfully.');
-    }
-
-    public function updateCompanySetting(Request $request, $id)
-    {
-        $validated = $request->validate([
-            'key' => 'required|string|max:255',
-            'value' => 'required|string',
-            'description' => 'nullable|string',
-            'category' => 'nullable|string|max:255'
-        ]);
-
-        $setting = CompanySetting::where('id', $id)
-            ->where('tenant_id', createdBy())
-            ->firstOrFail();
-
-        $setting->update([
-            'setting_key' => $validated['key'],
-            'setting_value' => $validated['value'],
-            'description' => $validated['description'],
-            'category' => $validated['category'] ?? 'General'
-        ]);
-
-        return redirect()->back()->with('success', 'Company setting updated successfully.');
-    }
-
-    public function destroyCompanySetting($id)
-    {
-        $setting = CompanySetting::where('id', $id)
-            ->where('tenant_id', createdBy())
-            ->firstOrFail();
-
-        $setting->delete();
-
-        return redirect()->back()->with('success', 'Company setting deleted successfully.');
     }
 
     /**

@@ -87,9 +87,9 @@ class EmailNotificationController extends Controller
                 );
             }
 
-            return back()->with('success', 'Email notification settings updated successfully');
+            return back()->with('success', __('Email notification settings updated successfully.'));
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => $e->getMessage()]);
+            return back()->withErrors(['error' => __('Failed to update email notification settings')]);
         }
     }
 }

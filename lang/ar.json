@@ -2851,6 +2851,8 @@
     "recent comments": "تعليقات حديثة",
     "users have access": "المستخدمون لديهم صلاحية الوصول",
     "Back to Invoices": "العودة إلى الفواتير",
+    "Email notification settings updated successfully.": "تم تحديث إعدادات إشعارات البريد الإلكتروني بنجاح.",
+    "Tenant context required.": "السياق المستأجر مطلوب.",
     "Failed to update email notification settings": "فشل تحديث إعدادات إشعارات البريد الإلكتروني",
     "Generate PDF": "إنشاء PDF",
     "Your account is inactive. Please contact administrator.": "حسابك غير نشط. يرجى التواصل مع مدير النظام.",

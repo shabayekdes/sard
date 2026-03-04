@@ -210,13 +210,6 @@ class RoleSeeder extends Seeder
             'delete-practice-areas',
             'toggle-status-practice-areas',
 
-            // Company Setting permissions
-            'manage-company-settings',
-            'manage-any-company-settings',
-            'manage-own-company-settings',
-            'view-company-settings',
-            'edit-company-settings',
-
             // Case Document permissions
             'manage-case-documents',
             'manage-any-case-documents',

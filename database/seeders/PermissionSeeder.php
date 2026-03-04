@@ -107,7 +107,6 @@ class PermissionSeeder extends Seeder
             ['name' => 'manage-system-settings', 'module' => 'settings', 'label' => ['en' => 'Manage System Settings', 'ar' => 'إدارة إعدادات النظام']],
             ['name' => 'manage-email-settings', 'module' => 'settings', 'label' => ['en' => 'Manage Email Settings', 'ar' => 'إدارة إعدادات البريد']],
             ['name' => 'manage-brand-settings', 'module' => 'settings', 'label' => ['en' => 'Manage Brand Settings', 'ar' => 'إدارة إعدادات العلامة التجارية']],
-            ['name' => 'manage-company-settings', 'module' => 'settings', 'label' => ['en' => 'Manage Company Settings', 'ar' => 'إدارة إعدادات الشركة']],
             ['name' => 'manage-storage-settings', 'module' => 'settings', 'label' => ['en' => 'Manage Storage Settings', 'ar' => 'إدارة إعدادات التخزين']],
             ['name' => 'manage-payment-settings', 'module' => 'settings', 'label' => ['en' => 'Manage Payment Settings', 'ar' => 'إدارة إعدادات الدفع']],
             ['name' => 'manage-currency-settings', 'module' => 'settings', 'label' => ['en' => 'Manage Currency Settings', 'ar' => 'إدارة إعدادات العملة']],
@@ -249,13 +248,6 @@ class PermissionSeeder extends Seeder
             // ['name' => 'edit-practice-areas', 'module' => 'practice_areas', 'label' => ['en' => 'Edit Practice Areas', 'ar' => 'تعديل مجالات الممارسة']],
             // ['name' => 'delete-practice-areas', 'module' => 'practice_areas', 'label' => ['en' => 'Delete Practice Areas', 'ar' => 'حذف مجالات الممارسة']],
             // ['name' => 'toggle-status-practice-areas', 'module' => 'practice_areas', 'label' => ['en' => 'Toggle Status Practice Areas', 'ar' => 'تبديل حالة مجالات الممارسة']],
-
-            // Company Setting management
-            ['name' => 'manage-company-settings', 'module' => 'company_settings', 'label' => ['en' => 'Manage Company Settings', 'ar' => 'إدارة إعدادات الشركة']],
-            ['name' => 'manage-any-company-settings', 'module' => 'company_settings', 'label' => ['en' => 'Manage All Company Settings', 'ar' => 'إدارة جميع إعدادات الشركة']],
-            ['name' => 'manage-own-company-settings', 'module' => 'company_settings', 'label' => ['en' => 'Manage Own Company Settings', 'ar' => 'إدارة إعدادات الشركة الخاصة']],
-            ['name' => 'view-company-settings', 'module' => 'company_settings', 'label' => ['en' => 'View Company Settings', 'ar' => 'عرض إعدادات الشركة']],
-            ['name' => 'edit-company-settings', 'module' => 'company_settings', 'label' => ['en' => 'Edit Company Settings', 'ar' => 'تعديل إعدادات الشركة']],
 
             // Case Document management
             ['name' => 'manage-case-documents', 'module' => 'case_documents', 'label' => ['en' => 'Manage Case Documents', 'ar' => 'إدارة مستندات القضايا']],

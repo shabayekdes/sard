@@ -34,7 +34,7 @@ export default function Settings() {
     const { t } = useTranslation();
     const { position } = useLayout();
 
-    const { systemSettings = {}, cacheSize = '0.00', timezones = {}, dateFormats = {}, timeFormats = {}, paymentSettings = {}, webhooks = [], companySettings = [], auth = {}, emailTemplates = [], slackSettings = {}, twilioSettings = {}, notificationTemplates = [], countries = [], taxRates = [] } = usePage().props as any;
+    const { systemSettings = {}, cacheSize = '0.00', timezones = {}, dateFormats = {}, timeFormats = {}, paymentSettings = {}, webhooks = [], auth = {}, emailTemplates = [], slackSettings = {}, twilioSettings = {}, notificationTemplates = [], countries = [], taxRates = [] } = usePage().props as any;
     const isSaas = auth.user?.type === 'superadmin' || auth.user?.type === 'super admin';
     const [activeSection, setActiveSection] = useState('system-settings');
 

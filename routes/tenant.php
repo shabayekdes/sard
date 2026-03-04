@@ -372,12 +372,6 @@ Route::middleware([
                 Route::put('advocate/practice-areas/{area}/toggle-status', [Controllers\PracticeAreaController::class, 'toggleStatus'])->middleware('permission:edit-practice-areas')->name('advocate.practice-areas.toggle-status');
             });
 
-            // Company Setting routes
-            Route::middleware('permission:manage-company-settings')->group(function () {
-                Route::get('advocate/company-settings', [Controllers\CompanySettingController::class, 'index'])->name('advocate.company-settings.index');
-                Route::put('advocate/company-settings/{setting}', [Controllers\CompanySettingController::class, 'update'])->middleware('permission:edit-company-settings')->name('advocate.company-settings.update');
-            });
-
             // Case Document routes
             Route::middleware('permission:manage-case-documents')->group(function () {
                 Route::get('advocate/case-documents', [Controllers\CaseDocumentController::class, 'index'])->name('advocate.case-documents.index');
@@ -509,13 +503,6 @@ Route::middleware([
                 Route::put('courts/{court}', [Controllers\CourtController::class, 'update'])->middleware('permission:edit-courts')->name('courts.update');
                 Route::delete('courts/{court}', [Controllers\CourtController::class, 'destroy'])->middleware('permission:delete-courts')->name('courts.destroy');
                 Route::put('courts/{court}/toggle-status', [Controllers\CourtController::class, 'toggleStatus'])->middleware('permission:edit-courts')->name('courts.toggle-status');
-            });
-
-            // Company Settings in Settings page routes
-            Route::middleware('permission:manage-company-settings')->group(function () {
-                Route::post('settings/company', [Controllers\Settings\SettingsController::class, 'storeCompanySetting'])->name('settings.company.store');
-                Route::put('settings/company/{id}', [Controllers\Settings\SettingsController::class, 'updateCompanySetting'])->name('settings.company.update');
-                Route::delete('settings/company/{id}', [Controllers\Settings\SettingsController::class, 'destroyCompanySetting'])->name('settings.company.destroy');
             });
 
             // Case Management routes

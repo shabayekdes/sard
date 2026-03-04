@@ -137,12 +137,12 @@ class ClientSeeder extends Seeder
                 'view-time-entries',
 
                 // Knowledge Articles
-                'manage-knowledge-articles',
-                'view-knowledge-articles',
+                // 'manage-knowledge-articles',
+                // 'view-knowledge-articles',
 
                 // Legal Precedents
-                'manage-legal-precedents',
-                'view-legal-precedents'
+                // 'manage-legal-precedents',
+                // 'view-legal-precedents'
             ]);
 
             // Get client types for this company (ensure at least one exists)
