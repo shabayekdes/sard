@@ -54,7 +54,7 @@ class DocumentVersionController extends Controller
             ->first();
 
         if (!$document) {
-            return redirect()->back()->with('error', 'Document not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Document')]));
         }
 
         // Convert file path to relative path
@@ -93,7 +93,7 @@ class DocumentVersionController extends Controller
             ]);
         });
 
-        return redirect()->back()->with('success', 'New version created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Version')]));
     }
 
     private function convertToRelativePath(string $url): string
@@ -121,11 +121,11 @@ class DocumentVersionController extends Controller
             ->first();
 
         if (!$version) {
-            return redirect()->back()->with('error', 'Version not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Version')]));
         }
 
         if ($version->is_current) {
-            return redirect()->back()->with('error', 'Cannot delete current version.');
+            return redirect()->back()->with('error', __('Cannot delete current :model.', ['model' => __('Version')]));
         }
 
         // Delete file from storage
@@ -135,7 +135,7 @@ class DocumentVersionController extends Controller
 
         $version->delete();
 
-        return redirect()->back()->with('success', 'Version deleted successfully.');
+        return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Version')]));
     }
 
     public function download($versionId)
@@ -145,7 +145,7 @@ class DocumentVersionController extends Controller
             ->first();
 
         if (!$version || !$version->file_path) {
-            return redirect()->back()->with('error', 'Version not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Version')]));
         }
 
         $originalPath = $version->file_path;
@@ -174,7 +174,7 @@ class DocumentVersionController extends Controller
             return response()->download(storage_path('app/public/' . $originalPath), basename($originalPath));
         }
 
-        return redirect()->back()->with('error', 'File not found.');
+        return redirect()->back()->with('error', __('File not found.'));
     }
 
     public function restore($versionId)
@@ -184,7 +184,7 @@ class DocumentVersionController extends Controller
             ->first();
 
         if (!$version) {
-            return redirect()->back()->with('error', 'Version not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Version')]));
         }
 
         DB::transaction(function () use ($version) {
@@ -201,6 +201,6 @@ class DocumentVersionController extends Controller
             ]);
         });
 
-        return redirect()->back()->with('success', 'Version restored successfully.');
+        return redirect()->back()->with('success', __(':model restored successfully.', ['model' => __('Version')]));
     }
 }

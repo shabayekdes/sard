@@ -92,9 +92,8 @@ class StorageConfigService
         try {
             $settings = Settings::group(['storage'])->all();
             // Settings use uppercase keys (STORAGE_TYPE, etc.)
-            $storageType = $settings['STORAGE_TYPE'] ?? 'local';
+            $storageType = $settings['STORAGE_TYPE'] ?? 'public';
             $diskName = match (strtolower((string) $storageType)) {
-                'local' => 'public',
                 's3' => 's3',
                 'wasabi' => 'wasabi',
                 default => 'public'

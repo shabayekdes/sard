@@ -219,7 +219,6 @@ class DocumentController extends Controller
             $disk = match ($storageType) {
                 's3' => 's3',
                 'wasabi' => 'wasabi',
-                'local' => 'public',
                 default => 'public',
             };
             if (isset($parsedUrl['path']) && Storage::disk($disk)->exists($parsedUrl['path'])) {

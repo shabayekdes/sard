@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { router } from '@inertiajs/react';
 import { toast } from '@/components/custom-toast';
 
-type StorageType = 'local' | 's3' | 'wasabi';
+type StorageType = 'public' | 's3' | 'wasabi';
 
 interface StorageSettings {
   storageType: StorageType;
@@ -136,7 +136,7 @@ export default function StorageSettings({ settings = {} }: StorageSettingsProps)
   };
   
   const initialStorage: StorageSettings = {
-    storageType: (settings.STORAGE_TYPE as StorageType) || 'local',
+    storageType: (settings.STORAGE_TYPE as StorageType) || 'public',
     allowedFileTypes: settings.STORAGE_FILE_TYPES || 'jpg,png,webp,gif',
     maxUploadSize: settings.STORAGE_MAX_UPLOAD_SIZE || '2048',
     awsAccessKeyId: settings.AWS_ACCESS_KEY_ID || '',
@@ -489,9 +489,9 @@ export default function StorageSettings({ settings = {} }: StorageSettingsProps)
           onValueChange={(value) => setStorageSettings(prev => ({ ...prev, storageType: value as StorageType }))}
         >
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="local" className="flex items-center gap-2">
+            <TabsTrigger value="public" className="flex items-center gap-2">
               <HardDrive className="h-4 w-4" />
-              {t("Local Storage")}
+              {t("Public Storage")}
             </TabsTrigger>
             <TabsTrigger value="s3" className="flex items-center gap-2">
               <span>☁️</span>
@@ -503,7 +503,7 @@ export default function StorageSettings({ settings = {} }: StorageSettingsProps)
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="local" className="mt-6">
+          <TabsContent value="public" className="mt-6">
             <h3 className="text-base font-medium mb-4">{t("Local Storage Settings")}</h3>
             {renderLocalStorageFields()}
           </TabsContent>

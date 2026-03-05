@@ -169,7 +169,7 @@ class SystemSettingsController extends Controller
     {
         try {
             $validated = $request->validate([
-                'storage_type' => 'nullable|in:local,s3,wasabi',
+                'storage_type' => 'nullable|in:public,s3,wasabi',
                 'allowedFileTypes' => 'nullable|string',
                 'maxUploadSize' => 'nullable|numeric|min:1',
                 'awsAccessKeyId' => 'nullable|string',

@@ -1093,7 +1093,7 @@ if (! function_exists('defaultSettings')) {
             'THEME_MODE' => 'light',
 
             // Storage Settings
-            'STORAGE_TYPE' => config('filesystems.default', 'local'),
+            'STORAGE_TYPE' => config('filesystems.default', 'public'),
             'STORAGE_FILE_TYPES' => 'jpg,png,webp,gif,pdf,doc,docx,txt,csv',
             'STORAGE_MAX_UPLOAD_SIZE' => '2048',
             'AWS_ACCESS_KEY_ID' => config('services.aws.access_key_id', ''),

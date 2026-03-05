@@ -33,7 +33,7 @@ return [
     ['key' => 'THEME_MODE', 'value' => 'light'],
 
     // Storage Settings
-    ['key' => 'STORAGE_TYPE', 'group' => 'storage', 'value' => config('filesystems.default', 'local')],
+    ['key' => 'STORAGE_TYPE', 'group' => 'storage', 'value' => config('filesystems.default', 'public')],
     ['key' => 'STORAGE_FILE_TYPES', 'group' => 'storage', 'value' => 'jpg,png,webp,gif,pdf,doc,docx,txt,csv'],
     ['key' => 'STORAGE_MAX_UPLOAD_SIZE', 'group' => 'storage', 'value' => '2048'],
     ['key' => 'AWS_ACCESS_KEY_ID', 'group' => 'storage', 'value' => config('services.aws.access_key_id', '')],
