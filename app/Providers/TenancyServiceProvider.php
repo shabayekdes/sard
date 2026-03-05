@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Events\TenantVerified;
 use App\Jobs\CreateTenantStorageLink;
 use App\Jobs\SeedDefaultCompanyData;
 use App\Listeners\Tenant\TenancySetting;
@@ -26,13 +27,14 @@ class TenancyServiceProvider extends ServiceProvider
         return [
             // Tenant events
             Events\CreatingTenant::class => [],
-            Events\TenantCreated::class => [
+            Events\TenantCreated::class => [],
+            TenantVerified::class => [
                 JobPipeline::make([
                     SeedDefaultCompanyData::class,
                     CreateTenantStorageLink::class,
-                ])->send(function (Events\TenantCreated $event) {
+                ])->send(function (TenantVerified $event) {
                     return $event->tenant;
-                })->shouldBeQueued(false), // `false` by default, but you probably want to make this `true` for production.
+                })->shouldBeQueued(false),
             ],
             Events\SavingTenant::class => [],
             Events\TenantSaved::class => [],

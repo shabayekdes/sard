@@ -404,26 +404,33 @@ class MediaController extends BaseController
 
     private function getUserStorageUsage($user)
     {
-        if ($user->type === 'company') {
-            return User::where('tenant_id', $user->tenant_id)
-                ->orWhere('id', $user->id)
-                ->sum('storage_limit');
+        if ($user->type === 'company' && $user->tenant_id) {
+            $tenant = \App\Models\Tenant::find($user->tenant_id);
+            return $tenant ? (float) $tenant->storage_used : 0;
         }
 
         if ($user->tenant_id) {
             $company = User::where('tenant_id', $user->tenant_id)->where('type', 'company')->first();
-            if ($company) {
-                return User::where('tenant_id', $company->tenant_id)
-                    ->orWhere('id', $company->id)
-                    ->sum('storage_limit');
+            if ($company && $company->tenant_id) {
+                $tenant = \App\Models\Tenant::find($company->tenant_id);
+                return $tenant ? (float) $tenant->storage_used : 0;
             }
         }
 
-        return $user->storage_limit;
+        return 0;
     }
 
     private function updateStorageUsage($user, $size)
     {
-        $user->increment('storage_limit', $size);
+        if ($user->type === 'company' && $user->tenant_id) {
+            \App\Models\Tenant::where('id', $user->tenant_id)->increment('storage_used', $size);
+            return;
+        }
+        if ($user->tenant_id) {
+            $company = User::where('tenant_id', $user->tenant_id)->where('type', 'company')->first();
+            if ($company && $company->tenant_id) {
+                \App\Models\Tenant::where('id', $company->tenant_id)->increment('storage_used', $size);
+            }
+        }
     }
 }

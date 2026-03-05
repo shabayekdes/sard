@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Translatable\HasTranslations;
 
 class Plan extends Model
@@ -95,10 +96,10 @@ class Plan extends Model
     }
     
     /**
-     * Get users subscribed to this plan
+     * Tenants (companies) subscribed to this plan (plan_id lives on tenants table).
      */
-    public function users()
+    public function tenants(): HasMany
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(Tenant::class, 'plan_id');
     }
 }

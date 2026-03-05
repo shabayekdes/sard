@@ -106,11 +106,6 @@ class NepalstePaymentController extends Controller
                 $user = auth()->user();
                 
                 if ($plan && $user) {
-                    // Assign plan to user
-                    $user->plan_id = $plan->id;
-                    $user->plan_expire_date = $billingCycle === 'yearly' ? now()->addYear() : now()->addMonth();
-                    $user->save();
-                    
                     processPaymentSuccess([
                         'user_id' => $user->id,
                         'plan_id' => $plan->id,
@@ -148,10 +143,6 @@ class NepalstePaymentController extends Controller
                     $user = \App\Models\User::find($userId);
                     
                     if ($plan && $user) {
-                        $user->plan_id = $plan->id;
-                        $user->plan_expire_date = now()->addMonth();
-                        $user->save();
-                        
                         processPaymentSuccess([
                             'user_id' => $user->id,
                             'plan_id' => $plan->id,

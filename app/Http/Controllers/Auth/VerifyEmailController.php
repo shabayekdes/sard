@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Events\TenantVerified;
 use App\Http\Controllers\Controller;
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\RedirectResponse;
@@ -28,6 +30,17 @@ class VerifyEmailController extends Controller
 
         $user->markEmailAsVerified();
         event(new Verified($user));
+
+        // When company first admin verifies, seed default tenant data
+        if ($user->tenant_id) {
+            $verifiedCount = User::where('tenant_id', $user->tenant_id)->whereNotNull('email_verified_at')->count();
+            if ($verifiedCount === 1) {
+                $tenant = Tenant::find($user->tenant_id);
+                if ($tenant instanceof Tenant) {
+                    event(new TenantVerified($tenant));
+                }
+            }
+        }
 
         if (! Auth::check() || Auth::id() !== (int) $id) {
             Auth::login($user);

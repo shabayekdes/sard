@@ -221,9 +221,11 @@ class ReferralController extends Controller
             return;
         }
         
-        // Check if referral record already exists
+        $tenant = $user->getTenantForPlan();
+        $planId = $tenant?->plan_id;
+
         $existingReferral = Referral::where('user_id', $user->id)
-            ->where('plan_id', $user->plan_id)
+            ->where('plan_id', $planId)
             ->first();
             
         if ($existingReferral) {
@@ -248,7 +250,7 @@ class ReferralController extends Controller
                 'company_id' => $referrer->id,
                 'commission_percentage' => $settings->commission_percentage,
                 'amount' => $commissionAmount,
-                'plan_id' => $user->plan_id,
+                'plan_id' => $planId,
             ]);
         }
     }

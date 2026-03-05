@@ -184,15 +184,15 @@ class DashboardController extends Controller
                 'totalDocuments' => $totalDocuments,
             ],
             'recentActivity' => $recentActivity,
-            'topPlans' => Plan::withCount('users')
-                ->orderBy('users_count', 'desc')
+            'topPlans' => Plan::withCount('tenants')
+                ->orderBy('tenants_count', 'desc')
                 ->take(5)
                 ->get()
                 ->map(function ($plan) {
                     return [
                         'name' => $plan->name,
-                        'subscribers' => $plan->users_count,
-                        'revenue' => $plan->users_count * $plan->price,
+                        'subscribers' => $plan->tenants_count,
+                        'revenue' => $plan->tenants_count * $plan->price,
                         'price' => $plan->price,
                         'features' => [
                             'max_users' => $plan->max_users,
@@ -546,9 +546,9 @@ class DashboardController extends Controller
                 'max_clients' => $currentPlan ? $currentPlan->max_clients : 10,
                 'price' => $currentPlan ? $currentPlan->price : 0,
                 'yearly_price' => $currentPlan ? $currentPlan->yearly_price : 0,
-                'is_trial' => $user->is_trial,
-                'trial_expire_date' => $user->trial_expire_date,
-                'plan_expire_date' => $user->plan_expire_date,
+                'is_trial' => $user->getTenantForPlan()?->is_trial,
+                'trial_expire_date' => $user->getTenantForPlan()?->trial_expire_date,
+                'plan_expire_date' => $user->getTenantForPlan()?->plan_expire_date,
                 'features' => $currentPlan ? [
                     'custom_domain' => $currentPlan->enable_custdomain === 'on',
                     'subdomain' => $currentPlan->enable_custsubdomain === 'on',

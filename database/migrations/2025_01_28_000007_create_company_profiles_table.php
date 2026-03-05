@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->text('address')->nullable();
             $table->date('establishment_date')->nullable();
-            $table->string('business_type_new', 100)->default('PROFESSIONAL_COMPANY');
+            $table->string('business_type', 100)->default('PROFESSIONAL_COMPANY');
             $table->string('cr')->nullable();
             $table->string('tax_number')->nullable();
             $table->string('company_size', 50)->default('solo');

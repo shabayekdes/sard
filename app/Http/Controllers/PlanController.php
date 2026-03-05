@@ -78,13 +78,13 @@ class PlanController extends Controller
                 ],
                 'status' => $plan->is_plan_enable === 'on',
                 'is_default' => $plan->is_default,
-                'has_users' => $plan->users()->count() > 0,
+                'has_users' => $plan->tenants()->count() > 0,
                 'recommended' => false // Default to false
             ];
         })->values()->toArray();
         
         // Mark the plan with most subscribers as recommended
-        $planSubscriberCounts = Plan::withCount('users')->get()->pluck('users_count', 'id');
+        $planSubscriberCounts = Plan::withCount('tenants')->get()->pluck('tenants_count', 'id');
         $mostSubscribedPlanId = $planSubscriberCounts->keys()->first();
         if ($planSubscriberCounts->isNotEmpty()) {
             $mostSubscribedPlanId = $planSubscriberCounts->keys()->sortByDesc(function($planId) use ($planSubscriberCounts) {
@@ -331,8 +331,8 @@ class PlanController extends Controller
                     'clients' => $plan->max_clients,
                     'storage' => $plan->storage_limit,
                 ],
-                'is_current' => $user->plan_id == $plan->id,
-                'is_trial_available' => $plan->is_trial === 'on' && !$user->is_trial,
+                'is_current' => $user->getTenantForPlan()?->plan_id == $plan->id,
+                'is_trial_available' => $plan->is_trial === 'on' && !$user->getTenantForPlan()?->is_trial,
                 'is_default' => $plan->is_default,
                 'has_pending_request' => in_array($plan->id, $pendingRequests),
                 'has_pending_order' => in_array($plan->id, $pendingOrders),
@@ -341,7 +341,7 @@ class PlanController extends Controller
         })->values();
         
         // Mark the plan with most subscribers as recommended
-        $planSubscriberCounts = Plan::withCount('users')->get()->pluck('users_count', 'id');
+        $planSubscriberCounts = Plan::withCount('tenants')->get()->pluck('tenants_count', 'id');
         if ($planSubscriberCounts->isNotEmpty()) {
             $mostSubscribedPlanId = $planSubscriberCounts->keys()->sortByDesc(function($planId) use ($planSubscriberCounts) {
                 return $planSubscriberCounts[$planId];
@@ -365,7 +365,7 @@ class PlanController extends Controller
             'plans' => $plans,
             'billingCycle' => $billingCycle,
             'currentPlan' => $user->plan,
-            'userTrialUsed' => $user->is_trial,
+            'userTrialUsed' => $user->getTenantForPlan()?->is_trial,
             'hasMonthlyPlans' => $hasMonthlyPlans,
             'hasYearlyPlans' => $hasYearlyPlans,
             'pendingRequests' => $pendingRequestsDetails
@@ -423,14 +423,15 @@ class PlanController extends Controller
             return back()->withErrors(['error' => __('Selected billing cycle is not available for this plan')]);
         }
         
-        if ($user->is_trial || $plan->is_trial !== 'on') {
+        $tenant = $user->getTenantForPlan();
+        if (!$tenant || $tenant->is_trial || $plan->is_trial !== 'on') {
             return back()->withErrors(['error' => 'Trial not available']);
         }
-        
+
         try {
-            $user->update([
+            $tenant->update([
                 'plan_id' => $plan->id,
-                'is_trial' => 1,
+                'is_trial' => '1',
                 'trial_day' => $plan->trial_day,
                 'trial_expire_date' => now()->addDays($plan->trial_day)
             ]);

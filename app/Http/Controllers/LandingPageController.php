@@ -54,7 +54,7 @@ class LandingPageController extends Controller
         });
 
         // Mark most subscribed plan as popular
-        $planSubscriberCounts = Plan::withCount('users')->get()->pluck('users_count', 'id');
+        $planSubscriberCounts = Plan::withCount('tenants')->get()->pluck('tenants_count', 'id');
         if ($planSubscriberCounts->isNotEmpty()) {
             $mostSubscribedPlanId = $planSubscriberCounts->keys()->sortByDesc(function($planId) use ($planSubscriberCounts) {
                 return $planSubscriberCounts[$planId];

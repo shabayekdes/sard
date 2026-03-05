@@ -13,7 +13,6 @@ class CompanyProfile extends BaseModel
     use BelongsToTenant, HasFactory;
 
     protected $fillable = [
-        'company_id',
         'name',
         'registration_number',
         'address',

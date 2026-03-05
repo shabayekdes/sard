@@ -16,6 +16,7 @@ use App\Models\Plan;
 use App\Models\PlanOrder;
 use App\Models\Referral;
 use App\Models\PayoutRequest;
+use App\Models\Tenant;
 use App\Traits\AutoApplyPermissionCheck;
 
 class User extends BaseAuthenticatable implements MustVerifyEmail
@@ -35,16 +36,10 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
         'email_verified_at',
         'password',
         'type',
-        'city',
         'avatar',
         'lang',
         'delete_status',
-        'plan_id',
-        'plan_expire_date',
-        'requested_plan',
-        'plan_is_active',
         'is_enable_login',
-        'storage_limit',
         'mode',
         'tenant_id',
         'referral_code',
@@ -52,9 +47,6 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
         'google2fa_enable',
         'google2fa_secret',
         'status',
-        'is_trial',
-        'trial_day',
-        'trial_expire_date',
         'active_module',
         'commission_amount'
     ];
@@ -80,13 +72,37 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'plan_expire_date' => 'date',
-            'trial_expire_date' => 'date',
-            'plan_is_active' => 'integer',
             'is_enable_login' => 'integer',
             'google2fa_enable' => 'integer',
-            'storage_limit' => 'float',
         ];
+    }
+
+    /**
+     * Tenant (company) - plan/city live on tenant for company users.
+     */
+    public function tenantRelation(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id');
+    }
+
+    /**
+     * Tenant for company users (plan/city live on tenant). Use tenantRelation->plan_id, etc.
+     */
+    public function getTenantForPlan(): ?Tenant
+    {
+        if ($this->type === 'company' && $this->tenant_id) {
+            return $this->tenantRelation;
+        }
+        return null;
+    }
+
+    /**
+     * Plan instance: for company users read from tenant.
+     */
+    public function getPlanAttribute()
+    {
+        $tenant = $this->getTenantForPlan();
+        return $tenant?->plan;
     }
 
     /**
@@ -127,14 +143,6 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     }
 
     /**
-     * Get the plan associated with the user.
-     */
-    public function plan()
-    {
-        return $this->belongsTo(Plan::class);
-    }
-
-    /**
      * Get all plan orders for the user.
      */
     public function planOrders(): HasMany
@@ -163,41 +171,48 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
      */
     public function getCurrentPlan()
     {
-        if ($this->plan) {
-            return $this->plan;
+        $plan = $this->plan;
+        if ($plan) {
+            return $plan;
         }
 
         return Plan::getDefaultPlan();
     }
 
     /**
-     * Check if user has an active plan subscription
+     * Check if user has an active plan subscription (reads from tenant for company users).
      */
     public function hasActivePlan()
     {
-        return $this->plan_id &&
-               $this->plan_is_active &&
-               ($this->plan_expire_date === null || $this->plan_expire_date > now());
+        $t = $this->getTenantForPlan();
+        if (!$t) {
+            return false;
+        }
+        return $t->plan_id
+            && $t->plan_is_active
+            && ($t->plan_expire_date === null || $t->plan_expire_date > now());
     }
 
     /**
-     * Check if user's plan has expired
+     * Check if user's plan has expired (reads from tenant for company users).
      */
     public function isPlanExpired()
     {
-        return $this->plan_expire_date && $this->plan_expire_date < now();
+        $t = $this->getTenantForPlan();
+        return $t && $t->plan_expire_date && $t->plan_expire_date < now();
     }
 
     /**
-     * Check if user's trial has expired
+     * Check if user's trial has expired (reads from tenant for company users).
      */
     public function isTrialExpired()
     {
-        return $this->is_trial && $this->trial_expire_date && $this->trial_expire_date < now();
+        $t = $this->getTenantForPlan();
+        return $t && $t->is_trial && $t->trial_expire_date && $t->trial_expire_date < now();
     }
 
     /**
-     * Check if user needs to subscribe to a plan
+     * Check if user needs to subscribe to a plan (reads from tenant for company users).
      */
     public function needsPlanSubscription()
     {
@@ -209,18 +224,20 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
             return false;
         }
 
-        // Check if user has no plan and no default plan exists
-        if (!$this->plan_id) {
+        $t = $this->getTenantForPlan();
+        if (!$t) {
             return !Plan::getDefaultPlan();
         }
 
-        // Check if trial is expired
+        if (!$t->plan_id) {
+            return !Plan::getDefaultPlan();
+        }
+
         if ($this->isTrialExpired()) {
             return true;
         }
 
-        // Check if plan is expired (but not on trial)
-        if (!$this->is_trial && $this->isPlanExpired()) {
+        if (!$t->is_trial && $this->isPlanExpired()) {
             return true;
         }
 
@@ -302,17 +319,6 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
             }
         });
 
-        static::created(function ($user) {
-            // Assign default plan to company users if no default plan exists
-            if ($user->type === 'company' && !$user->plan_id) {
-                $defaultPlan = Plan::getDefaultPlan();
-                if ($defaultPlan) {
-                    $user->plan_id = $defaultPlan->id;
-                    $user->plan_is_active = 1;
-                    $user->save();
-                }
-            }
-        });
     }
 
 }

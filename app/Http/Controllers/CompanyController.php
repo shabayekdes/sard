@@ -17,7 +17,7 @@ class CompanyController extends Controller
     {
         $query = User::query()
             ->where('type', 'company')
-            ->with(['plan', 'latestPlanOrder'])->orderBy('id', 'asc');
+            ->with(['tenantRelation.plan', 'latestPlanOrder'])->orderBy('id', 'asc');
 
         // Apply search filter
         if ($request->has('search') && !empty($request->search)) {
@@ -53,20 +53,22 @@ class CompanyController extends Controller
         // Transform data for frontend
         $locale = app()->getLocale();
         $companies->getCollection()->transform(function ($company) use ($locale) {
+            $tenant = $company->tenantRelation;
+            $plan = $tenant?->plan;
             return [
                 'id' => $company->id,
                 'name' => $company->name,
                 'phone' => $company->phone,
-                'city' => $company->city,
+                'city' => $tenant?->city,
                 'email' => $company->email,
                 'status' => $company->status,
                 'created_at' => $company->created_at,
-                'plan_name' => $company->plan
-                    ? ($company->plan->getTranslation('name', $locale) ?: $company->plan->name)
+                'plan_name' => $plan
+                    ? ($plan->getTranslation('name', $locale) ?: $plan->name)
                     : __('No Plan'),
-                'plan_expire_date' => $company->plan_expire_date,
+                'plan_expire_date' => $tenant?->plan_expire_date,
                 'latest_plan_ordered_at' => optional($company->latestPlanOrder)->ordered_at,
-                'appointments_count' => 0, // You can implement this based on your model relationships
+                'appointments_count' => 0,
             ];
         });
 
@@ -159,23 +161,20 @@ class CompanyController extends Controller
             $company->lang = $creator->lang;
         }
 
-        // Assign default plan
-        $defaultPlan = Plan::where('is_default', true)->first();
-        if ($defaultPlan) {
-            $company->plan_id = $defaultPlan->id;
-
-            // Set plan expiry date based on plan duration
-            if ($defaultPlan->duration === 'yearly') {
-                $company->plan_expire_date = now()->addYear();
-            } else {
-                $company->plan_expire_date = now()->addMonth();
-            }
-
-            // Set plan is active
-            $company->plan_is_active = 1;
-        }
-
         $company->save();
+
+        // Assign default plan on tenant (plan lives on tenant)
+        $tenant = Tenant::find($company->tenant_id);
+        if ($tenant) {
+            $defaultPlan = Plan::where('is_default', true)->first();
+            if ($defaultPlan) {
+                $tenant->update([
+                    'plan_id' => $defaultPlan->id,
+                    'plan_expire_date' => $defaultPlan->duration === 'yearly' ? now()->addYear() : now()->addMonth(),
+                    'plan_is_active' => 1,
+                ]);
+            }
+        }
 
         $companyRole = Role::where('name', 'company')->first();
 
@@ -311,7 +310,7 @@ class CompanyController extends Controller
                 'business' => $plan->business,
                 'max_users' => $plan->max_users,
                 'storage_limit' => $storageLabel,
-                'is_current' => $company->plan_id === $plan->id,
+                'is_current' => $company->tenantRelation?->plan_id === $plan->id,
                 'is_default' => $plan->is_default
             ];
         });
@@ -321,7 +320,7 @@ class CompanyController extends Controller
             'company' => [
                 'id' => $company->id,
                 'name' => $company->name,
-                'current_plan_id' => $company->plan_id
+                'current_plan_id' => $company->tenantRelation?->plan_id
             ]
         ]);
     }
@@ -345,20 +344,16 @@ class CompanyController extends Controller
             return back()->with('error', __('Plan not found'));
         }
 
-        // Update company plan
-        $company->plan_id = $plan->id;
-
-        // Set plan expiry date based on plan duration
-        if ($plan->duration === 'yearly') {
-            $company->plan_expire_date = now()->addYear();
-        } else {
-            $company->plan_expire_date = now()->addMonth();
+        $tenant = Tenant::find($company->tenant_id);
+        if (!$tenant) {
+            return back()->with('error', __('Tenant not found'));
         }
 
-        // Set plan is active
-        $company->plan_is_active = 1;
-
-        $company->save();
+        $tenant->update([
+            'plan_id' => $plan->id,
+            'plan_expire_date' => $plan->duration === 'yearly' ? now()->addYear() : now()->addMonth(),
+            'plan_is_active' => 1,
+        ]);
 
         return back()->with('success', __('Plan upgraded successfully'));
     }

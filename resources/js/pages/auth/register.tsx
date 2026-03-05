@@ -9,6 +9,7 @@ import TextLink from '@/components/text-link';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select } from '@/components/forms/select';
 import { useBrand } from '@/contexts/BrandContext';
 import { useLayout } from '@/contexts/LayoutContext';
 import { THEME_COLORS, useAppearance } from '@/hooks/use-appearance';
@@ -19,6 +20,8 @@ import { PhoneInput, defaultCountries } from 'react-international-phone';
 
 type RegisterForm = {
     name: string;
+    company_name: string;
+    business_type: string;
     domain: string;
     phone: string;
     email: string;
@@ -31,6 +34,8 @@ type RegisterForm = {
     referral_code?: string;
 };
 
+const BUSINESS_TYPE_DEFAULT = 'PROFESSIONAL_COMPANY';
+
 export default function Register({ referralCode, planId }: { referralCode?: string; planId?: string }) {
     const { t } = useTranslation();
     const { position } = useLayout();
@@ -40,7 +45,7 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
     const primaryColor = themeColor === 'custom' ? customColor : THEME_COLORS[themeColor as keyof typeof THEME_COLORS];
     const currentLogo = appearance === 'light' ? logoDark : logoLight;
     const { props } = usePage();
-    const { phoneCountries = [], defaultCountry = '' } = props as any;
+    const { phoneCountries = [], defaultCountry = '', businessTypeOptions = [], tenantCityOptions = [] } = props as any;
     const phoneCountriesByCode = new Map((phoneCountries || []).map((country: any) => [String(country.code || '').toLowerCase(), country]));
     const phoneCountryCodes = (phoneCountries || []).map((country: any) => String(country.code || '').toLowerCase()).filter((code: string) => code);
     const allowedPhoneCountries = phoneCountryCodes.length
@@ -51,10 +56,12 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
 
     const { data, setData, post, processing, errors, reset, setError } = useForm<RegisterForm>({
         name: '',
+        company_name: '',
+        business_type: BUSINESS_TYPE_DEFAULT,
         domain: '',
         phone: '',
         email: '',
-        city: '',
+        city: 'RIYADH',
         password: '',
         password_confirmation: '',
         terms: false,
@@ -117,6 +124,37 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
                         />
                         <InputError message={errors.name} />
                     </div>
+                    <div className="relative">
+                        <Label htmlFor="company_name" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            {t('Company Name')} <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                            id="company_name"
+                            type="text"
+                            required
+                            tabIndex={2}
+                            autoComplete="organization"
+                            value={data.company_name}
+                            onChange={(e) => setData('company_name', e.target.value)}
+                            placeholder={t('Enter company name')}
+                            className="h-10 w-full rounded-md border-slate-200 bg-white px-3 text-sm text-slate-700 transition-all duration-200 placeholder:text-slate-400 dark:border-gray-600 dark:bg-gray-700"
+                            style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
+                        />
+                        <InputError message={errors.company_name} />
+                    </div>
+                    <Select
+                        label={t('Activity Type')}
+                        required
+                        value={data.business_type}
+                        onValueChange={(value) => setData('business_type', value)}
+                        placeholder={t('Choose Activity Type')}
+                        options={(businessTypeOptions as { value: string; labelKey: string }[]).map((opt) => ({
+                            id: opt.value,
+                            name: t(opt.labelKey),
+                        }))}
+                        error={errors.business_type}
+                        triggerClassName="rounded-md border-slate-200 bg-white text-sm text-slate-700 dark:border-gray-600 dark:bg-gray-700"
+                    />
                     <div className="relative">
                         <Label htmlFor="domain" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                             {t('Domain')} <span className="text-red-500">*</span>
@@ -183,24 +221,19 @@ export default function Register({ referralCode, planId }: { referralCode?: stri
                         <InputError message={errors.email} />
                     </div>
 
-                    <div className="relative">
-                        <Label htmlFor="city" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {t('City')}
-                        </Label>
-                        <Input
-                            id="city"
-                            type="text"
-                            required
-                            tabIndex={4}
-                            autoComplete="city"
-                            value={data.city}
-                            onChange={(e) => setData('city', e.target.value)}
-                            placeholder={t('أدخل مدينتك')}
-                            className="h-10 w-full rounded-md border-slate-200 bg-white px-3 text-sm text-slate-700 transition-all duration-200 placeholder:text-slate-400 dark:border-gray-600 dark:bg-gray-700"
-                            style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                        />
-                        <InputError message={errors.city} />
-                    </div>
+                    <Select
+                        label={t('City')}
+                        required
+                        value={data.city}
+                        onValueChange={(value) => setData('city', value)}
+                        placeholder={t('Choose city')}
+                        options={(tenantCityOptions as { value: string; labelKey: string }[]).map((opt) => ({
+                            id: opt.value,
+                            name: t(opt.labelKey),
+                        }))}
+                        error={errors.city}
+                        triggerClassName="rounded-md border-slate-200 bg-white text-sm text-slate-700 dark:border-gray-600 dark:bg-gray-700"
+                    />
 
                     <div>
                         <Label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">

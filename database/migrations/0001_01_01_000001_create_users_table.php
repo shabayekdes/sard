@@ -23,22 +23,12 @@ return new class extends Migration
             $table->string('avatar')->nullable();
             $table->string('type', 20)->default('company');
 
-            $table->string('city')->nullable();
-
-            $table->unsignedBigInteger('plan_id')->nullable();
-            $table->date('plan_expire_date')->nullable();
-            $table->integer('requested_plan')->default(0);
             $table->foreignUuid('tenant_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->string('mode')->default('light');
-            $table->integer('plan_is_active')->default(1);
-            $table->float('storage_limit', 15, 2)->default(0.00);
             $table->integer('is_enable_login')->default(1);
             $table->integer('google2fa_enable')->default(0);
             $table->text('google2fa_secret')->nullable();
             $table->string('status')->default('active');
-            $table->string('is_trial')->nullable();
-            $table->integer('trial_day')->default(0);
-            $table->date('trial_expire_date')->nullable();
             $table->text('active_module')->nullable();
             $table->integer('referral_code')->default(0);
             $table->integer('used_referral_code')->default(0);

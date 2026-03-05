@@ -887,22 +887,24 @@ if (! function_exists('createPlanOrder')) {
 if (! function_exists('assignPlanToUser')) {
     function assignPlanToUser($user, $plan, $billingCycle)
     {
-        // Validate billing cycle
         if (!in_array($billingCycle, ['monthly', 'yearly'])) {
             throw new \InvalidArgumentException('Invalid billing cycle: ' . $billingCycle);
         }
 
-        // Calculate expiration date based on billing cycle
         $expiresAt = $billingCycle === 'yearly' ? now()->addYear() : now()->addMonth();
 
-        \Log::info('Assigning plan ' . $plan->id . ' to user ' . $user->id . ' with billing cycle ' . $billingCycle);
+        \Log::info('Assigning plan ' . $plan->id . ' to user ' . $user->id . ' (tenant) with billing cycle ' . $billingCycle);
 
-        // Update user with new plan and clear trial status
-        $updated = $user->update([
+        $tenant = $user->tenant_id ? \App\Models\Tenant::find($user->tenant_id) : null;
+        if (!$tenant) {
+            \Log::warning('assignPlanToUser: no tenant for user ' . $user->id);
+            return false;
+        }
+
+        $updated = $tenant->update([
             'plan_id' => $plan->id,
             'plan_expire_date' => $expiresAt,
             'plan_is_active' => 1,
-            // Clear trial status when assigning paid plan
             'is_trial' => null,
             'trial_day' => 0,
             'trial_expire_date' => null,

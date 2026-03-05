@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\BusinessType;
+use App\Enums\TenantCity;
+use App\Events\TenantVerified;
 use App\Facades\Settings;
 use App\Http\Controllers\Controller;
 use App\Models\Country;
@@ -68,6 +71,8 @@ class RegisteredUserController extends Controller
             'defaultCountry' => Settings::string('DEFAULT_COUNTRY', 'SA'),
             'referrer' => $referrer ? $referrer->name : null,
             'settings' => settings(),
+            'businessTypeOptions' => BusinessType::options(),
+            'tenantCityOptions' => TenantCity::options(),
         ]);
     }
 
@@ -80,6 +85,8 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'company_name' => 'required|string|max:255',
+            'business_type' => ['required', 'string', 'in:' . implode(',', BusinessType::values())],
             'terms' => 'accepted',
             'domain' => [
                 'required',
@@ -91,7 +98,7 @@ class RegisteredUserController extends Controller
             'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'phone' => 'nullable|string|max:20',
-            'city' => 'nullable|string|max:100',
+            'city' => ['required', 'string', 'in:' . implode(',', TenantCity::values())],
         ], [
             'domain.not_in' => 'validation.domain_invalid',
             'domain.regex' => __('Domain must start with a letter and contain only lowercase letters, numbers, and hyphens.'),
@@ -107,17 +114,32 @@ class RegisteredUserController extends Controller
         }
 
         $tenant = Tenant::create();
+        $tenant->update([
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'email' => $request->email,
+            'city' => $request->city,
+            'company_name' => $request->company_name,
+            'business_type' => $request->business_type,
+            'plan_id' => null,
+            'plan_expire_date' => null,
+            'plan_is_active' => 0,
+            'requested_plan' => 0,
+            'storage_limit' => 0,
+            'storage_used' => 0,
+            'is_trial' => null,
+            'trial_day' => 0,
+            'trial_expire_date' => null,
+        ]);
         $tenant->domains()->create(['domain' => $fullDomain]);
 
         $userData = [
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
-            'city' => $request->city,
             'password' => Hash::make($request->password),
             'type' => 'company',
             'is_enable_login' => 1,
-            'plan_is_active' => 0,
             'tenant_id' => $tenant->id,
         ];
 
@@ -173,6 +195,9 @@ class RegisteredUserController extends Controller
             return redirect()->away("{$currentHost}/verify-email");
         }
 
+        // When email verification is disabled, seed default data immediately (same as when first admin verifies)
+        event(new TenantVerified($tenant));
+
         $planId = $request->plan_id;
         if ($planId) {
             return redirect()->away("{$currentHost}/plans?selected={$planId}");
@@ -222,12 +247,13 @@ class RegisteredUserController extends Controller
         $commissionAmount = ($planPrice * $settings->commission_percentage) / 100;
 
         if ($commissionAmount > 0) {
+            $tenant = $user->getTenantForPlan();
             Referral::create([
                 'user_id' => $user->id,
                 'company_id' => $referrer->id,
                 'commission_percentage' => $settings->commission_percentage,
                 'amount' => $commissionAmount,
-                'plan_id' => $user->plan_id,
+                'plan_id' => $tenant?->plan_id,
             ]);
         }
     }

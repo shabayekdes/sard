@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Enums\BusinessType;
+use App\Enums\TenantCity;
+use App\Models\Plan;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Models\Plan;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Faker\Factory as Faker;
@@ -39,10 +41,29 @@ class CompanySeeder extends Seeder
                 continue;
             }
 
+            $plan = $plans->random();
+
             $tenant = Tenant::create();
+            $tenant->update([
+                'name' => $companyName,
+                'email' => $email,
+                'phone' => $faker->phoneNumber(),
+                'city' => $faker->randomElement(TenantCity::cases())->value,
+                'company_name' => $companyName,
+                'business_type' => $faker->randomElement(BusinessType::cases())->value,
+                'plan_id' => $plan->id,
+                'plan_expire_date' => now()->addYear(),
+                'plan_is_active' => 1,
+                'requested_plan' => 0,
+                'storage_limit' => 0,
+                'storage_used' => 0,
+                'is_trial' => null,
+                'trial_day' => 0,
+                'trial_expire_date' => null,
+            ]);
             $tenant->createDomain(str($companyName)->lower()->before(' ')->append('.' . config('app.domain'))->toString());
 
-            // Create user
+            // Create user (plan lives on tenant, not user)
             $user = User::create([
                 'name' => $companyName,
                 'email' => $email,
@@ -50,10 +71,8 @@ class CompanySeeder extends Seeder
                 'password' => Hash::make('password'),
                 'type' => 'company',
                 'lang' => $faker->randomElement(['en', 'es', 'fr', 'de']),
-                'plan_id' => $plans->random()->id,
-                'referral_code' => rand(100000, 999999),
                 'created_at' => $faker->dateTimeBetween('-1 year', 'now'),
-                'tenant_id' => $tenant->id
+                'tenant_id' => $tenant->id,
             ]);
             
             // Assign company role

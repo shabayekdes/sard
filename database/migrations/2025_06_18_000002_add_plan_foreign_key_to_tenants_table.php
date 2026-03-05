@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            // Add foreign key constraint for plan_id after plans table exists
+        Schema::table('tenants', function (Blueprint $table) {
             $table->foreign('plan_id')->references('id')->on('plans')->nullOnDelete();
-            // Business foreign key removed
         });
     }
 
@@ -23,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table('tenants', function (Blueprint $table) {
             $table->dropForeign(['plan_id']);
         });
     }
