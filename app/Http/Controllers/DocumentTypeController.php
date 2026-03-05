@@ -53,7 +53,7 @@ class DocumentTypeController extends Controller
             }
         } else {
             // Default sorting when no sort field is provided
-            $query->orderBy('created_at', 'desc');
+            $query->latest('id');
         }
 
         $documentTypes = $query->paginate($request->per_page ?? 10);

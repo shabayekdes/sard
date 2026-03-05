@@ -28,7 +28,7 @@ class DocumentVersionController extends Controller
             });
         }
 
-        $query->orderBy('created_at', 'desc');
+        $query->latest('id');
         $versions = $query->paginate($request->per_page ?? 10);
 
         $documents = Document::where('tenant_id', createdBy())

@@ -41,7 +41,7 @@ class TaskStatusController extends BaseController
                 $query->orderBy($sortField, $sortDir);
             }
         } else {
-            $query->orderBy('created_at', 'desc');
+            $query->latest('id');
         }
 
         $taskStatuses = $query->paginate($request->per_page ?? 10);

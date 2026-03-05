@@ -70,9 +70,9 @@ export function BankPaymentModal({ isOpen, onClose, invoice, amount }: BankPayme
         </DialogHeader>
         
         <div className="space-y-4">
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h4 className="font-semibold text-blue-900 mb-2">{t('Payment Instructions')}</h4>
-            <div className="text-sm text-blue-800 space-y-1">
+          <div className="bg-primary/10 p-4 rounded-lg">
+            <h4 className="font-semibold text-primary mb-2">{t('Payment Instructions')}</h4>
+            <div className="text-sm text-primary/80 space-y-1">
               <p><strong>{t('Amount')}:</strong> <CurrencyAmount amount={amount} /></p>
               <p><strong>{t('Invoice')}:</strong> #{invoice.invoice_number}</p>
               <p><strong>{t('Reference')}:</strong> {invoice.payment_token}</p>

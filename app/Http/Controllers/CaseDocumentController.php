@@ -49,7 +49,7 @@ class CaseDocumentController extends Controller
         if ($request->has('sort_field') && !empty($request->sort_field)) {
             $query->orderBy($request->sort_field, $request->sort_direction ?? 'asc');
         } else {
-            $query->orderBy('created_at', 'desc');
+            $query->latest('id');
         }
 
         $caseDocuments = $query->paginate($request->per_page ?? 10);

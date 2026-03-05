@@ -35,7 +35,7 @@ class DocumentPermissionController extends Controller
             });
         }
 
-        $query->orderBy('created_at', 'desc');
+        $query->latest('id');
         $permissions = $query->paginate($request->per_page ?? 10);
 
         $documents = Document::where('tenant_id', createdBy())->get(['id', 'name']);

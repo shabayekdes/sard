@@ -51,7 +51,7 @@ class ExpenseCategoryController extends Controller
                 $query->orderBy($sortField, $sortDirection);
             }
         } else {
-            $query->orderBy('created_at', 'desc');
+            $query->latest('id');
         }
 
         $expenseCategories = $query->paginate($request->per_page ?? 10);

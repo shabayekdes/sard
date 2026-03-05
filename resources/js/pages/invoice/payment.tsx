@@ -621,15 +621,15 @@ export default function InvoicePayment() {
                         </DialogHeader>
 
                         <div className="space-y-4">
-                            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                            <div className="rounded-lg border border-primary/20 bg-primary/10 p-4">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm text-blue-700">
+                                    <span className="text-sm text-primary">
                                         {t('Invoice')} #{invoice.invoice_number}
                                     </span>
-                                    <span className="font-bold text-blue-900"><CurrencyAmount amount={totalAmount} /></span>
+                                    <span className="font-bold text-primary"><CurrencyAmount amount={totalAmount} /></span>
                                 </div>
-                                <div className="mt-1 text-xs text-blue-600">{invoice.client?.name}</div>
-                                <div className="mt-1 text-xs text-blue-600">
+                                <div className="mt-1 text-xs text-primary/80">{invoice.client?.name}</div>
+                                <div className="mt-1 text-xs text-primary/80">
                                     {t('Remaining')}: <CurrencyAmount amount={remainingAmountRounded} />
                                 </div>
                             </div>

@@ -27,7 +27,7 @@ class DocumentCommentController extends Controller
             $query->where('is_resolved', $request->status === 'resolved');
         }
 
-        $query->orderBy('created_at', 'desc');
+        $query->latest('id');
         $comments = $query->paginate($request->per_page ?? 10);
 
         $documents = Document::withPermissionCheck()
