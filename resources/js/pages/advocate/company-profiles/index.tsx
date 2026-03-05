@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 
 export default function CompanyProfiles() {
   const { t } = useTranslation();
-  const { companyProfile, officeSizeOptions = [] } = usePage().props as any;
+  const { companyProfile, officeSizeOptions = [], businessTypeOptions = [] } = usePage().props as any;
   const [isEditing, setIsEditing] = useState(!companyProfile);
   const [formData, setFormData] = useState({
     email: '',
@@ -28,7 +28,7 @@ export default function CompanyProfiles() {
     cr: '',
     tax_number: '',
     company_size: 'solo',
-    business_type: 'law_firm',
+    business_type: 'PROFESSIONAL_COMPANY',
     default_setup: '',
     services_offered: '',
     description: '',
@@ -49,7 +49,7 @@ export default function CompanyProfiles() {
         cr: companyProfile.cr || '',
         tax_number: companyProfile.tax_number || '',
         company_size: companyProfile.company_size || 'solo',
-        business_type: companyProfile.business_type || 'law_firm',
+        business_type: companyProfile.business_type || 'PROFESSIONAL_COMPANY',
         default_setup: companyProfile.default_setup || '',
         services_offered: companyProfile.services_offered || '',
         description: companyProfile.description || '',
@@ -66,7 +66,7 @@ export default function CompanyProfiles() {
     const submitData = {
       ...formData,
       company_size: formData.company_size || 'solo',
-      business_type: formData.business_type || 'law_firm',
+      business_type: formData.business_type || 'PROFESSIONAL_COMPANY',
     };
 
     if (companyProfile) {
@@ -182,10 +182,10 @@ export default function CompanyProfiles() {
             </div>
             <div>
               <Label htmlFor="business_type" className="text-sm font-medium">
-                {t('Activity Type')}
+                {t('Business Type')}
               </Label>
               <Select
-                value={formData.business_type || 'law_firm'}
+                value={formData.business_type || 'PROFESSIONAL_COMPANY'}
                 onValueChange={(value) => handleChange('business_type', value)}
                 disabled={!isEditing}
               >
@@ -193,18 +193,11 @@ export default function CompanyProfiles() {
                   <SelectValue placeholder={t('Choose Activity Type')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="law_firm" className="text-sm">
-                    {t('Law Firm')}
-                  </SelectItem>
-                  <SelectItem value="corporate_legal" className="text-sm">
-                    {t('Corporate Legal')}
-                  </SelectItem>
-                  <SelectItem value="government" className="text-sm">
-                    {t('Government')}
-                  </SelectItem>
-                  <SelectItem value="other" className="text-sm">
-                    {t('Other')}
-                  </SelectItem>
+                  {(businessTypeOptions as { value: string; labelKey: string }[]).map((option) => (
+                    <SelectItem key={option.value} value={option.value} className="text-sm">
+                      {t(option.labelKey)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

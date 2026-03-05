@@ -13,14 +13,13 @@ return new class extends Migration
     {
         Schema::create('company_profiles', function (Blueprint $table) {
             $table->id();
-            $table->string('company_id')->unique();
             $table->string('name');
             $table->string('registration_number')->nullable();
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
             $table->text('address')->nullable();
             $table->date('establishment_date')->nullable();
-            $table->enum('business_type', ['law_firm', 'corporate_legal', 'government', 'other'])->default('law_firm');
+            $table->string('business_type_new', 100)->default('PROFESSIONAL_COMPANY');
             $table->string('cr')->nullable();
             $table->string('tax_number')->nullable();
             $table->string('company_size', 50)->default('solo');

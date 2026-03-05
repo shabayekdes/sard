@@ -52,7 +52,7 @@ class CompanyProfileSeeder extends Seeder
                 'cr' => 'CR-' . str_pad($companyUser->id, 8, '0', STR_PAD_LEFT),
                 'tax_number' => 'TAX-' . str_pad($companyUser->id, 8, '0', STR_PAD_LEFT),
                 'company_size' => ['small', 'medium', 'large'][rand(0, 2)],
-                'business_type' => 'law_firm',
+                'business_type' => 'PROFESSIONAL_COMPANY',
                 'default_setup' => 'Standard',
                 
                 // Services

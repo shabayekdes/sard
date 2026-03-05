@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BusinessType;
 use App\Enums\CompanySize;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -35,6 +36,7 @@ class CompanyProfile extends BaseModel
     protected $casts = [
         'establishment_date' => 'date',
         'company_size' => CompanySize::class,
+        'business_type' => BusinessType::class,
     ];
 
     /**
