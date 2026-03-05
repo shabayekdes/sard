@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Facades\Settings;
 use App\Models\Document;
 use App\Models\DocumentCategory;
 use Illuminate\Http\Request;
@@ -202,21 +203,27 @@ class DocumentController extends Controller
 
     public function download($documentId)
     {
-        $document = Document::withPermissionCheck()
-            ->where('id', $documentId)
-            ->first();
+        $document = Document::find($documentId);
 
         if (!$document || !$document->file_path) {
-            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Document')]));
+            return response()->json(['error' => __(':model not found.', ['model' => __('Document')])], 404);
         }
 
         $originalPath = $document->file_path;
-        
-        // Handle full URLs (like DemoMedia files)
+
+
+        // Handle full URLs (e.g. remote storage – disk from settings)
         if (str_starts_with($originalPath, 'http')) {
             $parsedUrl = parse_url($originalPath);
-            if (isset($parsedUrl['path']) && Storage::exists($parsedUrl['path'])) {
-                return Storage::download($parsedUrl['path'], $document->name);
+            $storageType = strtolower((string) Settings::string('STORAGE_TYPE', 'public'));
+            $disk = match ($storageType) {
+                's3' => 's3',
+                'wasabi' => 'wasabi',
+                'local' => 'public',
+                default => 'public',
+            };
+            if (isset($parsedUrl['path']) && Storage::disk($disk)->exists($parsedUrl['path'])) {
+                return Storage::disk($disk)->download($parsedUrl['path'], $document->name);
             }
         }
         
@@ -233,7 +240,7 @@ class DocumentController extends Controller
             return response()->download(storage_path('app/public/' . $originalPath), $document->name);
         }
 
-        return redirect()->back()->with('error', __('File not found'));
+        return response()->json(['error' => __('File not found')], 404);
     }
 
     public function apiDownload($documentId)

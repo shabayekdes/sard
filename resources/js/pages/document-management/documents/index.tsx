@@ -101,11 +101,46 @@ export default function Documents() {
     setIsFormModalOpen(true);
   };
 
-  const handleDownload = (doc: any) => {
-    const link = window.document.createElement('a');
-    link.href = route('document-management.documents.download', doc.id);
-    link.download = doc.name;
-    link.click();
+  const handleDownload = async (doc: any) => {
+    try {
+      const url = route('document-management.documents.download', doc.id);
+      const res = await fetch(url, {
+        credentials: 'include',
+        headers: { Accept: 'application/octet-stream' },
+      });
+      const contentType = res.headers.get('Content-Type') || '';
+      if (!res.ok) {
+        let message = t('Download failed');
+        if (res.status === 404) message = t('File not found');
+        else if (res.status === 403) message = t('Permission denied');
+        else {
+          try {
+            const data = await res.json();
+            if (data?.error) message = data.error;
+          } catch {
+            // ignore
+          }
+        }
+        toast.error(message);
+        return;
+      }
+      if (contentType.includes('text/html')) {
+        toast.error(t('File not found'));
+        return;
+      }
+      const blob = await res.blob();
+      const disposition = res.headers.get('Content-Disposition');
+      const filenameMatch = disposition?.match(/filename\*?=(?:UTF-8'')?["']?([^"'\s;]+)["']?/i) || disposition?.match(/filename=["']?([^"'\s;]+)["']?/i);
+      const filename = filenameMatch?.[1] ? decodeURIComponent(filenameMatch[1].trim()) : doc.name;
+      const objectUrl = URL.createObjectURL(blob);
+      const link = window.document.createElement('a');
+      link.href = objectUrl;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(objectUrl);
+    } catch (e) {
+      toast.error(t('Download failed'));
+    }
   };
 
   const handleFormSubmit = (formData: any) => {

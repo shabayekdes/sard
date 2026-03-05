@@ -23,7 +23,11 @@ class SetLocale
 
         $response = $next($request);
 
-        return $response->cookie('app_language', $locale, 60 * 24 * 30, '/');
+        // StreamedResponse (e.g. file download) has no cookie() method
+        if (method_exists($response, 'cookie')) {
+            $response->cookie('app_language', $locale, 60 * 24 * 30, '/');
+        }
+        return $response;
     }
 
     /** Return normalized locale if allowed, null otherwise. */
