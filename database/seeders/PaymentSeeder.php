@@ -50,7 +50,7 @@ class PaymentSeeder extends Seeder
                             'payment_method' => $paymentMethods[rand(0, count($paymentMethods) - 1)],
                             'amount' => $paymentAmount,
                             'payment_date' => $paymentDate,
-                            'notes' => $noteTemplates[($company->id + $i - 1) % count($noteTemplates)] . ' for ' . $company->name . '.',
+                            'note' => $noteTemplates[($company->id + $i - 1) % count($noteTemplates)] . ' for ' . $company->name . '.',
                         ];
                         
                         Payment::firstOrCreate([

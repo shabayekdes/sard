@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('amount', 10, 2);
             $table->date('payment_date');
 
-            $table->text('notes')->nullable();
+            $table->text('note')->nullable();
             $table->json('attachment')->nullable();
             $table->timestamps();
 

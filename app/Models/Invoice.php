@@ -281,20 +281,16 @@ class Invoice extends BaseModel
     {
         $totalPaid = $this->payments()->where('approval_status', 'approved')->sum('amount');
         $oldStatus = $this->status;
-
-        \Log::info('updatePaymentStatus called', [
-            'invoice_id' => $this->id,
-            'total_paid' => $totalPaid,
-            'invoice_total' => $this->total_amount,
-            'current_status' => $oldStatus
-        ]);
+        $newStatus = $oldStatus;
 
         if ($totalPaid >= $this->total_amount) {
-            $this->update(['status' => 'paid']);
-            \Log::info('Invoice status updated to paid', ['invoice_id' => $this->id]);
+            $newStatus = 'paid';
         } elseif ($totalPaid > 0) {
-            $this->update(['status' => 'partial_paid']);
-            \Log::info('Invoice status updated to partial_paid', ['invoice_id' => $this->id]);
+            $newStatus = 'partial_paid';
+        }
+
+        if ($newStatus !== $oldStatus) {
+            $this->update(['status' => $newStatus]);
         }
     }
 }

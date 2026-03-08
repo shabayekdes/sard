@@ -45,7 +45,8 @@ class BankPaymentController extends Controller
             $request->validate([
                 'invoice_token' => 'required|string',
                 'amount' => 'required|numeric|min:0',
-                'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png,gif,doc,docx|max:10240',
+                'note' => 'nullable|string|max:1000',
+                'attachment' => 'required|file|mimes:pdf,jpg,jpeg,png,gif,doc,docx|max:10240',
             ]);
             
             $invoice = Invoice::where('payment_token', $request->invoice_token)->firstOrFail();
@@ -64,6 +65,7 @@ class BankPaymentController extends Controller
                 'payment_date' => now(),
                 'tenant_id' => $invoice->tenant_id,
                 'approval_status' => 'pending',
+                'note' => $request->filled('note') ? $request->note : null,
                 'attachment' => $attachmentPaths,
             ]);
             

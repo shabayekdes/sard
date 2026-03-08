@@ -69,7 +69,7 @@ class PaymentController extends Controller
             'payment_method' => 'required|string',
             'amount' => 'required|numeric|min:0.01|max:' . $maxAmount,
             'payment_date' => 'required|date',
-            'notes' => 'nullable|string|max:1000',
+            'note' => 'nullable|string|max:1000',
             'attachment' => 'nullable',
         ]);
 
@@ -103,7 +103,7 @@ class PaymentController extends Controller
             'payment_method' => $request->payment_method,
             'amount' => $request->amount,
             'payment_date' => $request->payment_date,
-            'notes' => $request->notes,
+            'note' => $request->note,
             'attachment' => $attachmentFiles,
             'approval_status' => $isBankTransfer ? 'pending' : 'approved',
             'approved_at' => $isBankTransfer ? null : now(),
@@ -124,7 +124,7 @@ class PaymentController extends Controller
             'payment_method' => 'required|string',
             'amount' => 'required|numeric|min:0.01|max:' . $maxAmount,
             'payment_date' => 'required|date',
-            'notes' => 'nullable|string|max:1000',
+            'note' => 'nullable|string|max:1000',
             'attachment' => 'nullable',
         ]);
 
@@ -185,7 +185,7 @@ class PaymentController extends Controller
             'payment_method' => $request->payment_method,
             'amount' => $request->amount,
             'payment_date' => $request->payment_date,
-            'notes' => $request->notes,
+            'note' => $request->note,
             'attachment' => $attachmentFiles,
         ], $approvalUpdates));
 

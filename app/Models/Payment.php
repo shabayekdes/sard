@@ -24,7 +24,7 @@ class Payment extends BaseModel
         'amount',
         'payment_date',
         'transaction_id',
-        'notes',
+        'note',
         'attachment',
     ];
 
@@ -40,14 +40,16 @@ class Payment extends BaseModel
         // Removed global scope to use AutoApplyPermissionCheck trait instead
 
         static::created(function ($payment) {
-          
-            if ($payment->invoice) {
-                $payment->invoice->updatePaymentStatus();
-            } else {
+            if (!$payment->invoice) {
                 \Log::warning('Payment created but invoice not found', [
                     'payment_id' => $payment->id,
                     'invoice_id' => $payment->invoice_id
                 ]);
+                return;
+            }
+            // Only recalculate invoice status when the new payment is approved (counts toward total_paid)
+            if ($payment->approval_status === 'approved') {
+                $payment->invoice->updatePaymentStatus();
             }
         });
 

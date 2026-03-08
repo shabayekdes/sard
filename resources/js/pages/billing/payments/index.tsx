@@ -499,7 +499,7 @@ export default function Payments() {
             },
             { name: 'amount', label: t('Amount'), type: 'number', step: '0.01', required: true, min: '0', disabled: isAutoOpen },
             { name: 'payment_date', label: t('Payment Date'), type: 'date', required: true, disabled: isAutoOpen },
-            { name: 'notes', label: t('Notes'), type: 'textarea' },
+            { name: 'note', label: t('Note'), type: 'textarea' },
             {
               name: 'attachment',
               label: t('Attachment'),

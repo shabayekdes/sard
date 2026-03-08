@@ -167,7 +167,7 @@ class InvoiceSeeder extends Seeder
                 'amount' => $invoice->total_amount,
                 'payment_date' => $invoice->invoice_date->addDays(rand(1, 15)),
                 'payment_method' => collect(['credit_card', 'bank_transfer', 'check'])->random(),
-                'notes' => 'Payment for invoice #' . $invoice->invoice_number,
+                'note' => 'Payment for invoice #' . $invoice->invoice_number,
                 'tenant_id' => $company->tenant_id,
             ]);
         }
