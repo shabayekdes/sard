@@ -548,7 +548,9 @@ export default function Hearings() {
                   hearing_date: currentItem?.hearing_date
                       ? window.appSettings?.formatDate(currentItem.hearing_date) || new Date(currentItem.hearing_date).toLocaleDateString()
                       : '-',
-                  hearing_time: currentItem?.hearing_time || '-',
+                  hearing_time: currentItem?.hearing_time
+                      ? (window.appSettings?.formatTime(`2000-01-01T${currentItem.hearing_time}`) || currentItem.hearing_time)
+                      : '-',
                   duration_minutes: currentItem?.duration_minutes ? `${currentItem.duration_minutes} minutes` : '-',
                   url: currentItem?.url || '-',
                   status: currentItem?.status ? t(currentItem.status.charAt(0).toUpperCase() + currentItem.status.slice(1).replace('_', ' ')) : '-',

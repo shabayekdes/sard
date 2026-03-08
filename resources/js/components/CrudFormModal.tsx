@@ -320,17 +320,30 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                 return <div className="rounded-md border bg-gray-50 p-2"><CurrencyAmount amount={formData[field.name]} /></div>;
             }
 
-            // For datetime fields (created_at, updated_at, etc.) - use appSettings formatting
-            if ((field.name.includes('_at') || field.name.includes('date') || field.name.includes('time')) && formData[field.name]) {
+            // For datetime fields only when field type is date/time/datetime - use appSettings formatting.
+            // Skip when type is 'text' so pages can pass pre-formatted strings (e.g. hearing_time as "2:30 PM").
+            const isDateTimeFieldType = field.type === 'date' || field.type === 'time' || field.type === 'datetime-local';
+            if (isDateTimeFieldType && formData[field.name]) {
                 const value = formData[field.name];
-                // Check if it's a datetime string (contains time info)
-                if (typeof value === 'string' && (value.includes('T') || value.includes(' ') && value.includes(':'))) {
-                    const formattedDateTime = window.appSettings?.formatDateTime(value) || new Date(value).toLocaleString();
-                    return <div className="rounded-md border bg-gray-50 p-2">{formattedDateTime || '-'}</div>;
+                // Reject placeholder or non-parseable values to avoid "undefined NaN" from Invalid Date
+                if (value === '-' || value === '' || (typeof value === 'string' && value.trim() === '')) {
+                    return <div className="rounded-md border bg-gray-50 p-2">-</div>;
                 }
-                // Otherwise treat as date only
-                const formattedDate = window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString();
-                return <div className="rounded-md border bg-gray-50 p-2">{formattedDate || '-'}</div>;
+                // Check if it's a datetime string (contains time info)
+                if (typeof value === 'string' && (value.includes('T') || (value.includes(' ') && value.includes(':')))) {
+                    const dateObj = new Date(value);
+                    if (!Number.isNaN(dateObj.getTime())) {
+                        const formattedDateTime = window.appSettings?.formatDateTime(value) || dateObj.toLocaleString();
+                        return <div className="rounded-md border bg-gray-50 p-2">{formattedDateTime || '-'}</div>;
+                    }
+                }
+                // Otherwise treat as date only if parseable
+                const dateObj = new Date(value as string);
+                if (!Number.isNaN(dateObj.getTime())) {
+                    const formattedDate = window.appSettings?.formatDate(value) || dateObj.toLocaleDateString();
+                    return <div className="rounded-md border bg-gray-50 p-2">{formattedDate || '-'}</div>;
+                }
+                return <div className="rounded-md border bg-gray-50 p-2">{String(value)}</div>;
             }
 
             // For color fields - show color swatch with value
