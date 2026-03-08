@@ -54,7 +54,7 @@
             rel="stylesheet"
         />
 
-        <script src="{{ asset('js/jquery.min.js') }}"></script>
+        <script src="{{ global_asset('js/jquery.min.js') }}"></script>
         @routes
         <script>
             // Backend locale first so i18next uses same language (avoids backend en / frontend ar RTL mismatch)
