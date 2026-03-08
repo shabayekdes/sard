@@ -641,8 +641,8 @@ class DashboardController extends Controller
     private function renderClientDashboard()
     {
         $user = auth()->user();
-        $client = Client::where('email', $user->email)->first();
-        
+        $client = $user->client;
+
         if (!$client) {
             return redirect()->route('login')->with('error', 'Client profile not found');
         }

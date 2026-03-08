@@ -12,6 +12,7 @@ use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Lab404\Impersonate\Models\Impersonate;
+use App\Models\Client;
 use App\Models\Plan;
 use App\Models\PlanOrder;
 use App\Models\Referral;
@@ -138,6 +139,14 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'tenant_id', 'id')->where('type', 'company');
+    }
+
+    /**
+     * Get the client profile for client-type users (one-to-one with clients.user_id).
+     */
+    public function client(): HasOne
+    {
+        return $this->hasOne(Client::class);
     }
 
     /**

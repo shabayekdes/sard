@@ -67,7 +67,7 @@ class ClientPolicy
         }
 
         if ($user->hasRole(['client'])) {
-            return $client->email === $user->email;
+            return $client->user_id && (int) $client->user_id === (int) $user->id;
         }
 
         return false;

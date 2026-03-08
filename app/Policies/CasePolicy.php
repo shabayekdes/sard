@@ -65,7 +65,7 @@ class CasePolicy
         }
 
         if ($user->hasRole(['client'])) {
-            $client = \App\Models\Client::where('email', $user->email)->first();
+            $client = $user->client;
 
             return $client && (int) $case->client_id === (int) $client->id;
         }

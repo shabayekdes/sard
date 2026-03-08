@@ -32,23 +32,23 @@ class ClientController extends Controller
             ->withCount('cases');
 
         // Handle search
-        if ($request->has('search') && ! empty($request->search)) {
+        if ($request->has('search') && !empty($request->search)) {
             $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%'.$request->search.'%')
-                    ->orWhere('email', 'like', '%'.$request->search.'%')
-                    ->orWhere('phone', 'like', '%'.$request->search.'%')
-                    ->orWhere('client_id', 'like', '%'.$request->search.'%')
-                    ->orWhere('company_name', 'like', '%'.$request->search.'%');
+                $q->where('name', 'like', '%' . $request->search . '%')
+                    ->orWhere('email', 'like', '%' . $request->search . '%')
+                    ->orWhere('phone', 'like', '%' . $request->search . '%')
+                    ->orWhere('client_id', 'like', '%' . $request->search . '%')
+                    ->orWhere('company_name', 'like', '%' . $request->search . '%');
             });
         }
 
         // Handle client type filter
-        if ($request->has('client_type_id') && ! empty($request->client_type_id) && $request->client_type_id !== 'all') {
+        if ($request->has('client_type_id') && !empty($request->client_type_id) && $request->client_type_id !== 'all') {
             $query->where('client_type_id', $request->client_type_id);
         }
 
         // Handle status filter
-        if ($request->has('status') && ! empty($request->status) && $request->status !== 'all') {
+        if ($request->has('status') && !empty($request->status) && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
 
@@ -133,7 +133,7 @@ class ClientController extends Controller
             $client->documents = $client->documents->map(function ($doc) {
                 return [
                     'document_name' => $doc->document_name,
-                    'document_type_id' => $doc->document_type_id ? (string) $doc->document_type_id : '',
+                    'document_type_id' => $doc->document_type_id ? (string)$doc->document_type_id : '',
                     'file' => $doc->file_path,
                 ];
             })->values()->all();
@@ -286,13 +286,13 @@ class ClientController extends Controller
             ->whereNotNull('country_code')
             ->first();
 
-        if (! $phoneCountry) {
+        if (!$phoneCountry) {
             return redirect()->back()->withErrors(['country_id' => __('Invalid phone country')]);
         }
 
         $phoneValidator = Validator::make(
             ['phone' => $validated['phone']],
-            ['phone' => 'phone:'.$phoneCountry->country_code],
+            ['phone' => 'phone:' . $phoneCountry->country_code],
             ['phone.phone' => __('Please enter a valid phone number for the selected country.')],
         );
 
@@ -307,18 +307,18 @@ class ClientController extends Controller
         $validated['status'] = $validated['status'] ?? 'active';
 
         // Check if client type belongs to the current user's company
-        if (! empty($validated['client_type_id'])) {
+        if (!empty($validated['client_type_id'])) {
             $clientType = ClientType::where('id', $validated['client_type_id'])
                 ->where('tenant_id', createdBy())
                 ->first();
 
-            if (! $clientType) {
+            if (!$clientType) {
                 return redirect()->back()->with('error', __('Invalid client type selected.'));
             }
         }
 
         // Check if client with same email already exists for this company
-        if (! empty($validated['email'])) {
+        if (!empty($validated['email'])) {
             $exists = Client::where('email', $validated['email'])
                 ->where('tenant_id', createdBy())
                 ->exists();
@@ -328,25 +328,9 @@ class ClientController extends Controller
             }
         }
 
-        $client = Client::create($validated);
-
-        if (! empty($documents)) {
-            foreach ($documents as $document) {
-                $filePath = $this->convertToRelativePath($document['file'] ?? '');
-                ClientDocument::create([
-                    'client_id' => $client->id,
-                    'document_name' => $document['document_name'] ?? '',
-                    'document_type_id' => $document['document_type_id'] ?? null,
-                    'description' => $document['description'] ?? null,
-                    'status' => $document['status'] ?? 'active',
-                    'file_path' => $filePath,
-                    'tenant_id' => createdBy(),
-                ]);
-            }
-        }
-
-        // Create user account for client if email and password provided
-        if (! empty($validated['email']) && ! empty($validated['password'])) {
+        // Create user account for client first when email and password provided (so we have user_id for client)
+        $user = null;
+        if (!empty($validated['email']) && !empty($validated['password'])) {
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
@@ -361,6 +345,8 @@ class ClientController extends Controller
                 $user->assignRole($clientRole);
             }
 
+            $validated['user_id'] = $user->id;
+
             // Send verification email when email verification is enabled (same as registration)
             $emailVerificationEnabled = Settings::boolean('EMAIL_VERIFICATION_ENABLED');
             if ($emailVerificationEnabled) {
@@ -369,6 +355,23 @@ class ClientController extends Controller
                 } catch (\Exception $e) {
                     session()->flash('email_error', $e->getMessage());
                 }
+            }
+        }
+
+        $client = Client::create($validated);
+
+        if (!empty($documents)) {
+            foreach ($documents as $document) {
+                $filePath = $this->convertToRelativePath($document['file'] ?? '');
+                ClientDocument::create([
+                    'client_id' => $client->id,
+                    'document_name' => $document['document_name'] ?? '',
+                    'document_type_id' => $document['document_type_id'] ?? null,
+                    'description' => $document['description'] ?? null,
+                    'status' => $document['status'] ?? 'active',
+                    'file_path' => $filePath,
+                    'tenant_id' => createdBy(),
+                ]);
             }
         }
 
@@ -382,17 +385,17 @@ class ClientController extends Controller
 
         $errors = [];
         if ($emailError) {
-            $errors[] = __('Email send failed: ').$emailError;
+            $errors[] = __('Email send failed: ') . $emailError;
         }
         if ($slackError) {
-            $errors[] = __('Slack send failed: ').$slackError;
+            $errors[] = __('Slack send failed: ') . $slackError;
         }
         if ($twilioError) {
-            $errors[] = __('SMS send failed: ').$twilioError;
+            $errors[] = __('SMS send failed: ') . $twilioError;
         }
 
-        if (! empty($errors)) {
-            $message = __('Client created successfully, but ').implode(', ', $errors);
+        if (!empty($errors)) {
+            $message = __('Client created successfully, but ') . implode(', ', $errors);
 
             return redirect()->back()->with('warning', $message);
         }
@@ -402,11 +405,11 @@ class ClientController extends Controller
 
     private function convertToRelativePath(string $url): string
     {
-        if (! $url) {
+        if (!$url) {
             return $url;
         }
 
-        if (! str_starts_with($url, 'http')) {
+        if (!str_starts_with($url, 'http')) {
             return $url;
         }
 
@@ -422,104 +425,109 @@ class ClientController extends Controller
     {
         try {
             $validated = $request->validate([
-                    'name' => 'required|string|max:255',
-                    'email' => 'required|email|max:255|unique:clients,email,'.$client->id,
-                    'country_id' => 'required|exists:countries,id',
-                    'phone' => 'required|string|unique:clients,phone,'.$client->id,
-                    'business_type' => 'required|string|in:b2c,b2b',
-                    'nationality_id' => 'nullable|exists:countries,id',
-                    'gender' => 'nullable|string|in:male,female',
-                    'id_number' => 'nullable|string|max:100',
-                    'unified_number' => 'nullable|string|max:100',
-                    'cr_number' => 'nullable|string|max:100',
-                    'cr_issuance_date' => 'nullable|date',
-                    'tax_id' => 'nullable|string|max:100',
-                    'address' => 'nullable|string',
-                    'client_type_id' => 'nullable|exists:client_types,id',
-                    'status' => 'nullable|in:active,inactive',
-                    'company_name' => 'nullable|string|max:255',
-                    'tax_rate' => 'nullable|numeric|min:0|max:100',
-                    'date_of_birth' => 'nullable|date',
-                    'notes' => 'nullable|string',
-                    'documents' => 'nullable|array',
-                    'documents.*.document_name' => 'required_with:documents|string|max:255',
-                    'documents.*.document_type_id' => 'required_with:documents|exists:document_types,id',
-                    'documents.*.file' => 'required_with:documents|string',
-                    'documents.*.description' => 'nullable|string',
-                    'documents.*.status' => 'nullable|in:active,archived',
-                ], [
-                    'name.required' => __('Client name is required.'),
-                    'email.required' => __('Email is required.'),
-                    'email.email' => __('Please enter a valid email address.'),
-                    'country_id.required' => __('Country is required.'),
-                    'phone.required' => __('Phone number is required.'),
-                    'business_type.required' => __('Business type is required.'),
-                ]);
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|max:255|unique:clients,email,' . $client->id,
+                'country_id' => 'required|exists:countries,id',
+                'phone' => 'required|string|unique:clients,phone,' . $client->id,
+                'business_type' => 'required|string|in:b2c,b2b',
+                'nationality_id' => 'nullable|exists:countries,id',
+                'gender' => 'nullable|string|in:male,female',
+                'id_number' => 'nullable|string|max:100',
+                'unified_number' => 'nullable|string|max:100',
+                'cr_number' => 'nullable|string|max:100',
+                'cr_issuance_date' => 'nullable|date',
+                'tax_id' => 'nullable|string|max:100',
+                'address' => 'nullable|string',
+                'client_type_id' => 'nullable|exists:client_types,id',
+                'status' => 'nullable|in:active,inactive',
+                'company_name' => 'nullable|string|max:255',
+                'tax_rate' => 'nullable|numeric|min:0|max:100',
+                'date_of_birth' => 'nullable|date',
+                'notes' => 'nullable|string',
+                'documents' => 'nullable|array',
+                'documents.*.document_name' => 'required_with:documents|string|max:255',
+                'documents.*.document_type_id' => 'required_with:documents|exists:document_types,id',
+                'documents.*.file' => 'required_with:documents|string',
+                'documents.*.description' => 'nullable|string',
+                'documents.*.status' => 'nullable|in:active,archived',
+            ], [
+                'name.required' => __('Client name is required.'),
+                'email.required' => __('Email is required.'),
+                'email.email' => __('Please enter a valid email address.'),
+                'country_id.required' => __('Country is required.'),
+                'phone.required' => __('Phone number is required.'),
+                'business_type.required' => __('Business type is required.'),
+            ]);
 
-                $phoneCountry = Country::where('id', $validated['country_id'])
-                    ->whereNotNull('country_code')
+            $phoneCountry = Country::where('id', $validated['country_id'])
+                ->whereNotNull('country_code')
+                ->first();
+
+            if (!$phoneCountry) {
+                return redirect()->back()->withErrors(['country_id' => __('Invalid phone country')]);
+            }
+
+            $phoneValidator = Validator::make(
+                ['phone' => $validated['phone']],
+                ['phone' => 'phone:' . $phoneCountry->country_code],
+                ['phone.phone' => __('Please enter a valid phone number for the selected country.')],
+            );
+
+            if ($phoneValidator->fails()) {
+                return redirect()->back()->withErrors($phoneValidator)->withInput();
+            }
+
+            // Check if client type belongs to the current user's company
+            if (!empty($validated['client_type_id'])) {
+                $clientType = ClientType::withPermissionCheck()
+                    ->where('id', $validated['client_type_id'])
                     ->first();
 
-                if (! $phoneCountry) {
-                    return redirect()->back()->withErrors(['country_id' => __('Invalid phone country')]);
+                if (!$clientType) {
+                    return redirect()->back()->with('error', __('Invalid client type selected.'));
                 }
+            }
 
-                $phoneValidator = Validator::make(
-                    ['phone' => $validated['phone']],
-                    ['phone' => 'phone:'.$phoneCountry->country_code],
-                    ['phone.phone' => __('Please enter a valid phone number for the selected country.')],
-                );
+            // Check if client with same email already exists for this company (excluding current)
+            if (!empty($validated['email'])) {
+                $exists = Client::where('email', $validated['email'])
+                    ->where('tenant_id', createdBy())
+                    ->where('id', '!=', $client->id)
+                    ->exists();
 
-                if ($phoneValidator->fails()) {
-                    return redirect()->back()->withErrors($phoneValidator)->withInput();
+                if ($exists) {
+                    return redirect()->back()->with('error', __(':model with this email already exists.', ['model' => __('Client')]));
                 }
+            }
 
-                // Check if client type belongs to the current user's company
-                if (! empty($validated['client_type_id'])) {
-                    $clientType = ClientType::withPermissionCheck()
-                        ->where('id', $validated['client_type_id'])
-                        ->first();
+            $documents = $validated['documents'] ?? [];
+            unset($validated['documents']);
 
-                    if (! $clientType) {
-                        return redirect()->back()->with('error', __('Invalid client type selected.'));
-                    }
+            $client->update($validated);
+
+            // Sync email to linked client user (via relation)
+            if (!empty($validated['email']) && $client->user) {
+                $client->user->update(['email' => $validated['email']]);
+            }
+
+            // Replace client documents with repeater payload
+            ClientDocument::where('client_id', $client->id)->delete();
+            if (!empty($documents)) {
+                foreach ($documents as $document) {
+                    $filePath = $this->convertToRelativePath($document['file'] ?? '');
+                    ClientDocument::create([
+                        'client_id' => $client->id,
+                        'document_name' => $document['document_name'] ?? '',
+                        'document_type_id' => $document['document_type_id'] ?? null,
+                        'description' => $document['description'] ?? null,
+                        'status' => $document['status'] ?? 'active',
+                        'file_path' => $filePath,
+                        'tenant_id' => createdBy(),
+                    ]);
                 }
+            }
 
-                // Check if client with same email already exists for this company (excluding current)
-                if (! empty($validated['email'])) {
-                    $exists = Client::where('email', $validated['email'])
-                        ->where('tenant_id', createdBy())
-                        ->where('id', '!=', $client->id)
-                        ->exists();
-
-                    if ($exists) {
-                        return redirect()->back()->with('error', __(':model with this email already exists.', ['model' => __('Client')]));
-                    }
-                }
-
-                $documents = $validated['documents'] ?? [];
-                unset($validated['documents']);
-
-                $client->update($validated);
-
-                // Replace client documents with repeater payload
-                ClientDocument::where('client_id', $client->id)->delete();
-                if (! empty($documents)) {
-                    foreach ($documents as $document) {
-                        $filePath = $this->convertToRelativePath($document['file'] ?? '');
-                        ClientDocument::create([
-                            'client_id' => $client->id,
-                            'document_name' => $document['document_name'] ?? '',
-                            'document_type_id' => $document['document_type_id'] ?? null,
-                            'description' => $document['description'] ?? null,
-                            'status' => $document['status'] ?? 'active',
-                            'file_path' => $filePath,
-                            'tenant_id' => createdBy(),
-                        ]);
-                    }
-                }
-
-                return redirect()->route('clients.index')->with('success', __(':model updated successfully.', ['model' => __('Client')]));
+            return redirect()->route('clients.index')->with('success', __(':model updated successfully.', ['model' => __('Client')]));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to update :model', ['model' => __('Client')]));
         }
@@ -592,28 +600,28 @@ class ClientController extends Controller
             });
         }
 
-        if ($request->has('case_type_id') && ! empty($request->case_type_id) && $request->case_type_id !== 'all') {
+        if ($request->has('case_type_id') && !empty($request->case_type_id) && $request->case_type_id !== 'all') {
             $casesQuery->where('case_type_id', $request->case_type_id);
         }
 
-        if ($request->has('case_status_id') && ! empty($request->case_status_id) && $request->case_status_id !== 'all') {
+        if ($request->has('case_status_id') && !empty($request->case_status_id) && $request->case_status_id !== 'all') {
             $casesQuery->where('case_status_id', $request->case_status_id);
         }
 
-        if ($request->has('priority') && ! empty($request->priority) && $request->priority !== 'all') {
+        if ($request->has('priority') && !empty($request->priority) && $request->priority !== 'all') {
             $casesQuery->where('priority', $request->priority);
         }
 
-        if ($request->has('status') && ! empty($request->status) && $request->status !== 'all') {
+        if ($request->has('status') && !empty($request->status) && $request->status !== 'all') {
             $casesQuery->where('status', $request->status);
         }
 
-        if ($request->has('court_id') && ! empty($request->court_id) && $request->court_id !== 'all') {
+        if ($request->has('court_id') && !empty($request->court_id) && $request->court_id !== 'all') {
             $casesQuery->where('court_id', $request->court_id);
         }
 
         // Apply sorting
-        if ($request->has('sort_field') && ! empty($request->sort_field)) {
+        if ($request->has('sort_field') && !empty($request->sort_field)) {
             $casesQuery->orderBy($request->sort_field, $request->sort_direction ?? 'asc');
         } else {
             $casesQuery->latest();
@@ -654,14 +662,14 @@ class ClientController extends Controller
         }
 
         // Apply sorting for invoices
-        if ($request->has('invoice_sort_field') && ! empty($request->invoice_sort_field)) {
+        if ($request->has('invoice_sort_field') && !empty($request->invoice_sort_field)) {
             $invoicesQuery->orderBy($request->invoice_sort_field, $request->invoice_sort_direction ?? 'asc');
         } else {
             $invoicesQuery->latest('invoice_date');
         }
 
         $invoices = $invoicesQuery->paginate($request->invoice_per_page ?? 10, ['*'], 'invoice_page');
-        
+
         // Calculate and append remaining_amount to each invoice
         $invoices->getCollection()->transform(function ($invoice) {
             $totalPaid = $invoice->payments->sum('amount');
@@ -688,28 +696,28 @@ class ClientController extends Controller
         }
 
         // Apply sorting for payments
-        if ($request->has('payment_sort_field') && ! empty($request->payment_sort_field)) {
+        if ($request->has('payment_sort_field') && !empty($request->payment_sort_field)) {
             $paymentsQuery->orderBy($request->payment_sort_field, $request->payment_sort_direction ?? 'asc');
         } else {
             $paymentsQuery->latest('payment_date');
         }
 
         $payments = $paymentsQuery->paginate($request->payment_per_page ?? 10, ['*'], 'payment_page');
-        
+
         // Transform payments to convert attachment array to comma-separated string for frontend
         $payments->getCollection()->transform(function ($payment) {
             $paymentData = $payment->toArray();
-            
+
             // Convert attachment array to comma-separated string for frontend
             if (isset($paymentData['attachment']) && is_array($paymentData['attachment'])) {
                 $paymentData['attachment'] = implode(',', array_filter($paymentData['attachment']));
             }
-            
+
             // Ensure invoice_id is included and invoice relationship is preserved
             if (!isset($paymentData['invoice_id']) && $payment->invoice_id) {
                 $paymentData['invoice_id'] = $payment->invoice_id;
             }
-            
+
             // Ensure invoice relationship is properly included
             if ($payment->invoice) {
                 $paymentData['invoice'] = [
@@ -721,7 +729,7 @@ class ClientController extends Controller
                     ] : null,
                 ];
             }
-            
+
             return $paymentData;
         });
 
@@ -735,7 +743,7 @@ class ClientController extends Controller
         $currencies = \App\Models\Currency::where('status', 'active')
             ->orderBy('code')
             ->get(['id', 'name', 'code', 'symbol'])
-            ->map(fn ($c) => ['value' => $c->code, 'label' => $c->name.' ('.$c->code.')']);
+            ->map(fn($c) => ['value' => $c->code, 'label' => $c->name . ' (' . $c->code . ')']);
 
         return Inertia::render('clients/show', [
             'client' => $client,
@@ -802,7 +810,7 @@ class ClientController extends Controller
     {
         $this->authorize('update', $client);
 
-        if (! auth()->user()->can('reset-client-password')) {
+        if (!auth()->user()->can('reset-client-password')) {
             return redirect()->back()->with('error', __('You do not have permission to reset :model passwords.', ['model' => __('Client')]));
         }
 
@@ -810,17 +818,9 @@ class ClientController extends Controller
             'password' => 'required|min:6|confirmed',
         ]);
 
-        if (empty($client->email)) {
-            return redirect()->back()->with('error', __(':model does not have an email address.', ['model' => __('Client')]));
-        }
+        $user = $client->user;
 
-        // Find the user account associated with this client
-        $user = User::where('email', $client->email)
-            ->where('type', 'client')
-            ->where('tenant_id', createdBy())
-            ->first();
-
-        if (! $user) {
+        if (!$user) {
             return redirect()->back()->with('error', __('No user account found for this :model.', ['model' => __('Client')]));
         }
 

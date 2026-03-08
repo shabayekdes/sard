@@ -69,8 +69,8 @@ class MessageController extends Controller
         // Get users based on role
         if (auth()->user()->hasRole('client')) {
             // For clients, show only the company user who created them
-            $client = \App\Models\Client::where('email', auth()->user()->email)->first();
-            $companyUser = User::where('tenant_id', $client->tenant_id)->where('type', 'company')->first();
+            $client = auth()->user()->client;
+            $companyUser = $client ? User::where('tenant_id', $client->tenant_id)->where('type', 'company')->first() : null;
             $users = User::where('id', $companyUser?->id ?? 0)
                 ->where('status', 'active')
                 ->whereNotIn('id', $existingConversationUserIds)
@@ -247,10 +247,7 @@ class MessageController extends Controller
         $user = User::with(['roles', 'creator'])->findOrFail($userId);
         
         // Get client data if user is a client
-        $client = null;
-        if ($user->type === 'client') {
-            $client = \App\Models\Client::where('email', $user->email)->first();
-        }
+        $client = $user->type === 'client' ? $user->client : null;
         
         // Get cases related to this user
         $cases = collect();

@@ -282,7 +282,7 @@ trait AutoApplyPermissionCheck
      */
     private function applyClientFiltering($query, $user)
     {
-        $client = \App\Models\Client::where('email', $user->email)->first();
+        $client = $user->client;
         if (!$client) return $query->whereRaw('1 = 0'); // No access if no client record
 
         $modelClass = get_class($query->getModel());

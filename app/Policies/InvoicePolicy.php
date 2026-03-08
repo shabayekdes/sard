@@ -74,7 +74,7 @@ class InvoicePolicy
         }
 
         if ($user->hasRole(['client'])) {
-            $client = \App\Models\Client::where('email', $user->email)->first();
+            $client = $user->client;
 
             return $client && (int) $invoice->client_id === (int) $client->id;
         }

@@ -258,10 +258,7 @@ class UserController extends BaseController
         $user->load(['roles', 'creator']);
 
         // Get client data if user is a client
-        $client = null;
-        if ($user->type === 'client') {
-            $client = \App\Models\Client::where('email', $user->email)->first();
-        }
+        $client = $user->type === 'client' ? $user->client : null;
 
         // Get cases related to this user
         $cases = collect();

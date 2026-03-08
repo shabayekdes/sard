@@ -25,6 +25,7 @@ return new class extends Migration
             $table->decimal('tax_rate', 5, 2)->default(0);
             $table->date('date_of_birth')->nullable();
             $table->text('notes')->nullable();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
 

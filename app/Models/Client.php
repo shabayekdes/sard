@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
@@ -25,6 +26,7 @@ class Client extends BaseModel
         'date_of_birth',
         'notes',
         'tenant_id',
+        'user_id',
         'business_type',
         'nationality_id',
         'id_number',
@@ -68,6 +70,14 @@ class Client extends BaseModel
     public function clientType()
     {
         return $this->belongsTo(ClientType::class);
+    }
+
+    /**
+     * Get the user account linked to this client (for client portal login).
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     /**

@@ -198,6 +198,19 @@ class ClientSeeder extends Seeder
                     'notes' => 'Client #' . $i . ' for ' . $companyUser->name . '. ' . ($isCorporate ? 'Corporate client with business needs.' : 'Individual client seeking legal assistance.'),
                 ];
 
+                $clientUser = User::updateOrCreate([
+                    'email' => $clientData['email']
+                ], [
+                    'name' => $clientData['name'],
+                    'password' => Hash::make('12345678'),
+                    'type' => 'client',
+                    'lang' => $companyUser->lang ?? 'en',
+                    'status' => 'active',
+                    'referral_code' => 0,
+                    'tenant_id' => $companyUser->tenant_id
+                ]);
+
+                $clientData['user_id'] = $clientUser->id;
                 // Create client record
                 $client = Client::firstOrCreate([
                     'email' => $clientData['email'],
@@ -207,18 +220,6 @@ class ClientSeeder extends Seeder
                     'tenant_id' => $companyUser->tenant_id,
                 ]);
 
-                // Create client user account
-                $clientUser = User::updateOrCreate([
-                    'email' => $clientData['email']
-                ], [
-                    'name' => $clientData['name'],
-                    'password' => Hash::make('password'),
-                    'type' => 'client',
-                    'lang' => $companyUser->lang ?? 'en',
-                    'status' => 'active',
-                    'referral_code' => 0,
-                    'tenant_id' => $companyUser->tenant_id
-                ]);
 
                 $clientUser->roles()->sync([$clientRole->id]);
             }
