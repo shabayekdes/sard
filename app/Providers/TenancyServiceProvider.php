@@ -7,6 +7,7 @@ namespace App\Providers;
 use App\Events\TenantVerified;
 use App\Jobs\CreateTenantStorageLink;
 use App\Jobs\SeedDefaultCompanyData;
+use App\Listeners\AddContactToBrevo;
 use App\Listeners\Tenant\TenancySetting;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
@@ -27,7 +28,9 @@ class TenancyServiceProvider extends ServiceProvider
         return [
             // Tenant events
             Events\CreatingTenant::class => [],
-            Events\TenantCreated::class => [],
+            Events\TenantCreated::class => [
+                AddContactToBrevo::class,
+            ],
             TenantVerified::class => [
                 JobPipeline::make([
                     SeedDefaultCompanyData::class,

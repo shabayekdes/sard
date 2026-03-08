@@ -51,4 +51,8 @@ return [
         'endpoint' => env('AWS_ENDPOINT', 'https://s3.' . env('AWS_DEFAULT_REGION', 'us-east-1') . '.amazonaws.com'),
     ],
 
+    'brevo' => [
+        'api_key' => env('BREVO_API_KEY'),
+    ],
+
 ];

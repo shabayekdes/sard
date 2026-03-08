@@ -25,6 +25,7 @@ use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
 use Stancl\Tenancy\Database\Models\Domain;
+use Stancl\Tenancy\Events\TenantCreated;
 
 class RegisteredUserController extends Controller
 {
@@ -132,6 +133,8 @@ class RegisteredUserController extends Controller
             'trial_expire_date' => null,
         ]);
         $tenant->domains()->create(['domain' => $fullDomain]);
+
+        event(new TenantCreated($tenant));
 
         $userData = [
             'name' => $request->name,
