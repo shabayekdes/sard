@@ -138,11 +138,10 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
   const { t, i18n } = useTranslation();
   const currentLocale = i18n.language || 'en';
 
-  const getTranslatedLabel = (translations?: Record<string, string> | null, fallback?: string | null) => {
-    if (translations) {
-      return translations[currentLocale] || translations.en || translations.ar || fallback || '-';
-    }
-    return fallback || '-';
+  const getTranslatedLabel = (translations?: Record<string, string> | string | null, fallback?: string | null) => {
+    if (translations == null) return fallback || '-';
+    if (typeof translations === 'string') return translations;
+    return translations[currentLocale] || translations.en || translations.ar || fallback || '-';
   };
 
   const taskStatusLabels: Record<string, string> = {
@@ -442,7 +441,7 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm truncate">{hearing.title}</p>
                         <p className="text-xs text-muted-foreground">
-                          {typeof hearing.court === 'string' ? hearing.court : hearing.court?.name}
+                          {typeof hearing.court === 'string' ? hearing.court : getTranslatedLabel(hearing.court?.name, '-')}
                         </p>
                         <p className="text-xs text-muted-foreground">{hearing.date} at {hearing.time}</p>
                       </div>
@@ -724,7 +723,7 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
                         </p>
                       </div>
                       <Badge variant="outline" className="text-xs">
-                        {task.task_type?.name || t('General')}
+                        {getTranslatedLabel(task.task_type?.name, t('General'))}
                       </Badge>
                     </div>
                   </button>
@@ -846,7 +845,7 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
         initialData={{
           ...currentTask,
           assigned_to: currentTask?.assigned_to?.name || t('Unassigned'),
-          task_type: currentTask?.task_type?.name || t('General'),
+          task_type: getTranslatedLabel(currentTask?.task_type?.name, t('General')),
           due_date: currentTask?.due_date || '-',
           priority: currentTask?.priority || '-',
           status: currentTask?.status || '-'

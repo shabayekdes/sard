@@ -61,6 +61,18 @@ interface Props {
 export default function ClientDashboard({ client, myCases, upcomingHearings, recentDocuments, stats }: Props) {
     const { t, i18n } = useTranslation();
 
+    /** Resolve translated value: string, or object with keys like ar/en to a single display string. */
+    const resolveLabel = (value: unknown, fallback: string): string => {
+        if (value == null) return fallback;
+        if (typeof value === 'string') return value || fallback;
+        if (typeof value === 'object' && !Array.isArray(value)) {
+            const obj = value as Record<string, string>;
+            const lang = i18n.language?.split('-')[0] || 'en';
+            return obj[lang] || obj.en || obj.ar || fallback;
+        }
+        return fallback;
+    };
+
     return (
         <PageTemplate 
             title={t('Client Dashboard')}
@@ -175,15 +187,11 @@ export default function ClientDashboard({ client, myCases, upcomingHearings, rec
                                             <p className="font-medium text-sm truncate">{case_.title}</p>
                                             <p className="text-xs text-muted-foreground">Case ID: {case_.case_id}</p>
                                             <p className="text-xs text-muted-foreground">
-                                                {case_.case_type?.name
-                                                    ? (typeof case_.case_type.name === 'object' && case_.case_type.name !== null
-                                                        ? (case_.case_type.name[i18n.language] || case_.case_type.name.en || case_.case_type.name.ar || '-')
-                                                        : case_.case_type.name)
-                                                    : '-'}
+                                                {resolveLabel(case_.case_type?.name, '-')}
                                             </p>
                                         </div>
                                         <Badge variant={case_.case_status?.is_closed ? "secondary" : "default"} className="text-xs">
-                                            {case_.case_status?.name || 'Active'}
+                                            {resolveLabel(case_.case_status?.name, 'Active')}
                                         </Badge>
                                     </div>
                                 ))}
@@ -217,7 +225,7 @@ export default function ClientDashboard({ client, myCases, upcomingHearings, rec
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="font-medium text-sm truncate">{hearing.title}</p>
-                                            <p className="text-xs text-muted-foreground">{hearing.court?.name}</p>
+                                            <p className="text-xs text-muted-foreground">{resolveLabel(hearing.court?.name, '-')}</p>
                                             <p className="text-xs text-muted-foreground">
                                                 {new Date(hearing.hearing_date).toLocaleDateString()} at {hearing.hearing_time}
                                             </p>
