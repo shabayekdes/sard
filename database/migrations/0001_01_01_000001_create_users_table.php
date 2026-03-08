@@ -29,10 +29,8 @@ return new class extends Migration
             $table->integer('google2fa_enable')->default(0);
             $table->text('google2fa_secret')->nullable();
             $table->string('status')->default('active');
-            $table->text('active_module')->nullable();
             $table->integer('referral_code')->default(0);
             $table->integer('used_referral_code')->default(0);
-            $table->integer('commission_amount')->default(0);
             $table->rememberToken();
             $table->timestamps();
 

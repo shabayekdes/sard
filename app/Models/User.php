@@ -47,8 +47,6 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
         'google2fa_enable',
         'google2fa_secret',
         'status',
-        'active_module',
-        'commission_amount'
     ];
 
     /**
