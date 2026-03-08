@@ -70,7 +70,6 @@ class CaseController extends BaseController
         } else {
             $query->latest('id');
         }
-        dd($query->toRawSql());
 
         $cases = $query->paginate($request->per_page ?? 10);
 
