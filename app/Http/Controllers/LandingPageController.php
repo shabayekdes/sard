@@ -21,6 +21,12 @@ class LandingPageController extends Controller
 
         // Check if landing page is enabled in settings
         if (!\App\Facades\Settings::boolean('LANDING_PAGE_ENABLED', false)) {
+            $centralDomains = config('tenancy.central_domains', []);
+            $isOnCentral = !empty($centralDomains) && in_array($host, $centralDomains, true);
+            if (!$isOnCentral && !empty($centralDomains)) {
+                $centralUrl = $request->getScheme() . '://' . $centralDomains[0] . '/login';
+                return redirect()->away($centralUrl);
+            }
             return redirect()->route('login');
         }
 
