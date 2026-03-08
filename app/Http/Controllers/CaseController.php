@@ -70,7 +70,8 @@ class CaseController extends BaseController
         } else {
             $query->latest('id');
         }
-        
+        dd($query->toRawSql());
+
         $cases = $query->paginate($request->per_page ?? 10);
 
         $caseTypes = CaseType::where('tenant_id', createdBy())->where('status', 'active')->get(['id', 'name']);

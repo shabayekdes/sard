@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\BusinessType;
 use App\Enums\TenantCity;
+use App\Events\TenantVerified;
 use App\Models\Plan;
 use App\Models\Tenant;
 use App\Models\User;
@@ -11,6 +12,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Faker\Factory as Faker;
 use Illuminate\Support\Str;
+use Stancl\Tenancy\Events\TenantCreated;
 
 class CompanySeeder extends Seeder
 {
@@ -74,7 +76,8 @@ class CompanySeeder extends Seeder
                 'created_at' => $faker->dateTimeBetween('-1 year', 'now'),
                 'tenant_id' => $tenant->id,
             ]);
-            
+
+            event(new TenantVerified($tenant));
             // Assign company role
             $user->assignRole('company');
         }
