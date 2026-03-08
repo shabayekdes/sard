@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Log;
 
 class BrevoService
 {
-    protected string $apiKey;
+    protected ?string $apiKey;
 
     protected string $baseUrl = 'https://api.brevo.com/v3';
 
