@@ -22,6 +22,10 @@ class BrevoService
      */
     public function createContact(string $email): bool
     {
+        if (! config('services.brevo.enabled', false)) {
+            return false;
+        }
+
         if (empty($this->apiKey)) {
             Log::debug('Brevo: API key not set, skipping contact creation', ['email' => $email]);
 

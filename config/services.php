@@ -52,6 +52,7 @@ return [
     ],
 
     'brevo' => [
+        'enabled' => env('BREVO_ENABLED', false),
         'api_key' => env('BREVO_API_KEY'),
     ],
 
