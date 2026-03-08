@@ -93,9 +93,9 @@ class ReferralController extends Controller
         // Get referred users count (users who used this company's referral code)
         $referredUsersCount = User::where('used_referral_code', $user->referral_code)->count();
         
-        // Get recent referred users
+        // Get recent referred users (plan lives on tenant for company users)
         $recentReferredUsers = User::where('used_referral_code', $user->referral_code)
-            ->with('plan')
+            ->with('tenantRelation.plan')
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
@@ -191,15 +191,15 @@ class ReferralController extends Controller
         $user = Auth::user();
         
         if ($user->isSuperAdmin()) {
-            // Super admin can see all referred users
+            // Super admin can see all referred users (plan lives on tenant for company users)
             $referredUsers = User::whereNotNull('used_referral_code')
-                ->with(['plan', 'referrals'])
+                ->with(['tenantRelation.plan', 'referrals'])
                 ->orderBy('created_at', 'desc')
                 ->paginate(15);
         } else {
             // Company can see users who used their referral code
             $referredUsers = User::where('used_referral_code', $user->referral_code)
-                ->with(['plan', 'referrals'])
+                ->with(['tenantRelation.plan', 'referrals'])
                 ->orderBy('created_at', 'desc')
                 ->paginate(15);
         }

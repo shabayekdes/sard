@@ -491,8 +491,8 @@ class DashboardController extends Controller
             ['status' => 'on_hold', 'count' => Task::where('tenant_id', $companyId)->where('status', 'on_hold')->count(), 'color' => '#f59e0b']
         ];
 
-        // Get user's current plan with relationship
-        $user->load('plan');
+        // Get user's current plan (plan lives on tenant for company users)
+        $user->load('tenantRelation.plan');
         $currentPlan = $user->getCurrentPlan();
         $storageLimit = $currentPlan ? $currentPlan->storage_limit : 5; // Default 5GB if no plan
 
