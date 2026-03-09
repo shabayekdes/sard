@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Enums\BusinessType;
 use App\Enums\CompanySize;
+use App\Facades\Settings;
 use App\Models\CompanyProfile;
+use App\Models\Country;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -16,10 +18,24 @@ class CompanyProfileController extends Controller
         // Get single advocate profile for current user
         $companyProfile = CompanyProfile::withPermissionCheck()->where('tenant_id', createdBy())->first();
 
+        $phoneCountries = Country::where('status', 'active')
+            ->whereNotNull('country_code')
+            ->get(['id', 'name', 'country_code'])
+            ->map(function ($country) {
+                return [
+                    'value' => $country->id,
+                    'label' => $country->name,
+                    'code' => $country->country_code,
+                ];
+            })
+            ->values();
+
         return Inertia::render('advocate/company-profiles/index', [
             'companyProfile' => $companyProfile,
             'officeSizeOptions' => CompanySize::options(),
             'businessTypeOptions' => BusinessType::options(),
+            'phoneCountries' => $phoneCountries,
+            'defaultCountry' => Settings::string('DEFAULT_COUNTRY', 'SA'),
         ]);
     }
 
@@ -28,7 +44,7 @@ class CompanyProfileController extends Controller
         $validated = $request->validate([
             // Contact Details
             'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:20',
+            'phone' => 'nullable|string|max:30',
             'address' => 'nullable|string',
             
             // Business Details
@@ -73,7 +89,7 @@ class CompanyProfileController extends Controller
         $validated = $request->validate([
             // Contact Details
             'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:20',
+            'phone' => 'nullable|string|max:30',
             'address' => 'nullable|string',
             
             // Business Details

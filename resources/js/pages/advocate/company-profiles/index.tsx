@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,10 +10,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Save, Edit } from 'lucide-react';
 import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
+import { PhoneInput, defaultCountries } from 'react-international-phone';
 
 export default function CompanyProfiles() {
   const { t } = useTranslation();
-  const { companyProfile, officeSizeOptions = [], businessTypeOptions = [] } = usePage().props as any;
+  const { companyProfile, officeSizeOptions = [], businessTypeOptions = [], phoneCountries = [], defaultCountry = '' } = usePage().props as any;
+
+  const phoneCountriesByCode = useMemo(
+    () => new Map((phoneCountries || []).map((country: any) => [String(country.code).toLowerCase(), country])),
+    [phoneCountries],
+  );
+  const phoneCountryCodes = (phoneCountries || []).map((country: any) => String(country.code || '').toLowerCase()).filter((code: string) => code);
+  const allowedPhoneCountries = phoneCountryCodes.length
+    ? defaultCountries.filter((country) => phoneCountryCodes.includes(String(country[1]).toLowerCase()))
+    : defaultCountries;
+  const defaultPhoneCountry =
+    phoneCountriesByCode.get(String(defaultCountry).toLowerCase()) || phoneCountriesByCode.get('sa') || (phoneCountries || [])[0];
   const [isEditing, setIsEditing] = useState(!companyProfile);
   const [formData, setFormData] = useState({
     email: '',
@@ -259,14 +271,23 @@ export default function CompanyProfiles() {
               <Label htmlFor="phone" className="text-sm font-medium">
                 {t('Phone Number')} *
               </Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => handleChange('phone', e.target.value)}
-                disabled={!isEditing}
-                placeholder={t('Enter Phone Number')}
-                className="text-sm"
-              />
+              <div className="phone-left-selector">
+                <PhoneInput
+                  defaultCountry={(defaultPhoneCountry?.code || '').toLowerCase() || undefined}
+                  value={formData.phone}
+                  countries={allowedPhoneCountries}
+                  inputProps={{ name: 'phone', required: isEditing, readOnly: !isEditing }}
+                  className="w-full"
+                  inputClassName="w-full !h-10 !border !border-input !bg-background !text-sm !text-foreground disabled:!opacity-100 disabled:!cursor-default"
+                  countrySelectorStyleProps={{
+                    buttonClassName: '!h-10 !border !border-input !bg-background disabled:!opacity-100',
+                    dropdownStyleProps: {
+                      className: '!bg-background !text-foreground phone-country-dropdown',
+                    },
+                  }}
+                  onChange={(value) => handleChange('phone', value || '')}
+                />
+              </div>
             </div>
             <div>
               <Label htmlFor="office_hours" className="text-sm font-medium">
