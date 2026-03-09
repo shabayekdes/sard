@@ -405,7 +405,7 @@ trait AutoApplyPermissionCheck
                 });
 
             default:
-                return $query->where('tenant_id', createdBy());
+                return $query->whereRaw('1 = 0');
         }
     }
 }

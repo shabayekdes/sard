@@ -82,7 +82,7 @@ export function BankPaymentModal({ isOpen, onClose, invoice, amount }: BankPayme
         <DialogHeader>
           <DialogTitle>{t('Bank Transfer Payment')}</DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           <div className="bg-primary/10 p-4 rounded-lg">
             <h4 className="font-semibold text-primary mb-2">{t('Payment Instructions')}</h4>
@@ -92,7 +92,7 @@ export function BankPaymentModal({ isOpen, onClose, invoice, amount }: BankPayme
               <p><strong>{t('Reference')}:</strong> {invoice.payment_token}</p>
             </div>
           </div>
-          
+
           <div className="bg-yellow-50 p-4 rounded-lg">
             <p className="text-sm text-yellow-800">
               {t('Your payment request will be submitted for manual verification. Please contact support for bank transfer details.')}
@@ -110,11 +110,10 @@ export function BankPaymentModal({ isOpen, onClose, invoice, amount }: BankPayme
                 tabIndex={0}
                 onClick={() => fileInputRef.current?.click()}
                 onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
-                className={`inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer w-fit ${
-                  attachmentError
+                className={`inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer w-fit ${attachmentError
                     ? 'border-destructive bg-destructive/5 hover:bg-destructive/10'
                     : 'border-input bg-background hover:bg-accent hover:text-accent-foreground'
-                }`}
+                  }`}
               >
                 {t('Choose file')}
               </span>
@@ -147,7 +146,7 @@ export function BankPaymentModal({ isOpen, onClose, invoice, amount }: BankPayme
               className="resize-none text-sm"
             />
           </div>
-          
+
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={() => handleClose(false)} className="flex-1">
               {t('Cancel')}
