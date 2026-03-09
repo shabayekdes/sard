@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Facades\Settings;
 use App\Models\Document;
 use App\Models\DocumentVersion;
 use Illuminate\Http\Request;
@@ -153,11 +154,14 @@ class DocumentVersionController extends Controller
         // Handle full URLs (like DemoMedia files)
         if (str_starts_with($originalPath, 'http')) {
             $parsedUrl = parse_url($originalPath);
-            if (isset($parsedUrl['path'])) {
-                $publicPath = public_path(ltrim($parsedUrl['path'], '/'));
-                if (file_exists($publicPath)) {
-                    return response()->download($publicPath, basename($originalPath));
-                }
+            $storageType = strtolower((string) Settings::string('STORAGE_TYPE', 'public'));
+            $disk = match ($storageType) {
+                's3' => 's3',
+                'wasabi' => 'wasabi',
+                default => 'public',
+            };
+            if (isset($parsedUrl['path']) && Storage::disk($disk)->exists($parsedUrl['path'])) {
+                return Storage::disk($disk)->download($parsedUrl['path'], $document->name);
             }
         }
         

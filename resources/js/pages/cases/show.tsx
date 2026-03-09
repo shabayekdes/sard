@@ -200,6 +200,48 @@ export default function CaseShow() {
         );
     };
 
+    const handleDocumentDownload = async (doc: any) => {
+        try {
+            const url = route('advocate.case-documents.download', doc.id);
+            const res = await fetch(url, {
+                credentials: 'include',
+                headers: { Accept: 'application/octet-stream' },
+            });
+            const contentType = res.headers.get('Content-Type') || '';
+            if (!res.ok) {
+                let message = t('Download failed');
+                if (res.status === 404) message = t('File not found');
+                else if (res.status === 403) message = t('Permission denied');
+                else {
+                    try {
+                        const data = await res.json();
+                        if (data?.error) message = data.error;
+                    } catch {
+                        // ignore
+                    }
+                }
+                toast.error(message);
+                return;
+            }
+            if (contentType.includes('text/html')) {
+                toast.error(t('File not found'));
+                return;
+            }
+            const blob = await res.blob();
+            const disposition = res.headers.get('Content-Disposition');
+            const filenameMatch = disposition?.match(/filename\*?=(?:UTF-8'')?["']?([^"'\s;]+)["']?/i) || disposition?.match(/filename=["']?([^"'\s;]+)["']?/i);
+            const filename = filenameMatch?.[1] ? decodeURIComponent(filenameMatch[1].trim()) : (doc.document_name || doc.name || 'document');
+            const objectUrl = URL.createObjectURL(blob);
+            const link = window.document.createElement('a');
+            link.href = objectUrl;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(objectUrl);
+        } catch {
+            toast.error(t('Download failed'));
+        }
+    };
+
     const handleDocumentAction = (action: string, item?: any) => {
         setCurrentItem(item || null);
         switch (action) {
@@ -218,10 +260,7 @@ export default function CaseShow() {
                 setIsDeleteModalOpen(true);
                 break;
             case 'download':
-                const link = document.createElement('a');
-                link.href = route('advocate.case-documents.download', item.id);
-                link.download = item.document_name;
-                link.click();
+                handleDocumentDownload(item);
                 break;
         }
     };

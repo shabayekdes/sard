@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Facades\Settings;
 use App\Models\CaseDocument;
 use App\Models\DocumentType;
 use Illuminate\Http\Request;
@@ -190,11 +191,14 @@ class CaseDocumentController extends Controller
         // Handle full URLs (like DemoMedia files)
         if (str_starts_with($originalPath, 'http')) {
             $parsedUrl = parse_url($originalPath);
-            if (isset($parsedUrl['path'])) {
-                $publicPath = public_path(ltrim($parsedUrl['path'], '/'));
-                if (file_exists($publicPath)) {
-                    return response()->download($publicPath, $document->document_name);
-                }
+            $storageType = strtolower((string) Settings::string('STORAGE_TYPE', 'public'));
+            $disk = match ($storageType) {
+                's3' => 's3',
+                'wasabi' => 'wasabi',
+                default => 'public',
+            };
+            if (isset($parsedUrl['path']) && Storage::disk($disk)->exists($parsedUrl['path'])) {
+                return Storage::disk($disk)->download($parsedUrl['path'], $document->name);
             }
         }
 
