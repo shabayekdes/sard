@@ -64,6 +64,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
     const { position } = useLayout();
     const wasOpenRef = useRef(false);
     const lastInitKeyRef = useRef<string | null>(null);
+    const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
     // Calculate total price for price summary
     const calculateTotal = () => {
@@ -750,10 +751,15 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                 const acceptAttr = field.fileValidation?.accept || '';
                 const isImageFile = acceptAttr.includes('image') ||
                     (field.fileValidation?.mimeTypes?.some(type => type.startsWith('image/')) ?? false);
+                const selectedFile = formData[field.name];
+                const fileName = selectedFile instanceof File ? selectedFile.name : '';
 
                 return (
                     <>
-                        <Input
+                        <input
+                            ref={(el) => {
+                                if (fileInputRefs.current) fileInputRefs.current[field.name] = el;
+                            }}
                             id={field.name}
                             name={field.name}
                             type="file"
@@ -763,21 +769,44 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                     handleChange(field.name, e.target.files[0]);
                                 }
                             }}
-                            className={errors[field.name] ? 'border-red-500' : ''}
+                            className="sr-only"
                             disabled={mode === 'view'}
+                            tabIndex={-1}
+                            aria-hidden="true"
                         />
+                        <div
+                            role="button"
+                            tabIndex={mode === 'view' ? -1 : 0}
+                            onClick={() => mode !== 'view' && fileInputRefs.current?.[field.name]?.click()}
+                            onKeyDown={(e) => {
+                                if ((e.key === 'Enter' || e.key === ' ') && mode !== 'view') {
+                                    e.preventDefault();
+                                    fileInputRefs.current?.[field.name]?.click();
+                                }
+                            }}
+                            className={`flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ${errors[field.name] ? 'border-red-500' : ''} ${mode !== 'view' ? 'cursor-pointer hover:border-primary/50' : 'cursor-default opacity-60'}`}
+                        >
+                            <span className="truncate text-muted-foreground">
+                                {fileName || t('No file chosen')}
+                            </span>
+                            {mode !== 'view' && (
+                                <span className="ml-2 shrink-0 rounded border border-input bg-muted/50 px-2 py-1 text-xs">
+                                    {t('Choose File')}
+                                </span>
+                            )}
+                        </div>
                         {mode === 'edit' && initialData[field.name] && (
                             <div className="text-xs text-gray-500 mt-1">
-                                Current file: {initialData.featured_image_original_name || initialData[field.name]}
+                                {t('Current file')}: {initialData.featured_image_original_name || initialData[field.name]}
                             </div>
                         )}
                         {field.fileValidation && (
                             <div className="text-xs text-gray-500 mt-1">
                                 {field.fileValidation.extensions && (
-                                    <span>{t("Allowed extensions")}: {field.fileValidation.extensions.join(', ')} </span>
+                                    <span>{t('Allowed extensions')}: {field.fileValidation.extensions.join(', ')} </span>
                                 )}
                                 {field.fileValidation.maxSize && (
-                                    <span>{t("Max size")}: {(field.fileValidation.maxSize / (1024 * 1024)).toFixed(1)}MB</span>
+                                    <span>{t('Max size')}: {(field.fileValidation.maxSize / (1024 * 1024)).toFixed(1)}MB</span>
                                 )}
                             </div>
                         )}
@@ -788,22 +817,22 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                 {formData[field.name] && formData[field.name] instanceof File ? (
                                     // Preview for newly selected file
                                     <div className="mt-2">
-                                        <p className="text-xs text-gray-500 mb-1">{t("Preview")}:</p>
+                                        <p className="text-xs text-gray-500 mb-1">{t('Preview')}:</p>
                                         <img
                                             src={URL.createObjectURL(formData[field.name])}
-                                            alt="Preview"
+                                            alt={t('Preview')}
                                             className="h-24 w-auto rounded-md object-cover shadow-sm"
                                         />
                                     </div>
                                 ) : mode === 'edit' && initialData[field.name] && (
                                     // Show existing image in edit mode
                                     <div className="mt-2">
-                                        <p className="text-xs text-gray-500 mb-1">{t("Current image")}:</p>
+                                        <p className="text-xs text-gray-500 mb-1">{t('Current image')}:</p>
                                         <img
                                             src={typeof initialData[field.name] === 'string' && initialData[field.name].startsWith && initialData[field.name].startsWith('http')
                                                 ? initialData[field.name]
                                                 : `/storage/${initialData[field.name]}`}
-                                            alt="Current"
+                                            alt={t('Current image')}
                                             className="h-24 w-auto rounded-md object-cover shadow-sm"
                                             onError={(e) => {
                                                 e.currentTarget.src = 'https://placehold.co/200x150?text=Image+Not+Found';

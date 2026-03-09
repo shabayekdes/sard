@@ -23,6 +23,7 @@ export default function ShowInvoice() {
         remainingAmount: remainingAmountProp,
     } = usePage().props as any;
     const permissions = auth?.permissions || [];
+    const isClient = auth?.user?.type === 'client';
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
     const formatDate = (date: string | null) => (date ? window.appSettings?.formatDate?.(date) || new Date(date).toLocaleDateString() : '-');
@@ -524,7 +525,7 @@ export default function ShowInvoice() {
                         {
                             name: 'attachment',
                             label: t('Attachment'),
-                            type: 'media-picker',
+                            type: isClient ? 'file' : 'media-picker',
                             multiple: true,
                             placeholder: t('Select files...'),
                             conditional: (_mode: string, formData: any) => String(formData?.payment_method || '') === 'bank_transfer',
