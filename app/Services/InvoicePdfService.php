@@ -109,7 +109,7 @@ class InvoicePdfService
             ],
             'customer' => [
                 'name' => $client?->name ?? '',
-                'address' => $billingInfo?->billing_address ?? $client?->address ?? '',
+                'address' => $client?->address ?? '',
                 'vat_number' => $client?->vat_number ?? $client?->tax_id ?? '',
                 'phone' => $client?->phone ?? '',
                 'email' => $client?->email ?? '',
