@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\StorageConfigService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class MediaController extends BaseController
@@ -314,13 +315,20 @@ class MediaController extends BaseController
         $media = $query->firstOrFail();
 
         try {
-            $filePath = $media->getPath();
+            // Use path generator + Storage disk so tenant-aware disk is used (tenant domain).
+            $pathGenerator = app(config('media-library.path_generator'));
+            $relativePath = $pathGenerator->getPath($media) . $media->file_name;
+            $disk = $media->disk ?? config('media-library.disk_name', 'public');
 
-            if (!file_exists($filePath)) {
+            /** @var \Illuminate\Filesystem\FilesystemAdapter $storageDisk */
+            $storageDisk = Storage::disk($disk);
+            if (! $storageDisk->exists($relativePath)) {
                 abort(404, __('File not found'));
             }
 
-            return response()->download($filePath, $media->file_name);
+            return $storageDisk->download($relativePath, $media->file_name);
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            throw $e;
         } catch (\Exception $e) {
             abort(404, __('File storage unavailable'));
         }
