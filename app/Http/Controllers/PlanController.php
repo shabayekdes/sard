@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Plan;
+use App\Models\User;
+use App\Models\CaseModel;
+use App\Models\Client;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -360,11 +363,43 @@ class PlanController extends Controller
             ->where('status', 'pending')
             ->get()
             ->keyBy('plan_id');
+
+        // Plan status (current usage vs limits) for company users
+        $planStatus = null;
+        $currentPlan = $user->plan;
+        if ($currentPlan) {
+            $tenant = $user->getTenantForPlan();
+            $companyId = $user->tenant_id;
+            $teamMembersUsed = (int) User::where('tenant_id', $companyId)->where('status', 'active')->count();
+            $casesUsed = (int) CaseModel::where('tenant_id', $companyId)->count();
+            $clientsUsed = (int) Client::where('tenant_id', $companyId)->count();
+            $storageUsedBytes = $tenant ? (float) $tenant->storage_used : 0;
+            $storageUsedGb = round($storageUsedBytes / (1024 ** 3), 2);
+            $storageLimit = $currentPlan->storage_limit;
+            $planStatus = [
+                'name' => $currentPlan->name,
+                'usage' => [
+                    'team_members' => ['used' => $teamMembersUsed, 'limit' => $currentPlan->max_users],
+                    'storage' => ['used_gb' => $storageUsedGb, 'limit_gb' => $storageLimit],
+                    'cases' => ['used' => $casesUsed, 'limit' => $currentPlan->max_cases],
+                    'clients' => ['used' => $clientsUsed, 'limit' => $currentPlan->max_clients],
+                ],
+                'plan_details' => [
+                    'team_members' => $currentPlan->max_users,
+                    'cases' => $currentPlan->max_cases,
+                    'clients' => $currentPlan->max_clients,
+                    'storage_gb' => $storageLimit,
+                ],
+                'price_monthly' => $currentPlan->price,
+                'formatted_price_monthly' => formatCurrency($currentPlan->price, ['variant' => 'superadmin']),
+            ];
+        }
         
         return Inertia::render('plans/index', [
             'plans' => $plans,
             'billingCycle' => $billingCycle,
-            'currentPlan' => $user->plan,
+            'currentPlan' => $currentPlan,
+            'planStatus' => $planStatus,
             'userTrialUsed' => $user->getTenantForPlan()?->is_trial,
             'hasMonthlyPlans' => $hasMonthlyPlans,
             'hasYearlyPlans' => $hasYearlyPlans,

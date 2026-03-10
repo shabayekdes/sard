@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Facades\Settings;
 use App\Models\Client;
 use App\Models\ClientDocument;
 use App\Models\DocumentType;
+use App\Services\MediaDownloadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class ClientDocumentController extends BaseController
 {
+    public function __construct(
+        protected MediaDownloadService $mediaDownload
+    ) {}
     public function index(Request $request)
     {
         $query = ClientDocument::withPermissionCheck()
@@ -204,33 +207,13 @@ class ClientDocumentController extends BaseController
             return redirect()->back()->with('error', __(':model not found.', ['model' => __('Document')]));
         }
 
-        $originalPath = $document->file_path;
+        $response = $this->mediaDownload->download(
+            $document->file_path,
+            $document->document_name
+        );
 
-        // Handle full URLs (like DemoMedia files)
-        if (str_starts_with($originalPath, 'http')) {
-            $parsedUrl = parse_url($originalPath);
-            $storageType = strtolower((string) Settings::string('STORAGE_TYPE', 'public'));
-            $disk = match ($storageType) {
-                's3' => 's3',
-                'wasabi' => 'wasabi',
-                default => 'public',
-            };
-            if (isset($parsedUrl['path']) && Storage::disk($disk)->exists($parsedUrl['path'])) {
-                return Storage::disk($disk)->download($parsedUrl['path'], $document->name);
-            }
-        }
-
-        // Handle /storage/ paths (Laravel storage)
-        if (str_starts_with($originalPath, '/storage/')) {
-            $storagePath = str_replace('/storage/', '', $originalPath);
-            if (Storage::disk('public')->exists($storagePath)) {
-                return response()->download(storage_path('app/public/' . $storagePath), $document->document_name);
-            }
-        }
-
-        // Try as direct storage path
-        if (Storage::disk('public')->exists($originalPath)) {
-            return response()->download(storage_path('app/public/' . $originalPath), $document->document_name);
+        if ($response !== null) {
+            return $response;
         }
 
         return redirect()->back()->with('error', __(':model not found.', ['model' => __('Document')]));

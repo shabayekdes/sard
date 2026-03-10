@@ -4118,5 +4118,6 @@
   "The selected domain is invalid.": "النطاق المحدد غير صالح.",
   "validation.domain_invalid": "النطاق المحدد غير صالح.",
   "Domain must start with a letter and contain only lowercase letters, numbers, and hyphens.": "يجب أن يبدأ النطاق بحرف ويحتوي فقط على أحرف صغيرة وأرقام وشرطات.",
-  "Download Tax Invoice": "تحميل الفاتورة الضريبية"
+  "Download Tax Invoice": "تحميل الفاتورة الضريبية",
+  "Link copied to clipboard!": "تم نسخ الرابط إلى الحافظة!"
 }

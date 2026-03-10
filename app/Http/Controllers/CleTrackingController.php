@@ -3,15 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Events\NewCleRecordCreated;
-use App\Facades\Settings;
 use App\Models\CleTracking;
 use App\Models\User;
+use App\Services\MediaDownloadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class CleTrackingController extends BaseController
 {
+    public function __construct(
+        protected MediaDownloadService $mediaDownload
+    ) {}
     public function index(Request $request)
     {
         $query = CleTracking::withPermissionCheck()
@@ -198,33 +201,14 @@ class CleTrackingController extends BaseController
             return redirect()->back()->with('error', 'Certificate file not found.');
         }
 
-        $originalPath = $cleRecord->certificate_file;
-        
-        // Handle full URLs (like DemoMedia files)
-        if (str_starts_with($originalPath, 'http')) {
-            $parsedUrl = parse_url($originalPath);
-            $storageType = strtolower((string) Settings::string('STORAGE_TYPE', 'public'));
-            $disk = match ($storageType) {
-                's3' => 's3',
-                'wasabi' => 'wasabi',
-                default => 'public',
-            };
-            if (isset($parsedUrl['path']) && Storage::disk($disk)->exists($parsedUrl['path'])) {
-                return Storage::disk($disk)->download($parsedUrl['path'], $document->name);
-            }
-        }
-        
-        // Handle /storage/ paths (Laravel storage)
-        if (str_starts_with($originalPath, '/storage/')) {
-            $storagePath = str_replace('/storage/', '', $originalPath);
-            if (Storage::disk('public')->exists($storagePath)) {
-                return response()->download(storage_path('app/public/' . $storagePath), basename($originalPath));
-            }
-        }
-        
-        // Try as direct storage path
-        if (Storage::disk('public')->exists($originalPath)) {
-            return response()->download(storage_path('app/public/' . $originalPath), basename($originalPath));
+        $downloadName = basename($cleRecord->certificate_file);
+        $response = $this->mediaDownload->download(
+            $cleRecord->certificate_file,
+            $downloadName
+        );
+
+        if ($response !== null) {
+            return $response;
         }
 
         return redirect()->back()->with('error', 'Certificate file not found.');

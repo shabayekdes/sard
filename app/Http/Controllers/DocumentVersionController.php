@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Facades\Settings;
 use App\Models\Document;
 use App\Models\DocumentVersion;
+use App\Services\MediaDownloadService;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 class DocumentVersionController extends Controller
 {
+    public function __construct(
+        protected MediaDownloadService $mediaDownload
+    ) {}
     public function index(Request $request)
     {
         $query = DocumentVersion::withPermissionCheck()
@@ -142,6 +145,7 @@ class DocumentVersionController extends Controller
     public function download($versionId)
     {
         $version = DocumentVersion::withPermissionCheck()
+            ->with('document')
             ->where('id', $versionId)
             ->first();
 
@@ -149,33 +153,11 @@ class DocumentVersionController extends Controller
             return redirect()->back()->with('error', __(':model not found.', ['model' => __('Version')]));
         }
 
-        $originalPath = $version->file_path;
-        
-        // Handle full URLs (like DemoMedia files)
-        if (str_starts_with($originalPath, 'http')) {
-            $parsedUrl = parse_url($originalPath);
-            $storageType = strtolower((string) Settings::string('STORAGE_TYPE', 'public'));
-            $disk = match ($storageType) {
-                's3' => 's3',
-                'wasabi' => 'wasabi',
-                default => 'public',
-            };
-            if (isset($parsedUrl['path']) && Storage::disk($disk)->exists($parsedUrl['path'])) {
-                return Storage::disk($disk)->download($parsedUrl['path'], $document->name);
-            }
-        }
-        
-        // Handle /storage/ paths (Laravel storage)
-        if (str_starts_with($originalPath, '/storage/')) {
-            $storagePath = str_replace('/storage/', '', $originalPath);
-            if (Storage::disk('public')->exists($storagePath)) {
-                return response()->download(storage_path('app/public/' . $storagePath), basename($originalPath));
-            }
-        }
-        
-        // Try as direct storage path
-        if (Storage::disk('public')->exists($originalPath)) {
-            return response()->download(storage_path('app/public/' . $originalPath), basename($originalPath));
+        $downloadName = $version->document?->name ?? basename($version->file_path);
+        $response = $this->mediaDownload->download($version->file_path, $downloadName);
+
+        if ($response !== null) {
+            return $response;
         }
 
         return redirect()->back()->with('error', __('File not found.'));

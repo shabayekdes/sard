@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -31,7 +32,8 @@ import {
   IndianRupee,
   Wallet,
   Coins,
-  Scale
+  Scale,
+  Target
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -66,6 +68,24 @@ interface Plan {
   has_users?: boolean;
 }
 
+interface PlanStatusData {
+  name: string;
+  usage: {
+    team_members: { used: number; limit: number };
+    storage: { used_gb: number; limit_gb: number };
+    cases: { used: number; limit: number };
+    clients: { used: number; limit: number };
+  };
+  plan_details: {
+    team_members: number;
+    cases: number;
+    clients: number;
+    storage_gb: number;
+  };
+  price_monthly: number | string;
+  formatted_price_monthly: string;
+}
+
 interface Props {
   plans: Plan[];
   billingCycle: 'monthly' | 'yearly';
@@ -74,6 +94,7 @@ interface Props {
   hasYearlyPlans?: boolean;
   isAdmin?: boolean;
   currentPlan?: any;
+  planStatus?: PlanStatusData | null;
   userTrialUsed?: boolean;
   paymentMethods?: any[];
   pendingRequests?: any;
@@ -87,6 +108,7 @@ export default function Plans({
   hasYearlyPlans = true,
   isAdmin = false,
   currentPlan,
+  planStatus = null,
   userTrialUsed,
   paymentMethods = [],
   pendingRequests = {}
@@ -111,6 +133,12 @@ export default function Plans({
     if (value === null || value === undefined) return false;
     const numeric = typeof value === 'string' ? parseFloat(value) : value;
     return numeric === -1;
+  };
+
+  const planStatusProgress = (used: number, limit: number) => {
+    if (limit === -1 || limit === 0) return 0;
+    const p = Math.min(100, (used / limit) * 100);
+    return Math.round(p);
   };
 
   const formatLimitValue = (value: number | string, unit?: string) => {
@@ -655,6 +683,9 @@ export default function Plans({
     storage: <HardDrive className="h-5 w-5" />
   };
 
+  const showPlanStatusRow = !isAdmin && planStatus;
+  const plansGridCols = showPlanStatusRow ? 'md:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-4';
+
   return (
       <PageTemplate title={t('Plans')} description={t('Manage subscription plans for your customers')} url="/plans">
           <div className="space-y-8">
@@ -689,8 +720,104 @@ export default function Plans({
                       )}
                   </div>
               </div>
-              {/* Plans grid */}
-              <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+
+              {/* Plan Status + Plans in same row (company) or plans only (admin) */}
+              <div className={showPlanStatusRow ? 'grid grid-cols-1 gap-8 xl:grid-cols-[minmax(300px,380px)_1fr] items-start' : ''}>
+                  {showPlanStatusRow && (
+                      <Card className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-sm xl:sticky xl:top-8">
+                          <CardHeader className="pb-4">
+                              <div className="flex flex-wrap items-center justify-between gap-4">
+                                  <div className="flex items-center gap-2">
+                                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                          <Target className="h-5 w-5" />
+                                      </div>
+                                      <h2 className="text-lg font-semibold tracking-tight">{t('Plan Status')}</h2>
+                                  </div>
+                                  <Badge variant="secondary" className="rounded-md bg-gray-100 px-2.5 py-1 text-sm font-medium text-gray-700">
+                                      {planStatus.name}
+                                  </Badge>
+                              </div>
+                          </CardHeader>
+                          <CardContent className="space-y-6">
+                              <div className="space-y-4">
+                                  <div>
+                                      <div className="mb-1.5 flex items-center justify-between text-sm">
+                                          <span className="font-medium text-gray-700">{t('Team Members')}</span>
+                                          <span className="text-muted-foreground">
+                                              {planStatus.usage.team_members.limit === -1
+                                                  ? `${planStatus.usage.team_members.used} / ${t('Unlimited')}`
+                                                  : `${planStatus.usage.team_members.used} / ${planStatus.usage.team_members.limit}`}
+                                          </span>
+                                      </div>
+                                      <Progress
+                                          value={planStatusProgress(planStatus.usage.team_members.used, planStatus.usage.team_members.limit)}
+                                          className="h-2 bg-gray-100 [&>div]:bg-emerald-500"
+                                      />
+                                  </div>
+                                  <div>
+                                      <div className="mb-1.5 flex items-center justify-between text-sm">
+                                          <span className="font-medium text-gray-700">{t('Storage')}</span>
+                                          <span className="text-muted-foreground">
+                                              {planStatus.usage.storage.limit_gb === -1
+                                                  ? `${planStatus.usage.storage.used_gb} GB / ${t('Unlimited')}`
+                                                  : `${planStatus.usage.storage.used_gb} GB / ${planStatus.usage.storage.limit_gb} GB`}
+                                          </span>
+                                      </div>
+                                      <Progress
+                                          value={planStatusProgress(planStatus.usage.storage.used_gb, planStatus.usage.storage.limit_gb)}
+                                          className="h-2 bg-gray-100 [&>div]:bg-emerald-500"
+                                      />
+                                  </div>
+                                  <div>
+                                      <div className="mb-1.5 flex items-center justify-between text-sm">
+                                          <span className="font-medium text-gray-700">{t('Cases')}</span>
+                                          <span className="text-muted-foreground">
+                                              {planStatus.usage.cases.limit === -1
+                                                  ? `${planStatus.usage.cases.used} / ${t('Unlimited')}`
+                                                  : `${planStatus.usage.cases.used} / ${planStatus.usage.cases.limit}`}
+                                          </span>
+                                      </div>
+                                      <Progress
+                                          value={planStatusProgress(planStatus.usage.cases.used, planStatus.usage.cases.limit)}
+                                          className="h-2 bg-gray-100 [&>div]:bg-emerald-500"
+                                      />
+                                  </div>
+                                  <div>
+                                      <div className="mb-1.5 flex items-center justify-between text-sm">
+                                          <span className="font-medium text-gray-700">{t('Clients')}</span>
+                                          <span className="text-muted-foreground">
+                                              {planStatus.usage.clients.limit === -1
+                                                  ? `${planStatus.usage.clients.used} / ${t('Unlimited')}`
+                                                  : `${planStatus.usage.clients.used} / ${planStatus.usage.clients.limit}`}
+                                          </span>
+                                      </div>
+                                      <Progress
+                                          value={planStatusProgress(planStatus.usage.clients.used, planStatus.usage.clients.limit)}
+                                          className="h-2 bg-gray-100 [&>div]:bg-emerald-500"
+                                      />
+                                  </div>
+                              </div>
+
+                              <div>
+                                  <h3 className="mb-2 text-sm font-semibold text-gray-700">{t('Plan Details')}</h3>
+                                  <ul className="space-y-1 text-sm text-gray-600">
+                                      <li>• {planStatus.plan_details.team_members === -1 ? t('Unlimited') : planStatus.plan_details.team_members} {t('Team Members')}</li>
+                                      <li>• {planStatus.plan_details.cases === -1 ? t('Unlimited') : planStatus.plan_details.cases} {t('Cases')}</li>
+                                      <li>• {planStatus.plan_details.clients === -1 ? t('Unlimited') : planStatus.plan_details.clients} {t('Clients')}</li>
+                                      <li>• {planStatus.plan_details.storage_gb === -1 ? t('Unlimited') : `${planStatus.plan_details.storage_gb} GB`} {t('Storage')}</li>
+                                  </ul>
+                              </div>
+
+                              <div className="flex items-end justify-end gap-2 border-t border-gray-100 pt-4">
+                                  <div className="text-right">
+                                      <div className="text-lg font-semibold text-gray-900">{planStatus.formatted_price_monthly}/mo</div>
+                                      <div className="text-xs text-muted-foreground">0</div>
+                                  </div>
+                              </div>
+                          </CardContent>
+                      </Card>
+                  )}
+                  <div className={`grid grid-cols-1 gap-8 ${plansGridCols}`}>
                   {plans.map((plan) => (
                       <div key={plan.id} className={`group relative flex h-full flex-col ${plan.recommended ? 'z-10 scale-[1.02]' : ''}`}>
                           {/* Card with decorative elements */}
@@ -884,6 +1011,7 @@ export default function Plans({
                           </div>
                       </div>
                   ))}
+                  </div>
               </div>
               {/* Delete Modal - Admin only */}
               {isAdmin && (
