@@ -170,8 +170,10 @@ class InvoicePaymentController extends Controller
             'amount' => 'required|numeric|min:0.01|max:' . $maxAmount
         ]);
         
-        // Ensure amount doesn't exceed remaining balance
-        if ($request->amount > $maxAmount) {
+        // Ensure amount doesn't exceed remaining balance (round to avoid float precision issues)
+        $amount = round($request->float('amount'), 2);
+        $maxAmountRounded = round((float) $maxAmount, 2);
+        if ($amount > $maxAmountRounded) {
             return back()->withErrors(['amount' => 'Payment amount cannot exceed remaining balance of ' . $maxAmount]);
         }
 
