@@ -76,6 +76,9 @@ export default function ShowInvoice() {
             ...formData,
             amount: Math.round(Number(formData.amount) * 100) / 100,
         };
+        if (isClient) {
+            payload.payment_method = 'bank_transfer';
+        }
         router.post(route('billing.payments.store'), payload, {
             onSuccess: (page: any) => {
                 toast.dismiss();
@@ -533,6 +536,7 @@ export default function ShowInvoice() {
                                 { value: 'bank_transfer', label: t('Bank Transfer') },
                                 { value: 'online', label: t('Online Payment') },
                             ],
+                            conditional: () => !isClient,
                         },
                         { name: 'amount', label: t('Amount'), type: 'number', step: '0.01', required: true, min: '0' },
                         { name: 'payment_date', label: t('Payment Date'), type: 'date', required: true },
@@ -543,7 +547,7 @@ export default function ShowInvoice() {
                             type: isClient ? 'file' : 'media-picker',
                             multiple: true,
                             placeholder: t('Select files...'),
-                            conditional: (_mode: string, formData: any) => String(formData?.payment_method || '') === 'bank_transfer',
+                            conditional: (_mode: string, formData: any) => isClient || String(formData?.payment_method || '') === 'bank_transfer',
                         },
                     ],
                     modalSize: 'lg',
@@ -552,7 +556,7 @@ export default function ShowInvoice() {
                     invoice_id: String(invoice.id),
                     amount: remainingAmount,
                     payment_date: new Date().toISOString().split('T')[0],
-                    payment_method: 'cash',
+                    payment_method: isClient ? 'bank_transfer' : 'cash',
                 }}
                 title={t('Record New Payment')}
                 mode="create"

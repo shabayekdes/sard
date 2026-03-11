@@ -145,7 +145,7 @@ export default function Settings() {
     // }
     // Filter sidebar items based on user permissions
     const sidebarNavItems = allSidebarNavItems.filter(item => {
-        if (item.permission && ['manage-email-settings', 'manage-twilio-notifications', 'manage-payment-settings'].includes(item.permission) && !isSaas) {
+        if (item.permission && ['manage-email-settings', 'manage-twilio-notifications'].includes(item.permission) && !isSaas) {
             return false;
         }
         // If no permission is required or user has the permission
@@ -367,7 +367,7 @@ export default function Settings() {
                     )}
 
                     {/* Payment Settings Section */}
-                    {isSaas && (
+                    {auth.permissions?.includes('manage-payment-settings') && (
                         <section id="payment-settings" ref={paymentSettingsRef} className="mb-8">
                             <PaymentSettings settings={paymentSettings} />
                         </section>
