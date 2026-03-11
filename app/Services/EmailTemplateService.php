@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enum\EmailTemplateName;
+use App\Facades\Settings;
 use App\Mail\CommonTemplateMail;
 use App\Models\Business;
 use App\Models\EmailTemplate;
@@ -189,11 +190,11 @@ class EmailTemplateService
             $fromName = $this->replaceVariables($fromTemplate, $variables);
 
             // Configure SMTP settings
-            $this->configureBusinessSMTP();
+            // $this->configureBusinessSMTP();
 
             // Get final email settings
-            $fromEmail = getSetting('email_from_address') ?: config('mail.from.address');
-            $finalFromName = getSetting('email_from_name') ? $this->replaceVariables(getSetting('email_from_name'), $variables) : $fromName;
+            $fromEmail = Settings::string('EMAIL_FROM_ADDRESS') ?: config('mail.from.address');
+            $finalFromName = Settings::string('EMAIL_FROM_NAME') ? $this->replaceVariables(Settings::string('EMAIL_FROM_NAME'), $variables) : $fromName;
 
             // Send email using Mail class
             $mail = new CommonTemplateMail($subject, $content, $variables, $language);
@@ -262,5 +263,8 @@ class EmailTemplateService
             'mail.mailers.smtp.encryption' => $emailEncryption,
         ]);
 
+
+
+        dd(config('mail'));
     }
 }
