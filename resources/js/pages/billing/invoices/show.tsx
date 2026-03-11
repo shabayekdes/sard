@@ -311,10 +311,12 @@ export default function ShowInvoice() {
                             <p>
                                 <span className="text-muted-foreground font-medium">{t('Tax Number')}:</span> {companyProfile?.tax_number || '-'}
                             </p>
-                            <p>
-                                <span className="text-muted-foreground font-medium">{t('Commercial Register')}:</span>
-                                {companyProfile?.cr || '-'}
-                            </p>
+                            {invoice?.client?.business_type === 'b2b' && (
+                                <p>
+                                    <span className="text-muted-foreground font-medium">{t('Commercial Register')}:</span>
+                                    {companyProfile?.cr || '-'}
+                                </p>
+                            )}
                         </CardContent>
                     </Card>
                     <Card>
@@ -372,13 +374,13 @@ export default function ShowInvoice() {
                                         <th className="px-6 py-3 text-start text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
                                             {t('Unit Price')}
                                         </th>
-                                        <th className="px-6 py-3 text-start text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400 whitespace-pre-line">
+                                        <th className="px-6 py-3 text-start text-xs font-medium tracking-wider whitespace-pre-line text-gray-500 uppercase dark:text-gray-400">
                                             {t('Subtotal without Tax')}
                                         </th>
                                         <th className="px-6 py-3 text-start text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
                                             {t('Tax')}
                                         </th>
-                                        <th className="px-6 py-3 text-start text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400 whitespace-pre-line">
+                                        <th className="px-6 py-3 text-start text-xs font-medium tracking-wider whitespace-pre-line text-gray-500 uppercase dark:text-gray-400">
                                             {t('Total including Tax')}
                                         </th>
                                     </tr>
@@ -408,7 +410,10 @@ export default function ShowInvoice() {
                                                     {item.quantity}
                                                 </td>
                                                 <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100">
-                                                    <CurrencyAmount amount={parseFloat(item.rate || 0)} className="text-gray-900 dark:text-gray-100" />
+                                                    <CurrencyAmount
+                                                        amount={parseFloat(item.rate || 0)}
+                                                        className="text-gray-900 dark:text-gray-100"
+                                                    />
                                                 </td>
                                                 <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100">
                                                     <CurrencyAmount amount={subtotalWithoutTax} className="text-gray-900 dark:text-gray-100" />
@@ -442,25 +447,35 @@ export default function ShowInvoice() {
                             <div className="w-full max-w-sm space-y-2 text-sm">
                                 <div className="flex justify-between">
                                     <span className="text-muted-foreground">{t('Subtotal')}</span>
-                                    <span className="font-medium"><CurrencyAmount amount={subtotal} className="text-gray-900 dark:text-gray-100" /></span>
+                                    <span className="font-medium">
+                                        <CurrencyAmount amount={subtotal} className="text-gray-900 dark:text-gray-100" />
+                                    </span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-muted-foreground">{taxRate ? t('Tax Value') + ` (${taxRate}%)` : t('Tax Value')}</span>
-                                    <span className="font-medium"><CurrencyAmount amount={taxAmount} className="text-gray-900 dark:text-gray-100" /></span>
+                                    <span className="font-medium">
+                                        <CurrencyAmount amount={taxAmount} className="text-gray-900 dark:text-gray-100" />
+                                    </span>
                                 </div>
                                 <div className="border-t border-gray-200 dark:border-gray-700" />
                                 <div className="flex justify-between pt-1 text-base font-bold">
                                     <span>{t('Total Invoice (VAT inclusive)')}</span>
-                                    <span><CurrencyAmount amount={totalAmount} className="text-gray-900 dark:text-gray-100" /></span>
+                                    <span>
+                                        <CurrencyAmount amount={totalAmount} className="text-gray-900 dark:text-gray-100" />
+                                    </span>
                                 </div>
                                 <div className="border-t border-gray-200 dark:border-gray-700" />
                                 <div className="flex justify-between pt-2">
                                     <span className="text-muted-foreground">{t('Amount Paid')}</span>
-                                    <span className="font-medium"><CurrencyAmount amount={amountPaid} className="text-gray-900 dark:text-gray-100" /></span>
+                                    <span className="font-medium">
+                                        <CurrencyAmount amount={amountPaid} className="text-gray-900 dark:text-gray-100" />
+                                    </span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-muted-foreground">{t('Remaining Amount')}</span>
-                                    <span className="font-medium"><CurrencyAmount amount={remainingAmount} className="text-gray-900 dark:text-gray-100" /></span>
+                                    <span className="font-medium">
+                                        <CurrencyAmount amount={remainingAmount} className="text-gray-900 dark:text-gray-100" />
+                                    </span>
                                 </div>
                             </div>
                         </div>

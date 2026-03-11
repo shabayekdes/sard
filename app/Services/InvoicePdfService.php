@@ -100,7 +100,7 @@ class InvoicePdfService
                 'name' => $companyProfile?->name ?? ($invoice->creator?->name ?? ''),
                 'address' => $companyProfile?->address ?? '',
                 'vat_number' => $sellerVatNumber,
-                'registration_number' => $companyProfile?->registration_number ?? '',
+                'registration_number' => $companyProfile?->cr ?? '',
                 'tax_number' => $companyProfile?->tax_number ?? $sellerVatNumber,
                 'phone' => $companyProfile?->phone ?? '',
                 'email' => $companyProfile?->email ?? '',
