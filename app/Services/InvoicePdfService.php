@@ -33,15 +33,14 @@ class InvoicePdfService
 
     private function buildViewData(Invoice $invoice, string $type): array
     {
-        $companyProfile = CompanyProfile::withPermissionCheck()
-            ->where('tenant_id', $invoice->tenant_id)
+        $companyProfile = CompanyProfile::where('tenant_id', $invoice->tenant_id)
             ->first();
 
         $client = $invoice->client;
         $billingInfo = $client?->billingInfo;
 
-        $defaultVatRate = (float) config('invoice_pdf.default_vat_rate', 15);
-        $currencyCode = $invoice->currency?->code ?? config('invoice_pdf.currency_code', 'SAR');
+        $defaultVatRate = Settings::float('DEFAULT_TAX_RATE', 15);
+        $currencyCode = $invoice->currency?->code ?? Settings::string('DEFAULT_CURRENCY', 'SAR');
 
         $invoice->loadMissing('lineItems');
 

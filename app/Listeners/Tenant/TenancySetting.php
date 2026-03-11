@@ -31,7 +31,7 @@ class TenancySetting
             $publicDiskUrl = rtrim(config('app.url'), '/') . '/storage/' . $tenantSuffix;
 
             config([
-                'filesystems.default' => $settings['STORAGE_DISK'] ?? 'public',
+                'filesystems.default' => $settings['STORAGE_TYPE'] ?? 'public',
                 'filesystems.disks.public' => array_merge(
                     config('filesystems.disks.public', []),
                     ['url' => $publicDiskUrl]

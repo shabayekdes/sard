@@ -29,6 +29,12 @@ class SettingService
         return (string) data_get($settings, $key, $default);
     }
 
+    public function float(string $key, float|int $default = 0): float
+    {
+        $settings = $this->all();
+        return (float) data_get($settings, $key, $default);
+    }
+
     public function sanitize()
     {
         $user = auth()->user();
