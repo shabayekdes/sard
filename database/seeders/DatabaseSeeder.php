@@ -14,19 +14,30 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            PermissionSeeder::class,
+            RoleSeeder::class,
+            PlanSeeder::class,
+            UserSeeder::class,
+            SaasSettingSeeder::class,
+            CurrencySeeder::class,
+            CountrySeeder::class,
+            TaxRateSeeder::class,
+            EmailTemplateSeeder::class,
+            NotificationTemplateSeeder::class,
+            LandingPageCustomPageSeeder::class,
+        ]);
+
+        if (!app()->isProduction()) {
+            $this->call([
                 // Core system seeders
                 PermissionSeeder::class,
                 RoleSeeder::class,
                 PlanSeeder::class,
                 UserSeeder::class,
-                SaasSettingSeeder::class,
                 CompanySeeder::class,
-                CurrencySeeder::class,
-                CountrySeeder::class,
-                TaxRateSeeder::class,
-                EmailTemplateSeeder::class,
-                NotificationTemplateSeeder::class,
-                LandingPageCustomPageSeeder::class,
+
+
+
                 PaymentSettingSeeder::class,
                 LoginHistorySeeder::class,
 
@@ -102,5 +113,6 @@ class DatabaseSeeder extends Seeder
                 ReferralSettingSeeder::class,
                 // ReferralSeeder::class,
             ]);
+        }
     }
 }
