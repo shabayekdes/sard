@@ -316,14 +316,14 @@ export default function ViewResearchProject() {
               onClick={() => setActiveTab('notes')}
               className={`py-2 px-4 border-b-2 font-medium text-sm ${activeTab === 'notes' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
             >
-              <FileText className="h-4 w-4 inline mr-2" />
+              <FileText className="h-4 w-4 inline mx-2" />
               {t('Research Notes')}
             </button>
             <button
               onClick={() => setActiveTab('citations')}
               className={`py-2 px-4 border-b-2 font-medium text-sm ${activeTab === 'citations' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
             >
-              <Quote className="h-4 w-4 inline mr-2" />
+              <Quote className="h-4 w-4 inline mx-2" />
               {t('Research Citations')}
             </button>
           </nav>

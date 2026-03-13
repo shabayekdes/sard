@@ -24,8 +24,8 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        // Super admin always gets dashboard
-        if ($user->type === 'superadmin' || $user->type === 'super admin') {
+        // Super admin and company always get dashboard (no permission check)
+        if (in_array($user->type, ['superadmin', 'super admin', 'company'])) {
             return $this->renderDashboard();
         }
 
@@ -41,6 +41,11 @@ class DashboardController extends Controller
     public function redirectToFirstAvailablePage()
     {
         $user = auth()->user();
+
+        // Company and superadmin bypass permission checks - send to dashboard
+        if (in_array($user->type, ['superadmin', 'super admin', 'company'])) {
+            return redirect()->route('dashboard');
+        }
 
         // Define available routes with their permissions
         $routes = [

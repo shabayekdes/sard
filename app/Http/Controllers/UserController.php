@@ -20,13 +20,10 @@ class UserController extends BaseController
         $authUser     = Auth::user();
         $authUserRole = $authUser->roles->first()?->name;
 
-        $userQuery = User::withPermissionCheck()->with(['roles', 'creator'])->latest();
-        # Admin
-        if ($authUserRole === 'super admin') {
-            $userQuery->whereDoesntHave('roles', function ($q) {
-                $q->where('name', 'super admin');
-            });
-        }
+        $userQuery = User::withPermissionCheck()
+            ->with(['roles', 'creator'])
+            ->whereNotIn('type', ['company', 'superadmin'])
+            ->latest();
 
         // Exclude client users
         $userQuery->whereDoesntHave('roles', function ($q) {
@@ -163,11 +160,10 @@ class UserController extends BaseController
 
         if ($user && $request->roles) {
             // Convert role names to IDs for syncing
-            $role = Role::where('id', $request->roles)
-            ->where('tenant_id', $tenant_id)->first();
+            $role = Role::where('id', $request->roles)->where('tenant_id', $tenant_id)->first();
 
             $user->roles()->sync([$role->id]);
-            $user->type = $role->name;
+            $user->type = $role->name === 'client' ? 'client' : 'team_member';
             $user->save();
 
             if ($role->name !== 'client') {

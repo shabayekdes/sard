@@ -18,9 +18,9 @@ class CheckPermission
         }
 
         $user = auth()->user();
-        
-        // Super admin has all permissions
-        if ($user->type === 'superadmin' || $user->type === 'super admin') {
+
+        // Super admin and company bypass permission checks
+        if (in_array($user->type, ['superadmin', 'super admin', 'company'])) {
             return $next($request);
         }
 

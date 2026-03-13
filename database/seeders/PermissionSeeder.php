@@ -677,19 +677,13 @@ class PermissionSeeder extends Seeder
             ['name' => 'delete-research-notes', 'module' => 'research_notes', 'label' => ['en' => 'Delete Research Notes', 'ar' => 'حذف ملاحظات البحث']],
 
             // Research Citations
-            // ['name' => 'manage-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Manage Research Citations', 'ar' => 'إدارة استشهادات البحث']],
-            //
-            // ['name' => 'manage-any-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Manage All Research Citations', 'ar' => 'إدارة جميع استشهادات البحث']],
-            //
-            // ['name' => 'manage-own-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Manage Own Research Citations', 'ar' => 'إدارة استشهادات البحث الخاصة']],
-            //
-            // ['name' => 'view-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'View Research Citations', 'ar' => 'عرض استشهادات البحث']],
-            //
-            // ['name' => 'create-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Create Research Citations', 'ar' => 'إنشاء استشهادات البحث']],
-            //
-            // ['name' => 'edit-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Edit Research Citations', 'ar' => 'تعديل استشهادات البحث']],
-            //
-            // ['name' => 'delete-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Delete Research Citations', 'ar' => 'حذف استشهادات البحث']],
+            ['name' => 'manage-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Manage Research Citations', 'ar' => 'إدارة استشهادات البحث']],
+            ['name' => 'manage-any-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Manage All Research Citations', 'ar' => 'إدارة جميع استشهادات البحث']],
+            ['name' => 'manage-own-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Manage Own Research Citations', 'ar' => 'إدارة استشهادات البحث الخاصة']],
+            ['name' => 'view-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'View Research Citations', 'ar' => 'عرض استشهادات البحث']],
+            ['name' => 'create-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Create Research Citations', 'ar' => 'إنشاء استشهادات البحث']],
+            ['name' => 'edit-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Edit Research Citations', 'ar' => 'تعديل استشهادات البحث']],
+            ['name' => 'delete-research-citations', 'module' => 'research_citations', 'label' => ['en' => 'Delete Research Citations', 'ar' => 'حذف استشهادات البحث']],
 
             // Research Types
             ['name' => 'manage-research-types', 'module' => 'research_types', 'label' => ['en' => 'Manage Research Types', 'ar' => 'إدارة أنواع البحث']],

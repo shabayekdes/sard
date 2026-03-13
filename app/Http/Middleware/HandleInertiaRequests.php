@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 use App\Models\Currency;
+use App\Models\Permission;
 use App\Models\User;
 use App\Models\Setting;
 use App\Services\StorageConfigService;
@@ -139,7 +140,9 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
                 'roles' => fn() => $request->user()?->roles->pluck('name'),
-                'permissions' => fn() => $request->user()?->getAllPermissions()->pluck('name'),
+                'permissions' => fn() => in_array($request->user()?->type, ['superadmin', 'super admin', 'company'])
+                ? Permission::pluck('name')->values()->all()
+                : $request->user()?->getAllPermissions()->pluck('name')->values()->all(),
             ],
             'isImpersonating' => session('impersonated_by') ? true : false,
             'ziggy' => fn(): array => [
