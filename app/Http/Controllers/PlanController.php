@@ -66,10 +66,12 @@ class PlanController extends Controller
             return [
                 'id' => $plan->id,
                 'name' => $plan->name,
+                'name_translations' => $plan->getTranslations('name'),
                 'price' => $price,
                 'formatted_price' => $formattedPrice,
                 'duration' => $duration,
                 'description' => $plan->description,
+                'description_translations' => $plan->getTranslations('description'),
                 'billing_cycle' => $plan->billing_cycle ?: 'both',
                 'trial_days' => $plan->trial_day,
                 'features' => $features,
@@ -321,10 +323,12 @@ class PlanController extends Controller
             return [
                 'id' => $plan->id,
                 'name' => $plan->name,
+                'name_translations' => $plan->getTranslations('name'),
                 'price' => $price,
                 'formatted_price' => formatCurrency($price, ['variant' => 'superadmin']),
                 'duration' => $billingCycle === 'yearly' ? 'Yearly' : 'Monthly',
                 'description' => $plan->description,
+                'description_translations' => $plan->getTranslations('description'),
                 'billing_cycle' => $plan->billing_cycle ?: 'both',
                 'trial_days' => $plan->trial_day,
                 'features' => $features,
@@ -378,6 +382,7 @@ class PlanController extends Controller
             $storageLimit = $currentPlan->storage_limit;
             $planStatus = [
                 'name' => $currentPlan->name,
+                'name_translations' => $currentPlan->getTranslations('name'),
                 'usage' => [
                     'team_members' => ['used' => $teamMembersUsed, 'limit' => $currentPlan->max_users],
                     'storage' => ['used_gb' => $storageUsedGb, 'limit_gb' => $storageLimit],
@@ -392,6 +397,9 @@ class PlanController extends Controller
                 ],
                 'price_monthly' => $currentPlan->price,
                 'formatted_price_monthly' => formatCurrency($currentPlan->price, ['variant' => 'superadmin']),
+                'plan_expire_date' => $tenant?->plan_expire_date?->format('Y-m-d'),
+                'trial_expire_date' => $tenant?->trial_expire_date?->format('Y-m-d'),
+                'is_trial' => (bool) $tenant?->is_trial,
             ];
         }
         

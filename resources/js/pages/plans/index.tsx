@@ -39,14 +39,38 @@ import {
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+function resolveTranslatable(
+    val: string | Record<string, string> | undefined | null,
+    locale: string
+): string {
+    if (val == null) return '';
+    if (typeof val === 'string') return val;
+    const o = val as Record<string, string>;
+    if (Object.keys(o).length === 0) return '';
+    const lang = locale.startsWith('ar') ? 'ar' : 'en';
+    return o[lang] || o.en || o.ar || Object.values(o)[0] || '';
+}
+
+function daysFromToday(dateStr: string | null | undefined): number | null {
+    if (!dateStr) return null;
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+    return Math.floor((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+}
+
 interface Plan {
     id: number;
     name: string;
+    name_translations?: Record<string, string>;
     price: string | number;
     formatted_price?: string;
     duration: string;
     billing_cycle?: 'monthly' | 'yearly' | 'both';
     description: string;
+    description_translations?: Record<string, string>;
     trial_days: number;
     features: string[];
     stats: {
@@ -66,6 +90,7 @@ interface Plan {
 
 interface PlanStatusData {
     name: string;
+    name_translations?: Record<string, string>;
     usage: {
         team_members: { used: number; limit: number };
         storage: { used_gb: number; limit_gb: number };
@@ -80,6 +105,9 @@ interface PlanStatusData {
     };
     price_monthly: number | string;
     formatted_price_monthly: string;
+    plan_expire_date?: string | null;
+    trial_expire_date?: string | null;
+    is_trial?: boolean;
 }
 
 interface Props {
@@ -109,7 +137,8 @@ export default function Plans({
     paymentMethods = [],
     pendingRequests = {},
 }: Props) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const currentLocale = i18n.language?.startsWith('ar') ? 'ar' : 'en';
     const { flash } = usePage().props as any;
     const [plans, setPlans] = useState<Plan[]>(initialPlans);
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>(initialBillingCycle);
@@ -579,22 +608,22 @@ export default function Plans({
                         {t('Start {{days}} Day Trial', { days: plan.trial_days })}
                     </Button>
                 )}
-                {plan.has_pending_request ? (
-                    <Button
-                        onClick={() => handleCancelRequest(plan.id)}
-                        disabled={processing}
-                        variant="outline"
-                        className="w-full border-red-200 text-red-600 hover:bg-red-50"
-                    >
-                        <X className="mr-2 h-4 w-4" />
-                        {t('Cancel Request')}
-                    </Button>
-                ) : (
-                    <Button onClick={() => handlePlanRequest(plan.id)} disabled={processing} variant="outline" className="w-full">
-                        <Clock className="mr-2 h-4 w-4" />
-                        {t('Request Plan')}
-                    </Button>
-                )}
+                {/*{plan.has_pending_request ? (*/}
+                {/*    <Button*/}
+                {/*        onClick={() => handleCancelRequest(plan.id)}*/}
+                {/*        disabled={processing}*/}
+                {/*        variant="outline"*/}
+                {/*        className="w-full border-red-200 text-red-600 hover:bg-red-50"*/}
+                {/*    >*/}
+                {/*        <X className="mr-2 h-4 w-4" />*/}
+                {/*        {t('Cancel Request')}*/}
+                {/*    </Button>*/}
+                {/*) : (*/}
+                {/*    <Button onClick={() => handlePlanRequest(plan.id)} disabled={processing} variant="outline" className="w-full">*/}
+                {/*        <Clock className="mr-2 h-4 w-4" />*/}
+                {/*        {t('Request Plan')}*/}
+                {/*    </Button>*/}
+                {/*)}*/}
                 <Button onClick={() => handleSubscribe(plan.id)} disabled={processing || plan.has_pending_order} className="w-full">
                     {plan.has_pending_order ? t('Subscription Pending') : t('Subscribe Now')}
                 </Button>
@@ -733,7 +762,7 @@ export default function Plans({
                                         <h2 className="text-lg font-semibold tracking-tight">{t('Plan Status')}</h2>
                                     </div>
                                     <Badge variant="secondary" className="rounded-md bg-gray-100 px-2.5 py-1 text-sm font-medium text-gray-700">
-                                        {planStatus.name}
+                                        {resolveTranslatable(planStatus.name_translations, currentLocale) || planStatus.name}
                                     </Badge>
                                 </div>
                             </CardHeader>
@@ -818,13 +847,6 @@ export default function Plans({
                                         </li>
                                     </ul>
                                 </div>
-
-                                <div className="flex items-end justify-end gap-2 border-t border-gray-100 pt-4">
-                                    <div className="text-right">
-                                        <div className="text-lg font-semibold text-gray-900">{planStatus.formatted_price_monthly}/mo</div>
-                                        <div className="text-muted-foreground text-xs">0</div>
-                                    </div>
-                                </div>
                             </CardContent>
                         </Card>
                     )}
@@ -875,7 +897,7 @@ export default function Plans({
 
                                 {/* Current plan indicator - Company only */}
                                 {!isAdmin && plan.is_current && (
-                                    <div className="absolute top-4 right-4 z-10">
+                                    <div className="absolute top-4 end-4 z-10">
                                         <div className="bg-primary/10 text-primary flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium">
                                             <Crown className="h-3 w-3" />
                                             {t('Current')}
@@ -887,14 +909,14 @@ export default function Plans({
                                 <div className="relative z-10 flex h-full flex-col p-6 pt-8">
                                     {/* Plan header */}
                                     <div className="mb-6">
-                                        <h3 className={`mb-2 text-2xl font-bold ${plan.recommended ? 'text-primary' : ''} `}>{plan.name}</h3>
+                                        <h3 className={`mb-2 text-2xl font-bold ${plan.recommended ? 'text-primary' : ''} `}>{resolveTranslatable(plan.name_translations, currentLocale) || plan.name}</h3>
                                         <div className="mb-3 flex items-baseline gap-1.5">
                                             <span className={`text-3xl font-extrabold ${plan.recommended ? 'text-primary' : ''} `}>
                                                 <CurrencyAmount amount={plan.price} variant="superadmin" />
                                             </span>
                                             <span className="text-muted-foreground text-sm">/{t(plan.duration.toLowerCase())}</span>
                                         </div>
-                                        <p className="text-muted-foreground mb-3 line-clamp-2 text-sm leading-relaxed">{plan.description}</p>
+                                        <p className="text-muted-foreground mb-3 line-clamp-2 text-sm leading-relaxed">{resolveTranslatable(plan.description_translations, currentLocale) || plan.description}</p>
                                         {plan.trial_days > 0 && (
                                             <div className="text-primary flex items-center gap-1.5 text-sm">
                                                 <Sparkles className="h-3.5 w-3.5" />
@@ -1042,7 +1064,7 @@ export default function Plans({
                         isOpen={isDeleteModalOpen}
                         onClose={() => setIsDeleteModalOpen(false)}
                         onConfirm={handleDeleteConfirm}
-                        itemName={planToDelete?.name || ''}
+                        itemName={planToDelete ? (resolveTranslatable(planToDelete.name_translations, currentLocale) || planToDelete.name) : ''}
                         entityName="plan"
                     />
                 )}

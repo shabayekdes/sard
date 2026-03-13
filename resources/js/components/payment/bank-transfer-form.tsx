@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { router } from '@inertiajs/react';
 import { toast } from '@/components/custom-toast';
 import { Copy, CheckCircle } from 'lucide-react';
@@ -27,6 +30,8 @@ export function BankTransferForm({
 }: BankTransferFormProps) {
   const { t } = useTranslation();
   const [processing, setProcessing] = useState(false);
+  const [note, setNote] = useState('');
+  const [attachment, setAttachment] = useState<File | null>(null);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -35,24 +40,48 @@ export function BankTransferForm({
 
   const handleConfirmPayment = () => {
     setProcessing(true);
-    
-    router.post(route('bank-transfer.payment'), {
+
+    const payload: Record<string, string | number> = {
       plan_id: planId,
       billing_cycle: billingCycle,
       coupon_code: couponCode,
       amount: planPrice,
-    }, {
-      onSuccess: () => {
-        toast.success(t('Payment request submitted successfully'));
-        onSuccess();
-      },
-      onError: () => {
-        toast.error(t('Failed to submit payment request'));
-      },
-      onFinish: () => {
-        setProcessing(false);
-      }
-    });
+      note: note.trim(),
+    };
+
+    if (attachment) {
+      const formData = new FormData();
+      Object.entries(payload).forEach(([key, value]) => {
+        formData.append(key, String(value));
+      });
+      formData.append('attachment', attachment);
+
+      router.post(route('bank-transfer.payment'), formData, {
+        onSuccess: () => {
+          toast.success(t('Payment request submitted successfully'));
+          onSuccess();
+        },
+        onError: () => {
+          toast.error(t('Failed to submit payment request'));
+        },
+        onFinish: () => {
+          setProcessing(false);
+        },
+      });
+    } else {
+      router.post(route('bank-transfer.payment'), payload, {
+        onSuccess: () => {
+          toast.success(t('Payment request submitted successfully'));
+          onSuccess();
+        },
+        onError: () => {
+          toast.error(t('Failed to submit payment request'));
+        },
+        onFinish: () => {
+          setProcessing(false);
+        },
+      });
+    }
   };
 
   return (
@@ -90,6 +119,42 @@ export function BankTransferForm({
                 <li>• {t('Verification may take 1-3 business days')}</li>
               </ul>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4 space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="bank-transfer-note">{t('Note')}</Label>
+            <Textarea
+              id="bank-transfer-note"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder={t('Optional note or reference for this transfer')}
+              rows={3}
+              className="resize-none"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="bank-transfer-attachment">{t('Attachment')}</Label>
+            <div className="flex items-center gap-2">
+              <Input
+                id="bank-transfer-attachment"
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,.gif"
+                onChange={(e) => setAttachment(e.target.files?.[0] ?? null)}
+                className="cursor-pointer file:mr-2 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-primary-foreground"
+              />
+              {attachment && (
+                <span className="text-sm text-muted-foreground truncate max-w-[180px]" title={attachment.name}>
+                  {attachment.name}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {t('Optional: upload proof of payment (PDF or image)')}
+            </p>
           </div>
         </CardContent>
       </Card>

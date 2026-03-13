@@ -30,13 +30,8 @@ class DatabaseSeeder extends Seeder
         if (!app()->isProduction()) {
             $this->call([
                 // Core system seeders
-                PermissionSeeder::class,
-                RoleSeeder::class,
-                PlanSeeder::class,
-                UserSeeder::class,
+
                 CompanySeeder::class,
-
-
 
                 PaymentSettingSeeder::class,
                 LoginHistorySeeder::class,
