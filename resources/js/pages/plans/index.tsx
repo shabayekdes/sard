@@ -262,15 +262,15 @@ export default function Plans({
 
     const handleSubscribe = async (planId: number) => {
         const plan = plans.find((p) => p.id === planId);
-        if (plan) {
-            try {
-                const response = await fetch(route('payment.methods'));
-                const paymentMethods = await response.json();
-                setSelectedPlan({ ...plan, paymentMethods });
-                setIsSubscriptionModalOpen(true);
-            } catch (error) {
-                toast.error(t('Failed to load payment methods'));
-            }
+        if (!plan) return;
+        try {
+            const url = `${route('payment.methods')}?saas=1`;
+            const response = await fetch(url);
+            const paymentSettings = await response.json();
+            setSelectedPlan({ ...plan, paymentMethods: paymentSettings });
+            setIsSubscriptionModalOpen(true);
+        } catch {
+            toast.error(t('Failed to load payment methods'));
         }
     };
 

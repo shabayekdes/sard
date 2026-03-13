@@ -1097,6 +1097,10 @@
     "No results found.": "لا توجد نتائج",
     "Note: Only permissions for modules available to your role are shown.": "ملاحظة: يتم عرض الأذونات للوحدات المتاحة لدورك فقط.",
     "Optional": "اختياري",
+    "Optional: upload proof of payment (PDF or image)": "اختياري: رفع إثبات الدفع (PDF أو صورة)",
+    "Upload proof of payment (PDF or image)": "رفع إثبات الدفع (PDF أو صورة)",
+    "Please upload proof of payment": "يرجى رفع إثبات الدفع",
+    "Optional note or reference for this transfer": "ملاحظة أو مرجع اختياري لهذا التحويل",
     "optional": "اختياري",
     "Pay with MercadoPago": "الدفع عبر MercadoPago",
     "Pay with Razorpay": "الدفع عبر Razorpay",
@@ -4121,5 +4125,6 @@
   "validation.domain_invalid": "النطاق المحدد غير صالح.",
   "Domain must start with a letter and contain only lowercase letters, numbers, and hyphens.": "يجب أن يبدأ النطاق بحرف ويحتوي فقط على أحرف صغيرة وأرقام وشرطات.",
   "Download Tax Invoice": "تحميل الفاتورة الضريبية",
-  "Link copied to clipboard!": "تم نسخ الرابط إلى الحافظة!"
+  "Link copied to clipboard!": "تم نسخ الرابط إلى الحافظة!",
+  "yearly" : "سنوي"
 }

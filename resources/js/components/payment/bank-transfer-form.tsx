@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { CurrencyAmount } from '@/components/currency-amount';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { router } from '@inertiajs/react';
 import { toast } from '@/components/custom-toast';
-import { Copy, CheckCircle } from 'lucide-react';
+import { Copy, CheckCircle, Upload } from 'lucide-react';
 
 interface BankTransferFormProps {
   planId: number;
@@ -29,6 +30,7 @@ export function BankTransferForm({
   onCancel 
 }: BankTransferFormProps) {
   const { t } = useTranslation();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [processing, setProcessing] = useState(false);
   const [note, setNote] = useState('');
   const [attachment, setAttachment] = useState<File | null>(null);
@@ -39,6 +41,10 @@ export function BankTransferForm({
   };
 
   const handleConfirmPayment = () => {
+    if (!attachment) {
+      toast.error(t('Please upload proof of payment'));
+      return;
+    }
     setProcessing(true);
 
     const payload: Record<string, string | number> = {
@@ -49,39 +55,24 @@ export function BankTransferForm({
       note: note.trim(),
     };
 
-    if (attachment) {
-      const formData = new FormData();
-      Object.entries(payload).forEach(([key, value]) => {
-        formData.append(key, String(value));
-      });
-      formData.append('attachment', attachment);
+    const formData = new FormData();
+    Object.entries(payload).forEach(([key, value]) => {
+      formData.append(key, String(value));
+    });
+    formData.append('attachment', attachment);
 
-      router.post(route('bank-transfer.payment'), formData, {
-        onSuccess: () => {
-          toast.success(t('Payment request submitted successfully'));
-          onSuccess();
-        },
-        onError: () => {
-          toast.error(t('Failed to submit payment request'));
-        },
-        onFinish: () => {
-          setProcessing(false);
-        },
-      });
-    } else {
-      router.post(route('bank-transfer.payment'), payload, {
-        onSuccess: () => {
-          toast.success(t('Payment request submitted successfully'));
-          onSuccess();
-        },
-        onError: () => {
-          toast.error(t('Failed to submit payment request'));
-        },
-        onFinish: () => {
-          setProcessing(false);
-        },
-      });
-    }
+    router.post(route('bank-transfer.payment'), formData, {
+      onSuccess: () => {
+        toast.success(t('Payment request submitted successfully'));
+        onSuccess();
+      },
+      onError: () => {
+        toast.error(t('Failed to submit payment request'));
+      },
+      onFinish: () => {
+        setProcessing(false);
+      },
+    });
   };
 
   return (
@@ -92,7 +83,9 @@ export function BankTransferForm({
           <div className="space-y-3 text-sm">
             <div className="whitespace-pre-line">{bankDetails}</div>
             <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-              <span className="font-medium">{t('Amount')}: ${planPrice}</span>
+              <span className="font-medium inline-flex items-center gap-1.5">
+                {t('Amount')}: <CurrencyAmount amount={planPrice} variant="superadmin" />
+              </span>
               <Button
                 variant="outline"
                 size="sm"
@@ -137,15 +130,28 @@ export function BankTransferForm({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="bank-transfer-attachment">{t('Attachment')}</Label>
+            <Label htmlFor="bank-transfer-attachment">
+              {t('Attachment')} <span className="text-destructive">*</span>
+            </Label>
             <div className="flex items-center gap-2">
               <Input
+                ref={fileInputRef}
                 id="bank-transfer-attachment"
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png,.gif"
                 onChange={(e) => setAttachment(e.target.files?.[0] ?? null)}
-                className="cursor-pointer file:mr-2 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-primary-foreground"
+                className="hidden"
               />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                className="shrink-0"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                {t('Choose file')}
+              </Button>
               {attachment && (
                 <span className="text-sm text-muted-foreground truncate max-w-[180px]" title={attachment.name}>
                   {attachment.name}
@@ -153,7 +159,7 @@ export function BankTransferForm({
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              {t('Optional: upload proof of payment (PDF or image)')}
+              {t('Upload proof of payment (PDF or image)')}
             </p>
           </div>
         </CardContent>

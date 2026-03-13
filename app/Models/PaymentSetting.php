@@ -174,15 +174,7 @@ class PaymentSetting extends Model
         $settings = $tenantId !== null
             ? self::where('tenant_id', $tenantId)->pluck('value', 'key')->toArray()
             : [];
-        
-        // If no settings found or tenant is not superadmin, try global (SAAS) settings as fallback
-        // $globalSettings = self::whereNull('tenant_id')->pluck('value', 'key')->toArray();
-        // if (empty($settings)) {
-        //     $settings = $globalSettings;
-        // } else {
-        //     $settings = array_merge($globalSettings, $settings);
-        // }
-        //
+
         return $settings;
     }
 }

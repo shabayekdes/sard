@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Models\PaymentSetting;
+use App\Services\PaymentSettingsService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -12,23 +13,32 @@ class PaymentSettingController extends Controller
     public function index()
     {
         $paymentSettings = getPaymentSettings();
-        
+
         return Inertia::render('settings/index', [
             'paymentSettings' => $paymentSettings,
         ]);
     }
 
-    public function getPaymentMethods()
+    /**
+     * Get payment methods (safe settings for frontend).
+     * When saas=1 (or saas=true): returns global SAAS payment settings (tenant_id IS NULL).
+     * Otherwise: tenant from tenant('id') or auth user's tenant_id.
+     */
+    public function getPaymentMethods(Request $request)
     {
-        $paymentSettings = getPaymentSettings();
+        $tenantId = null;
+        $wantSaas = $request->query('saas') === '1' || $request->query('saas') === 'true';
 
-        // Filter out sensitive credentials and only return safe configuration
-        $safeSettings = $this->filterSensitiveData($paymentSettings);
-        
-        // Add default currency to payment settings
-        $settings = settings();
-        $safeSettings['defaultCurrency'] = $settings['DEFAULT_CURRENCY'] ?? 'SAR';
-        
+        if (!$wantSaas) {
+            if (function_exists('tenant') && tenant() !== null) {
+                $tenantId = tenant('id');
+            } elseif (auth()->check() && auth()->user()->tenant_id !== null) {
+                $tenantId = (string) auth()->user()->tenant_id;
+            }
+        }
+
+        $safeSettings = app(PaymentSettingsService::class)->getSafePaymentSettingsArray($tenantId);
+
         return response()->json($safeSettings);
     }
     public function store(Request $request)
@@ -544,60 +554,4 @@ class PaymentSettingController extends Controller
         return response()->json($enabledMethods);
     }
 
-    /**
-     * Filter out sensitive payment gateway credentials
-     *
-     * @param array $settings
-     * @return array
-     */
-    private function filterSensitiveData(array $settings): array
-    {
-        $safeSettings = [];
-        
-        // Only include enabled status and safe configuration
-        $enabledKeys = [
-            'manually_enabled', 'bank_transfer_enabled', 'stripe_enabled', 'paypal_enabled',
-            'razorpay_enabled', 'mercadopago_enabled', 'paystack_enabled', 'flutterwave_enabled',
-            'paytabs_enabled', 'skrill_enabled', 'coingate_enabled', 'payfast_enabled',
-            'tap_enabled', 'xendit_enabled', 'paytr_enabled', 'mollie_enabled',
-            'toyyibpay_enabled', 'paymentwall_enabled', 'sspay_enabled', 'benefit_enabled',
-            'iyzipay_enabled', 'aamarpay_enabled', 'midtrans_enabled', 'yookassa_enabled',
-            'nepalste_enabled', 'paiement_enabled', 'cinetpay_enabled', 'payhere_enabled',
-            'fedapay_enabled', 'authorizenet_enabled', 'khalti_enabled', 'easebuzz_enabled',
-            'ozow_enabled', 'cashfree_enabled'
-        ];
-        
-        $modeKeys = [
-            'paypal_mode', 'mercadopago_mode', 'paytabs_mode', 'coingate_mode', 'payfast_mode',
-            'benefit_mode', 'iyzipay_mode', 'midtrans_mode', 'nepalste_mode', 'payhere_mode',
-            'fedapay_mode', 'authorizenet_mode', 'ozow_mode', 'cashfree_mode', 'aamarpay_mode'
-        ];
-        
-        // Keys needed by frontend payment components (safe to expose)
-        $frontendKeys = [
-            // Public keys for SDK initialization
-            'stripe_key', 'razorpay_key', 'paystack_public_key', 'flutterwave_public_key',
-            'khalti_public_key', 'cashfree_public_key', 'iyzipay_public_key', 'benefit_public_key',
-            'fedapay_public_key', 'nepalste_public_key', 'paymentwall_public_key',
-            
-            // Client/Merchant IDs and category codes (non-sensitive identifiers)
-            'paypal_client_id', 'toyyibpay_category_code', 'aamarpay_store_id',
-            'authorizenet_merchant_id', 'cinetpay_site_id', 'easebuzz_merchant_key',
-            'ozow_site_key', 'paiement_merchant_id', 'payfastMerchantId',
-            'payhere_merchant_id', 'paytr_merchant_id', 'skrill_merchant_id',
-            'yookassa_shop_id',
-            
-            // Bank details (non-sensitive display info)
-            'bank_detail'
-        ];
-        
-        // Include enabled status, modes, and frontend keys only
-        foreach (array_merge($enabledKeys, $modeKeys, $frontendKeys) as $key) {
-            if (isset($settings[$key])) {
-                $safeSettings[$key] = $settings[$key];
-            }
-        }
-        
-        return $safeSettings;
-    }
 }

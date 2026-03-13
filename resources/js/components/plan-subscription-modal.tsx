@@ -53,6 +53,7 @@ export function PlanSubscriptionModal({
           <PaymentProcessor
             plan={plan}
             billingCycle={billingCycle}
+            billingCycleLabel={t(billingCycle)}
             paymentMethods={enabledPaymentMethods}
             onSuccess={handlePaymentSuccess}
             onCancel={onClose}

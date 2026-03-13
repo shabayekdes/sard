@@ -58,6 +58,7 @@ interface PaymentProcessorProps {
     paymentMethods?: any;
   };
   billingCycle: 'monthly' | 'yearly';
+  billingCycleLabel?: string;
   paymentMethods: PaymentMethod[];
   onSuccess: () => void;
   onCancel: () => void;
@@ -66,6 +67,7 @@ interface PaymentProcessorProps {
 export function PaymentProcessor({
   plan,
   billingCycle,
+  billingCycleLabel,
   paymentMethods,
   onSuccess,
   onCancel
@@ -472,7 +474,7 @@ export function PaymentProcessor({
             <div>
               <h3 className="font-medium">{plan.name}</h3>
               <p className="text-sm text-muted-foreground">
-                {t(billingCycle)} {t('subscription')}
+                {billingCycleLabel ?? t(billingCycle)} {t('subscription')}
               </p>
             </div>
             <div className="text-right">
