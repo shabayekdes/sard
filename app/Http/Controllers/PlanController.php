@@ -462,7 +462,7 @@ class PlanController extends Controller
         $user = auth()->user();
         $plan = Plan::findOrFail($request->plan_id);
 
-        if (!$plan->supportsBillingCycle($request->billing_cycle)) {
+        if ($request->billing_cycle && !$plan->supportsBillingCycle($request->billing_cycle)) {
             return back()->withErrors(['error' => __('Selected billing cycle is not available for this plan')]);
         }
         
