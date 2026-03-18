@@ -140,6 +140,8 @@ class InvoicePaymentController extends Controller
                 ->first();
         }
 
+        $bankDetail = $paymentSettings['bank_detail'] ?? null;
+
         return Inertia::render('invoice/payment', [
             'invoice' => $invoice,
             'enabledGateways' => $enabledGateways,
@@ -151,6 +153,7 @@ class InvoicePaymentController extends Controller
             'flutterwavePublicKey' => $paymentSettings['flutterwave_public_key'] ?? null,
             'tapPublicKey' => $paymentSettings['tap_secret_key'] ?? null,
             'paystackPublicKey' => $paymentSettings['paystack_public_key'] ?? null,
+            'bankDetail' => $bankDetail,
             'company' => $company,
             'companyProfile' => $companyProfile,
             'companyLogo' => $companyLogo,
