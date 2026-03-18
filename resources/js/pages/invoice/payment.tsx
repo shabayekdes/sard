@@ -56,6 +56,14 @@ export default function InvoicePayment() {
     const round2 = (n: number) => Math.round(Number(n) * 100) / 100;
     const [paymentAmount, setPaymentAmount] = useState(() => round2(Number(remainingAmount ?? invoice?.total_amount ?? 0)));
 
+    const formatInvoiceNumber = (value: string | number) => {
+        const s = String(value ?? '').replace(/\s/g, '');
+        if (!s) return '-';
+        return s.replace(/\D/g, '').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1 ');
+    };
+
+    const formatDate = (date: string | null) => (date ? window.appSettings?.formatDate?.(date) || new Date(date).toLocaleDateString() : '-');
+
     // Payment method icons mapping with Lucide React icons (same as plans)
     const getLogoUrl = (url?: string) => {
         if (!url) return '';
@@ -351,8 +359,19 @@ export default function InvoicePayment() {
                                     <h2 className="text-xl font-bold text-gray-900">
                                         {t('Invoice #')} {invoice.invoice_number}
                                     </h2>
-                                    <p className="mt-1 text-sm text-gray-600">
-                                        {t('Case Title')}: {invoice.case?.title ?? '—'}
+                                    {invoice?.case && (
+                                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                            {t('Case Title')}:{' '}
+                                            {invoice.case.case_id ? `${invoice.case.case_id} - ${invoice.case.title}` : invoice.case.title}
+                                        </p>
+                                    )}
+                                    <p className="mt-3 flex flex-wrap gap-x-8 text-sm text-gray-600 dark:text-gray-400">
+                                        <span>
+                                            {t('Invoice Date')}: {formatDate(invoice?.invoice_date)}
+                                        </span>
+                                        <span>
+                                            {t('Due Date')}: {formatDate(invoice?.due_date)}
+                                        </span>
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -465,18 +484,6 @@ export default function InvoicePayment() {
                                         </div>
                                         <p className="mt-2 text-lg font-bold text-gray-900">{invoice.client?.name || '-'}</p>
                                         <dl className="mt-4 space-y-2 text-sm">
-                                            {invoice.client?.business_type === 'b2b' && (
-                                                <>
-                                                    <div className="flex flex-wrap gap-x-2">
-                                                        <dt className="font-semibold text-gray-700">{t('CR Number')}:</dt>
-                                                        <dd className="text-gray-600">{invoice.client?.cr_number || '-'}</dd>
-                                                    </div>
-                                                    <div className="flex flex-wrap gap-x-2">
-                                                        <dt className="font-semibold text-gray-700">{t('Tax ID')}:</dt>
-                                                        <dd className="text-gray-600">{invoice.client?.tax_id || '-'}</dd>
-                                                    </div>
-                                                </>
-                                            )}
                                             <div className="flex flex-wrap gap-x-2">
                                                 <dt className="font-semibold text-gray-700">{t('Address')}:</dt>
                                                 <dd className="text-gray-600">{invoice.client?.address || '-'}</dd>
@@ -489,11 +496,17 @@ export default function InvoicePayment() {
                                                 <dt className="font-semibold text-gray-700">{t('Email')}:</dt>
                                                 <dd className="text-gray-600">{invoice.client?.email || '-'}</dd>
                                             </div>
-                                            {invoice.case && (
+                                            {invoice.client?.business_type === 'b2b' && (
+                                              <>
                                                 <div className="flex flex-wrap gap-x-2">
-                                                    <dt className="font-semibold text-gray-700">{t('Case Title')}:</dt>
-                                                    <dd className="text-gray-600">{invoice.case.title}</dd>
+                                                  <dt className="font-semibold text-gray-700">{t('CR Number')}:</dt>
+                                                  <dd className="text-gray-600">{invoice.client?.cr_number || '-'}</dd>
                                                 </div>
+                                                <div className="flex flex-wrap gap-x-2">
+                                                  <dt className="font-semibold text-gray-700">{t('Tax ID')}:</dt>
+                                                  <dd className="text-gray-600">{invoice.client?.tax_id || '-'}</dd>
+                                                </div>
+                                              </>
                                             )}
                                         </dl>
                                     </CardContent>
