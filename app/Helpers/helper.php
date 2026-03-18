@@ -880,6 +880,8 @@ if (! function_exists('createPlanOrder')) {
             'payment_id' => $data['payment_id'],
             'status' => $data['status'] ?? 'pending',
             'ordered_at' => now(),
+            'notes' => $data['notes'] ?? null,
+            'attachment' => $data['attachment'] ?? null,
         ]);
     }
 }

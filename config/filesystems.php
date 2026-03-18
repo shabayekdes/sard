@@ -17,6 +17,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Central Storage Disk (non-tenant)
+    |--------------------------------------------------------------------------
+    |
+    | Disk used for central-only uploads (e.g. bank payment attachments). Follows
+    | the app default when not set: public -> central_public, s3 -> central_s3.
+    | Set CENTRAL_FILESYSTEM_DISK=central_public|central_s3 to override.
+    |
+    */
+    'central_disk' => env('CENTRAL_FILESYSTEM_DISK') ?: (env('FILESYSTEM_DISK', 'public') === 's3' ? 'central_s3' : 'central_public'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
     |
@@ -42,6 +54,37 @@ return [
             'driver' => 'local',
             'root' => storage_path('app/public'),
             'url' => env('APP_URL').'/storage',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
+        /**
+         * Central (non-tenant) local storage. Not in tenancy filesystem disks.
+         */
+        'central_public' => [
+            'driver' => 'local',
+            'root' => base_path('storage/app/public'),
+            'url' => env('APP_URL').'/storage',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
+        /**
+         * Same bucket/credentials as default s3, with root prefix "central" so keys
+         * are central/... instead of tenant-prefixed.
+         */
+        'central_s3' => [
+            'driver' => 's3',
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'url' => env('AWS_URL'),
+            'endpoint' => env('AWS_ENDPOINT'),
+            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'root' => 'central',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,

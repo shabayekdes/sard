@@ -79,6 +79,12 @@ export const planOrdersConfig: CrudConfig = {
       },
     ],
     actions: [
+      {
+        label: t('View'),
+        icon: 'Eye',
+        action: 'view',
+        className: 'text-gray-600'
+      },
       { 
         label: t('Approve'), 
         icon: 'Check', 

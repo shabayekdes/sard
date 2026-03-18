@@ -10,6 +10,7 @@ use App\Models\PaymentSetting;
 use App\Models\Invoice;
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class BankPaymentController extends Controller
 {
@@ -17,11 +18,22 @@ class BankPaymentController extends Controller
     {
         $validated = validatePaymentRequest($request, [
             'amount' => 'required|numeric|min:0',
+            'note' => 'nullable|string|max:1000',
+            'attachment' => 'required|file|mimes:pdf,jpg,jpeg,png,gif,doc,docx|max:10240',
         ]);
 
         try {
             $plan = Plan::findOrFail($validated['plan_id']);
-            
+
+            $attachmentPaths = null;
+            if ($request->hasFile('attachment')) {
+                $disk = config('filesystems.central_disk', 'central_public');
+                $dir = 'payment-attachments/plan/' . auth()->id();
+                Storage::disk($disk)->makeDirectory($dir);
+                $path = $request->file('attachment')->store($dir, $disk);
+                $attachmentPaths = [$path];
+            }
+
             createPlanOrder([
                 'user_id' => auth()->id(),
                 'plan_id' => $plan->id,
@@ -30,6 +42,8 @@ class BankPaymentController extends Controller
                 'coupon_code' => $validated['coupon_code'] ?? null,
                 'payment_id' => 'BANK_' . strtoupper(uniqid()),
                 'status' => 'pending',
+                'notes' => $validated['note'] ?? null,
+                'attachment' => $attachmentPaths,
             ]);
 
             return back()->with('success', __('Payment request submitted. Your plan will be activated after payment verification.'));
@@ -53,8 +67,10 @@ class BankPaymentController extends Controller
             
             $attachmentPaths = null;
             if ($request->hasFile('attachment')) {
-                $file = $request->file('attachment');
-                $path = 'storage/' . $file->store('payment-attachments/' . $invoice->id, 'public');
+                $disk = config('filesystems.central_disk', 'central_public');
+                $dir = 'payment-attachments/' . $invoice->id;
+                Storage::disk($disk)->makeDirectory($dir);
+                $path = $request->file('attachment')->store($dir, $disk);
                 $attachmentPaths = [$path];
             }
             

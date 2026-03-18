@@ -23,7 +23,8 @@ class PlanOrder extends Model
         'ordered_at',
         'processed_at',
         'processed_by',
-        'notes'
+        'notes',
+        'attachment',
     ];
 
     protected $casts = [
@@ -31,7 +32,8 @@ class PlanOrder extends Model
         'processed_at' => 'datetime',
         'original_price' => 'decimal:2',
         'discount_amount' => 'decimal:2',
-        'final_price' => 'decimal:2'
+        'final_price' => 'decimal:2',
+        'attachment' => 'array',
     ];
 
 

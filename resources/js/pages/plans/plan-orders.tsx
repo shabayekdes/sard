@@ -14,9 +14,22 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { CurrencyAmount } from '@/components/currency-amount';
+
+/** Resolve API value that may be translatable { en, ar } or plain string to a string. */
+function resolveDisplayValue(value: unknown, locale: string): string {
+  if (value == null) return '—';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object' && value !== null && ('en' in value || 'ar' in value)) {
+    const o = value as Record<string, string>;
+    return o[locale] || o.en || o.ar || '—';
+  }
+  return String(value);
+}
 
 export default function PlanOrdersPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language?.startsWith('ar') ? 'ar' : 'en';
   const { flash, planOrders, filters: pageFilters = {}, auth } = usePage().props as any;
   const permissions = auth?.permissions || [];
   
@@ -26,6 +39,8 @@ export default function PlanOrdersPage() {
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [viewOrder, setViewOrder] = useState<any>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   
   useEffect(() => {
     if (flash?.success) {
@@ -45,7 +60,10 @@ export default function PlanOrdersPage() {
   }, []);
 
   const handleAction = (action: string, item: any) => {
-    if (action === 'approve') {
+    if (action === 'view') {
+      setViewOrder(item);
+      setIsViewModalOpen(true);
+    } else if (action === 'approve') {
       router.post(route("plan-orders.approve", item.id), {}, {
         onSuccess: () => {
         },
@@ -57,6 +75,11 @@ export default function PlanOrdersPage() {
       setSelectedOrder(item);
       setIsRejectDialogOpen(true);
     }
+  };
+
+  const attachmentUrl = (path: string) => {
+    if (!path) return '#';
+    return path.startsWith('http') ? path : `/storage/${path}`;
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -222,6 +245,128 @@ export default function PlanOrdersPage() {
                   }}
               />
           </div>
+
+          <Dialog open={isViewModalOpen} onOpenChange={(open) => { setIsViewModalOpen(open); if (!open) setViewOrder(null); }}>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                      <DialogTitle>
+                          {t('View Plan Order')}
+                          {viewOrder?.order_number && (
+                              <span className="ml-2 font-mono text-sm text-muted-foreground">
+                                  {resolveDisplayValue(viewOrder.order_number, locale)}
+                              </span>
+                          )}
+                      </DialogTitle>
+                  </DialogHeader>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                          <Label className="text-muted-foreground">{t('Order Number')}</Label>
+                          <p className="mt-1 text-sm font-mono">{resolveDisplayValue(viewOrder?.order_number, locale)}</p>
+                      </div>
+                      <div>
+                          <Label className="text-muted-foreground">{t('Order Date')}</Label>
+                          <p className="mt-1 text-sm">
+                              {viewOrder?.ordered_at ? window.appSettings?.formatDateTime?.(viewOrder.ordered_at, false) : '—'}
+                          </p>
+                      </div>
+                      <div>
+                          <Label className="text-muted-foreground">{t('User Name')}</Label>
+                          <p className="mt-1 text-sm">{resolveDisplayValue(viewOrder?.user?.name, locale)}</p>
+                      </div>
+                      <div>
+                          <Label className="text-muted-foreground">{t('Plan Name')}</Label>
+                          <p className="mt-1 text-sm">{resolveDisplayValue(viewOrder?.plan?.name, locale)}</p>
+                      </div>
+                      <div>
+                          <Label className="text-muted-foreground">{t('Billing Cycle')}</Label>
+                          <p className="mt-1 text-sm">
+                              {viewOrder?.billing_cycle === 'yearly' ? t('Yearly') : viewOrder?.billing_cycle === 'monthly' ? t('Monthly') : viewOrder?.billing_cycle ?? '—'}
+                          </p>
+                      </div>
+                      <div>
+                          <Label className="text-muted-foreground">{t('Payment Method')}</Label>
+                          <p className="mt-1 text-sm capitalize">
+                              {resolveDisplayValue(viewOrder?.payment_method, locale).replace(/_/g, ' ')}
+                          </p>
+                      </div>
+                      <div>
+                          <Label className="text-muted-foreground">{t('Payment ID')}</Label>
+                          <p className="mt-1 truncate text-sm font-mono" title={typeof viewOrder?.payment_id === 'string' ? viewOrder.payment_id : ''}>{resolveDisplayValue(viewOrder?.payment_id, locale)}</p>
+                      </div>
+                      <div>
+                          <Label className="text-muted-foreground">{t('Status')}</Label>
+                          <p className="mt-1 text-sm">
+                              {viewOrder?.status === 'pending' ? t('Pending') : viewOrder?.status === 'approved' ? t('Approved') : viewOrder?.status === 'rejected' ? t('Rejected') : viewOrder?.status ?? '—'}
+                          </p>
+                      </div>
+                      <div>
+                          <Label className="text-muted-foreground">{t('Original Price')}</Label>
+                          <p className="mt-1 text-sm">
+                              {viewOrder?.original_price != null ? <CurrencyAmount amount={viewOrder.original_price} /> : '—'}
+                          </p>
+                      </div>
+                      <div>
+                          <Label className="text-muted-foreground">{t('Coupon Code')}</Label>
+                          <p className="mt-1 text-sm">{resolveDisplayValue(viewOrder?.coupon_code, locale)}</p>
+                      </div>
+                      <div>
+                          <Label className="text-muted-foreground">{t('Discount')}</Label>
+                          <p className="mt-1 text-sm">
+                              {viewOrder?.discount_amount > 0 ? <span className="inline-flex items-center gap-1"><span>-</span><CurrencyAmount amount={viewOrder.discount_amount} /></span> : '—'}
+                          </p>
+                      </div>
+                      <div>
+                          <Label className="text-muted-foreground">{t('Final Price')}</Label>
+                          <p className="mt-1 text-sm font-medium">
+                              {viewOrder?.final_price != null ? <CurrencyAmount amount={viewOrder.final_price} /> : '—'}
+                          </p>
+                      </div>
+                      <div>
+                          <Label className="text-muted-foreground">{t('Processed At')}</Label>
+                          <p className="mt-1 text-sm">
+                              {viewOrder?.processed_at ? window.appSettings?.formatDateTime?.(viewOrder.processed_at, false) : '—'}
+                          </p>
+                      </div>
+                      <div>
+                          <Label className="text-muted-foreground">{t('Processed By')}</Label>
+                          <p className="mt-1 text-sm">{resolveDisplayValue(viewOrder?.processed_by?.name ?? viewOrder?.processedBy?.name, locale)}</p>
+                      </div>
+                  </div>
+                  <div className="space-y-4 border-t pt-4">
+                      <div>
+                          <Label className="text-muted-foreground">{t('Note')}</Label>
+                          <p className="mt-1 rounded border bg-muted/30 p-3 text-sm">
+                              {resolveDisplayValue(viewOrder?.notes, locale)}
+                          </p>
+                      </div>
+                      <div>
+                          <Label className="text-muted-foreground">{t('Attachment')}</Label>
+                          <div className="mt-1 space-y-1">
+                              {viewOrder?.attachment?.length ? (
+                                  viewOrder.attachment.map((path: string, i: number) => (
+                                      <a
+                                          key={i}
+                                          href={attachmentUrl(path)}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="block text-sm text-primary underline hover:no-underline"
+                                      >
+                                          {path.split('/').pop() || t('Attachment')} {i + 1}
+                                      </a>
+                                  ))
+                              ) : (
+                                  <p className="text-sm text-muted-foreground">—</p>
+                              )}
+                          </div>
+                      </div>
+                  </div>
+                  <DialogFooter>
+                      <Button variant="outline" onClick={() => setIsViewModalOpen(false)}>
+                          {t('Close')}
+                      </Button>
+                  </DialogFooter>
+              </DialogContent>
+          </Dialog>
 
           <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
               <DialogContent>
