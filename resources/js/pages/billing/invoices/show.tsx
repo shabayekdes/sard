@@ -118,6 +118,7 @@ export default function ShowInvoice() {
     };
 
     const formatInvoiceNumber = (value: string | number) => {
+      
         const s = String(value ?? '').replace(/\s/g, '');
         if (!s) return '-';
         return s.replace(/\D/g, '').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1 ');
@@ -263,7 +264,7 @@ export default function ShowInvoice() {
                                     {invoice?.client?.business_type === 'b2b' ? t('Tax Invoice') : t('Simplified Tax Invoice')}
                                 </h2>
                                 <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                    {t('Invoice Number')}: {formatInvoiceNumber(invoice?.invoice_number || invoice?.id)}
+                                    {t('Invoice Number')}: {invoice?.invoice_number || '-'}
                                 </p>
                                 {invoice?.case && (
                                     <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">

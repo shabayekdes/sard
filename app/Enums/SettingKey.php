@@ -8,6 +8,7 @@ enum SettingKey: string
     case DefaultCountry = 'DEFAULT_COUNTRY';
     case DefaultLanguage = 'DEFAULT_LANGUAGE';
     case DateFormat = 'DATE_FORMAT';
+    case DateCalendarType = 'DATE_CALENDAR_TYPE';
     case TimeFormat = 'TIME_FORMAT';
     case CalendarStartDay = 'CALENDAR_START_DAY';
     case DefaultTimezone = 'DEFAULT_TIMEZONE';
@@ -139,6 +140,7 @@ enum SettingKey: string
             'defaultCountry' => self::DefaultCountry,
             'defaultLanguage' => self::DefaultLanguage,
             'dateFormat' => self::DateFormat,
+            'dateCalendarType' => self::DateCalendarType,
             'timeFormat' => self::TimeFormat,
             'calendarStartDay' => self::CalendarStartDay,
             'defaultTimezone' => self::DefaultTimezone,

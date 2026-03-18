@@ -33,6 +33,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
         defaultCountry: '',
         defaultLanguage: 'en',
         dateFormat: 'MM/DD/YYYY',
+        dateCalendarType: 'gregorian' as const,
         timeFormat: '12h',
         calendarStartDay: 'sunday',
         defaultTimezone: 'UTC',
@@ -70,6 +71,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
         defaultCountry: normalizeCountryValue(settingsData['DEFAULT_COUNTRY'] ?? defaultSettings.defaultCountry),
         defaultLanguage: settingsData['DEFAULT_LANGUAGE'] || defaultSettings.defaultLanguage,
         dateFormat: settingsData['DATE_FORMAT'] || defaultSettings.dateFormat,
+        dateCalendarType: (settingsData['DATE_CALENDAR_TYPE'] || defaultSettings.dateCalendarType) === 'hijri' ? 'hijri' : 'gregorian',
         timeFormat: settingsData['TIME_FORMAT'] || defaultSettings.timeFormat,
         calendarStartDay: settingsData['CALENDAR_START_DAY'] || defaultSettings.calendarStartDay,
         defaultTimezone: settingsData['DEFAULT_TIMEZONE'] || defaultSettings.defaultTimezone,
@@ -93,6 +95,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
                 defaultCountry: normalizeCountryValue(settingsData['DEFAULT_COUNTRY'] ?? defaultSettings.defaultCountry),
                 defaultLanguage: settingsData['DEFAULT_LANGUAGE'] || defaultSettings.defaultLanguage,
                 dateFormat: settingsData['DATE_FORMAT'] || defaultSettings.dateFormat,
+                dateCalendarType: (settingsData['DATE_CALENDAR_TYPE'] || defaultSettings.dateCalendarType) === 'hijri' ? 'hijri' : 'gregorian',
                 timeFormat: settingsData['TIME_FORMAT'] || defaultSettings.timeFormat,
                 calendarStartDay: settingsData['CALENDAR_START_DAY'] || defaultSettings.calendarStartDay,
                 defaultTimezone: settingsData['DEFAULT_TIMEZONE'] || defaultSettings.defaultTimezone,
@@ -132,6 +135,7 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
             defaultCountry: systemSettings.defaultCountry,
             defaultLanguage: systemSettings.defaultLanguage,
             dateFormat: systemSettings.dateFormat,
+            dateCalendarType: systemSettings.dateCalendarType,
             timeFormat: systemSettings.timeFormat,
             calendarStartDay: systemSettings.calendarStartDay,
             defaultTimezone: systemSettings.defaultTimezone,
@@ -285,6 +289,22 @@ export default function SystemSettings({ settings = {}, timezones = {}, dateForm
                                         <SelectItem value="F j, Y">January 1, 2025</SelectItem>
                                     </>
                                 )}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="dateCalendarType">{t('Date in tables')}</Label>
+                        <Select
+                            value={systemSettings.dateCalendarType}
+                            onValueChange={(value: 'gregorian' | 'hijri') => handleSystemSettingsChange('dateCalendarType', value)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder={t('Select calendar type')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="gregorian">{t('Gregorian')}</SelectItem>
+                                <SelectItem value="hijri">{t('Hijri')}</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
