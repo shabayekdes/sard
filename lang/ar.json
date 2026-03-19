@@ -156,6 +156,8 @@
     "Select calendar type": "اختيار نوع التقويم",
     "Day": "يوم",
     "Days": "أيام",
+    "Days left": "الأيام المتبقية",
+    "{{count}} days left": "{{count}} أيام متبقية",
     "Decimal Separator": "الفاصل العشري",
     "Default Language": "اللغة الافتراضية",
     "Delete": "حذف",

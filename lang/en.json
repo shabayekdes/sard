@@ -159,6 +159,8 @@
   "Select calendar type": "Select calendar type",
   "Day": "Day",
   "Days": "Days",
+  "Days left": "Days left",
+  "{{count}} days left": "{{count}} days left",
   "Decimal Separator": "Decimal Separator",
   "Default Language": "Default Language",
   "Delete": "Delete",
