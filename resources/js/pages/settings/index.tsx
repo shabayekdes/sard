@@ -1,8 +1,7 @@
 import { PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { type NavItem } from '@/types';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Settings as SettingsIcon, Building, DollarSign, Users, RefreshCw, Palette, BookOpen, Award, FileText, Mail, Bell, Link2, CreditCard, Calendar, HardDrive, Shield, Bot, Cookie, Search, Webhook, Wallet, MessageSquare, Slack, Phone } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import SystemSettings from './components/system-settings';
@@ -26,147 +25,139 @@ import TwilioNotificationSettings from './components/twilio-settings';
 import GoogleCalendarSettings from './components/google-calendar-settings';
 import { Toaster } from '@/components/ui/toaster';
 import { useTranslation } from 'react-i18next';
-import { hasPermission } from '@/utils/permissions';
 import { useLayout } from '@/contexts/LayoutContext';
 
+/** Permissions a company user may access on the settings page (SaaS users use any granted permission). */
+const COMPANY_SETTINGS_PERMISSIONS = new Set([
+    'manage-system-settings',
+    'manage-brand-settings',
+    'manage-currency-settings',
+    'manage-email-notifications',
+    'manage-payment-settings',
+]);
+
+type SettingsSidebarNavItem = {
+    title: string;
+    href: string;
+    icon: ReactNode;
+    condition: () => boolean;
+};
 
 export default function Settings() {
     const { t } = useTranslation();
     const { position } = useLayout();
 
     const { systemSettings = {}, cacheSize = '0.00', timezones = {}, dateFormats = {}, timeFormats = {}, paymentSettings = {}, webhooks = [], auth = {}, emailTemplates = [], slackSettings = {}, twilioSettings = {}, notificationTemplates = [], countries = [], taxRates = [] } = usePage().props as any;
-    const isSaas = auth.user?.type === 'superadmin' || auth.user?.type === 'super admin';
     const [activeSection, setActiveSection] = useState('system-settings');
 
-    // Define all possible sidebar navigation items
-    const allSidebarNavItems: (NavItem & { permission?: string })[] = [
+    function settingsSidebarCondition(permission: string | undefined): boolean {
+        if (!permission || !auth.permissions?.includes(permission)) {
+            return false;
+        }
+        const userType = auth.user?.type;
+        const isSaas = userType === 'superadmin' || userType === 'super admin';
+        const isCompany = userType === 'company';
+        if (isSaas) {
+            return true;
+        }
+        if (isCompany) {
+            return COMPANY_SETTINGS_PERMISSIONS.has(permission);
+        }
+        return false;
+    }
+
+    const sidebarNavItems: SettingsSidebarNavItem[] = [
         {
             title: t('System Settings'),
             href: '#system-settings',
             icon: <SettingsIcon className="h-4 w-4 mr-2" />,
-            permission: 'manage-system-settings'
+            condition: () => settingsSidebarCondition('manage-system-settings'),
         },
         {
             title: t('Brand Settings'),
             href: '#brand-settings',
             icon: <Palette className="h-4 w-4 mr-2" />,
-            permission: 'manage-brand-settings'
+            condition: () => settingsSidebarCondition('manage-brand-settings'),
         },
         {
             title: t('Currency Settings'),
             href: '#currency-settings',
             icon: <DollarSign className="h-4 w-4 mr-2" />,
-            permission: 'manage-currency-settings'
+            condition: () => settingsSidebarCondition('manage-currency-settings'),
         },
         {
             title: t('Email Settings'),
             href: '#email-settings',
             icon: <Mail className="h-4 w-4 mr-2" />,
-            permission: 'manage-email-settings'
+            condition: () => settingsSidebarCondition('manage-email-settings'),
         },
         {
             title: t('Email Notification Settings'),
             href: '#email-notification-settings',
             icon: <Bell className="h-4 w-4 mr-2" />,
-            permission: 'manage-email-notifications'
+            condition: () => settingsSidebarCondition('manage-email-notifications'),
         },
         {
             title: t('Slack Settings'),
             href: '#slack-settings',
             icon: <Slack className="h-4 w-4 mr-2" />,
-            permission: 'manage-slack-notifications'
-
+            condition: () => settingsSidebarCondition('manage-slack-notifications'),
         },
         {
             title: t('Twilio Settings'),
             href: '#twilio-settings',
             icon: <Phone className="h-4 w-4 mr-2" />,
-            permission: 'manage-twilio-notifications'
-
+            condition: () => settingsSidebarCondition('manage-twilio-notifications'),
         },
-
         {
             title: t('Payment Settings'),
             href: '#payment-settings',
             icon: <CreditCard className="h-4 w-4 mr-2" />,
-            permission: 'manage-payment-settings'
+            condition: () => settingsSidebarCondition('manage-payment-settings'),
         },
         {
             title: t('Storage Settings'),
             href: '#storage-settings',
             icon: <HardDrive className="h-4 w-4 mr-2" />,
-            permission: 'manage-storage-settings'
+            condition: () => settingsSidebarCondition('manage-storage-settings'),
         },
         {
             title: t('ReCaptcha Settings'),
             href: '#recaptcha-settings',
             icon: <Shield className="h-4 w-4 mr-2" />,
-            permission: 'manage-recaptcha-settings'
+            condition: () => settingsSidebarCondition('manage-recaptcha-settings'),
         },
         {
             title: t('Chat GPT Settings'),
             href: '#chatgpt-settings',
             icon: <Bot className="h-4 w-4 mr-2" />,
-            permission: 'manage-chatgpt-settings'
+            condition: () => settingsSidebarCondition('manage-chatgpt-settings'),
         },
         {
             title: t('Cookie Settings'),
             href: '#cookie-settings',
             icon: <Cookie className="h-4 w-4 mr-2" />,
-            permission: 'manage-cookie-settings'
+            condition: () => settingsSidebarCondition('manage-cookie-settings'),
         },
         {
             title: t('SEO Settings'),
             href: '#seo-settings',
             icon: <Search className="h-4 w-4 mr-2" />,
-            permission: 'manage-seo-settings'
+            condition: () => settingsSidebarCondition('manage-seo-settings'),
         },
         {
             title: t('Cache Settings'),
             href: '#cache-settings',
             icon: <HardDrive className="h-4 w-4 mr-2" />,
-            permission: 'manage-cache-settings'
+            condition: () => settingsSidebarCondition('manage-cache-settings'),
         },
         {
             title: t('Google Calendar Settings'),
             href: '#google-calendar-settings',
             icon: <Calendar className="h-4 w-4 mr-2" />,
-            permission: 'manage-google-calendar-settings'
+            condition: () => settingsSidebarCondition('manage-google-calendar-settings'),
         },
     ];
-
-    // if (auth.user?.type !== 'superadmin') {
-    //     allSidebarNavItems.push({
-    //         title: t('Webhook Settings'),
-    //         href: '#webhook-settings',
-    //         icon: <Webhook className="h-4 w-4 mr-2" />,
-    //         permission: 'manage-webhook-settings'
-    //     });
-    // }
-    // Filter sidebar items based on user permissions
-    const sidebarNavItems = allSidebarNavItems.filter(item => {
-        if (item.permission && ['manage-email-settings', 'manage-twilio-notifications'].includes(item.permission) && !isSaas) {
-            return false;
-        }
-        // If no permission is required or user has the permission
-        if (!item.permission || (auth.permissions && auth.permissions.includes(item.permission))) {
-            return true;
-        }
-        // For company users, only show specific settings
-        if (auth.user && auth.user.type === 'company') {
-            // Only allow system settings, email settings, email notification settings, brand settings, webhook settings, google calendar settings, and settings
-            // Slack settings don't require permission - available to all company users
-            return [
-              'manage-email-notifications',
-              // 'manage-slack-notifications',
-              'manage-brand-settings',
-              'manage-webhook-settings',
-              // 'manage-google-calendar-settings',
-              'settings'
-            ].includes(item.permission) || !item.permission;
-        }
-        return false;
-    });
 
     // Refs for each section
     const systemSettingsRef = useRef<HTMLDivElement>(null);
@@ -290,20 +281,22 @@ export default function Settings() {
                         <ScrollArea className="h-[calc(100vh-5rem)]">
                             <div className={`space-y-1 ${position === 'right' ? 'pl-4' : 'pr-4'}`}>
                                 {/* <div className="pr-4 space-y-1"> */}
-                                {sidebarNavItems.map((item) => (
-                                    <Button
-                                        key={item.href}
-                                        variant="ghost"
-                                        className={cn('w-full justify-start', {
-                                            'bg-muted font-medium': activeSection === item.href.replace('#', ''),
-                                            'flex-row-reverse': position === 'right',
-                                        })}
-                                        onClick={() => handleNavClick(item.href)}
-                                    >
-                                        {item.icon}
-                                        {item.title}
-                                    </Button>
-                                ))}
+                                {sidebarNavItems.map((item) =>
+                                    item.condition() ? (
+                                        <Button
+                                            key={item.href}
+                                            variant="ghost"
+                                            className={cn('w-full justify-start', {
+                                                'bg-muted font-medium': activeSection === item.href.replace('#', ''),
+                                                'flex-row-reverse': position === 'right',
+                                            })}
+                                            onClick={() => handleNavClick(item.href)}
+                                        >
+                                            {item.icon}
+                                            {item.title}
+                                        </Button>
+                                    ) : null,
+                                )}
                             </div>
                         </ScrollArea>
                     </div>
@@ -311,7 +304,7 @@ export default function Settings() {
                 {/* Main Content */}
                 <div className={`flex-1 ${position === 'right' ? 'md:order-1' : 'md:order-2'}`}>
                     {/* System Settings Section */}
-                    {(auth.permissions?.includes('manage-system-settings') || auth.user?.type === 'superadmin') && (
+                    {settingsSidebarCondition('manage-system-settings') && (
                         <section id="system-settings" ref={systemSettingsRef} className="mb-8">
                             <SystemSettings
                                 settings={systemSettings}
@@ -325,98 +318,98 @@ export default function Settings() {
                     )}
 
                     {/* Brand Settings Section */}
-                    {(auth.permissions?.includes('manage-brand-settings') || auth.user?.type === 'superadmin') && (
+                    {settingsSidebarCondition('manage-brand-settings') && (
                         <section id="brand-settings" ref={brandSettingsRef} className="mb-8">
                             <BrandSettings />
                         </section>
                     )}
 
                     {/* Currency Settings Section */}
-                    {(auth.permissions?.includes('manage-currency-settings') || auth.user?.type === 'superadmin') && (
+                    {settingsSidebarCondition('manage-currency-settings') && (
                         <section id="currency-settings" ref={currencySettingsRef} className="mb-8">
                             <CurrencySettings />
                         </section>
                     )}
 
                     {/* Email Settings Section */}
-                    {isSaas && (
+                    {settingsSidebarCondition('manage-email-settings') && (
                         <section id="email-settings" ref={emailSettingsRef} className="mb-8">
                             <EmailSettings />
                         </section>
                     )}
 
                     {/* Email Notification Settings Section */}
-                    {(auth.permissions?.includes('manage-email-notifications') || auth.user?.type === 'company') && (
+                    {settingsSidebarCondition('manage-email-notifications') && (
                         <section id="email-notification-settings" ref={emailNotificationSettingsRef} className="mb-8">
                             <EmailNotificationSettings templates={emailTemplates} />
                         </section>
                     )}
 
-                    {/* Slack Settings Section - Available to all company users */}
-                    {isSaas && (
+                    {/* Slack Settings Section */}
+                    {settingsSidebarCondition('manage-slack-notifications') && (
                         <section id="slack-settings" ref={slackSettingsRef} className="mb-8">
                             <SlackSettings settings={slackSettings} notificationTemplates={notificationTemplates} />
                         </section>
                     )}
 
-                    {/* Twilio Settings Section - Available to all company users */}
-                    {isSaas && (
+                    {/* Twilio Settings Section */}
+                    {settingsSidebarCondition('manage-twilio-notifications') && (
                         <section id="twilio-settings" ref={twilioSettingsRef} className="mb-8">
                             <TwilioNotificationSettings />
                         </section>
                     )}
 
                     {/* Payment Settings Section */}
-                    {auth.permissions?.includes('manage-payment-settings') && (
+                    {settingsSidebarCondition('manage-payment-settings') && (
                         <section id="payment-settings" ref={paymentSettingsRef} className="mb-8">
                             <PaymentSettings settings={paymentSettings} />
                         </section>
                     )}
 
                     {/* Storage Settings Section */}
-                    {(auth.permissions?.includes('manage-storage-settings') || auth.user?.type === 'superadmin') && (
+                    {settingsSidebarCondition('manage-storage-settings') && (
                         <section id="storage-settings" ref={storageSettingsRef} className="mb-8">
                             <StorageSettings settings={systemSettings} />
                         </section>
                     )}
 
                     {/* ReCaptcha Settings Section */}
-                    {(auth.permissions?.includes('manage-recaptcha-settings') || auth.user?.type === 'superadmin') && (
+                    {settingsSidebarCondition('manage-recaptcha-settings') && (
                         <section id="recaptcha-settings" ref={recaptchaSettingsRef} className="mb-8">
                             <RecaptchaSettings settings={systemSettings} />
                         </section>
                     )}
 
                     {/* Chat GPT Settings Section */}
-                    {(auth.permissions?.includes('manage-chatgpt-settings') || auth.user?.type === 'superadmin') && (
+                    {settingsSidebarCondition('manage-chatgpt-settings') && (
                         <section id="chatgpt-settings" ref={chatgptSettingsRef} className="mb-8">
                             <ChatGptSettings settings={systemSettings} />
                         </section>
                     )}
 
                     {/* Cookie Settings Section */}
-                    {(auth.permissions?.includes('manage-cookie-settings') || auth.user?.type === 'superadmin') && (
+                    {settingsSidebarCondition('manage-cookie-settings') && (
                         <section id="cookie-settings" ref={cookieSettingsRef} className="mb-8">
                             <CookieSettings settings={systemSettings} />
                         </section>
                     )}
 
                     {/* SEO Settings Section */}
-                    {(auth.permissions?.includes('manage-seo-settings') || auth.user?.type === 'superadmin') && (
+                    {settingsSidebarCondition('manage-seo-settings') && (
                         <section id="seo-settings" ref={seoSettingsRef} className="mb-8">
                             <SeoSettings settings={systemSettings} />
                         </section>
                     )}
 
                     {/* Cache Settings Section */}
-                    {(auth.permissions?.includes('manage-cache-settings') || auth.user?.type === 'superadmin') && (
+                    {settingsSidebarCondition('manage-cache-settings') && (
                         <section id="cache-settings" ref={cacheSettingsRef} className="mb-8">
                             <CacheSettings cacheSize={cacheSize} />
                         </section>
                     )}
 
                     {/* Google Calendar Settings Section */}
-                    {isSaas && (
+                    {settingsSidebarCondition('manage-google-calendar-settings') && (
                         <section id="google-calendar-settings" ref={googleCalendarSettingsRef} className="mb-8">
                             <GoogleCalendarSettings settings={systemSettings} />
                         </section>
