@@ -139,6 +139,8 @@ export default function Plans({
 }: Props) {
     const { t, i18n } = useTranslation();
     const currentLocale = i18n.language?.startsWith('ar') ? 'ar' : 'en';
+    const isRtl = currentLocale === 'ar';
+    const valueDirProps = isRtl ? { dir: 'ltr' as const } : {};
     const { flash } = usePage().props as any;
     const [plans, setPlans] = useState<Plan[]>(initialPlans);
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>(initialBillingCycle);
@@ -260,9 +262,26 @@ export default function Plans({
         );
     };
 
+    const planPriceForCurrentCycle = (plan: Plan) => {
+        const p = typeof plan.price === 'string' ? parseFloat(plan.price) : plan.price;
+        return Number.isNaN(p) ? 0 : p;
+    };
+
     const handleSubscribe = async (planId: number) => {
         const plan = plans.find((p) => p.id === planId);
         if (!plan) return;
+        const price = planPriceForCurrentCycle(plan);
+        if (price === 0) {
+            setProcessing(true);
+            router.post(route('plans.subscribe-free'), { plan_id: planId, billing_cycle: billingCycle }, {
+                onSuccess: () => {
+                    setProcessing(false);
+                    toast.success(t('Plan activated successfully!'));
+                },
+                onError: () => setProcessing(false),
+            });
+            return;
+        }
         try {
             const url = `${route('payment.methods')}?saas=1`;
             const response = await fetch(url);
@@ -771,10 +790,14 @@ export default function Plans({
                                     <div>
                                         <div className="mb-1.5 flex items-center justify-between text-sm">
                                             <span className="font-medium text-gray-700">{t('Team Members')}</span>
-                                            <span className="text-muted-foreground">
+                                            <span className="text-muted-foreground" {...valueDirProps}>
                                                 {planStatus.usage.team_members.limit === -1
-                                                    ? `${planStatus.usage.team_members.used} / ${t('Unlimited')}`
-                                                    : `${planStatus.usage.team_members.used} / ${planStatus.usage.team_members.limit}`}
+                                                    ? isRtl
+                                                        ? `${t('Unlimited')} / ${planStatus.usage.team_members.used}`
+                                                        : `${planStatus.usage.team_members.used} / ${t('Unlimited')}`
+                                                    : isRtl
+                                                        ? `${planStatus.usage.team_members.limit} / ${planStatus.usage.team_members.used}`
+                                                        : `${planStatus.usage.team_members.used} / ${planStatus.usage.team_members.limit}`}
                                             </span>
                                         </div>
                                         <Progress
@@ -785,10 +808,14 @@ export default function Plans({
                                     <div>
                                         <div className="mb-1.5 flex items-center justify-between text-sm">
                                             <span className="font-medium text-gray-700">{t('Storage')}</span>
-                                            <span className="text-muted-foreground">
+                                            <span className="text-muted-foreground" {...valueDirProps}>
                                                 {planStatus.usage.storage.limit_gb === -1
-                                                    ? `${planStatus.usage.storage.used_gb} GB / ${t('Unlimited')}`
-                                                    : `${planStatus.usage.storage.used_gb} GB / ${planStatus.usage.storage.limit_gb} GB`}
+                                                    ? isRtl
+                                                        ? `${t('Unlimited')} / ${planStatus.usage.storage.used_gb} GB`
+                                                        : `${planStatus.usage.storage.used_gb} GB / ${t('Unlimited')}`
+                                                    : isRtl
+                                                        ? `${planStatus.usage.storage.limit_gb} GB / ${planStatus.usage.storage.used_gb} GB`
+                                                        : `${planStatus.usage.storage.used_gb} GB / ${planStatus.usage.storage.limit_gb} GB`}
                                             </span>
                                         </div>
                                         <Progress
@@ -799,8 +826,15 @@ export default function Plans({
                                     <div>
                                         <div className="mb-1.5 flex items-center justify-between text-sm">
                                             <span className="font-medium text-gray-700">{t('Cases')}</span>
-                                            <span className="text-muted-foreground">
-                                                {planStatus.usage.cases.limit === -1
+                                            <span className="text-muted-foreground" {...valueDirProps}>
+                                                {isRtl ? (
+                                                    <>
+                                                        <span dir={planStatus.usage.cases.limit === -1 ? 'rtl' : 'ltr'}>
+                                                            {planStatus.usage.cases.limit === -1 ? t('Unlimited') : planStatus.usage.cases.limit}
+                                                        </span>
+                                                        <span dir="ltr"> / {planStatus.usage.cases.used}</span>
+                                                    </>
+                                                ) : planStatus.usage.cases.limit === -1
                                                     ? `${planStatus.usage.cases.used} / ${t('Unlimited')}`
                                                     : `${planStatus.usage.cases.used} / ${planStatus.usage.cases.limit}`}
                                             </span>
@@ -813,8 +847,15 @@ export default function Plans({
                                     <div>
                                         <div className="mb-1.5 flex items-center justify-between text-sm">
                                             <span className="font-medium text-gray-700">{t('Clients')}</span>
-                                            <span className="text-muted-foreground">
-                                                {planStatus.usage.clients.limit === -1
+                                            <span className="text-muted-foreground" {...valueDirProps}>
+                                                {isRtl ? (
+                                                    <>
+                                                        <span dir={planStatus.usage.clients.limit === -1 ? 'rtl' : 'ltr'}>
+                                                            {planStatus.usage.clients.limit === -1 ? t('Unlimited') : planStatus.usage.clients.limit}
+                                                        </span>
+                                                        <span dir="ltr"> / {planStatus.usage.clients.used}</span>
+                                                    </>
+                                                ) : planStatus.usage.clients.limit === -1
                                                     ? `${planStatus.usage.clients.used} / ${t('Unlimited')}`
                                                     : `${planStatus.usage.clients.used} / ${planStatus.usage.clients.limit}`}
                                             </span>
@@ -826,23 +867,50 @@ export default function Plans({
                                     </div>
                                 </div>
 
+                                {(() => {
+                                    const expireDate = planStatus.is_trial ? planStatus.trial_expire_date : planStatus.plan_expire_date;
+                                    const daysLeft = daysFromToday(expireDate);
+                                    if (expireDate == null) return null;
+                                    const maxDays = 365;
+                                    const progressRemaining = daysLeft != null && daysLeft >= 0 ? Math.min(100, (daysLeft / maxDays) * 100) : 0;
+                                    const isExpired = daysLeft != null && daysLeft < 0;
+                                    return (
+                                        <div>
+                                            <div className="mb-1.5 flex items-center justify-between text-sm">
+                                                <span className="font-medium text-gray-700">{t('Days left')}</span>
+                                                <span className={`tabular-nums ${isExpired ? 'font-medium text-red-600' : 'text-muted-foreground'}`} {...valueDirProps}>
+                                                    {daysLeft == null
+                                                        ? '—'
+                                                        : isExpired
+                                                            ? t('Expired')
+                                                            : t('{{count}} days left', { count: daysLeft })}
+                                                </span>
+                                            </div>
+                                            <Progress
+                                                value={progressRemaining}
+                                                className={`h-2 bg-gray-100 [&>div]:${isExpired ? 'bg-red-500' : 'bg-emerald-500'}`}
+                                            />
+                                        </div>
+                                    );
+                                })()}
+
                                 <div>
                                     <h3 className="mb-2 text-sm font-semibold text-gray-700">{t('Plan Details')}</h3>
                                     <ul className="space-y-1 text-sm text-gray-600">
                                         <li>
-                                            • {planStatus.plan_details.team_members === -1 ? t('Unlimited') : planStatus.plan_details.team_members}{' '}
+                                            • <span {...valueDirProps}>{planStatus.plan_details.team_members === -1 ? t('Unlimited') : planStatus.plan_details.team_members}</span>{' '}
                                             {t('Team Members')}
                                         </li>
                                         <li>
-                                            • {planStatus.plan_details.cases === -1 ? t('Unlimited') : planStatus.plan_details.cases} {t('Cases')}
+                                            • <span {...valueDirProps}>{planStatus.plan_details.cases === -1 ? t('Unlimited') : planStatus.plan_details.cases}</span> {t('Cases')}
                                         </li>
                                         <li>
-                                            • {planStatus.plan_details.clients === -1 ? t('Unlimited') : planStatus.plan_details.clients}{' '}
+                                            • <span {...valueDirProps}>{planStatus.plan_details.clients === -1 ? t('Unlimited') : planStatus.plan_details.clients}</span>{' '}
                                             {t('Clients')}
                                         </li>
                                         <li>
                                             •{' '}
-                                            {planStatus.plan_details.storage_gb === -1 ? t('Unlimited') : `${planStatus.plan_details.storage_gb} GB`}{' '}
+                                            <span {...valueDirProps}>{planStatus.plan_details.storage_gb === -1 ? t('Unlimited') : `${planStatus.plan_details.storage_gb} GB`}</span>{' '}
                                             {t('Storage')}
                                         </li>
                                     </ul>

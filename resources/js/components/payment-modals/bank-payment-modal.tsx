@@ -15,9 +15,10 @@ interface BankPaymentModalProps {
   onClose: () => void;
   invoice: any;
   amount: number;
+  bankDetails?: string | null;
 }
 
-export function BankPaymentModal({ isOpen, onClose, invoice, amount }: BankPaymentModalProps) {
+export function BankPaymentModal({ isOpen, onClose, invoice, amount, bankDetails }: BankPaymentModalProps) {
   const { t } = useTranslation();
   const [processing, setProcessing] = useState(false);
   const [attachment, setAttachment] = useState<File | null>(null);
@@ -93,11 +94,18 @@ export function BankPaymentModal({ isOpen, onClose, invoice, amount }: BankPayme
             </div>
           </div>
 
-          <div className="bg-yellow-50 p-4 rounded-lg">
-            <p className="text-sm text-yellow-800">
-              {t('Your payment request will be submitted for manual verification. Please contact support for bank transfer details.')}
-            </p>
-          </div>
+          {bankDetails?.trim() ? (
+            <div className="rounded-lg border border-border bg-muted/30 p-4">
+              <h4 className="font-semibold mb-2">{t('Bank Details')}</h4>
+              <div className="text-sm whitespace-pre-wrap text-muted-foreground">{bankDetails}</div>
+            </div>
+          ) : (
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                {t('Your payment request will be submitted for manual verification. Please contact support for bank transfer details.')}
+              </p>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="bank-transfer-attachment" className="text-sm font-medium flex items-center gap-2">

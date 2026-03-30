@@ -27,7 +27,7 @@ class TenancySetting
             ]);
 
             $suffixBase = config('tenancy.filesystem.suffix_base', 'tenant');
-            $tenantSuffix = $suffixBase . tenant()->getTenantKey();
+            $tenantSuffix = $suffixBase . '/' . tenant()->getTenantKey();
             $publicDiskUrl = rtrim(config('app.url'), '/') . '/storage/' . $tenantSuffix;
 
             config([

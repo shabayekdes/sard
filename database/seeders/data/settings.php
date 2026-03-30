@@ -5,6 +5,7 @@ return [
     ['key' => 'DEFAULT_COUNTRY', 'value' => 'SA'],
     ['key' => 'DEFAULT_LANGUAGE', 'value' => 'ar'],
     ['key' => 'DATE_FORMAT', 'value' => 'Y-m-d'],
+    ['key' => 'DATE_CALENDAR_TYPE', 'value' => 'gregorian'],
     ['key' => 'TIME_FORMAT', 'value' => 'H:i'],
     ['key' => 'CALENDAR_START_DAY', 'value' => 'sunday'],
     ['key' => 'DEFAULT_TIMEZONE', 'value' => 'Asia/Riyadh'],

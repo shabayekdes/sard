@@ -64,6 +64,7 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 manualChunks(id) {
+                    if (id.includes('payment-modals/')) return 'payment-modals';
                     if (id.includes('node_modules')) {
                         if (id.includes('recharts')) return 'recharts';
                         if (id.includes('@tiptap')) return 'tiptap';
@@ -71,6 +72,7 @@ export default defineConfig({
                         if (id.includes('@radix-ui')) return 'radix-ui';
                         if (id.includes('lucide-react')) return 'lucide';
                         if (id.includes('@inertiajs')) return 'inertia';
+                        if (id.includes('i18next') || id.includes('react-i18next')) return 'i18n';
                         if (id.includes('date-fns') || id.includes('clsx') || id.includes('tailwind-merge')) return 'utils';
                         if (!id.includes('recharts') && !id.includes('@tiptap') && (id.includes('node_modules/react-dom/') || id.includes('node_modules/react/'))) return 'vendor';
                     }
@@ -78,6 +80,6 @@ export default defineConfig({
             },
         },
         assetsDir: 'assets',
-        chunkSizeWarningLimit: 600,
+        chunkSizeWarningLimit: 800,
     }
 });

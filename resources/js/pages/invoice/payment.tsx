@@ -47,7 +47,7 @@ import { LanguageSwitcher } from '@/components/language-switcher';
 
 export default function InvoicePayment() {
     const { t, i18n } = useTranslation();
-    const { invoice, enabledGateways, remainingAmount, clientBillingInfo, currencies, paypalClientId, flutterwavePublicKey, tapPublicKey, paystackPublicKey, flash, company, companyProfile, companyLogo, favicon, appName } = usePage().props as any;
+    const { invoice, enabledGateways, remainingAmount, clientBillingInfo, currencies, paypalClientId, flutterwavePublicKey, tapPublicKey, paystackPublicKey, bankDetail, flash, company, companyProfile, companyLogo, favicon, appName } = usePage().props as any;
     const [selectedGateway, setSelectedGateway] = useState<string | null>(null);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [showGatewayModal, setShowGatewayModal] = useState(false);
@@ -55,6 +55,14 @@ export default function InvoicePayment() {
     const [showCopiedMessage, setShowCopiedMessage] = useState(false);
     const round2 = (n: number) => Math.round(Number(n) * 100) / 100;
     const [paymentAmount, setPaymentAmount] = useState(() => round2(Number(remainingAmount ?? invoice?.total_amount ?? 0)));
+
+    const formatInvoiceNumber = (value: string | number) => {
+        const s = String(value ?? '').replace(/\s/g, '');
+        if (!s) return '-';
+        return s.replace(/\D/g, '').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1 ');
+    };
+
+    const formatDate = (date: string | null) => (date ? window.appSettings?.formatDate?.(date) || new Date(date).toLocaleDateString() : '-');
 
     // Payment method icons mapping with Lucide React icons (same as plans)
     const getLogoUrl = (url?: string) => {
@@ -173,6 +181,8 @@ export default function InvoicePayment() {
     const taxAmount = round2(Number(invoice?.tax_amount ?? 0));
     const totalAmount = round2(Number(invoice?.total_amount ?? 0));
     const remainingAmountRounded = round2(Number(remainingAmount ?? 0));
+    const amountPaid = round2(Number(invoice?.amount_paid ?? totalAmount - remainingAmountRounded));
+    const taxRate = invoice?.tax_rate ?? invoice?.client?.tax_rate ?? 0;
     const getLineAmounts = (itemAmount: number) => {
         const amt = round2(Number(itemAmount) || 0);
         if (totalAmount <= 0) return { subtotalWithoutTax: amt, tax: 0, total: amt };
@@ -229,7 +239,7 @@ export default function InvoicePayment() {
             case 'stripe':
                 return <StripePaymentModal {...modalProps} />;
             case 'bank_transfer':
-                return <BankPaymentModal {...modalProps} />;
+                return <BankPaymentModal {...modalProps} bankDetails={bankDetail} />;
             case 'paypal':
                 return <PayPalPaymentModal {...modalProps} paypalClientId={paypalClientId} />;
             case 'razorpay':
@@ -349,8 +359,19 @@ export default function InvoicePayment() {
                                     <h2 className="text-xl font-bold text-gray-900">
                                         {t('Invoice #')} {invoice.invoice_number}
                                     </h2>
-                                    <p className="mt-1 text-sm text-gray-600">
-                                        {t('Case Title')}: {invoice.case?.title ?? '—'}
+                                    {invoice?.case && (
+                                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                            {t('Case Title')}:{' '}
+                                            {invoice.case.case_id ? `${invoice.case.case_id} - ${invoice.case.title}` : invoice.case.title}
+                                        </p>
+                                    )}
+                                    <p className="mt-3 flex flex-wrap gap-x-8 text-sm text-gray-600 dark:text-gray-400">
+                                        <span>
+                                            {t('Invoice Date')}: {formatDate(invoice?.invoice_date)}
+                                        </span>
+                                        <span>
+                                            {t('Due Date')}: {formatDate(invoice?.due_date)}
+                                        </span>
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -432,14 +453,6 @@ export default function InvoicePayment() {
                                         </p>
                                         <dl className="mt-4 space-y-2 text-sm">
                                             <div className="flex flex-wrap gap-x-2">
-                                                <dt className="font-semibold text-gray-700">{t('CR Number')}:</dt>
-                                                <dd className="text-gray-600">{companyProfile?.cr || companyProfile?.registration_number || '-'}</dd>
-                                            </div>
-                                            <div className="flex flex-wrap gap-x-2">
-                                                <dt className="font-semibold text-gray-700">{t('Tax ID')}:</dt>
-                                                <dd className="text-gray-600">{companyProfile?.tax_id || companyProfile?.tax_number || '-'}</dd>
-                                            </div>
-                                            <div className="flex flex-wrap gap-x-2">
                                                 <dt className="font-semibold text-gray-700">{t('Address')}:</dt>
                                                 <dd className="text-gray-600">{companyProfile?.address || '-'}</dd>
                                             </div>
@@ -450,6 +463,14 @@ export default function InvoicePayment() {
                                             <div className="flex flex-wrap gap-x-2">
                                                 <dt className="font-semibold text-gray-700">{t('Email')}:</dt>
                                                 <dd className="text-gray-600">{companyProfile?.email || '-'}</dd>
+                                            </div>
+                                            <div className="flex flex-wrap gap-x-2">
+                                              <dt className="font-semibold text-gray-700">{t('CR Number')}:</dt>
+                                              <dd className="text-gray-600">{companyProfile?.cr || companyProfile?.registration_number || '-'}</dd>
+                                            </div>
+                                            <div className="flex flex-wrap gap-x-2">
+                                              <dt className="font-semibold text-gray-700">{t('Tax ID')}:</dt>
+                                              <dd className="text-gray-600">{companyProfile?.tax_id || companyProfile?.tax_number || '-'}</dd>
                                             </div>
                                         </dl>
                                     </CardContent>
@@ -463,18 +484,6 @@ export default function InvoicePayment() {
                                         </div>
                                         <p className="mt-2 text-lg font-bold text-gray-900">{invoice.client?.name || '-'}</p>
                                         <dl className="mt-4 space-y-2 text-sm">
-                                            {invoice.client?.business_type === 'b2b' && (
-                                                <>
-                                                    <div className="flex flex-wrap gap-x-2">
-                                                        <dt className="font-semibold text-gray-700">{t('CR Number')}:</dt>
-                                                        <dd className="text-gray-600">{invoice.client?.cr_number || '-'}</dd>
-                                                    </div>
-                                                    <div className="flex flex-wrap gap-x-2">
-                                                        <dt className="font-semibold text-gray-700">{t('Tax ID')}:</dt>
-                                                        <dd className="text-gray-600">{invoice.client?.tax_id || '-'}</dd>
-                                                    </div>
-                                                </>
-                                            )}
                                             <div className="flex flex-wrap gap-x-2">
                                                 <dt className="font-semibold text-gray-700">{t('Address')}:</dt>
                                                 <dd className="text-gray-600">{invoice.client?.address || '-'}</dd>
@@ -487,11 +496,17 @@ export default function InvoicePayment() {
                                                 <dt className="font-semibold text-gray-700">{t('Email')}:</dt>
                                                 <dd className="text-gray-600">{invoice.client?.email || '-'}</dd>
                                             </div>
-                                            {invoice.case && (
+                                            {invoice.client?.business_type === 'b2b' && (
+                                              <>
                                                 <div className="flex flex-wrap gap-x-2">
-                                                    <dt className="font-semibold text-gray-700">{t('Case Title')}:</dt>
-                                                    <dd className="text-gray-600">{invoice.case.title}</dd>
+                                                  <dt className="font-semibold text-gray-700">{t('CR Number')}:</dt>
+                                                  <dd className="text-gray-600">{invoice.client?.cr_number || '-'}</dd>
                                                 </div>
+                                                <div className="flex flex-wrap gap-x-2">
+                                                  <dt className="font-semibold text-gray-700">{t('Tax ID')}:</dt>
+                                                  <dd className="text-gray-600">{invoice.client?.tax_id || '-'}</dd>
+                                                </div>
+                                              </>
                                             )}
                                         </dl>
                                     </CardContent>
@@ -549,21 +564,31 @@ export default function InvoicePayment() {
                             )}
 
                             {/* Totals (same structure as billing/invoices/show) */}
-                            <Card>
+                            <Card className="overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900/50">
                                 <CardContent className="pt-6">
                                     <div className="flex justify-end">
                                         <div className="w-full max-w-sm space-y-2 text-sm">
                                             <div className="flex justify-between">
-                                                <span className="text-muted-foreground">{t('Subtotal')}:</span>
-                                                <span className="font-medium"><CurrencyAmount amount={invoice?.subtotal ?? 0} /></span>
+                                                <span className="text-muted-foreground">{t('Subtotal')}</span>
+                                                <span className="font-medium"><CurrencyAmount amount={subtotal} className="text-gray-900 dark:text-gray-100" /></span>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-muted-foreground">{t('Tax Value')}:</span>
-                                                <span className="font-medium"><CurrencyAmount amount={taxAmount} /></span>
+                                                <span className="text-muted-foreground">{taxRate ? t('Tax Value') + ` (${taxRate}%)` : t('Tax Value')}</span>
+                                                <span className="font-medium"><CurrencyAmount amount={taxAmount} className="text-gray-900 dark:text-gray-100" /></span>
                                             </div>
-                                            <div className="flex justify-between border-t pt-3 text-lg font-bold">
-                                                <span>{t('Total')}:</span>
-                                                <span><CurrencyAmount amount={totalAmount} /></span>
+                                            <div className="border-t border-gray-200 dark:border-gray-700" />
+                                            <div className="flex justify-between pt-1 text-base font-bold">
+                                                <span>{t('Total Invoice (VAT inclusive)')}</span>
+                                                <span><CurrencyAmount amount={totalAmount} className="text-gray-900 dark:text-gray-100" /></span>
+                                            </div>
+                                            <div className="border-t border-gray-200 dark:border-gray-700" />
+                                            <div className="flex justify-between pt-2">
+                                                <span className="text-muted-foreground">{t('Amount Paid')}</span>
+                                                <span className="font-medium"><CurrencyAmount amount={amountPaid} className="text-gray-900 dark:text-gray-100" /></span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-muted-foreground">{t('Remaining Amount')}</span>
+                                                <span className="font-medium"><CurrencyAmount amount={remainingAmountRounded} className="text-gray-900 dark:text-gray-100" /></span>
                                             </div>
                                         </div>
                                     </div>

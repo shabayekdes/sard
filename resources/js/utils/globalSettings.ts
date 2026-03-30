@@ -1,3 +1,12 @@
+import { toHijri } from 'hijri-converter';
+
+/** Display format for dates in tables: day, short month, year (e.g. 01 Jan, 2025) */
+const TABLE_DATE_FORMAT = 'd M, Y';
+
+/** Hijri month short names: English and Arabic (1–12) */
+const HIJRI_MONTHS_SHORT_EN = ['Muh.', 'Saf.', 'Rab. I', 'Rab. II', 'Jum. I', 'Jum. II', 'Raj.', 'Sha.', 'Ram.', 'Shaw.', 'Dhu Q.', 'Dhu H.'];
+const HIJRI_MONTHS_SHORT_AR = ['محرم', 'صفر', 'ربيع الأول', 'ربيع الآخر', 'جمادى الأولى', 'جمادى الآخرة', 'رجب', 'شعبان', 'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة'];
+
 // Extend window interface
 declare global {
     interface Window {
@@ -6,6 +15,7 @@ declare global {
             baseUrl: string;
             imageUrl: string;
             dateFormat: string;
+            dateCalendarType: 'gregorian' | 'hijri';
             timeFormat: string;
             timezone: string;
             language: string;
@@ -47,12 +57,40 @@ export function initializeGlobalSettings(settings: Record<string, any>) {
         currencyName: settings.currencyName || 'US Dollar',
     };
 
+    function translatedFormat(dateObj: Date, format: string, locale: string, s: Record<string, any>): string {
+        const calendarType = (s.dateCalendarType ?? s.DATE_CALENDAR_TYPE ?? 'gregorian') as string;
+        const isAr = locale.startsWith('ar');
+
+        if (calendarType === 'hijri') {
+            const h = toHijri(dateObj.getFullYear(), dateObj.getMonth() + 1, dateObj.getDate());
+            const d = String(h.hd).padStart(2, '0');
+            const M = isAr ? HIJRI_MONTHS_SHORT_AR[h.hm - 1]! : HIJRI_MONTHS_SHORT_EN[h.hm - 1]!;
+            const Y = String(h.hy);
+            return format.replace('d', d).replace('M', M).replace('Y', Y);
+        }
+
+        if (format === TABLE_DATE_FORMAT) {
+            const parts = new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+            }).formatToParts(dateObj);
+            const day = parts.find((p) => p.type === 'day')?.value ?? '';
+            const month = parts.find((p) => p.type === 'month')?.value ?? '';
+            const year = parts.find((p) => p.type === 'year')?.value ?? '';
+            return `${day} ${month}, ${year}`;
+        }
+
+        return convertPhpFormat(format, dateObj);
+    }
+
     window.appSettings = {
         get: (key: string, defaultValue: any = null) => settings[key] ?? defaultValue,
         baseUrl: settings.base_url ?? 'http://localhost',
         imageUrl: settings.image_url ?? 'http://localhost',
-        dateFormat: settings.dateFormat ?? 'yyyy-MM-dd',
-        timeFormat: settings.timeFormat ?? 'HH:mm',
+        dateFormat: settings.dateFormat ?? settings.DATE_FORMAT ?? 'yyyy-MM-dd',
+        dateCalendarType: (settings.dateCalendarType ?? settings.DATE_CALENDAR_TYPE ?? 'gregorian') === 'hijri' ? 'hijri' : 'gregorian',
+        timeFormat: settings.timeFormat ?? settings.TIME_FORMAT ?? 'HH:mm',
         timezone: settings.defaultTimezone ?? 'UTC',
         language: settings.defaultLanguage ?? 'en',
         emailVerification: settings.emailVerification === true || settings.emailVerification === 'true',
@@ -142,15 +180,12 @@ export function initializeGlobalSettings(settings: Record<string, any>) {
 
             try {
                 const dateObj = typeof date === 'string' ? new Date(date) : date;
-                let phpFormat = settings.dateFormat ?? 'D, M j, Y';
-                
-                // Add time format if includeTime is true
-                if (includeTime) {
-                    const timeFormat = settings.timeFormat ?? 'H:i';
-                    phpFormat = `${phpFormat} ${timeFormat}`;
-                }
-
-                return convertPhpFormat(phpFormat, dateObj);
+                const locale = (settings.defaultLanguage ?? settings.DEFAULT_LANGUAGE ?? 'en') as string;
+                const datePart = translatedFormat(dateObj, TABLE_DATE_FORMAT, locale, settings);
+                if (!includeTime) return datePart;
+                const phpFormat = settings.timeFormat ?? settings.TIME_FORMAT ?? 'H:i';
+                const timePart = convertPhpFormat(phpFormat, dateObj);
+                return `${datePart} ${timePart}`;
             } catch (error) {
                 return date.toString();
             }
@@ -160,8 +195,8 @@ export function initializeGlobalSettings(settings: Record<string, any>) {
 
             try {
                 const dateObj = typeof date === 'string' ? new Date(date) : date;
-                const phpFormat = settings.dateFormat ?? 'D, M j, Y';
-                return convertPhpFormat(phpFormat, dateObj);
+                const locale = (settings.defaultLanguage ?? settings.DEFAULT_LANGUAGE ?? 'en') as string;
+                return translatedFormat(dateObj, TABLE_DATE_FORMAT, locale, settings);
             } catch (error) {
                 return date.toString();
             }

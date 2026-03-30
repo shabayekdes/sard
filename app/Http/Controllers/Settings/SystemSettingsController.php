@@ -34,6 +34,7 @@ class SystemSettingsController extends Controller
                 'defaultCountry' => 'nullable|exists:countries,country_code',
                 'defaultLanguage' => 'nullable|string',
                 'dateFormat' => 'nullable|string',
+                'dateCalendarType' => 'nullable|string|in:gregorian,hijri',
                 'timeFormat' => 'nullable|string',
                 'calendarStartDay' => 'nullable|string',
                 'defaultTimezone' => 'nullable|string',

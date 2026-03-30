@@ -374,7 +374,9 @@ class PlanController extends Controller
         if ($currentPlan) {
             $tenant = $user->getTenantForPlan();
             $companyId = $user->tenant_id;
-            $teamMembersUsed = (int) User::where('tenant_id', $companyId)->where('status', 'active')->count();
+            $teamMembersUsed = (int) User::where('tenant_id', $companyId)
+                ->where('type', 'team_member')
+                ->count();
             $casesUsed = (int) CaseModel::where('tenant_id', $companyId)->count();
             $clientsUsed = (int) Client::where('tenant_id', $companyId)->count();
             $storageUsedBytes = $tenant ? (float) $tenant->storage_used : 0;
@@ -462,7 +464,7 @@ class PlanController extends Controller
         $user = auth()->user();
         $plan = Plan::findOrFail($request->plan_id);
 
-        if (!$plan->supportsBillingCycle($request->billing_cycle)) {
+        if ($request->billing_cycle && !$plan->supportsBillingCycle($request->billing_cycle)) {
             return back()->withErrors(['error' => __('Selected billing cycle is not available for this plan')]);
         }
         
@@ -516,6 +518,46 @@ class PlanController extends Controller
             return back()->with('success', __('Subscription request submitted successfully'));
         } catch (\Exception $e) {
             return back()->withErrors(['error' => __('Failed to create subscription: ') . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Subscribe to a free (zero-price) plan without showing the payment modal.
+     */
+    public function subscribeFree(Request $request)
+    {
+        $request->validate([
+            'plan_id' => 'required|exists:plans,id',
+            'billing_cycle' => 'required|in:monthly,yearly',
+        ]);
+
+        $user = auth()->user();
+        $plan = Plan::findOrFail($request->plan_id);
+
+        if (! $plan->supportsBillingCycle($request->billing_cycle)) {
+            return back()->withErrors(['error' => __('Selected billing cycle is not available for this plan')]);
+        }
+
+        $price = (float) $plan->getPriceForCycle($request->billing_cycle);
+        if ($price != 0) {
+            return back()->withErrors(['error' => __('This plan requires payment. Please use the payment form.')]);
+        }
+
+        try {
+            $order = \App\Models\PlanOrder::create([
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'billing_cycle' => $request->billing_cycle,
+                'original_price' => 0,
+                'final_price' => 0,
+                'payment_method' => 'free',
+                'status' => 'pending',
+            ]);
+            $order->activateSubscription();
+
+            return back()->with('success', __('Plan activated successfully.'));
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => __('Failed to activate plan: ') . $e->getMessage()]);
         }
     }
 }

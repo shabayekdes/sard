@@ -38,6 +38,7 @@ Route::middleware([
             Route::post('plans/request', [Controllers\PlanController::class, 'requestPlan'])->name('plans.request');
             Route::post('plans/trial', [Controllers\PlanController::class, 'startTrial'])->name('plans.trial');
             Route::post('plans/subscribe', [Controllers\PlanController::class, 'subscribe'])->name('plans.subscribe');
+            Route::post('plans/subscribe-free', [Controllers\PlanController::class, 'subscribeFree'])->name('plans.subscribe-free');
             Route::post('plans/coupons/validate', [Controllers\CouponController::class, 'validate'])->name('coupons.validate');
 
         });
