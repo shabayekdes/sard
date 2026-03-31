@@ -190,6 +190,8 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
+        \Illuminate\Support\Facades\Notification::send(User::first(), new TenantRegisteredNotification($tenant));
+
         // Redirect on current host only (avoid cross-origin redirect so session/cookies stay)
         $currentHost = $request->getSchemeAndHttpHost();
 
@@ -201,7 +203,6 @@ class RegisteredUserController extends Controller
 
         // When email verification is disabled, seed default data immediately (same as when first admin verifies)
         event(new TenantVerified($tenant));
-        \Illuminate\Support\Facades\Notification::send(User::first(), new TenantRegisteredNotification($tenant));
 
         $planId = $request->plan_id;
         if ($planId) {
