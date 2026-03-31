@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\Plan;
 use App\Models\Referral;
 use App\Models\ReferralSetting;
+use App\Notifications\Tenant\TenantRegisteredNotification;
 use App\Services\EmailTemplateService;
 use App\Services\UserService;
 use Illuminate\Auth\Events\Registered;
@@ -200,6 +201,7 @@ class RegisteredUserController extends Controller
 
         // When email verification is disabled, seed default data immediately (same as when first admin verifies)
         event(new TenantVerified($tenant));
+        \Illuminate\Support\Facades\Notification::send(User::first(), new TenantRegisteredNotification($tenant));
 
         $planId = $request->plan_id;
         if ($planId) {
