@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\Plan;
 use App\Models\Referral;
 use App\Models\ReferralSetting;
+use App\Notifications\Tenant\TenantRegisteredNotification;
 use App\Services\EmailTemplateService;
 use App\Services\UserService;
 use Illuminate\Auth\Events\Registered;
@@ -188,6 +189,8 @@ class RegisteredUserController extends Controller
         // This is handled in the PlanController or payment controllers
 
         Auth::login($user);
+
+        \Illuminate\Support\Facades\Notification::send(User::first(), new TenantRegisteredNotification($tenant));
 
         // Redirect on current host only (avoid cross-origin redirect so session/cookies stay)
         $currentHost = $request->getSchemeAndHttpHost();

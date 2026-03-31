@@ -678,6 +678,1206 @@ class SeedCaseCategories implements ShouldQueue
                     ],
                 ],
             ],
+            [
+                "name" => [
+                    "ar" => 'تنفيذ',
+                    "en" => 'Execution',
+                ],
+                "subcategories" => [
+                    [
+                        "name" => [
+                            "ar" => 'الامتناع عن قبول السند',
+                            "en" => 'Refusal to Accept Bond',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'الامتناع عن قبول السند',
+                                    "en" => 'Refusal to Accept Bond',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'دعوى الإعسار أو الملاءة',
+                            "en" => 'Insolvency or Solvency Claim',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'دعوى الإعسار أو الملاءة',
+                                    "en" => 'Insolvency or Solvency Claim',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'منازعات شكلية',
+                            "en" => 'Formal Disputes',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'عدم توفر شرط شكلي للسند أو تزويره أو إنكار التوقيع',
+                                    "en" => 'Lack of Formal Condition for Bond, Forgery, or Signature Denial',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'عدم الصفة',
+                                    "en" => 'Lack of Capacity',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'منازعات غير شكلية',
+                            "en" => 'Substantive Disputes',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'الإبراء بعد صدور السند التنفيذي',
+                                    "en" => 'Discharge after Issuance of Execution Bond',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'التأجيل بعد صدور السند التنفيذي',
+                                    "en" => 'Postponement after Issuance of Execution Bond',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'الحوالة بعد صدور السند التنفيذي',
+                                    "en" => 'Transfer after Issuance of Execution Bond',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'الصلح بعد صدور السند التنفيذي',
+                                    "en" => 'Settlement after Issuance of Execution Bond',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'المال المحجوز يفوق مقدار الدين المطالب به',
+                                    "en" => 'Seized Funds Exceed Claimed Debt',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'المقاصة بموجب سند تنفيذي',
+                                    "en" => 'Offset under Executive Bond',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'الوفاء بعد صدور السند التنفيذي',
+                                    "en" => 'Payment after Issuance of Execution Bond',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'امتناع شاغل العقار عن الاخلاء لحمله سند تنفيذي',
+                                    "en" => 'Property Occupant Refusal to Vacate due to Executive Bond',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'تواطؤ أثناء المزاد أو التأثير على سعر المزاد',
+                                    "en" => 'Collusion during Auction or Price Manipulation',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'رد ما استوفي خطأ',
+                                    "en" => 'Refund of Incorrectly Collected Amount',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'صحة تقرير المحجوز لديه بما في ذمته',
+                                    "en" => 'Accuracy of Seizure Report',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'عيب في العين المباعة',
+                                    "en" => 'Defect in Sold Item',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'دعوى التعويض',
+                                    "en" => 'Compensation Claim',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'المنازعة في أجرة الحارس القضائي أو محاسبته أو استبداله',
+                                    "en" => 'Dispute over Judicial Custodian\'s Fees, Accounting, or Replacement',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'المحاصة',
+                                    "en" => 'Pooling of Funds',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'أتعاب المحاماة أو الوكلاء',
+                                    "en" => 'Attorney or Agent Fees',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'التعويض عن أضرار التقاضي',
+                                    "en" => 'Compensation for Litigation Damages',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            [
+                "name" => [
+                    "ar" => 'جزائية',
+                    "en" => 'Criminal',
+                ],
+                "subcategories" => [
+                    [
+                        "name" => [
+                            "ar" => 'الحق الخاص',
+                            "en" => 'Private Right',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'المطالبة بالحق الخاص',
+                                    "en" => 'Private Right Claim',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'الطلبات القضائية',
+                            "en" => 'Judicial Requests',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'منع من السفر',
+                                    "en" => 'Travel Ban',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'إثبات تنازل',
+                                    "en" => 'Proof of Waiver',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'تسليم مضبوطات',
+                                    "en" => 'Delivery of Seized Items',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'الحراسة القضائية',
+                                    "en" => 'Judicial Custody',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'الحجز التحفظي',
+                                    "en" => 'Precautionary Seizure',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'استيثاق لإثبات الحالة أو شهادة يخشى فواتها',
+                                    "en" => 'Verification to Establish Case or Testimony Fearing Loss',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'وقف الأعمال الجديدة',
+                                    "en" => 'Stop New Works',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'حدود',
+                            "en" => 'Hudud (Islamic Penalties)',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'قذف',
+                                    "en" => 'Defamation',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'قصاص',
+                            "en" => 'Retribution',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => '(نفس / ما دون النفس)',
+                                    "en" => '(Life/Non-Life)',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'مطالبة مالية',
+                            "en" => 'Financial Claim',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => '(أرش / دية / رد العين)',
+                                    "en" => '(Arsh/Blood Money/Return of Property)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'التعويض عن السجن',
+                                    "en" => 'Compensation for Imprisonment',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'التعويض عن أضرار التقاضي',
+                                    "en" => 'Compensation for Litigation Damages',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            [
+                "name" => [
+                    "ar" => 'عامة',
+                    "en" => 'General',
+                ],
+                "subcategories" => [
+                    [
+                        "name" => [
+                            "ar" => 'عامة أخرى',
+                            "en" => 'General Other',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'إثبات عقد',
+                                    "en" => 'Proof of Contract',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'رفع ضرر أو التعويض عنه',
+                                    "en" => 'Removal of Harm or Compensation',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'رد العين',
+                                    "en" => 'Return of Property',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'عقد استصناع',
+                                    "en" => 'Manufacturing Contract',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'فسخ عقد أو بطلانه',
+                                    "en" => 'Contract Annulment or Invalidity',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'قسمة منافع مهايأة',
+                                    "en" => 'Division of Usufruct',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'مطالبة بمستندات (سند لأمر صك شيك كمبيالة عقد أخرى)',
+                                    "en" => 'Request for Documents (Promissory Note, Deed, Check, Bill of Exchange, Contract, etc.)',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'الدعاوى المستعجلة',
+                            "en" => 'Urgent Cases',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'منع من السفر',
+                                    "en" => 'Travel Ban',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'وقف الأعمال الجديدة (تشمل ما تختص المحكمة العامة بنظره)',
+                                    "en" => 'Stop New Works (Under General Court Jurisdiction)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'وقف الأعمال الجديدة (تقام كدعوى مستعجلة قبل الانتهاء من الأعمال)',
+                                    "en" => 'Stop New Works (Filed as Urgent Case Before Work Completion)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'وقف الأعمال الجديدة (إذا تم الانتهاء من العمل فترفع "دعوى رفع ضرر)',
+                                    "en" => 'Stop New Works (If Work is Completed, File "Harm Removal" Case)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'أجرة الأجير اليومية أو الأسبوعية',
+                                    "en" => 'Daily or Weekly Worker’s Wage',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'استرداد حيازة عقار',
+                                    "en" => 'Recovery of Property Possession',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'استيثاق لإثبات الحالة أو شهادة يخشى فواتها',
+                                    "en" => 'Verification to Establish Case or Testimony Fearing Loss',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'منع التعرض للحيازة',
+                                    "en" => 'Prevent Interference with Possession',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'حجز تحفظي',
+                                    "en" => 'Precautionary Seizure',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'عقارية',
+                            "en" => 'Real Estate',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'تداخل عقارات',
+                                    "en" => 'Overlapping Properties',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'حق الشفعة',
+                                    "en" => 'Right of Preemption',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'ملكية عقار (تسليم عقار مشترى من المدعى عليه)',
+                                    "en" => 'Property Ownership (Delivery of Purchased Property from Defendant)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'ملكية عقار (سبق تملك العقار)',
+                                    "en" => 'Property Ownership (Previous Ownership)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'ملكية عقار (ملكية عقار مسجل باسم المدعى عليه صوريا)',
+                                    "en" => 'Property Ownership (Property Fictitiously Registered in Defendant\'s Name)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'ملكية عقار (هبة / وصية)',
+                                    "en" => 'Property Ownership (Gift/Will)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'قسمة عقارات مشتركة',
+                                    "en" => 'Division of Joint Properties',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'مساهمة عقارية',
+                                    "en" => 'Real Estate Contribution',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'وضع اليد على المسيل أو الحمى (بتملك / أو بدون)',
+                                    "en" => 'Taking Possession of Watercourse or Sanctuary (With or Without Ownership)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'مسايل أو حمى إغلاق مسيل المياه عن المدعي عليا أو جزئيا (المشاحة في الماء)',
+                                    "en" => 'Watercourse or Sanctuary - Closing Watercourse Against Plaintiff Fully or Partially (Water Dispute)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'مسايل أو حمى تحويل المياه إلى ملك المدعي ومضارته بذلك',
+                                    "en" => 'Watercourse or Sanctuary - Diverting Water to Plaintiff’s Property and Causing Harm',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'التعدي على المسيل أو الحمى (كالجرف أو أخذ الأطيان والرمال منه)',
+                                    "en" => 'Trespassing on Watercourse or Sanctuary (E.g., Excavation or Taking Soil/Sand)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'مقاولات إنشاء مباني',
+                                    "en" => 'Building Construction Contracts',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'مالية',
+                            "en" => 'Financial',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'قرض أو سلف',
+                                    "en" => 'Loan or Advance',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'هبة في غير عقار',
+                                    "en" => 'Non-Real Estate Gift',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'أجرة أعمال',
+                                    "en" => 'Work Fees',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'أجرة عقار (طلب فاتورة خدمات)',
+                                    "en" => 'Property Rent (Request for Service Invoice)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'أجرة عقار (طلب أجرة)',
+                                    "en" => 'Property Rent (Rent Request)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'أجرة عقار (طلب تلفيات)',
+                                    "en" => 'Property Rent (Damage Request)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'أجرة عين منقول',
+                                    "en" => 'Movable Property Rent',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'ثمن مبيع',
+                                    "en" => 'Sale Price',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'حوالة الدين من ذمة شخص لآخر',
+                                    "en" => 'Debt Transfer from One Person to Another',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'شراكة في أملاك غير عقارية',
+                                    "en" => 'Partnership in Non-Real Estate Assets',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'ضمان (كفالة)',
+                                    "en" => 'Guarantee (Bail)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'محاسبة وكيل',
+                                    "en" => 'Agent Accounting',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'مطالبة الضامن للمضمون عنه كفيل لمكفوله',
+                                    "en" => 'Guarantor’s Claim Against Debtor (Bailor Claiming from Bailee)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'أرش إصابة أو دية المطالبة بدية القتل (في غير حادث مروري)',
+                                    "en" => 'Injury Compensation or Blood Money - Claiming Blood Money for Homicide (Non-Traffic Incident)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'وديعة',
+                                    "en" => 'Deposit',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'مروري',
+                            "en" => 'Traffic',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'حق خاص (الدية المقدرة شرعًا)',
+                                    "en" => 'Private Right (Legally Prescribed Blood Money)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'حق خاص (أرش التلفيات)',
+                                    "en" => 'Private Right (Compensation for Damages)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'حق خاص (أجرة شحن المركبة)',
+                                    "en" => 'Private Right (Vehicle Shipping Fee)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'حق خاص (تعديل تقدير التلفيات)',
+                                    "en" => 'Private Right (Adjustment of Damage Estimation)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'حق خاص (المطالبة بالتعويض عن مدة توقف السيارة)',
+                                    "en" => 'Private Right (Compensation for Vehicle Downtime)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'حق خاص (تعديل النسبة في الحادث)',
+                                    "en" => 'Private Right (Adjustment of Accident Liability Percentage)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'حق خاص (إثبات صحة الحادث وعدم صوريته)',
+                                    "en" => 'Private Right (Proof of Accident Authenticity)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'حق خاص (أرش الجروح والشجاج الإصابات)',
+                                    "en" => 'Private Right (Injury and Wound Compensation)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'حق خاص (إلزام العاقلة بالدية)',
+                                    "en" => 'Private Right (Obligation of Family to Pay Blood Money)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'حق خاص (إلزام بيت المال بالدية)',
+                                    "en" => 'Private Right (Obligation of Public Treasury to Pay Blood Money)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'حق خاص (دعوى شركات التأجير ضد المستأجرين حال عدم تغطية وثيقة التأمين)',
+                                    "en" => 'Private Right (Rental Companies\' Claims Against Renters in Case of Insufficient Insurance Coverage)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'حق خاص (الدعوى ضد الكفيل في الحادث المروري)',
+                                    "en" => 'Private Right (Claim Against Guarantor in Traffic Accident)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'حق خاص (دعوى الكفيل على مكفوله)',
+                                    "en" => 'Private Right (Guarantor’s Claim Against Debtor)',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'طبي',
+                            "en" => 'Medical',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'طبي',
+                                    "en" => 'Medical',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'الاستئناف',
+                            "en" => 'Appeal',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'الاستئناف',
+                                    "en" => 'Appeal',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'التحكيم (عامة)',
+                                    "en" => 'Arbitration (General)',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            [
+                "name" => [
+                    "ar" => 'عمالية',
+                    "en" => 'Labor',
+                ],
+                "subcategories" => [
+                    [
+                        "name" => [
+                            "ar" => 'الطلبات العارضة والعاجلة',
+                            "en" => 'Incidental and Urgent Requests',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'منع من السفر',
+                                    "en" => 'Travel Ban',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'أجرة الأجير اليومية أو الأسبوعية',
+                                    "en" => 'Daily or Weekly Worker’s Wage',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'إيقاف التنفيذ',
+                                    "en" => 'Suspension of Execution',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'استيثاق لإثبات الحالة أو شهادة يخشى فواتها',
+                                    "en" => 'Verification to Establish Case or Testimony Fearing Loss',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'حجز تحفظي',
+                                    "en" => 'Precautionary Seizure',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'حقوق مالية',
+                            "en" => 'Financial Rights',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => '(مكافأة / أجر / بدل أخرى)',
+                                    "en" => '(Bonus/Wage/Other Allowance)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'دفع أو استرداد الرسوم',
+                                    "en" => 'Payment or Refund of Fees',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'قيمة متلف',
+                                    "en" => 'Value of Damaged Property',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'مبالغ مالية أنفقها العامل لصالح العمل',
+                                    "en" => 'Money Spent by Worker for Work-Related Purposes',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'العمولات',
+                                    "en" => 'Commissions',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'حقوق وظيفية',
+                            "en" => 'Employment Rights',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'تأمين (سكن / سفر)',
+                                    "en" => 'Insurance (Housing/Travel)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'ترقية أو علاوة',
+                                    "en" => 'Promotion or Raise',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'تسكين على وظيفة أو تعديل أو مساواة في المرتبة',
+                                    "en" => 'Job Placement, Adjustment, or Rank Equalization',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'تسليم عهدة أو استرداد سلفة',
+                                    "en" => 'Delivery of Custody or Recovery of Advance',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'تمكين من العمل',
+                                    "en" => 'Enabling Employment',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'مستندات ووثائق',
+                            "en" => 'Documents',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'نسخة من عقد العمل',
+                                    "en" => 'Copy of Employment Contract',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'شهادة الخدمة',
+                                    "en" => 'Service Certificate',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'أخرى',
+                                    "en" => 'Other',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'طلبات تعويض',
+                            "en" => 'Compensation Requests',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'التعويض عن عدم التسجيل في التأمينات',
+                                    "en" => 'Compensation for Non-Registration in Insurance',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'إنهاء العلاقة العمالية من صاحب العمل',
+                                    "en" => 'Termination of Employment by Employer',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'إنهاء العلاقة العمالية من العامل',
+                                    "en" => 'Termination of Employment by Worker',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'عدم إلتزام صاحب العمل بمهلة الإشعار',
+                                    "en" => 'Employer’s Failure to Comply with Notice Period',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'عدم إلتزام العامل بمهلة الإشعار',
+                                    "en" => 'Worker’s Failure to Comply with Notice Period',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'التعويض عن أضرار التقاضي',
+                                    "en" => 'Compensation for Litigation Damages',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'رصيد الإجازات',
+                                    "en" => 'Vacation Balance',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'إصابة العمل',
+                                    "en" => 'Work Injury',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'عدم المنافسة وحماية الأسرار',
+                                    "en" => 'Non-Competition and Trade Secrets Protection',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'الاستئناف',
+                            "en" => 'Appeal',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'الاستئناف',
+                                    "en" => 'Appeal',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'التحكيم (عمالي)',
+                                    "en" => 'Arbitration (Labor)',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            [
+                "name" => [
+                    "ar" => 'إنهاءات',
+                    "en" => 'Terminations',
+                ],
+                "subcategories" => [
+                    [
+                        "name" => [
+                            "ar" => 'الولايات',
+                            "en" => 'Guardianships',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'إقامة ولاية على ( قاصر سناً / قاصر عقلاً)',
+                                    "en" => 'Appointment of Guardianship over (Minor by Age/Minor by Mental Capacity)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'استمرار ولاية على قاصر عقلاً',
+                                    "en" => 'Continuation of Guardianship over Mentally Incapacitated Minor',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'إثبات رشد من كان قاصراً عقلاً',
+                                    "en" => 'Proof of Maturity for Mentally Incapable',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'فسخ ولاية بطلب من الولي',
+                                    "en" => 'Guardianship Annulment at Guardian\'s Request',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'تقدير نفقة قاصر',
+                                    "en" => 'Estimation of Minor’s Alimony',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'فسخ الولاية لموت الولي',
+                                    "en" => 'Guardianship Annulment Due to Guardian’s Death',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => '(إقامة / فسخ) ولاية على مال مفقود',
+                                    "en" => '(Appointment/Annulment) of Guardianship over Lost Property',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'ولاية ورعاية وحضانة يتيم أو ذوي احتياجات خاصة',
+                                    "en" => 'Guardianship and Custody of Orphan or Special Needs Individual',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'إثباتات اجتماعية',
+                            "en" => 'Social Proofs',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'تنازل عن أرش إصابة أو دية غير العمد وشبه العمد',
+                                    "en" => 'Waiver of Injury Compensation or Blood Money for Unintentional or Quasi-Intentional Acts',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'الموافقة على الزواج المبكر',
+                                    "en" => 'Early Marriage Approval',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'إثبات انقطاع الأولياء عن المرأة لغرض الزواج',
+                                    "en" => 'Proof of Guardians\' Absence for Woman’s Marriage',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'عقد زواج بولاية القاضي',
+                                    "en" => 'Marriage Contract Under Judge’s Guardianship',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'إثبات أقرب ولي لتزويج',
+                                    "en" => 'Proof of Closest Guardian for Marriage',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'إثبات فقد وغيبة',
+                                    "en" => 'Proof of Absence and Disappearance',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'إثبات تبين حال مفقود بالسلامة والحضور',
+                                    "en" => 'Proof of Missing Person’s Safety and Presence',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'الأوقاف والوصايا',
+                            "en" => 'Endowments and Wills',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'إقامة ناظر على وقف',
+                                    "en" => 'Appointment of Trustee for Endowment',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'إذن تصرف بأملاك وقف أو وصية',
+                                    "en" => 'Permission to Dispose of Endowment or Will Property',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'تعديل وإضافة لصك الوقف أو الوصية',
+                                    "en" => 'Amendment and Addition to Endowment or Will Deed',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'طلب المستثمر فسخ أو تعديل على عقد الاستثمار المأذون به من المحكمة',
+                                    "en" => 'Investor’s Request to Annul or Amend Investment Contract Authorized by Court',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'تسليم أموال الوقف أو الوصية المودعة لدى الهيئة',
+                                    "en" => 'Delivery of Endowment or Will Funds Deposited with the Authority',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'إقامة مشرف على وقف أو وصية',
+                                    "en" => 'Appointment of Supervisor for Endowment or Will',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'استقالة ناظر على وقف أو وصية',
+                                    "en" => 'Resignation of Trustee for Endowment or Will',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'إثبات وقف أو وصية لمتوفى ومن ضمن الورثة غائب أو قاصر أو مفقود',
+                                    "en" => 'Proof of Endowment or Will for Deceased with Absent, Minor, or Missing Heir',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'الأذونات',
+                            "en" => 'Authorizations',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'إذن التصرف بأملاك القاصر أو المفقود أو الغائب',
+                                    "en" => 'Permission to Dispose of Minor, Missing, or Absent Person’s Property',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'تعديلات الصكوك',
+                            "en" => 'Deed Amendments',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'تعديل وتهميش على صك إنهائي',
+                                    "en" => 'Amendment and Marginal Note on Final Deed',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        "name" => [
+                            "ar" => 'إنهاءات الأوقاف والمواريث في الأحساء والقطيف',
+                            "en" => 'Endowments and Inheritance Terminations in Al-Ahsa and Al-Qatif',
+                        ],
+                        "types" => [
+                            [
+                                "name" => [
+                                    "ar" => 'إثبات (عقد زواج / زواج سابق)',
+                                    "en" => 'Proof of (Marriage Contract/Previous Marriage)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'تصديق عقد زواج',
+                                    "en" => 'Marriage Contract Certification',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'إثبات (رجعة / طلاق / خلع / حضانة)',
+                                    "en" => 'Proof of (Return/Divorce/Khul’/Custody)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'إثبات زواج أحد الزوجين غير سعودي',
+                                    "en" => 'Proof of Marriage with Non-Saudi Spouse',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'إثبات ورثة متوفى',
+                                    "en" => 'Proof of Heirs of Deceased',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'الموافقة على الزواج المبكر',
+                                    "en" => 'Early Marriage Approval',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'إثبات (وقف / وصية)',
+                                    "en" => 'Proof of (Endowment/Will)',
+                                ],
+                            ],
+                            [
+                                "name" => [
+                                    "ar" => 'قسمة تركة بالتراضي مع وجود قاصر أو غائب أو مفقود أو وقف أو وصية',
+                                    "en" => 'Amicable Inheritance Division with Minor, Absent, or Missing Heir or Endowment/Will',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         foreach ($seedData as $item) {
