@@ -34,12 +34,12 @@ class TenantRegisteredNotification extends Notification
             })
             ->sectionBlock(function (SectionBlock $block) {
                 $block->text('Company Details:');
-                $block->field("*Phone Number:*\n" . $this->tenant->mobile)->markdown();
+                $block->field("*Phone Number:*\n" . $this->tenant->phone)->markdown();
                 $block->field("*Email:*\n" . $this->tenant->email)->markdown();
             })
             ->dividerBlock()
             ->sectionBlock(function (SectionBlock $block) {
-                $block->text('Please activate company on https://' . config('app.domain'))->verbatim();
+                $block->text('Please activate company on https://' . config('app.url'))->verbatim();
             });
     }
 }
