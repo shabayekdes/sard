@@ -115,7 +115,7 @@ class CalendarController extends BaseController
 
         // Get tasks for the date range
         $tasksQuery = Task::withPermissionCheck()
-            ->with(['case', 'assignedUser'])
+            ->with(['case', 'assignedUser', 'taskStatus'])
             ->whereBetween('due_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->whereNotNull('due_date');
             
@@ -137,11 +137,11 @@ class CalendarController extends BaseController
                     'type' => 'task',
                     'date' => $task->due_date->format('Y-m-d'),
                     'time' => $task->due_date->format('H:i'),
-                    'status' => $task->status,
+                    'status' => $task->taskStatus ? (string) $task->taskStatus->name : '',
                     'priority' => $task->priority,
                     'case_title' => $task->case->title ?? 'No Case',
                     'assigned_to' => $task->assignedUser->name ?? 'Unassigned',
-                    'color' => $this->getTaskColor($task->priority, $task->status),
+                    'color' => $this->getTaskColor($task),
                     'google_synced' => !empty($task->google_calendar_event_id),
                     'details' => [
                         'task_id' => $task->task_id,
@@ -349,19 +349,24 @@ class CalendarController extends BaseController
         return $colors[$status] ?? '#6b7280';
     }
 
-    private function getTaskColor($priority, $status)
+    private function getTaskColor(Task $task): string
     {
-        if ($status === 'completed') {
-            return '#10b981'; // Green for completed
+        if ($task->relationLoaded('taskStatus') && $task->taskStatus) {
+            if ($task->taskStatus->is_completed) {
+                return '#10b981';
+            }
+            if (!empty($task->taskStatus->color)) {
+                return $task->taskStatus->color;
+            }
         }
-        
+
         $priorityColors = [
-            'critical' => '#dc2626', // Red
-            'high' => '#ea580c',     // Orange
-            'medium' => '#d97706',   // Amber
-            'low' => '#65a30d'       // Lime
+            'critical' => '#dc2626',
+            'high' => '#ea580c',
+            'medium' => '#d97706',
+            'low' => '#65a30d',
         ];
 
-        return $priorityColors[$priority] ?? '#6b7280';
+        return $priorityColors[$task->priority] ?? '#6b7280';
     }
 }

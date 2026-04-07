@@ -1046,6 +1046,10 @@ class PermissionSeeder extends Seeder
 
             ['name' => 'toggle-status-tasks', 'module' => 'tasks', 'label' => ['en' => 'Toggle Status Tasks', 'ar' => 'تبديل حالة المهام']],
 
+            ['name' => 'task_duplicate', 'module' => 'tasks', 'label' => ['en' => 'Task Duplicate' , 'ar' => 'تكرار المهمة']],
+            ['name' => 'task_change_status', 'module' => 'tasks', 'label' => ['en' => 'Task Change Status' , 'ar' => 'تغيير حالة المهمة']],
+            ['name' => 'task_view_any', 'module' => 'tasks', 'label' => ['en' => 'Task View Any' , 'ar' => 'عرض أي مهمة']],
+
             // Task Types
             ['name' => 'manage-task-types', 'module' => 'task_types', 'label' => ['en' => 'Manage Task Types', 'ar' => 'إدارة أنواع المهام']],
 

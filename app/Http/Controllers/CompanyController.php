@@ -15,59 +15,86 @@ class CompanyController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::query()
-            ->where('type', 'company')
-            ->with(['tenantRelation.plan', 'latestPlanOrder'])->orderBy('id', 'asc');
+        $query = Tenant::query()
+            ->whereHas('companyUser')
+            ->with(['plan', 'companyUser.latestPlanOrder']);
 
-        // Apply search filter
-        if ($request->has('search') && !empty($request->search)) {
-            $query->where(function($q) use ($request) {
-                $q->where('name', 'like', "%{$request->search}%")
-                  ->orWhere('email', 'like', "%{$request->search}%");
+        // Apply search filter (tenant data JSON + company user)
+        if ($request->filled('search')) {
+            $term = $request->search;
+            $query->where(function ($q) use ($term) {
+                $q->where('data->name', 'like', "%{$term}%")
+                    ->orWhere('data->email', 'like', "%{$term}%")
+                    ->orWhereHas('companyUser', function ($uq) use ($term) {
+                        $uq->where('name', 'like', "%{$term}%")
+                            ->orWhere('email', 'like', "%{$term}%");
+                    });
             });
         }
 
-        // Apply status filter
-        if ($request->has('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
+        // Apply status filter (lives on company user)
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->whereHas('companyUser', function ($q) use ($request) {
+                $q->where('status', $request->status);
+            });
         }
 
-        // Apply date filters
-        if ($request->has('start_date') && !empty($request->start_date)) {
-            $query->whereDate('created_at', '>=', $request->start_date);
+        // Apply date filters on tenant row
+        if ($request->filled('start_date')) {
+            $query->whereDate('tenants.created_at', '>=', $request->start_date);
         }
 
-        if ($request->has('end_date') && !empty($request->end_date)) {
-            $query->whereDate('created_at', '<=', $request->end_date);
+        if ($request->filled('end_date')) {
+            $query->whereDate('tenants.created_at', '<=', $request->end_date);
         }
 
-        // Apply sorting
         $sortField = $request->input('sort_field', 'created_at');
-        $sortDirection = $request->input('sort_direction', 'desc');
-        $query->orderBy($sortField, $sortDirection);
+        $sortDirection = strtolower($request->input('sort_direction', 'desc')) === 'asc' ? 'asc' : 'desc';
 
-        // Get paginated results
+        match ($sortField) {
+            'name' => $query->orderBy(
+                User::query()
+                    ->select('name')
+                    ->whereColumn('users.tenant_id', 'tenants.id')
+                    ->where('type', 'company')
+                    ->orderBy('id')
+                    ->limit(1),
+                $sortDirection
+            ),
+            'email' => $query->orderBy(
+                User::query()
+                    ->select('email')
+                    ->whereColumn('users.tenant_id', 'tenants.id')
+                    ->where('type', 'company')
+                    ->orderBy('id')
+                    ->limit(1),
+                $sortDirection
+            ),
+            'id' => $query->orderBy('tenants.id', $sortDirection),
+            default => $query->orderBy('tenants.created_at', $sortDirection),
+        };
+
         $perPage = $request->input('per_page', 10);
         $companies = $query->paginate($perPage)->withQueryString();
 
-        // Transform data for frontend
         $locale = app()->getLocale();
-        $companies->getCollection()->transform(function ($company) use ($locale) {
-            $tenant = $company->tenantRelation;
-            $plan = $tenant?->plan;
+        $companies->getCollection()->transform(function (Tenant $tenant) use ($locale) {
+            $owner = $tenant->companyUser;
+            $plan = $tenant->plan;
+
             return [
-                'id' => $company->id,
-                'name' => $company->name,
-                'phone' => $company->phone,
-                'city' => $tenant?->city,
-                'email' => $company->email,
-                'status' => $company->status,
-                'created_at' => $company->created_at,
+                'id' => $owner->id,
+                'name' => $owner->name,
+                'phone' => $owner->phone,
+                'city' => $tenant->city,
+                'email' => $owner->email,
+                'status' => $owner->status,
+                'created_at' => $tenant->created_at,
                 'plan_name' => $plan
                     ? ($plan->getTranslation('name', $locale) ?: $plan->name)
                     : __('No Plan'),
-                'plan_expire_date' => $tenant?->plan_expire_date,
-                'latest_plan_ordered_at' => optional($company->latestPlanOrder)->ordered_at,
+                'plan_expire_date' => $tenant->plan_expire_date,
+                'latest_plan_ordered_at' => optional($owner?->latestPlanOrder)->ordered_at,
                 'appointments_count' => 0,
             ];
         });

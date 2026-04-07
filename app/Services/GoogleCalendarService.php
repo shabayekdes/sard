@@ -637,23 +637,25 @@ class GoogleCalendarService
     
     private function getTaskData($id, $cleanDescription)
     {
-        $task = \App\Models\Task::with(['case.client', 'assignedUser'])->find($id);
+        $task = \App\Models\Task::with(['case.client', 'assignedUser', 'taskStatus'])->find($id);
         if (!$task) return null;
-        
+
+        $statusLabel = $task->taskStatus ? (string) $task->taskStatus->name : '';
+
         return [
             'type' => 'task',
-            'color' => $this->getTaskColor($task->priority, $task->status),
+            'color' => $this->getTaskColorForTask($task),
             'case_title' => $task->case->title ?? 'No Case',
             'client_name' => $task->case->client->name ?? 'No Client',
             'assigned_to' => $task->assignedUser->name ?? 'Unassigned',
             'priority' => $task->priority,
-            'status' => $task->status,
+            'status' => $statusLabel,
             'clean_description' => $cleanDescription,
             'details' => [
                 'task_id' => $task->task_id,
                 'description' => $cleanDescription,
                 'notes' => $task->notes,
-                'status' => $task->status,
+                'status' => $statusLabel,
                 'priority' => $task->priority,
                 'estimated_duration' => $task->estimated_duration,
                 'case_number' => $task->case->case_number ?? '',
@@ -753,20 +755,25 @@ class GoogleCalendarService
         ];
     }
     
-    private function getTaskColor($priority, $status)
+    private function getTaskColorForTask(\App\Models\Task $task): string
     {
-        if ($status === 'completed') {
-            return '#10b981';
+        if ($task->relationLoaded('taskStatus') && $task->taskStatus) {
+            if ($task->taskStatus->is_completed) {
+                return '#10b981';
+            }
+            if (!empty($task->taskStatus->color)) {
+                return $task->taskStatus->color;
+            }
         }
-        
+
         $priorityColors = [
             'critical' => '#dc2626',
             'high' => '#ea580c',
             'medium' => '#d97706',
-            'low' => '#65a30d'
+            'low' => '#65a30d',
         ];
-        
-        return $priorityColors[$priority] ?? '#6b7280';
+
+        return $priorityColors[$task->priority] ?? '#6b7280';
     }
 
     private function calculateDuration($start, $end)

@@ -54,15 +54,7 @@ interface CompanyDashboardData {
     month_name: string;
     revenue: number;
   }>;
-  tasksByStatus?: Array<{
-    year: number;
-    month: number;
-    month_name: string;
-    not_started: number;
-    in_progress: number;
-    completed: number;
-    on_hold: number;
-  }>;
+  tasksByStatus?: Array<Record<string, string | number>>;
   overdueInvoices?: Array<{
     id: number;
     invoice_number: string;
@@ -106,10 +98,16 @@ interface CompanyDashboardData {
     assigned_to?: { name?: string } | null;
     task_type?: { name?: string } | null;
     description?: string | null;
-    status?: string | number | null;
+    task_status?: { name?: string | Record<string, string>; color?: string } | null;
     priority?: string | null;
   }>;
-  tasksStatus: Array<{ status: string; count: number; color: string }>;
+  tasksStatus: Array<{
+    id: number;
+    dataKey: string;
+    name: string | Record<string, string>;
+    count: number;
+    color: string;
+  }>;
   plan: {
     name: string;
     storage_limit: number;
@@ -144,12 +142,6 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
     return translations[currentLocale] || translations.en || translations.ar || fallback || '-';
   };
 
-  const taskStatusLabels: Record<string, string> = {
-    not_started: t('Not Started'),
-    in_progress: t('In Progress'),
-    completed: t('Completed'),
-    on_hold: t('On Hold')
-  };
   const pageActions: PageAction[] = [
     {
       label: t('Refresh'),
@@ -190,12 +182,7 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
   const yearlyRevenue = dashboardData?.yearlyRevenue || [];
   const overdueInvoices = dashboardData?.overdueInvoices || [];
   const tasksByStatus = dashboardData?.tasksByStatus || [];
-  const tasksStatus = dashboardData?.tasksStatus || [
-    { status: 'not_started', count: 8, color: '#94a3b8' },
-    { status: 'in_progress', count: 12, color: '#3b82f6' },
-    { status: 'completed', count: 6, color: '#10b981' },
-    { status: 'on_hold', count: 3, color: '#f59e0b' }
-  ];
+  const tasksStatus = dashboardData?.tasksStatus ?? [];
 
   // ShareModal state variables removed
 
@@ -676,18 +663,22 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {tasksStatus.map((task, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: task.color }} />
-                      <span className="font-medium">{taskStatusLabels[task.status] || task.status}</span>
+                {tasksStatus.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">{t('No task status data')}</p>
+                ) : (
+                  tasksStatus.map((task) => (
+                    <div key={task.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-4 h-4 rounded-full" style={{ backgroundColor: task.color }} />
+                        <span className="font-medium">{getTranslatedLabel(task.name, task.dataKey)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl font-bold">{task.count}</span>
+                        <span className="text-sm text-muted-foreground">{t('tasks')}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl font-bold">{task.count}</span>
-                      <span className="text-sm text-muted-foreground">{t('tasks')}</span>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -761,17 +752,16 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
               </div>
             </CardHeader>
             <CardContent>
-              {tasksByStatus.filter((item) => item.year === selectedTaskYear).length > 0 ? (
+              {tasksByStatus.filter((item) => item.year === selectedTaskYear).length > 0 && tasksStatus.length > 0 ? (
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={tasksByStatus.filter((item) => item.year === selectedTaskYear)}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis dataKey="month_name" tick={{ fontSize: 12 }} />
                     <YAxis tick={{ fontSize: 12 }} />
                     <RechartsTooltip />
-                    <Bar dataKey="not_started" fill="#94a3b8" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="in_progress" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="completed" fill="#10b981" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="on_hold" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                    {tasksStatus.map((ts) => (
+                      <Bar key={ts.id} dataKey={ts.dataKey} fill={ts.color} radius={[4, 4, 0, 0]} />
+                    ))}
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -837,7 +827,7 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
             { name: 'due_date', label: t('Due Date'), type: 'text' },
             { name: 'task_type', label: t('Type'), type: 'text' },
             { name: 'priority', label: t('Priority'), type: 'text' },
-            { name: 'status', label: t('Status'), type: 'text' },
+            { name: 'status', label: t('Task Status'), type: 'text' },
             { name: 'description', label: t('Description'), type: 'textarea' }
           ],
           modalSize: 'lg'
@@ -848,7 +838,7 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
           task_type: getTranslatedLabel(currentTask?.task_type?.name, t('General')),
           due_date: currentTask?.due_date || '-',
           priority: currentTask?.priority || '-',
-          status: currentTask?.status || '-'
+          status: getTranslatedLabel(currentTask?.task_status?.name, '-')
         }}
         title={t('View Task Details')}
         mode="view"
