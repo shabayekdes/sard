@@ -190,7 +190,7 @@ class MediaController extends BaseController
             return $storageCheck;
         }
 
-        $config = StorageConfigService::getStorageConfig();
+        // $config = StorageConfigService::getStorageConfig();
         $allowedTypes = explode(',', $config['allowed_file_types'] ?? 'jpg,png,webp,gif');
         $maxSize = ($config['max_file_size_mb'] ?? 2) * 1024 * 1024; // Convert to bytes
 

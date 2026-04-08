@@ -2,24 +2,18 @@
 
 namespace App\Services;
 
-use App\Facades\Settings;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
 class MediaDownloadService
 {
     /**
-     * Resolve storage disk name from settings.
+     * Resolve storage disk name from .env / config (same as media uploads).
      */
     public function getStorageDisk(): string
     {
-        $storageType = strtolower((string) (Settings::string('STORAGE_TYPE') ?: 'public'));
-
-        return match ($storageType) {
-            's3' => 's3',
-            'wasabi' => 'wasabi',
-            default => 'public',
-        };
+        // Previously: Settings::string('STORAGE_TYPE')
+        return StorageConfigService::getActiveDisk();
     }
 
     /**
@@ -68,7 +62,7 @@ class MediaDownloadService
 
     /**
      * Try to resolve and download from a full URL (e.g. https://.../storage/...).
-     * Uses configured storage disk (public, s3, wasabi) and path from URL.
+     * Uses configured storage disk (public, s3, wasabi, gcs) and path from URL.
      */
     protected function downloadFromUrl(string $url, string $downloadName): ?Response
     {

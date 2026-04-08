@@ -170,7 +170,7 @@ class SystemSettingsController extends Controller
     {
         try {
             $validated = $request->validate([
-                'storage_type' => 'nullable|in:public,s3,wasabi',
+                'storage_type' => 'nullable|in:public,s3,wasabi,gcs',
                 'allowedFileTypes' => 'nullable|string',
                 'maxUploadSize' => 'nullable|numeric|min:1',
                 'awsAccessKeyId' => 'nullable|string',
@@ -185,6 +185,12 @@ class SystemSettingsController extends Controller
                 'wasabiBucket' => 'nullable|string',
                 'wasabiUrl' => 'nullable|string',
                 'wasabiRoot' => 'nullable|string',
+                'googleCloudKeyFile' => 'nullable|string',
+                'googleCloudProjectId' => 'nullable|string',
+                'googleCloudStorageBucket' => 'nullable|string',
+                'googleCloudStoragePathPrefix' => 'nullable|string',
+                'googleCloudStorageApiUri' => 'nullable|string',
+                'googleCloudStorageApiEndpoint' => 'nullable|string',
             ]);
 
             $settings = [];
@@ -232,6 +238,24 @@ class SystemSettingsController extends Controller
             }
             if (array_key_exists('wasabiRoot', $validated)) {
                 $settings['wasabi_root'] = $validated['wasabiRoot'];
+            }
+            if (array_key_exists('googleCloudKeyFile', $validated)) {
+                $settings['google_cloud_key_file'] = $validated['googleCloudKeyFile'];
+            }
+            if (array_key_exists('googleCloudProjectId', $validated)) {
+                $settings['google_cloud_project_id'] = $validated['googleCloudProjectId'];
+            }
+            if (array_key_exists('googleCloudStorageBucket', $validated)) {
+                $settings['google_cloud_storage_bucket'] = $validated['googleCloudStorageBucket'];
+            }
+            if (array_key_exists('googleCloudStoragePathPrefix', $validated)) {
+                $settings['google_cloud_storage_path_prefix'] = $validated['googleCloudStoragePathPrefix'];
+            }
+            if (array_key_exists('googleCloudStorageApiUri', $validated)) {
+                $settings['google_cloud_storage_api_uri'] = $validated['googleCloudStorageApiUri'];
+            }
+            if (array_key_exists('googleCloudStorageApiEndpoint', $validated)) {
+                $settings['google_cloud_storage_api_endpoint'] = $validated['googleCloudStorageApiEndpoint'];
             }
 
             if (empty($settings)) {
