@@ -12,6 +12,8 @@ import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { CurrencyAmount } from '@/components/currency-amount';
 
+const NO_CASE_VALUE = '__none__';
+
 export default function CreateInvoice() {
   const { t } = useTranslation();
   const { clients, cases, timeEntries, clientBillingInfo, currencies } = usePage().props as any;
@@ -266,11 +268,6 @@ export default function CreateInvoice() {
       return;
     }
 
-    if (!formData.case_id) {
-      toast.error('Please select a case');
-      return;
-    }
-
     // Get currency ID from client billing info
     const clientBilling = clientBillingInfo?.[formData.client_id];
     let currency_id = null;
@@ -282,6 +279,7 @@ export default function CreateInvoice() {
 
     const submitData = {
       ...formData,
+      case_id: formData.case_id ? formData.case_id : null,
       currency_id: currency_id,
       subtotal: calculateSubtotal(),
       tax_amount: calculateTaxAmount(),
@@ -372,12 +370,18 @@ export default function CreateInvoice() {
                   </div>
 
                   <div>
-                    <Label htmlFor="case_id">{t('Case')} *</Label>
-                    <Select value={formData.case_id} onValueChange={(value) => updateFormData('case_id', value)}>
+                    <Label htmlFor="case_id">{t('Case')}</Label>
+                    <Select
+                      value={formData.case_id ? formData.case_id : NO_CASE_VALUE}
+                      onValueChange={(value) =>
+                        updateFormData('case_id', value === NO_CASE_VALUE ? '' : value)
+                      }
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder={t('Select Case')} />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value={NO_CASE_VALUE}>{t('No case')}</SelectItem>
                         {filteredCases.length > 0 ? (
                           filteredCases.map(caseItem => (
                             <SelectItem key={caseItem.id} value={caseItem.id.toString()}>

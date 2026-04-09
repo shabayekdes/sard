@@ -205,7 +205,7 @@ class InvoiceController extends BaseController
         $invoice = Invoice::create([
             'tenant_id' => createdBy(),
             'client_id' => $request->client_id,
-            'case_id' => $request->case_id,
+            'case_id' => $request->filled('case_id') ? $request->integer('case_id') : null,
             'currency_id' => $request->currency_id,
             'subtotal' => $subtotal,
             'tax_amount' => $taxAmount,
@@ -283,7 +283,7 @@ class InvoiceController extends BaseController
 
         $invoice->update([
             'client_id' => $request->client_id,
-            'case_id' => $request->case_id,
+            'case_id' => $request->filled('case_id') ? $request->integer('case_id') : null,
             'subtotal' => $subtotal,
             'tax_amount' => $taxAmount,
             'total_amount' => $totalAmount,
