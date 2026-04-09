@@ -96,9 +96,18 @@ export default function Hearings() {
     setIsFormModalOpen(true);
   };
 
+  const normalizeHearingForm = (fd: Record<string, unknown>) => {
+    const data = { ...fd };
+    if (data.court_id === '' || data.court_id === 'none') {
+      data.court_id = null;
+    }
+    return data;
+  };
+
   const handleFormSubmit = (formData: any) => {
+    const payload = normalizeHearingForm(formData);
     if (formMode === 'create') {
-      router.post(route('hearings.store'), formData, {
+      router.post(route('hearings.store'), payload, {
         preserveState: true,
         preserveScroll: true,
         onSuccess: (page) => {
@@ -116,7 +125,7 @@ export default function Hearings() {
         }
       });
     } else if (formMode === 'edit') {
-      router.put(route('hearings.update', currentItem.id), formData, {
+      router.put(route('hearings.update', currentItem.id), payload, {
         preserveState: true,
         preserveScroll: true,
         onSuccess: (page) => {
@@ -429,21 +438,23 @@ export default function Hearings() {
                           name: 'court_id',
                           label: t('Court'),
                           type: 'select',
-                          required: true,
-                          options: courts
-                              ? courts.map((c: any) => {
-                                    const courtName = c.name || '';
-                                    const courtType = c.court_type ? getTranslatedValue(c.court_type.name) : '';
-                                    const circleType = c.circle_type ? getTranslatedValue(c.circle_type.name) : '';
-                                    const parts = [courtName];
-                                    if (courtType) parts.push(courtType);
-                                    if (circleType) parts.push(circleType);
-                                    return {
-                                        value: c.id.toString(),
-                                        label: parts.join(' + '),
-                                    };
-                                })
-                              : [],
+                          options: [
+                              { value: '', label: t('No court') },
+                              ...(courts
+                                  ? courts.map((c: any) => {
+                                        const courtName = c.name || '';
+                                        const courtType = c.court_type ? getTranslatedValue(c.court_type.name) : '';
+                                        const circleType = c.circle_type ? getTranslatedValue(c.circle_type.name) : '';
+                                        const parts = [courtName];
+                                        if (courtType) parts.push(courtType);
+                                        if (circleType) parts.push(circleType);
+                                        return {
+                                            value: c.id.toString(),
+                                            label: parts.join(' + '),
+                                        };
+                                    })
+                                  : []),
+                          ],
                       },
                       {
                           name: 'circle_number',

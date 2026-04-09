@@ -4,6 +4,7 @@ import { CrudFormModal } from '@/components/CrudFormModal';
 import { CrudTable } from '@/components/CrudTable';
 import { toast } from '@/components/custom-toast';
 import { PageTemplate } from '@/components/page-template';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
@@ -2145,22 +2146,24 @@ export default function CaseShow() {
                                         },
                                     },
                                     {
-                                        key: 'status',
+                                        key: 'task_status_id',
                                         label: t('Status'),
-                                        render: (value: string) => {
-                                            const colors = {
-                                                not_started: 'bg-gray-50 text-gray-700',
-                                                in_progress: 'bg-blue-50 text-blue-700',
-                                                completed: 'bg-green-50 text-green-700',
-                                                on_hold: 'bg-yellow-50 text-yellow-700',
-                                            };
+                                        render: (_: unknown, row: any) => {
+                                            const ts = row.task_status ?? row.taskStatus;
+                                            if (!ts) return <span>-</span>;
+                                            const color = ts.color ?? '#94a3b8';
                                             return (
-                                                <span
-                                                    className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${colors[value as keyof typeof colors] || colors.not_started
-                                                        }`}
+                                                <Badge
+                                                    variant="outline"
+                                                    className="text-xs font-medium"
+                                                    style={{
+                                                        backgroundColor: `${color}20`,
+                                                        borderColor: color,
+                                                        color,
+                                                    }}
                                                 >
-                                                    {t(value?.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase()))}
-                                                </span>
+                                                    {getTranslatedValue(ts.name)}
+                                                </Badge>
                                             );
                                         },
                                     },
