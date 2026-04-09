@@ -717,7 +717,14 @@ Route::middleware([
                 Route::post('tasks', [Controllers\TaskController::class, 'store'])->middleware('permission:create-tasks')->name('tasks.store');
                 Route::put('tasks/{task}', [Controllers\TaskController::class, 'update'])->middleware('permission:edit-tasks')->name('tasks.update');
                 Route::delete('tasks/{task}', [Controllers\TaskController::class, 'destroy'])->middleware('permission:delete-tasks')->name('tasks.destroy');
-                Route::put('tasks/{task}/toggle-status', [Controllers\TaskController::class, 'toggleStatus'])->middleware('permission:toggle-status-tasks')->name('tasks.toggle-status');
+                Route::post('tasks/{task}/duplicate', [\App\Http\Controllers\TaskController::class, 'duplicate'])
+                    ->middleware('permission:task_duplicate')
+                    ->name('tasks.duplicate');
+                Route::put('tasks/{task}/task-status', [\App\Http\Controllers\TaskController::class, 'updateTaskStatus'])
+                    ->name('tasks.update-task-status');
+                Route::get('api/tasks/calendar', [\App\Http\Controllers\TaskController::class, 'getCalendarTasks'])->middleware('permission:task_view_any')->name('api.tasks.calendar');
+
+
                 Route::get('api/tasks/case-users/{case}', [Controllers\TaskController::class, 'getCaseUsers'])->name('api.tasks.case-users');
                 Route::get('api/clients/{client}/cases', [Controllers\InvoiceController::class, 'getClientCases'])->name('api.clients.cases');
                 Route::get('api/cases/{case}/time-entries', [Controllers\InvoiceController::class, 'getCaseTimeEntries'])->name('api.cases.time-entries');
@@ -739,6 +746,27 @@ Route::middleware([
                 Route::post('task/task-comments', [Controllers\TaskCommentController::class, 'store'])->middleware('permission:create-task-comments')->name('tasks.task-comments.store');
                 Route::put('task/task-comments/{taskComment}', [Controllers\TaskCommentController::class, 'update'])->middleware('permission:edit-task-comments')->name('tasks.task-comments.update');
                 Route::delete('task/task-comments/{taskComment}', [Controllers\TaskCommentController::class, 'destroy'])->middleware('permission:delete-task-comments')->name('tasks.task-comments.destroy');
+
+
+                // Task comments
+                // Route::post('tasks/{task}/comments', [\App\Http\Controllers\TaskCommentController::class, 'store'])->middleware('permission:task_add_comments')->name('task-comments.store');
+                Route::put('task-comments/{taskComment}', [\App\Http\Controllers\TaskCommentController::class, 'update'])->middleware('permission:task_add_comments')->name('task-comments.update');
+                Route::delete('task-comments/{taskComment}', [\App\Http\Controllers\TaskCommentController::class, 'destroy'])->middleware('permission:task_add_comments')->name('task-comments.destroy');
+
+                // Task checklists
+                Route::post('tasks/{task}/checklists', [\App\Http\Controllers\TaskChecklistController::class, 'store'])
+                    // ->middleware('permission:task_manage_checklists')
+                    ->name('task-checklists.store');
+                Route::put('task-checklists/{taskChecklist}', [\App\Http\Controllers\TaskChecklistController::class, 'update'])
+                    ->middleware('permission:task_manage_checklists')
+                    ->name('task-checklists.update');
+                Route::delete('task-checklists/{taskChecklist}', [\App\Http\Controllers\TaskChecklistController::class, 'destroy'])
+                    ->middleware('permission:task_manage_checklists')
+                    ->name('task-checklists.destroy');
+                Route::post('task-checklists/{taskChecklist}/toggle', [\App\Http\Controllers\TaskChecklistController::class, 'toggle'])
+                    // ->middleware('permission:task_manage_checklists')
+                    ->name('task-checklists.toggle');
+
             });
 
             // Communication & Collaboration Routes

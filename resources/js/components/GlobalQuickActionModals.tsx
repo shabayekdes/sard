@@ -551,19 +551,6 @@ export function GlobalQuickActionModals() {
           ],
           defaultValue: 'medium',
         },
-        {
-          name: 'status',
-          label: t('Status'),
-          type: 'select',
-          required: true,
-          options: [
-            { value: 'not_started', label: t('Not Started') },
-            { value: 'in_progress', label: t('In Progress') },
-            { value: 'completed', label: t('Completed') },
-            { value: 'on_hold', label: t('On Hold') },
-          ],
-          defaultValue: 'not_started',
-        },
         { name: 'due_date', label: t('Due Date'), type: 'date' },
         {
           name: 'case_id',

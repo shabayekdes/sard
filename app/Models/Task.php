@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Enums\TaskPriority;
 use App\Traits\AutoApplyPermissionCheck;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class Task extends BaseModel
@@ -15,7 +18,6 @@ class Task extends BaseModel
         'title',
         'description',
         'priority',
-        'status',
         'due_date',
         'estimated_duration',
         'case_id',
@@ -23,6 +25,7 @@ class Task extends BaseModel
         'task_type_id',
         'task_status_id',
         'notes',
+        'progress',
         'tenant_id',
         'google_calendar_event_id'
     ];
@@ -30,6 +33,7 @@ class Task extends BaseModel
     protected $casts = [
         'due_date' => 'datetime',
         'estimated_duration' => 'integer',
+        'priority' => TaskPriority::class,
     ];
 
     /**
@@ -75,6 +79,12 @@ class Task extends BaseModel
         return $this->belongsTo(TaskType::class);
     }
 
+    public function checklists(): HasMany
+    {
+        return $this->hasMany(TaskChecklist::class)->orderBy('order');
+    }
+
+
     /**
      * Get the task status that owns the task.
      */
@@ -89,5 +99,22 @@ class Task extends BaseModel
     public function creator()
     {
         return $this->hasOne(User::class, 'tenant_id', 'tenant_id')->where('type', 'company');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(TaskComment::class)->latest();
+    }
+
+
+    public function calculateProgress(): int
+    {
+        $checklists = $this->checklists;
+        if ($checklists->isEmpty()) {
+            return $this->progress;
+        }
+
+        $completed = $checklists->where('is_completed', true)->count();
+        return (int) (($completed / $checklists->count()) * 100);
     }
 }

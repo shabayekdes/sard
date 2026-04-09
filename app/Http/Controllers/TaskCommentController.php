@@ -59,6 +59,7 @@ class TaskCommentController extends BaseController
         ]);
 
         $validated['tenant_id'] = createdBy();
+        $validated['user_id'] = $request->user()->id;
         $validated['is_internal'] = $validated['is_internal'] ?? false;
 
         // Validate that task belongs to the current user's company

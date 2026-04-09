@@ -312,7 +312,7 @@ class CaseController extends BaseController
         }
 
         if ($request->has('task_status') && $request->task_status !== 'all') {
-            $tasksQuery->where('status', $request->task_status);
+            $tasksQuery->where('task_status_id', $request->task_status);
         }
 
         if ($request->has('task_priority') && $request->task_priority !== 'all') {

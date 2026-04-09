@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Enums\TaskPriority;
 use App\Enum\EmailTemplateName;
 use App\Events\NewTaskCreated;
 use App\Models\User;
@@ -24,7 +25,9 @@ class SendNewTaskSlackNotification
        if (isNotificationTemplateEnabled(EmailTemplateName::TASK_CREATED, createdBy(), 'slack')) {
             $variables = [
                 '{task_title}' => $task->title ?? '-',
-                '{priority}' => $task->priority ?? '-',
+                '{priority}' => $task->priority instanceof TaskPriority
+                    ? $task->priority->value
+                    : ($task->priority ?? '-'),
                 '{due_date}' => $task->due_date ?? '-',
                 '{assigned_to}' => $task->assignedUser->name ?? '-',
                 '{created_by}' => $task->creator->name ?? '-',

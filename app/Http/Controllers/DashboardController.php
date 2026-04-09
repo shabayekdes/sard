@@ -11,6 +11,7 @@ use App\Models\PlanRequest;
 use App\Models\CaseModel;
 use App\Models\Message;
 use App\Models\Task;
+use App\Models\TaskStatus;
 use App\Models\Hearing;
 use App\Models\Client;
 use App\Models\TimeEntry;
@@ -237,7 +238,14 @@ class DashboardController extends Controller
             ->count();
         $totalClients = Client::where('tenant_id', $companyId)->count();
         $activeClients = Client::where('tenant_id', $companyId)->where('status', 'active')->count();
-        $pendingTasks = Task::where('tenant_id', $companyId)->where('status', 1)->count();
+        $pendingTasks = Task::where('tenant_id', $companyId)
+            ->where(function ($q) {
+                $q->whereNull('task_status_id')
+                    ->orWhereHas('taskStatus', function ($s) {
+                        $s->where('is_completed', false);
+                    });
+            })
+            ->count();
         $totalTasks = Task::where('tenant_id', $companyId)->count();
         $upcomingHearings = Hearing::where('tenant_id', $companyId)
             ->where('hearing_date', '>=', now())
@@ -268,7 +276,9 @@ class DashboardController extends Controller
         $collectionRate = $totalInvoiced > 0 ? round(($totalPaid / $totalInvoiced) * 100, 1) : 0;
 
         $billableHours = Task::where('tenant_id', $companyId)
-            ->where('status', 'completed')
+            ->whereHas('taskStatus', function ($q) {
+                $q->where('is_completed', true);
+            })
             ->sum('estimated_duration') ?? 0;
 
         // Calculate monthly growth
@@ -378,9 +388,14 @@ class DashboardController extends Controller
             ->get(['id', 'title', 'case_number', 'client_id', 'created_at']);
 
         $upcomingTasksList = Task::where('tenant_id', $companyId)
-            ->where('status', 1)
+            ->where(function ($q) {
+                $q->whereNull('task_status_id')
+                    ->orWhereHas('taskStatus', function ($s) {
+                        $s->where('is_completed', false);
+                    });
+            })
             ->whereNotNull('due_date')
-            ->with(['assignedUser', 'taskType'])
+            ->with(['assignedUser', 'taskType', 'taskStatus'])
             ->orderBy('due_date')
             ->take(4)
             ->get()
@@ -396,7 +411,10 @@ class DashboardController extends Controller
                         'name' => $task->taskType->name,
                     ] : null,
                     'description' => $task->description,
-                    'status' => $task->status,
+                    'task_status' => $task->taskStatus ? [
+                        'name' => $task->taskStatus->name,
+                        'color' => $task->taskStatus->color,
+                    ] : null,
                     'priority' => $task->priority,
                 ];
             });
@@ -450,6 +468,11 @@ class DashboardController extends Controller
             }
         }
 
+        $taskStatusDefinitions = TaskStatus::where('tenant_id', $companyId)
+            ->where('status', 'active')
+            ->orderBy('id')
+            ->get();
+
         $tasksByStatus = [];
         for ($year = date('Y') - 4; $year <= date('Y'); $year++) {
             for ($month = 1; $month <= 12; $month++) {
@@ -457,23 +480,24 @@ class DashboardController extends Controller
                     'year' => $year,
                     'month' => $month,
                     'month_name' => Carbon::create()->month($month)->format('M'),
-                    'not_started' => 0,
-                    'in_progress' => 0,
-                    'completed' => 0,
-                    'on_hold' => 0,
                 ];
 
-                $tasks = Task::where('tenant_id', $companyId)
+                foreach ($taskStatusDefinitions as $ts) {
+                    $monthData['status_' . $ts->id] = 0;
+                }
+
+                $rows = Task::where('tenant_id', $companyId)
                     ->whereYear('created_at', $year)
                     ->whereMonth('created_at', $month)
-                    ->selectRaw('status, COUNT(*) as count')
-                    ->groupBy('status')
+                    ->whereNotNull('task_status_id')
+                    ->selectRaw('task_status_id, COUNT(*) as aggregate')
+                    ->groupBy('task_status_id')
                     ->get();
 
-                foreach ($tasks as $task) {
-                    $status = strtolower($task->status);
-                    if (isset($monthData[$status])) {
-                        $monthData[$status] = $task->count;
+                foreach ($rows as $row) {
+                    $key = 'status_' . $row->task_status_id;
+                    if (array_key_exists($key, $monthData)) {
+                        $monthData[$key] = (int) $row->aggregate;
                     }
                 }
 
@@ -488,13 +512,15 @@ class DashboardController extends Controller
             ->take(5)
             ->get(['id', 'client_id', 'invoice_number', 'total_amount']);
 
-        // Tasks by status
-        $tasksStatus = [
-            ['status' => 'not_started', 'count' => Task::where('tenant_id', $companyId)->where('status', 'not_started')->count(), 'color' => '#94a3b8'],
-            ['status' => 'in_progress', 'count' => Task::where('tenant_id', $companyId)->where('status', 'in_progress')->count(), 'color' => '#3b82f6'],
-            ['status' => 'completed', 'count' => Task::where('tenant_id', $companyId)->where('status', 'completed')->count(), 'color' => '#10b981'],
-            ['status' => 'on_hold', 'count' => Task::where('tenant_id', $companyId)->where('status', 'on_hold')->count(), 'color' => '#f59e0b']
-        ];
+        $tasksStatus = $taskStatusDefinitions->map(function (TaskStatus $ts) use ($companyId) {
+            return [
+                'id' => $ts->id,
+                'dataKey' => 'status_' . $ts->id,
+                'name' => $ts->name,
+                'count' => Task::where('tenant_id', $companyId)->where('task_status_id', $ts->id)->count(),
+                'color' => $ts->color,
+            ];
+        })->values()->all();
 
         // Get user's current plan (plan lives on tenant for company users)
         $user->load('tenantRelation.plan');
@@ -583,10 +609,15 @@ class DashboardController extends Controller
         // My assigned tasks only
         $myTasks = Task::withPermissionCheck()
             ->where('assigned_to', $user->id)
-            ->whereIn('status', ['not_started', 'in_progress'])
+            ->where(function ($q) {
+                $q->whereNull('task_status_id')
+                    ->orWhereHas('taskStatus', function ($s) {
+                        $s->where('is_completed', false);
+                    });
+            })
             ->orderBy('due_date', 'asc')
             ->limit(5)
-            ->get(['id', 'title', 'priority', 'due_date', 'status']);
+            ->get(['id', 'title', 'priority', 'due_date', 'task_status_id']);
 
         // Cases where I'm assigned or involved (through tasks or time entries)
         $myCaseIds = collect()
@@ -622,13 +653,26 @@ class DashboardController extends Controller
 
         // Calculate task completion percentage
         $totalTasks = Task::withPermissionCheck()->where('assigned_to', $user->id)->count();
-        $completedTasks = Task::withPermissionCheck()->where('assigned_to', $user->id)->where('status', 'completed')->count();
+        $completedTasks = Task::withPermissionCheck()
+            ->where('assigned_to', $user->id)
+            ->whereHas('taskStatus', function ($s) {
+                $s->where('is_completed', true);
+            })
+            ->count();
         $taskCompletionPercentage = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100) : 0;
 
         // Statistics - only my data
         $stats = [
             'total_tasks' => $totalTasks,
-            'pending_tasks' => Task::withPermissionCheck()->where('assigned_to', $user->id)->whereIn('status', ['not_started', 'in_progress'])->count(),
+            'pending_tasks' => Task::withPermissionCheck()
+                ->where('assigned_to', $user->id)
+                ->where(function ($q) {
+                    $q->whereNull('task_status_id')
+                        ->orWhereHas('taskStatus', function ($s) {
+                            $s->where('is_completed', false);
+                        });
+                })
+                ->count(),
             'total_cases' => $myCaseIds->count(), // Only cases I'm involved in
             'total_hours_this_month' => TimeEntry::withPermissionCheck()->where('user_id', $user->id)->whereMonth('entry_date', now()->month)->sum('hours') ?? 0,
             'task_completion_percentage' => $taskCompletionPercentage,
