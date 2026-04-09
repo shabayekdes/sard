@@ -80,10 +80,8 @@ class TimeEntryController extends Controller
 
         // Get users for filter dropdown
         $users = User::where('tenant_id', createdBy())
-            ->whereDoesntHave('roles', function ($q) {
-                $q->where('name', 'client');
-            })
-            ->orWhere('id', createdBy())
+            ->whereNot('type', 'client')
+            ->where('status', 'active')
             ->get(['id', 'name']);
 
         return Inertia::render('billing/time-entries/index', [

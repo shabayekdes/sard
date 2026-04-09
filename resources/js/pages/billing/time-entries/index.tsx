@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { usePage, router } from '@inertiajs/react';
+import { usePage, router, Link } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
@@ -230,7 +230,23 @@ export default function TimeEntries() {
     {
       key: 'case',
       label: t('Case'),
-      render: (value: any) => value ? `${value.case_id} - ${value.title}` : t('General')
+      render: (value: any) => {
+        if (!value?.id) {
+          return t('General');
+        }
+        const label = value.case_id ? `${value.case_id} - ${value.title}` : value.title;
+        if (hasPermission(permissions, 'view-cases')) {
+          return (
+            <Link
+              href={route('cases.show', value.id)}
+              className="text-primary font-medium hover:underline focus:outline-none focus:underline"
+            >
+              {label}
+            </Link>
+          );
+        }
+        return label;
+      }
     },
     {
       key: 'description',
