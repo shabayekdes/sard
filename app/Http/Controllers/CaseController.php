@@ -8,8 +8,10 @@ use App\Models\CaseModel;
 use App\Models\CaseType;
 use App\Models\CaseCategory;
 use App\Models\CaseStatus;
+use App\Models\CircleType;
 use App\Models\Client;
 use App\Models\Court;
+use App\Models\CourtType;
 use App\Models\Hearing;
 use App\Models\OppositeParty;
 use App\Models\Country;
@@ -531,6 +533,28 @@ class CaseController extends BaseController
             ];
         });
 
+        $courtTypes = CourtType::where('tenant_id', createdBy())
+            ->where('status', 'active')
+            ->get(['id', 'name'])
+            ->map(function ($courtType) {
+                return [
+                    'id' => $courtType->id,
+                    'name' => $courtType->name,
+                    'name_translations' => $courtType->getTranslations('name'),
+                ];
+            });
+
+        $circleTypes = CircleType::where('tenant_id', createdBy())
+            ->where('status', 'active')
+            ->get(['id', 'name'])
+            ->map(function ($circleType) {
+                return [
+                    'id' => $circleType->id,
+                    'name' => $circleType->name,
+                    'name_translations' => $circleType->getTranslations('name'),
+                ];
+            });
+
         $googleCalendarEnabled = Settings::boolean('GOOGLE_CALENDAR_ENABLED');
 
         $authUser = auth()->user();
@@ -565,6 +589,8 @@ class CaseController extends BaseController
             'caseCategories' => $caseCategories,
             'caseStatuses' => $caseStatuses,
             'courts' => $courts,
+            'courtTypes' => $courtTypes,
+            'circleTypes' => $circleTypes,
             'countries' => $countries,
             'documentTypes' => $documentTypes,
             'googleCalendarEnabled' => $googleCalendarEnabled,
