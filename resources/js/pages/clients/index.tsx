@@ -454,6 +454,13 @@ export default function Clients() {
                 onConfirm={handleDeleteConfirm}
                 itemName={resolveTranslatable(currentItem?.name, currentLocale)}
                 entityName="Client"
+                warningMessage={
+                    (currentItem?.cases_count ?? 0) > 0
+                        ? t('This client has {{count}} associated case(s). Are you sure you want to delete?', {
+                              count: currentItem.cases_count,
+                          })
+                        : undefined
+                }
             />
 
             {/* Reset Password Modal */}

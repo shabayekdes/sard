@@ -3205,6 +3205,7 @@
     "I agree to the": "أوافق على",
     "Individual": "فرد",
     "Cases Count": "عدد القضايا",
+    "This client has {{count}} associated case(s). Are you sure you want to delete?": "هذا العميل لديه {{count}} قضية مرتبطة. هل أنت متأكد أنك تريد الحذف؟",
     "Nationality": "الجنسية",
     "ID Number": "رقم الهوية",
     "Gender": "الجنس",

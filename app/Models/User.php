@@ -8,6 +8,7 @@ use App\Notifications\CustomResetPassword;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -23,7 +24,7 @@ use App\Traits\AutoApplyPermissionCheck;
 class User extends BaseAuthenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasRoles, HasFactory, Notifiable, AutoApplyPermissionCheck;
+    use HasRoles, HasFactory, Notifiable, SoftDeletes, AutoApplyPermissionCheck;
 
     /**
      * The attributes that are mass assignable.
