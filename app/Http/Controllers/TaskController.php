@@ -300,7 +300,7 @@ class TaskController extends BaseController
             $checklist->can_delete = true;//$checklist->canBeDeletedBy($currentUser);
         });
 
-        $allMembers = User::all();
+        // $allMembers = User::all();
 
         // Get project members only (no clients)
         // $projectMembers = $task->project->members->filter(function ($member) {
@@ -316,17 +316,7 @@ class TaskController extends BaseController
             'task' => $task,
             'members' => [], //$projectMembers->isNotEmpty() ? $projectMembers : $allMembers,
             'taskStatuses' => $taskStatuses,
-            'milestones' => [],//$milestones,
-            'permissions' => [
-                'update' => true,
-                'delete' => true,
-                'duplicate' => true,
-                'change_status' => true,
-                'assign_users' => true,
-                'add_comments' => true,
-                'add_attachments' => true,
-                'manage_checklists' => true,
-            ]
+            'milestones' => [], //$milestones,
         ]);
     }
 
@@ -376,12 +366,10 @@ class TaskController extends BaseController
     {
         $this->authorizePermission('task_duplicate');
 
-        $user = auth()->user();
-        $workspace = $user->currentWorkspace;
-
-        if (!$workspace || $task->project->workspace_id != $workspace->id) {
-            abort(403, 'Task not found in current workspace.');
+        if ((string) $task->tenant_id !== (string) createdBy()) {
+            abort(403);
         }
+
         $newTask = $task->replicate();
         $newTask->title = $task->title . ' (Copy)';
         $newTask->start_date = null;

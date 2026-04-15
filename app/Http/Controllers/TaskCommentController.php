@@ -9,6 +9,11 @@ use Inertia\Inertia;
 
 class TaskCommentController extends BaseController
 {
+    private function taskCommentModelLabel(): string
+    {
+        return __('Task comment');
+    }
+
     public function index(Request $request)
     {
         $query = TaskComment::withPermissionCheck()
@@ -68,12 +73,12 @@ class TaskCommentController extends BaseController
             ->first();
 
         if (!$task) {
-            return redirect()->back()->with('error', 'Invalid task selected.');
+            return redirect()->back()->with('error', __('Invalid task selected.'));
         }
 
         TaskComment::create($validated);
 
-        return redirect()->back()->with('success', 'Comment created successfully.');
+        return redirect()->back()->with('success', __(':model created successfully.', ['model' => $this->taskCommentModelLabel()]));
     }
 
     public function update(Request $request, $commentId)
@@ -83,7 +88,7 @@ class TaskCommentController extends BaseController
             ->first();
 
         if (!$comment) {
-            return redirect()->back()->with('error', 'Comment not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => $this->taskCommentModelLabel()]));
         }
 
         $validated = $request->validate([
@@ -98,12 +103,12 @@ class TaskCommentController extends BaseController
             ->first();
 
         if (!$task) {
-            return redirect()->back()->with('error', 'Invalid task selected.');
+            return redirect()->back()->with('error', __('Invalid task selected.'));
         }
 
         $comment->update($validated);
 
-        return redirect()->back()->with('success', 'Comment updated successfully.');
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => $this->taskCommentModelLabel()]));
     }
 
     public function destroy($commentId)
@@ -113,14 +118,14 @@ class TaskCommentController extends BaseController
             ->first();
 
         if (!$comment) {
-            return redirect()->back()->with('error', 'Comment not found.');
+            return redirect()->back()->with('error', __(':model not found.', ['model' => $this->taskCommentModelLabel()]));
         }
 
         try {
             $comment->delete();
-            return redirect()->back()->with('success', 'Comment deleted successfully.');
+            return redirect()->back()->with('success', __(':model deleted successfully', ['model' => $this->taskCommentModelLabel()]));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to delete comment.');
+            return redirect()->back()->with('error', __('Failed to delete :model', ['model' => $this->taskCommentModelLabel()]));
         }
     }
 }

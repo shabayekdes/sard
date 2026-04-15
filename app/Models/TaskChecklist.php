@@ -65,28 +65,30 @@ class TaskChecklist extends Model
 
     public function canBeUpdatedBy(User $user): bool
     {
-        // Workspace owner can update any checklist
-        $workspace = $this->task->project->workspace;
-        if ($workspace->owner_id === $user->id) {
-            return true;
+        if ($this->created_by !== null) {
+            return (int) $this->created_by === (int) $user->id;
         }
 
-        // Members can only update checklists they created
-        // Allow if created_by is null (legacy data)
-        return $this->created_by === $user->id || $this->created_by === null;
+        // Legacy rows with no creator: allow the task assignee to manage checklist items
+        $task = $this->task;
+        if ($task && $task->assigned_to !== null) {
+            return (int) $task->assigned_to === (int) $user->id;
+        }
+
+        return false;
     }
 
     public function canBeDeletedBy(User $user): bool
     {
-        // Workspace owner can delete any checklist
-        $workspace = $this->task->project->workspace;
-        if ($workspace->owner_id === $user->id) {
-            return true;
+        if ($this->created_by !== null) {
+            return (int) $this->created_by === (int) $user->id;
+        }
+
+        $task = $this->task;
+        if ($task && $task->assigned_to !== null) {
+            return (int) $task->assigned_to === (int) $user->id;
         }
 
         return false;
-        // Members can only delete checklists they created
-        // Allow if created_by is null (legacy data)
-        return $this->created_by === $user->id || $this->created_by === null;
     }
 }

@@ -3,19 +3,18 @@ import { useTranslation } from 'react-i18next';
 import { router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { CheckSquare, Square, Plus, MoreHorizontal, Edit, Trash2, Calendar, User } from 'lucide-react';
-import { Task, TaskChecklist as ChecklistItem, User as UserType } from '@/types';
+import { Task, TaskChecklist as ChecklistItem } from '@/types';
+import { CrudDeleteModal } from '@/components/CrudDeleteModal';
 
 interface Props {
     task: Task;
     checklist: ChecklistItem[];
-    members: UserType[];
     onUpdate?: () => void;
 }
 
-export default function TaskChecklist({ task, checklist, members, onUpdate }: Props) {
+export default function TaskChecklist({ task, checklist, onUpdate }: Props) {
     const { t } = useTranslation();
     const [newItem, setNewItem] = useState('');
     const [editingItem, setEditingItem] = useState<number | null>(null);
@@ -24,6 +23,7 @@ export default function TaskChecklist({ task, checklist, members, onUpdate }: Pr
         assigned_to: '',
         due_date: ''
     });
+    const [checklistItemToDelete, setChecklistItemToDelete] = useState<ChecklistItem | null>(null);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -68,14 +68,14 @@ export default function TaskChecklist({ task, checklist, members, onUpdate }: Pr
         });
     };
 
-    const handleDelete = (itemId: number) => {
-        if (confirm(t('Are you sure you want to delete this checklist item?'))) {
-            router.delete(route('task-checklists.destroy', itemId), {
-                onSuccess: () => {
-                    onUpdate?.();
-                }
-            });
-        }
+    const handleConfirmDeleteChecklistItem = () => {
+        if (!checklistItemToDelete) return;
+        router.delete(route('task-checklists.destroy', checklistItemToDelete.id), {
+            onSuccess: () => {
+                setChecklistItemToDelete(null);
+                onUpdate?.();
+            },
+        });
     };
 
     const completedCount = checklist.filter(item => item.is_completed).length;
@@ -127,29 +127,6 @@ export default function TaskChecklist({ task, checklist, members, onUpdate }: Pr
                                         onChange={(e) => setEditData({...editData, title: e.target.value})}
                                         placeholder={t('Checklist item title')}
                                     />
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <Select 
-                                            value={editData.assigned_to || 'unassigned'} 
-                                            onValueChange={(value) => setEditData({...editData, assigned_to: value === 'unassigned' ? '' : value})}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder={t('Assign to')} />
-                                            </SelectTrigger>
-                                            <SelectContent className="z-[9999]">
-                                                <SelectItem value="unassigned">{t('Unassigned')}</SelectItem>
-                                                {members.map((member) => (
-                                                    <SelectItem key={member.id} value={member.id.toString()}>
-                                                        {member.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <Input
-                                            type="date"
-                                            value={editData.due_date}
-                                            onChange={(e) => setEditData({...editData, due_date: e.target.value})}
-                                        />
-                                    </div>
                                     <div className="flex space-x-2">
                                         <Button size="sm" onClick={() => handleUpdate(item.id)}>
                                             {t('Save')}
@@ -204,7 +181,7 @@ export default function TaskChecklist({ task, checklist, members, onUpdate }: Pr
                                     )}
                                     {item.can_delete && (
                                         <DropdownMenuItem 
-                                            onClick={() => handleDelete(item.id)}
+                                            onClick={() => setChecklistItemToDelete(item)}
                                             className="text-red-600"
                                         >
                                             <Trash2 className="h-4 w-4 mr-2" />
@@ -238,6 +215,14 @@ export default function TaskChecklist({ task, checklist, members, onUpdate }: Pr
                     {t('Add')}
                 </Button>
             </form>
+
+            <CrudDeleteModal
+                isOpen={checklistItemToDelete !== null}
+                onClose={() => setChecklistItemToDelete(null)}
+                onConfirm={handleConfirmDeleteChecklistItem}
+                itemName={checklistItemToDelete?.title ?? ''}
+                entityName="Checklist item"
+            />
         </div>
     );
 }

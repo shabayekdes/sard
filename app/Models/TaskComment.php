@@ -48,10 +48,6 @@ class TaskComment extends BaseModel
         }
 
         return false;
-
-        // Workspace owner can update any comment
-        $workspace = $this->task->project->workspace;
-        return $workspace->owner_id === $user->id;
     }
 
     public function canBeDeletedBy(User $user): bool
@@ -62,9 +58,5 @@ class TaskComment extends BaseModel
         }
 
         return false;
-
-        // Workspace owner can delete any comment
-        $workspace = $this->task->project->workspace;
-        return $workspace->owner_id === $user->id;
     }
 }

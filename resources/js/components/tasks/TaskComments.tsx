@@ -3,6 +3,7 @@ import { router } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { CrudDeleteModal } from '@/components/CrudDeleteModal';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MessageSquare, MoreHorizontal, Edit, Trash2, Send } from 'lucide-react';
 import { Task, TaskComment, User } from '@/types';
@@ -20,6 +21,7 @@ export default function TaskComments({ task, comments, currentUser: _currentUser
     const [newComment, setNewComment] = useState('');
     const [editingComment, setEditingComment] = useState<number | null>(null);
     const [editText, setEditText] = useState('');
+    const [commentToDelete, setCommentToDelete] = useState<TaskComment | null>(null);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -58,14 +60,14 @@ export default function TaskComments({ task, comments, currentUser: _currentUser
         });
     };
 
-    const handleDelete = (commentId: number) => {
-        if (confirm(t('Are you sure you want to delete this comment?'))) {
-            router.delete(route('tasks.task-comments.destroy', commentId), {
-                onSuccess: () => {
-                    onUpdate?.();
-                }
-            });
-        }
+    const handleConfirmDeleteComment = () => {
+        if (!commentToDelete) return;
+        router.delete(route('tasks.task-comments.destroy', commentToDelete.id), {
+            onSuccess: () => {
+                setCommentToDelete(null);
+                onUpdate?.();
+            },
+        });
     };
 
     return (
@@ -98,7 +100,7 @@ export default function TaskComments({ task, comments, currentUser: _currentUser
                                             )}
                                             {comment.can_delete && (
                                                 <DropdownMenuItem
-                                                    onClick={() => handleDelete(comment.id)}
+                                                    onClick={() => setCommentToDelete(comment)}
                                                     className="text-red-600"
                                                 >
                                                     <Trash2 className="h-4 w-4 mr-2" />
@@ -160,6 +162,14 @@ export default function TaskComments({ task, comments, currentUser: _currentUser
                     </Button>
                 </div>
             </form>
+
+            <CrudDeleteModal
+                isOpen={commentToDelete !== null}
+                onClose={() => setCommentToDelete(null)}
+                onConfirm={handleConfirmDeleteComment}
+                itemName={commentToDelete?.comment_text ?? ''}
+                entityName="Task comment"
+            />
         </div>
     );
 }

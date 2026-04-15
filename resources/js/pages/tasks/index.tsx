@@ -440,7 +440,7 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
       sortable: true,
       render: (_: unknown, row: Task) => {
         const due =
-          (row as Task & { end_date?: string | null; due_date?: string | null }).end_date ??
+          (row as Task & { due_date?: string | null; due_date?: string | null }).due_date ??
           (row as Task & { due_date?: string | null }).due_date ??
           null;
         return (
@@ -474,13 +474,13 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
       requiredPermission: 'edit-tasks',
       condition: () => userWorkspaceRole !== 'client',
     },
-    {
-      label: t('Duplicate'),
-      icon: 'Copy',
-      action: 'duplicate',
-      className: 'text-green-500',
-      condition: () => userWorkspaceRole !== 'client',
-    },
+    // {
+    //   label: t('Duplicate'),
+    //   icon: 'Copy',
+    //   action: 'duplicate',
+    //   className: 'text-green-500',
+    //   condition: () => userWorkspaceRole !== 'client',
+    // },
     {
       label: t('Delete'),
       icon: 'Trash2',
@@ -525,7 +525,7 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
             </div>
             <div className="text-center">
               <div className="text-xl font-bold text-red-600">
-                {(Array.isArray(tasks) ? tasks : tasks?.data || []).filter(task => task.end_date && isTaskOverdue(task.end_date)).length}
+                {(Array.isArray(tasks) ? tasks : tasks?.data || []).filter(task => task.due_date && isTaskOverdue(task.due_date)).length}
               </div>
               <div className="text-xs text-gray-600">{t('Overdue')}</div>
             </div>
@@ -879,13 +879,13 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
                                   
                                   <div className="flex justify-between items-center text-xs text-gray-500">
                                     <div className="flex items-center gap-2">
-                                      {task.end_date && isTaskOverdue(task.end_date) && (
+                                      {task.due_date && isTaskOverdue(task.due_date) && (
                                         <Badge variant="destructive" className="text-xs">
                                           <AlertTriangle className="h-3 w-3 mr-1" />
-                                          Overdue
+                                          {t('Overdue')}
                                         </Badge>
                                       )}
-                                      <span>{task.end_date ? new Date(task.end_date).toLocaleDateString() : t('No due date')}</span>
+                                      <span>{task.due_date ? new Date(task.due_date).toLocaleDateString() : t('No due date')}</span>
                                     </div>
                                   </div>
                                 </div>
@@ -943,14 +943,14 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
                       <div className="flex justify-between items-center text-xs">
                         <TaskPriority priority={task.priority} showIcon />
                         <div className="flex items-center gap-2">
-                          {task.end_date && isTaskOverdue(task.end_date) && (
+                          {task.due_date && isTaskOverdue(task.due_date) && (
                             <Badge variant="destructive" className="text-xs">
                               <AlertTriangle className="h-3 w-3 mr-1" />
                               {t('Overdue')}
                             </Badge>
                           )}
                           <span className="text-muted-foreground">
-                              {task.end_date ? new Date(task.end_date).toLocaleDateString() : 'No due date'}
+                              {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No due date'}
                           </span>
                         </div>
                       </div>
@@ -1010,19 +1010,19 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
                           </TooltipTrigger>
                           <TooltipContent>Edit</TooltipContent>
                         </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleAction('duplicate', task.id)}
-                              className="text-green-500 hover:text-green-700 h-8 w-8"
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Duplicate</TooltipContent>
-                        </Tooltip>
+                        {/*<Tooltip>*/}
+                        {/*  <TooltipTrigger asChild>*/}
+                        {/*    <Button*/}
+                        {/*      variant="ghost"*/}
+                        {/*      size="icon"*/}
+                        {/*      onClick={() => handleAction('duplicate', task.id)}*/}
+                        {/*      className="text-green-500 hover:text-green-700 h-8 w-8"*/}
+                        {/*    >*/}
+                        {/*      <Copy className="h-4 w-4" />*/}
+                        {/*    </Button>*/}
+                        {/*  </TooltipTrigger>*/}
+                        {/*  <TooltipContent>Duplicate</TooltipContent>*/}
+                        {/*</Tooltip>*/}
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
@@ -1146,7 +1146,6 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
           members={users}
           taskStatuses={taskStatuses}
           milestones={selectedTask.project?.milestones || []}
-          permissions={permissions}
         />
       )}
       
@@ -1221,7 +1220,6 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
                 })),
               ],
             },
-            { name: 'notes', label: t('Notes'), type: 'textarea' },
           ],
           modalSize: 'xl',
         }}
@@ -1246,7 +1244,7 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
         }}
         onConfirm={handleDeleteConfirm}
         itemName={taskToDelete?.title || ''}
-        entityName={t('task')}
+        entityName={t('Task')}
       />
     </PageTemplate>
   );
