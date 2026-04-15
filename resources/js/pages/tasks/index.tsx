@@ -1099,10 +1099,7 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
               {t('Clear Filters')}
             </Button>
           ) : (
-            <Button onClick={() => {
-              setEditingTask(null);
-              setIsFormModalOpen(true);
-            }}>
+            <Button onClick={handleAddNew}>
               <Plus className="h-4 w-4 mr-2" />
               {t('Create your first task')}
             </Button>
