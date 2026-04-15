@@ -950,8 +950,8 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
                             </Badge>
                           )}
                           <span className="text-muted-foreground">
-                                                        {task.end_date ? new Date(task.end_date).toLocaleDateString() : 'No due date'}
-                                                    </span>
+                              {task.end_date ? new Date(task.end_date).toLocaleDateString() : 'No due date'}
+                          </span>
                         </div>
                       </div>
                       
