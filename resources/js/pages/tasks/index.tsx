@@ -12,7 +12,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Plus, Search, Filter, Eye, Edit, Copy, Trash2, LayoutGrid, List, User as UserIcon, CheckSquare, Columns, AlertTriangle } from 'lucide-react';
 import { PageTemplate } from '@/components/page-template';
@@ -428,7 +427,7 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
       render: (_: unknown, row: Task) => (
         <div className="flex items-center">
           <div className="mr-2 h-2 w-16 rounded-full bg-gray-200">
-            <div className="h-2 rounded-full bg-blue-600" style={{ width: `${row.progress}%` }} />
+            <div className="h-2 rounded-full bg-green-600" style={{ width: `${row.progress}%` }} />
           </div>
           <span className="text-sm text-gray-900">{row.progress}%</span>
         </div>
@@ -874,7 +873,12 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
                                       <span>{t('Progress')}</span>
                                       <span>{task.progress}%</span>
                                     </div>
-                                    <Progress value={task.progress} className="h-1" />
+                                    <div className="h-1 w-full rounded-full bg-gray-200">
+                                      <div
+                                        className="h-1 rounded-full bg-green-600 transition-all"
+                                        style={{ width: `${task.progress}%` }}
+                                      />
+                                    </div>
                                   </div>
                                   
                                   <div className="flex justify-between items-center text-xs text-gray-500">
@@ -937,7 +941,12 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
                           <span>{t('Progress')}</span>
                           <span>{task.progress}%</span>
                         </div>
-                        <Progress value={task.progress} className="h-1" />
+                        <div className="h-1 w-full rounded-full bg-gray-200">
+                          <div
+                            className="h-1 rounded-full bg-green-600 transition-all"
+                            style={{ width: `${task.progress}%` }}
+                          />
+                        </div>
                       </div>
                       
                       <div className="flex justify-between items-center text-xs">

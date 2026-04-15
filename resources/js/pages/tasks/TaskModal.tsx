@@ -349,7 +349,7 @@ export default function TaskModal({ task, isOpen, onClose, members = [], taskSta
                                     <span className="text-sm text-gray-600">{currentTask.progress}%</span>
                                 </div>
                                 <div className="h-2 w-full rounded-full bg-gray-200">
-                                    <div className="h-2 rounded-full bg-blue-600 transition-all" style={{ width: `${currentTask.progress}%` }} />
+                                    <div className="h-2 rounded-full bg-green-600 transition-all" style={{ width: `${currentTask.progress}%` }} />
                                 </div>
                             </div>
                         </div>

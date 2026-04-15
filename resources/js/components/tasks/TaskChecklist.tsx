@@ -95,9 +95,9 @@ export default function TaskChecklist({ task, checklist, onUpdate }: Props) {
                             })}
                         </span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                            className="bg-green-600 h-2 rounded-full transition-all" 
+                    <div className="h-2 w-full rounded-full bg-gray-200">
+                        <div
+                            className="h-2 rounded-full bg-green-600 transition-all"
                             style={{ width: `${progressPercentage}%` }}
                         />
                     </div>
