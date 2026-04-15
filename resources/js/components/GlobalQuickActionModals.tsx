@@ -312,16 +312,6 @@ export function GlobalQuickActionModals() {
           ],
           defaultValue: 'active',
         },
-        ...(caseData.googleCalendarEnabled
-          ? [
-            {
-              name: 'sync_with_google_calendar',
-              label: t('Synchronize in Google Calendar'),
-              type: 'switch',
-              defaultValue: false,
-            },
-          ]
-          : []),
       ],
       modalSize: 'xl',
     };
@@ -589,16 +579,6 @@ export function GlobalQuickActionModals() {
           })),
         },
         { name: 'notes', label: t('Notes'), type: 'textarea' },
-        ...(taskData.googleCalendarEnabled
-          ? [
-            {
-              name: 'sync_with_google_calendar',
-              label: t('Synchronize in Google Calendar'),
-              type: 'switch',
-              defaultValue: false,
-            },
-          ]
-          : []),
       ],
       modalSize: 'xl',
     };

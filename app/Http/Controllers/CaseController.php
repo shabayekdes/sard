@@ -777,7 +777,6 @@ class CaseController extends BaseController
             'opposing_party' => 'nullable|string',
             'court_details' => 'nullable|string',
             'status' => 'nullable|in:active,inactive',
-            'sync_with_google_calendar' => 'nullable|boolean',
             'opposite_parties' => 'nullable|array',
             'opposite_parties.*.name' => 'required|string|max:255',
             'opposite_parties.*.id_number' => 'nullable|string|max:255',
@@ -833,13 +832,13 @@ class CaseController extends BaseController
         }
 
         // Handle Google Calendar sync
-        if ($case && $request->sync_with_google_calendar) {
-            $calendarService = new GoogleCalendarService();
-            $eventId = $calendarService->createEvent($case, createdBy(), 'case');
-            if ($eventId) {
-                $case->update(['google_calendar_event_id' => $eventId]);
-            }
-        }
+        // if ($case && $request->sync_with_google_calendar) {
+        //     $calendarService = new GoogleCalendarService();
+        //     $eventId = $calendarService->createEvent($case, createdBy(), 'case');
+        //     if ($eventId) {
+        //         $case->update(['google_calendar_event_id' => $eventId]);
+        //     }
+        // }
 
         // Trigger notifications
         event(new \App\Events\NewCaseCreated($case, $request->all()));

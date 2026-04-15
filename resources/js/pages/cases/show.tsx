@@ -839,6 +839,11 @@ export default function CaseShow() {
             render: (value: string) => window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString(),
         },
         {
+            key: 'event_time',
+            label: t('Event Time'),
+            render: (value: string) => (value ? (window.appSettings?.formatTime(`2000-01-01T${value}`) || value) : '-'),
+        },
+        {
             key: 'is_completed',
             label: t('Completed'),
             render: (value: boolean) => (
@@ -2765,6 +2770,8 @@ export default function CaseShow() {
                                     : [],
                             },
                             { name: 'event_date', label: t('Event Date'), type: 'date', required: true },
+                            { name: 'event_time', label: t('Event Time'), type: 'time', required: true },
+                            { name: 'duration_minutes', label: t('Duration (minutes)'), type: 'number', defaultValue: 60 },
                             { name: 'is_completed', label: t('Completed'), type: 'checkbox' },
                             {
                                 name: 'status',
@@ -2796,7 +2803,10 @@ export default function CaseShow() {
                         ),
                         modalSize: 'lg',
                     }}
-                    initialData={currentItem}
+                    initialData={{
+                        ...currentItem,
+                        event_time: currentItem?.event_time ? currentItem.event_time.slice(0, 5) : '',
+                    }}
                     title={
                         formMode === 'create' ? t('Add Timeline Event') : formMode === 'edit' ? t('Edit Timeline Event') : t('View Timeline Event')
                     }
@@ -2853,18 +2863,7 @@ export default function CaseShow() {
                                 ],
                                 defaultValue: 'active',
                             },
-                        ].concat(
-                            googleCalendarEnabled && formMode === 'create'
-                                ? [
-                                    {
-                                        name: 'sync_with_google_calendar',
-                                        label: t('Synchronize in Google Calendar'),
-                                        type: 'switch',
-                                        defaultValue: false,
-                                    },
-                                ]
-                                : [],
-                        ),
+                        ],
                         modalSize: 'lg',
                     }}
                     initialData={currentItem}
@@ -3151,18 +3150,7 @@ export default function CaseShow() {
                                 ],
                             },
                             { name: 'notes', label: t('Notes'), type: 'textarea' },
-                        ].concat(
-                            googleCalendarEnabled
-                                ? [
-                                    {
-                                        name: 'sync_with_google_calendar',
-                                        label: t('Synchronize in Google Calendar'),
-                                        type: 'switch',
-                                        defaultValue: false,
-                                    },
-                                ]
-                                : [],
-                        ),
+                        ],
                         modalSize: 'lg',
                     }}
                     initialData={currentItem}

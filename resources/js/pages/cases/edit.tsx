@@ -33,7 +33,6 @@ const defaultFormData = {
     estimated_value: '',
     description: '',
     status: 'active',
-    sync_with_google_calendar: false,
 };
 
 export default function EditCase() {

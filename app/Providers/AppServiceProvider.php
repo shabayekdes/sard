@@ -78,5 +78,25 @@ class AppServiceProvider extends ServiceProvider
 
         // Register CasePolicy for CaseModel (Laravel would look for CaseModelPolicy by convention)
         Gate::policy(CaseModel::class, CasePolicy::class);
+
+        /**
+         * Bypass Spatie permission checks for workspace owners and super-admins (see Spatie "Defining a Super-Admin").
+         * Registered permission names are checked via Gate / $user->can().
+         */
+        Gate::before(function (?User $user, $ability) {
+            if ($user === null || ! is_string($ability)) {
+                return null;
+            }
+
+            if (in_array($user->type, ['superadmin', 'super admin', 'company'], true)) {
+                return true;
+            }
+
+            if ($user->hasRole('superadmin')) {
+                return true;
+            }
+
+            return null;
+        });
     }
 }

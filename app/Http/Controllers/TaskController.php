@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Events\NewTaskCreated;
-use App\Facades\Settings;
 use App\Enums\TaskPriority;
 use App\Models\Task;
 use App\Models\TaskType;
@@ -79,8 +78,6 @@ class TaskController extends BaseController
             ->where('status', 'active')
             ->get(['id', 'name']);
 
-        $googleCalendarEnabled = Settings::boolean('GOOGLE_CALENDAR_ENABLED');
-
         return Inertia::render('tasks/index', [
             'tasks' => $tasks,
             'taskTypes' => $taskTypes,
@@ -88,7 +85,6 @@ class TaskController extends BaseController
             'users' => $users,
             'cases' => $cases,
             'taskStatuses' => $taskStatuses,
-            'googleCalendarEnabled' => $googleCalendarEnabled,
             'filters' => $request->all(['search', 'task_type_id', 'priority', 'assigned_to', 'task_status_id', 'view', 'sort_field', 'sort_direction', 'per_page']),
         ]);
     }
@@ -106,7 +102,6 @@ class TaskController extends BaseController
             'task_type_id' => 'nullable|exists:task_types,id',
             'task_status_id' => 'nullable|exists:task_statuses,id',
             'notes' => 'nullable|string',
-            'sync_with_google_calendar' => 'nullable|boolean',
         ]);
 
         $validated['tenant_id'] = createdBy();
@@ -154,13 +149,13 @@ class TaskController extends BaseController
         $task = Task::create($validated);
 
         // Handle Google Calendar sync
-        if ($task && $request->sync_with_google_calendar) {
-            $calendarService = new GoogleCalendarService();
-            $eventId = $calendarService->createEvent($task, createdBy(), 'task');
-            if ($eventId) {
-                $task->update(['google_calendar_event_id' => $eventId]);
-            }
-        }
+        // if ($task && $request->sync_with_google_calendar) {
+        //     $calendarService = new GoogleCalendarService();
+        //     $eventId = $calendarService->createEvent($task, createdBy(), 'task');
+        //     if ($eventId) {
+        //         $task->update(['google_calendar_event_id' => $eventId]);
+        //     }
+        // }
 
         // Trigger notifications
         event(new \App\Events\NewTaskCreated($task, $request->all()));
@@ -202,7 +197,6 @@ class TaskController extends BaseController
             'task_type_id' => 'nullable|exists:task_types,id',
             'task_status_id' => 'nullable|exists:task_statuses,id',
             'notes' => 'nullable|string',
-            'sync_with_google_calendar' => 'nullable|boolean',
         ]);
 
         // Validate that related records belong to the current user's company
@@ -248,20 +242,20 @@ class TaskController extends BaseController
         $task->update($validated);
 
         // Handle Google Calendar sync
-        if ($request->sync_with_google_calendar && !$task->google_calendar_event_id) {
-            $calendarService = new GoogleCalendarService();
-            $eventId = $calendarService->createEvent($task, createdBy(), 'task');
-            if ($eventId) {
-                $task->update(['google_calendar_event_id' => $eventId]);
-            }
-        } elseif ($request->sync_with_google_calendar && $task->google_calendar_event_id) {
-            $calendarService = new GoogleCalendarService();
-            $calendarService->updateEvent($task->google_calendar_event_id, $task, createdBy(), 'task');
-        } elseif (!$request->sync_with_google_calendar && $task->google_calendar_event_id) {
-            $calendarService = new GoogleCalendarService();
-            $calendarService->deleteEvent($task->google_calendar_event_id, createdBy());
-            $task->update(['google_calendar_event_id' => null]);
-        }
+        // if ($request->sync_with_google_calendar && !$task->google_calendar_event_id) {
+        //     $calendarService = new GoogleCalendarService();
+        //     $eventId = $calendarService->createEvent($task, createdBy(), 'task');
+        //     if ($eventId) {
+        //         $task->update(['google_calendar_event_id' => $eventId]);
+        //     }
+        // } elseif ($request->sync_with_google_calendar && $task->google_calendar_event_id) {
+        //     $calendarService = new GoogleCalendarService();
+        //     $calendarService->updateEvent($task->google_calendar_event_id, $task, createdBy(), 'task');
+        // } elseif (!$request->sync_with_google_calendar && $task->google_calendar_event_id) {
+        //     $calendarService = new GoogleCalendarService();
+        //     $calendarService->deleteEvent($task->google_calendar_event_id, createdBy());
+        //     $task->update(['google_calendar_event_id' => null]);
+        // }
 
         return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Task')]));
     }
@@ -429,41 +423,6 @@ class TaskController extends BaseController
         $task->update(['task_status_id' => $taskStatus->id]);
 
         return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Task')]));
-    }
-
-    /**
-     * Sync task with Google Calendar
-     */
-    private function syncTaskWithGoogleCalendar(Task $task)
-    {
-        try {
-            $user = auth()->user();
-            $workspaceId = $user->current_workspace_id;
-
-            // Check if Google Calendar is enabled and configured from company owner
-            $companyOwner = $user->currentWorkspace->owner;
-            $googleCalendarEnabled = getSetting('is_googlecalendar_sync', '0', $companyOwner->id, $workspaceId);
-
-            if ($googleCalendarEnabled !== '1') {
-                return;
-            }
-
-            if ($task->google_calendar_event_id) {
-                // Update existing event
-                $this->googleCalendarService->updateEvent($task->google_calendar_event_id, $task, $user->id, $workspaceId);
-            } else {
-                // Create new event
-                $eventId = $this->googleCalendarService->createEvent($task, $user->id, $workspaceId);
-                if ($eventId) {
-                    $task->update(['google_calendar_event_id' => $eventId]);
-                }
-            }
-        } catch (\Exception $e) {
-            \Log::error('Failed to sync task with Google Calendar', [
-                'task_id' => $task->id,
-                'error' => $e->getMessage()
-            ]);
-        }
     }
 
     /**

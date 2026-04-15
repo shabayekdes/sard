@@ -1140,6 +1140,11 @@ class PermissionSeeder extends Seeder
 
             ['name' => 'view-calendar', 'module' => 'calendar', 'label' => ['en' => 'View Calendar', 'ar' => 'عرض التقويم']],
 
+            // Integrations (Google Calendar OAuth on integrations page)
+            ['name' => 'view-integrations', 'module' => 'integrations', 'label' => ['en' => 'View Integrations Page', 'ar' => 'عرض صفحة التكاملات']],
+
+            ['name' => 'manage-google-calendar-integration', 'module' => 'integrations', 'label' => ['en' => 'Connect and Disconnect Google Calendar', 'ar' => 'ربط وقطع اتصال تقويم Google']],
+
         ];
 
         // Add task permissions to company role permissions

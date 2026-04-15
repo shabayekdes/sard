@@ -33,46 +33,206 @@ class GoogleCalendarService
         return $globalEnabled;
     }
 
-    private function setupClient($userId)
+    /**
+     * Configure Google API client using tenant OAuth tokens (Integrations flow).
+     */
+    private function setupClient($tenantId): void
     {
-        $settings = Setting::where('tenant_id', $userId)
-            ->whereIn('key', [SettingKey::GoogleCalendarJsonPath->value, SettingKey::GoogleCalendarId->value, 'googleCalendarJsonPath', 'googleCalendarId'])
-            ->pluck('value', 'key');
-
-        $jsonPath = $settings[SettingKey::GoogleCalendarJsonPath->value] ?? $settings['googleCalendarJsonPath'] ?? null;
-        
-        if (!$jsonPath) {
-            throw new \Exception('Google Calendar JSON credentials not configured');
-        }
-
-        // Find the correct path for the JSON file
-        $paths = [
-            $jsonPath,
-            storage_path($jsonPath),
-            storage_path('app/' . $jsonPath),
-            base_path($jsonPath),
-            public_path('storage/' . $jsonPath),
-        ];
-        
-        $validPath = null;
-        foreach ($paths as $path) {
-            if (file_exists($path)) {
-                $validPath = $path;
-                break;
-            }
-        }
-        
-        if (!$validPath) {
-            throw new \Exception('Google Calendar JSON file not found at: ' . $jsonPath);
-        }
-
-        // Use service account authentication
-        $this->client->setAuthConfig($validPath);
-        $this->client->setScopes(Google_Service_Calendar::CALENDAR);
-        $this->client->useApplicationDefaultCredentials();
+        $this->client = new Google_Client();
+        $this->service = new Google_Service_Calendar($this->client);
+        $this->refreshGoogleClientWithStoredTokens($this->client, (string) $tenantId);
     }
 
-    public function createEvent($item, $userId, $type = 'task', $createMeetingLink = false)
+    /**
+     * Build a Google client with a fresh access token from the stored refresh token (for API calls outside this service instance).
+     */
+    public function createRefreshedOAuthClient(string $tenantId): Google_Client
+    {
+        $client = new Google_Client();
+        $this->refreshGoogleClientWithStoredTokens($client, $tenantId);
+
+        return $client;
+    }
+
+    /**
+     * Apply OAuth app credentials, exchange refresh token, persist rotated tokens, set access token on $client.
+     */
+    private function refreshGoogleClientWithStoredTokens(Google_Client $client, string $tenantId): void
+    {
+        $this->configureOAuthClient($client, $tenantId);
+
+        $refreshToken = Setting::query()
+            ->where('tenant_id', $tenantId)
+            ->where('key', 'GOOGLE_REFRESH_TOKEN')
+            ->value('value');
+
+        if ($refreshToken === null || $refreshToken === '') {
+            throw new \Exception('Google Calendar is not connected. Connect from Electronic Integrations.');
+        }
+
+        $token = $client->fetchAccessTokenWithRefreshToken($refreshToken);
+        if (isset($token['error'])) {
+            throw new \Exception((string) ($token['error_description'] ?? $token['error'] ?? 'Failed to refresh Google access token.'));
+        }
+
+        $this->persistOAuthTokensFromRefreshResponse($tenantId, $token, (string) $refreshToken);
+        $client->setAccessToken($token);
+    }
+
+    /**
+     * Apply tenant (or config) OAuth client ID/secret/redirect for Google Calendar API.
+     */
+    private function configureOAuthClient(Google_Client $client, string $tenantId): void
+    {
+        $settings = Setting::query()
+            ->where('tenant_id', $tenantId)
+            ->whereIn('key', [
+                SettingKey::GoogleCalendarClientId->value,
+                SettingKey::GoogleCalendarClientSecret->value,
+                SettingKey::GoogleCalendarRedirectUri->value,
+                'googleCalendarClientId',
+                'googleCalendarSecret',
+                'googleCalendarRedirectUri',
+            ])
+            ->pluck('value', 'key');
+
+        $clientId = $settings[SettingKey::GoogleCalendarClientId->value]
+            ?? $settings['googleCalendarClientId']
+            ?? config('services.google.client_id');
+        $clientSecret = $settings[SettingKey::GoogleCalendarClientSecret->value]
+            ?? $settings['googleCalendarSecret']
+            ?? config('services.google.client_secret');
+        $redirectUri = $settings[SettingKey::GoogleCalendarRedirectUri->value]
+            ?? $settings['googleCalendarRedirectUri']
+            ?? config('services.google.redirect')
+            ?? route('google-calendar.callback');
+
+        if (empty($clientId) || empty($clientSecret)) {
+            throw new \Exception('Google OAuth client ID and secret are not configured.');
+        }
+
+        $client->setClientId((string) $clientId);
+        $client->setClientSecret((string) $clientSecret);
+        $client->setRedirectUri((string) $redirectUri);
+        $client->setAccessType('offline');
+        $client->addScope(Google_Service_Calendar::CALENDAR);
+    }
+
+    /**
+     * Persist access/refresh token and expiry after a refresh_token exchange (shared with HTTP layer).
+     *
+     * @param  array<string, mixed>  $token
+     */
+    public function persistOAuthTokensFromRefreshResponse(string $tenantId, array $token, string $fallbackRefreshToken): void
+    {
+        $access = (string) ($token['access_token'] ?? '');
+        if ($access === '') {
+            return;
+        }
+
+        $expiresIn = (int) ($token['expires_in'] ?? 3600);
+        $newRefresh = $token['refresh_token'] ?? null;
+        $refreshToStore = is_string($newRefresh) && $newRefresh !== '' ? $newRefresh : $fallbackRefreshToken;
+
+        Setting::updateOrCreate(
+            ['tenant_id' => $tenantId, 'key' => 'GOOGLE_TOKEN'],
+            ['value' => $access, 'group' => 'integrations'],
+        );
+        Setting::updateOrCreate(
+            ['tenant_id' => $tenantId, 'key' => 'GOOGLE_REFRESH_TOKEN'],
+            ['value' => $refreshToStore, 'group' => 'integrations'],
+        );
+        Setting::updateOrCreate(
+            ['tenant_id' => $tenantId, 'key' => 'GOOGLE_TOKEN_EXPIRES_AT'],
+            ['value' => now()->addSeconds($expiresIn)->toDateTimeString(), 'group' => 'integrations'],
+        );
+    }
+
+    private function googleCalendarEventSummary($item, string $type): string
+    {
+        if ($type === 'hearing') {
+            $item->loadMissing(['case', 'court']);
+            $caseTitle = $item->case?->title ?? '';
+            $courtName = $item->court?->name ?? '';
+
+            return $courtName !== ''
+                ? __('Google Calendar hearing title with court', ['case_title' => $caseTitle, 'court_name' => $courtName])
+                : __('Google Calendar hearing title case only', ['case_title' => $caseTitle]);
+        }
+
+        if ($type === 'timeline') {
+            return (string) ($item->title ?? 'Event');
+        }
+
+        return '';
+    }
+
+    private function googleCalendarEventDescription($item, string $type): string
+    {
+        if ($type === 'hearing') {
+            $parts = array_filter(
+                [$item->description ?? '', $item->notes ?? ''],
+                static fn (string $p) => $p !== ''
+            );
+
+            return implode("\n\n", $parts);
+        }
+
+        if ($type === 'timeline') {
+            return (string) ($item->description ?? '');
+        }
+
+        return '';
+    }
+
+    /**
+     * @return array{0: \Carbon\Carbon, 1: \Carbon\Carbon}|null
+     */
+    private function resolveGoogleEventStartEnd($item, string $type): ?array
+    {
+        if ($type === 'hearing' && $item->hearing_date) {
+            $startTime = \Carbon\Carbon::parse($item->hearing_date);
+            if ($item->hearing_time) {
+                $timeString = $item->hearing_time;
+                if (strpos($timeString, ' ') !== false) {
+                    $timeString = explode(' ', $timeString)[1];
+                }
+                $timeParts = explode(':', $timeString);
+                $startTime->setTime((int) $timeParts[0], (int) $timeParts[1], 0);
+            }
+            $endTime = clone $startTime;
+            $endTime->addMinutes((int) ($item->duration_minutes ?? 60));
+
+            return [$startTime, $endTime];
+        }
+
+        if ($type === 'timeline' && $item->event_date) {
+            $startTime = $item->event_date instanceof \Carbon\Carbon
+                ? $item->event_date->copy()
+                : \Carbon\Carbon::parse($item->event_date);
+            if (!empty($item->event_time)) {
+                $timeString = $item->event_time;
+                if (strpos($timeString, ' ') !== false) {
+                    $timeString = explode(' ', $timeString)[1];
+                }
+                $timeParts = explode(':', $timeString);
+                $startTime->setTime((int) $timeParts[0], (int) ($timeParts[1] ?? 0), 0);
+            } elseif ($startTime->format('H:i') === '00:00') {
+                $startTime->setTime(9, 0);
+            }
+            $duration = (int) ($item->duration_minutes ?? 60);
+            if ($duration < 1) {
+                $duration = 60;
+            }
+            $endTime = $startTime->copy()->addMinutes($duration);
+
+            return [$startTime, $endTime];
+        }
+
+        return null;
+    }
+
+    public function createEvent($item, $userId, $type = 'hearing', $createMeetingLink = false)
     {
         if (!$this->isEnabled($userId)) {
             \Log::info('Google Calendar not enabled for user', ['user_id' => $userId]);
@@ -80,16 +240,19 @@ class GoogleCalendarService
         }
 
         try {
+            if (! in_array($type, ['hearing', 'timeline'], true)) {
+                \Log::warning('Google Calendar createEvent skipped: unsupported type', ['type' => $type]);
+
+                return null;
+            }
+
             \Log::info('Setting up Google Calendar client', ['user_id' => $userId, 'type' => $type]);
             $this->setupClient($userId);
 
-            $summary = $item->title ?? ($type === 'team_member' ? 'Team Member Assignment: ' . ($item->user->name ?? 'Unknown') : 'Event');
-            $description = $item->description ?? ($type === 'team_member' ? 'Team member assigned to case' : '');
-            
-            // Set create_meeting_link property on item for later use
-            if ($createMeetingLink) {
-                $item->create_meeting_link = true;
-            }
+            $summary = $this->googleCalendarEventSummary($item, $type);
+            $description = $this->googleCalendarEventDescription($item, $type);
+
+            $shouldCreateMeetingLink = (bool) $createMeetingLink;
             
             $event = new Google_Service_Calendar_Event([
                 'summary' => $summary,
@@ -104,43 +267,11 @@ class GoogleCalendarService
                 ]
             ]);
 
-            // Set date/time based on item type
-            if ($type === 'hearing' && $item->hearing_date) {
-                $startTime = \Carbon\Carbon::parse($item->hearing_date);
-                if ($item->hearing_time) {
-                    // Handle hearing_time which might be a datetime string or just time
-                    $timeString = $item->hearing_time;
-                    if (strpos($timeString, ' ') !== false) {
-                        // Extract time part from datetime string
-                        $timeString = explode(' ', $timeString)[1];
-                    }
-                    $timeParts = explode(':', $timeString);
-                    $startTime->setTime((int)$timeParts[0], (int)$timeParts[1], 0);
-                }
-                $endTime = clone $startTime;
-                $endTime->addMinutes($item->duration_minutes ?? 60);
-            } elseif ($type === 'case' && $item->filing_date) {
-                $startTime = $item->filing_date;
-                $endTime = clone $startTime;
-                $endTime->addHour();
-            } elseif ($type === 'timeline' && $item->event_date) {
-                $startTime = $item->event_date;
-                $endTime = clone $item->event_date;
-                $endTime->addHour();
-            } elseif ($type === 'team_member' && $item->assigned_date) {
-                $startTime = $item->assigned_date;
-                $endTime = clone $item->assigned_date;
-                $endTime->addHour();
-            } elseif ($type === 'task' && $item->due_date) {
-                $startTime = $item->due_date->copy();
-                // Set default time to 9:00 AM if no time is specified
-                if ($startTime->format('H:i') === '00:00') {
-                    $startTime->setTime(9, 0);
-                }
-                $endTime = $startTime->copy()->addHour();
-            } else {
+            $window = $this->resolveGoogleEventStartEnd($item, $type);
+            if ($window === null) {
                 return null;
             }
+            [$startTime, $endTime] = $window;
 
             $start = new Google_Service_Calendar_EventDateTime();
             $start->setDateTime($startTime->format('c'));
@@ -151,7 +282,7 @@ class GoogleCalendarService
             $event->setEnd($end);
 
             // Add conference data (Google Meet) if requested
-            if (isset($item->create_meeting_link) && $item->create_meeting_link) {
+            if ($shouldCreateMeetingLink) {
                 $conferenceData = new \Google_Service_Calendar_ConferenceData();
                 $conferenceRequest = new \Google_Service_Calendar_CreateConferenceRequest();
                 $conferenceRequest->setRequestId(uniqid());
@@ -165,13 +296,13 @@ class GoogleCalendarService
                 ->value('value') ?: 'primary';
 
             $calendarEvent = $this->service->events->insert($calendarId, $event, [
-                'conferenceDataVersion' => isset($item->create_meeting_link) && $item->create_meeting_link ? 1 : 0
+                'conferenceDataVersion' => $shouldCreateMeetingLink ? 1 : 0
             ]);
             $eventId = $calendarEvent->getId();
             
             // Extract meeting link if conference was created
             $meetingLink = null;
-            if (isset($item->create_meeting_link) && $item->create_meeting_link && $calendarEvent->getConferenceData()) {
+            if ($shouldCreateMeetingLink && $calendarEvent->getConferenceData()) {
                 $entryPoints = $calendarEvent->getConferenceData()->getEntryPoints();
                 if ($entryPoints && count($entryPoints) > 0) {
                     foreach ($entryPoints as $entryPoint) {
@@ -182,7 +313,7 @@ class GoogleCalendarService
                     }
                 }
             }
-            
+
             // Return event ID and meeting link
             if ($meetingLink) {
                 return ['event_id' => $eventId, 'meeting_link' => $meetingLink];
@@ -200,13 +331,19 @@ class GoogleCalendarService
         }
     }
 
-    public function updateEvent($eventId, $item, $userId, $type = 'task')
+    public function updateEvent($eventId, $item, $userId, $type = 'hearing')
     {
         if (!$this->isEnabled($userId) || !$eventId) {
             return false;
         }
 
         try {
+            if (! in_array($type, ['hearing', 'timeline'], true)) {
+                \Log::warning('Google Calendar updateEvent skipped: unsupported type', ['type' => $type]);
+
+                return false;
+            }
+
             $this->setupClient($userId);
 
             // Get calendar ID from settings (UPPERCASE or camelCase)
@@ -215,61 +352,18 @@ class GoogleCalendarService
                 ->value('value') ?: 'primary';
 
             $event = $this->service->events->get($calendarId, $eventId);
-            
-            $summary = $item->title ?? ($type === 'team_member' ? 'Team Member Assignment: ' . ($item->user->name ?? 'Unknown') : 'Event');
-            $description = $item->description ?? ($type === 'team_member' ? 'Team member assigned to case' : '');
-            
+
+            $summary = $this->googleCalendarEventSummary($item, $type);
+            $description = $this->googleCalendarEventDescription($item, $type);
+
             $event->setSummary($summary);
             $event->setDescription($description);
-            
-            // Update extended properties for team members
-            if ($type === 'team_member') {
-                $event->setExtendedProperties([
-                    'private' => [
-                        'app_type' => $type,
-                        'app_id' => $item->id,
-                        'app_user_id' => $userId
-                    ]
-                ]);
-            }
 
-            // Set date/time based on item type
-            if ($type === 'hearing' && $item->hearing_date) {
-                $startTime = \Carbon\Carbon::parse($item->hearing_date);
-                if ($item->hearing_time) {
-                    // Handle hearing_time which might be a datetime string or just time
-                    $timeString = $item->hearing_time;
-                    if (strpos($timeString, ' ') !== false) {
-                        // Extract time part from datetime string
-                        $timeString = explode(' ', $timeString)[1];
-                    }
-                    $timeParts = explode(':', $timeString);
-                    $startTime->setTime((int)$timeParts[0], (int)$timeParts[1], 0);
-                }
-                $endTime = clone $startTime;
-                $endTime->addMinutes($item->duration_minutes ?? 60);
-            } elseif ($type === 'case' && $item->filing_date) {
-                $startTime = $item->filing_date;
-                $endTime = clone $startTime;
-                $endTime->addHour();
-            } elseif ($type === 'timeline' && $item->event_date) {
-                $startTime = $item->event_date;
-                $endTime = clone $item->event_date;
-                $endTime->addHour();
-            } elseif ($type === 'team_member' && $item->assigned_date) {
-                $startTime = $item->assigned_date;
-                $endTime = clone $item->assigned_date;
-                $endTime->addHour();
-            } elseif ($type === 'task' && $item->due_date) {
-                $startTime = $item->due_date->copy();
-                // Set default time to 9:00 AM if no time is specified
-                if ($startTime->format('H:i') === '00:00') {
-                    $startTime->setTime(9, 0);
-                }
-                $endTime = $startTime->copy()->addHour();
-            } else {
+            $window = $this->resolveGoogleEventStartEnd($item, $type);
+            if ($window === null) {
                 return false;
             }
+            [$startTime, $endTime] = $window;
 
             $start = new Google_Service_Calendar_EventDateTime();
             $start->setDateTime($startTime->format('c'));
@@ -454,30 +548,12 @@ class GoogleCalendarService
 
     public function isAuthorized($userId)
     {
-        $jsonPath = Setting::where('tenant_id', $userId)
-            ->whereIn('key', [SettingKey::GoogleCalendarJsonPath->value, 'googleCalendarJsonPath'])
-            ->first();
-        
-        if (!$jsonPath || empty($jsonPath->value)) {
-            return false;
-        }
-        
-        // Try different path combinations
-        $paths = [
-            $jsonPath->value, // Original path
-            storage_path($jsonPath->value), // Storage path
-            storage_path('app/' . $jsonPath->value), // Storage app path
-            base_path($jsonPath->value), // Base path
-            public_path('storage/' . $jsonPath->value), // Public storage path
-        ];
-        
-        foreach ($paths as $path) {
-            if (file_exists($path)) {
-                return true;
-            }
-        }
-        
-        return false;
+        $refresh = Setting::query()
+            ->where('tenant_id', $userId)
+            ->where('key', 'GOOGLE_REFRESH_TOKEN')
+            ->value('value');
+
+        return is_string($refresh) && $refresh !== '';
     }
 
     private function extractOriginalData($event, $userId)
@@ -800,26 +876,11 @@ class GoogleCalendarService
     public function getAuthorizationUrl($userId)
     {
         try {
-            $settings = Setting::where('tenant_id', $userId)
-                ->whereIn('key', ['googleCalendarClientId', 'googleCalendarSecret', 'googleCalendarRedirectUri'])
-                ->pluck('value', 'key');
+            $client = new Google_Client();
+            $this->configureOAuthClient($client, (string) $userId);
+            $client->setPrompt('select_account consent');
 
-            // Fallback to environment variables or config
-            $clientId = $settings['googleCalendarClientId'] ?? config('services.google.client_id') ?? env('GOOGLE_CLIENT_ID');
-            $clientSecret = $settings['googleCalendarSecret'] ?? config('services.google.client_secret') ?? env('GOOGLE_CLIENT_SECRET');
-
-            if (!$clientId || !$clientSecret) {
-                throw new \Exception('Google Calendar credentials not configured');
-            }
-
-            $this->client->setClientId($clientId);
-            $this->client->setClientSecret($clientSecret);
-            $this->client->setRedirectUri($settings['googleCalendarRedirectUri'] ?? route('google-calendar.callback'));
-            $this->client->setScopes(Google_Service_Calendar::CALENDAR);
-            $this->client->setAccessType('offline');
-            $this->client->setPrompt('select_account consent');
-
-            return $this->client->createAuthUrl();
+            return $client->createAuthUrl();
         } catch (\Exception $e) {
             \Log::error('Failed to generate Google Calendar authorization URL: ' . $e->getMessage());
             return null;

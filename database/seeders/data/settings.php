@@ -75,10 +75,14 @@ return [
     ['key' => 'EMAIL_FROM_NAME', 'group' => 'mail', 'value' => 'Sard'],
 
     // Google Calendar Settings
-    ['key' => 'GOOGLE_CALENDAR_ENABLED', 'value' => false],
-    ['key' => 'GOOGLE_CALENDAR_CLIENT_ID', 'value' => ''],
-    ['key' => 'GOOGLE_CALENDAR_CLIENT_SECRET', 'value' => ''],
-    ['key' => 'GOOGLE_CALENDAR_REDIRECT_URI', 'value' => ''],
+    ['key' => 'GOOGLE_CALENDAR_ENABLED', 'group' => 'integrations', 'value' => false],
+    ['key' => 'GOOGLE_CALENDAR_ID', 'group' => 'integrations', 'value' => ''],
+    ['key' => 'GOOGLE_TOKEN', 'group' => 'integrations', 'value' => ''],
+    ['key' => 'GOOGLE_REFRESH_TOKEN', 'group' => 'integrations', 'value' => ''],
+    ['key' => 'GOOGLE_TOKEN_EXPIRES_AT', 'group' => 'integrations', 'value' => ''],
+    ['key' => 'GOOGLE_CALENDAR_CLIENT_ID', 'group' => 'integrations', 'value' => ''],
+    ['key' => 'GOOGLE_CALENDAR_CLIENT_SECRET', 'group' => 'integrations', 'value' => ''],
+    ['key' => 'GOOGLE_CALENDAR_REDIRECT_URI', 'group' => 'integrations', 'value' => ''],
 
     // Cookie & Contact
     ['key' => 'ENABLE_LOGGING', 'value' => true],

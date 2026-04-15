@@ -29,6 +29,7 @@ import {
     MessageSquare,
     Palette,
     Percent,
+    Plug,
     Settings,
     SquareCheckBig,
     UserRoundCog,
@@ -244,6 +245,16 @@ export function AppSidebar() {
                 title: t('Calendar'),
                 href: route('calendar.index'),
                 icon: CalendarFold,
+            });
+        }
+        if (
+            hasPermission(permissions, 'view-integrations') ||
+            hasPermission(permissions, 'manage-google-calendar-integration')
+        ) {
+            items.push({
+                title: t('Electronic Integrations'),
+                href: route('integrations.index'),
+                icon: Plug,
             });
         }
 

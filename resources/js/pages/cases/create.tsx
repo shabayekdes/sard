@@ -30,7 +30,6 @@ export default function CreateCase() {
         circleTypes,
         countries,
         documentTypes,
-        googleCalendarEnabled,
         planLimits,
         errors = {},
         base_url,
@@ -76,7 +75,6 @@ export default function CreateCase() {
         estimated_value: '',
         description: '',
         status: 'active',
-        sync_with_google_calendar: false,
         documents: [],
     }));
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});

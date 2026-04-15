@@ -61,7 +61,6 @@ interface Props {
   cases: { id: number; title?: string; case_id?: string }[];
   users: User[];
   taskStatuses: TaskStatusOption[];
-  googleCalendarEnabled?: boolean;
   filters: {
     task_status_id?: string;
     priority?: string;
@@ -74,10 +73,9 @@ interface Props {
   };
   userWorkspaceRole?: string;
   permissions?: any;
-  googleCalendarEnabled?: boolean;
 }
 
-export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, projects, users, filters, userWorkspaceRole, googleCalendarEnabled }: Props) {
+export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, projects, users, filters, userWorkspaceRole }: Props) {
   const { t, i18n } = useTranslation();
   const { flash, auth } = usePage().props as any;
   const permissions: string[] = Array.isArray(auth?.permissions) ? auth.permissions : [];
@@ -1227,18 +1225,7 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
               ],
             },
             { name: 'notes', label: t('Notes'), type: 'textarea' },
-          ].concat(
-            googleCalendarEnabled && formMode === 'create'
-              ? [
-                {
-                  name: 'sync_with_google_calendar',
-                  label: t('Synchronize in Google Calendar'),
-                  type: 'switch',
-                  defaultValue: false,
-                },
-              ]
-              : [],
-          ),
+          ],
           modalSize: 'xl',
         }}
         initialData={currentItem ? {

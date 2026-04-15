@@ -57,6 +57,8 @@ class RoleSeeder extends Seeder
             'manage-any-calendar',
             'manage-own-calendar',
             'view-calendar',
+            'view-integrations',
+            'manage-google-calendar-integration',
             'edit-users',
             'delete-users',
             'view-users',
@@ -764,7 +766,7 @@ class RoleSeeder extends Seeder
                 'name' => 'legal_secretary',
                 'label' => self::translatableJson('Legal Secretary', 'سكرتير قانوني'),
                 'description' => self::translatableJson('Legal secretary with administrative access', 'سكرتير قانوني بصلاحيات إدارية'),
-                'permissions' => ['view-calendar', 'manage-calendar', 'view-clients', 'manage-messages', 'view-messages']
+                'permissions' => ['view-calendar', 'manage-calendar', 'view-integrations', 'manage-google-calendar-integration', 'view-clients', 'manage-messages', 'view-messages']
             ]
         ];
 

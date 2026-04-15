@@ -32,6 +32,10 @@ export type PageProps = {
     ziggy: any;
     quote?: { message: string; author: string };
 
+    /** Tenant integrations page */
+    googleCalendarEnabled?: boolean;
+    googleCalendarId?: string;
+
     // Inertia adds these sometimes depending on setup
     errors?: Record<string, string>;
 };

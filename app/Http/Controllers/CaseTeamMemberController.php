@@ -65,7 +65,6 @@ class CaseTeamMemberController extends Controller
             'user_id' => 'required|exists:users,id',
             'assigned_date' => 'required|date',
             'status' => 'nullable|in:active,inactive',
-            'sync_with_google_calendar' => 'nullable|boolean',
         ]);
 
         $validated['tenant_id'] = createdBy();
@@ -94,14 +93,14 @@ class CaseTeamMemberController extends Controller
         $teamMember = CaseTeamMember::create($validated);
 
         // Handle Google Calendar sync
-        if ($teamMember && $request->sync_with_google_calendar) {
-            $teamMember->load('user');
-            $calendarService = new GoogleCalendarService();
-            $eventId = $calendarService->createEvent($teamMember, createdBy(), 'team_member');
-            if ($eventId) {
-                $teamMember->update(['google_calendar_event_id' => $eventId]);
-            }
-        }
+        // if ($teamMember && $request->sync_with_google_calendar) {
+        //     $teamMember->load('user');
+        //     $calendarService = new GoogleCalendarService();
+        //     $eventId = $calendarService->createEvent($teamMember, createdBy(), 'team_member');
+        //     if ($eventId) {
+        //         $teamMember->update(['google_calendar_event_id' => $eventId]);
+        //     }
+        // }
 
         return redirect()->back()->with('success', 'Team member assigned successfully.');
     }
@@ -121,7 +120,6 @@ class CaseTeamMemberController extends Controller
             'user_id' => 'required|exists:users,id',
             'assigned_date' => 'required|date',
             'status' => 'nullable|in:active,inactive',
-            'sync_with_google_calendar' => 'nullable|boolean',
         ]);
 
         $case = CaseModel::where('id', $validated['case_id'])->where('tenant_id', createdBy())->first();
@@ -148,22 +146,22 @@ class CaseTeamMemberController extends Controller
         $teamMember->update($validated);
 
         // Handle Google Calendar sync
-        if ($request->sync_with_google_calendar && !$teamMember->google_calendar_event_id) {
-            $teamMember->load('user');
-            $calendarService = new GoogleCalendarService();
-            $eventId = $calendarService->createEvent($teamMember, createdBy(), 'team_member');
-            if ($eventId) {
-                $teamMember->update(['google_calendar_event_id' => $eventId]);
-            }
-        } elseif ($request->sync_with_google_calendar && $teamMember->google_calendar_event_id) {
-            $teamMember->load('user');
-            $calendarService = new GoogleCalendarService();
-            $calendarService->updateEvent($teamMember->google_calendar_event_id, $teamMember, createdBy(), 'team_member');
-        } elseif (!$request->sync_with_google_calendar && $teamMember->google_calendar_event_id) {
-            $calendarService = new GoogleCalendarService();
-            $calendarService->deleteEvent($teamMember->google_calendar_event_id, createdBy());
-            $teamMember->update(['google_calendar_event_id' => null]);
-        }
+        // if ($request->sync_with_google_calendar && !$teamMember->google_calendar_event_id) {
+        //     $teamMember->load('user');
+        //     $calendarService = new GoogleCalendarService();
+        //     $eventId = $calendarService->createEvent($teamMember, createdBy(), 'team_member');
+        //     if ($eventId) {
+        //         $teamMember->update(['google_calendar_event_id' => $eventId]);
+        //     }
+        // } elseif ($request->sync_with_google_calendar && $teamMember->google_calendar_event_id) {
+        //     $teamMember->load('user');
+        //     $calendarService = new GoogleCalendarService();
+        //     $calendarService->updateEvent($teamMember->google_calendar_event_id, $teamMember, createdBy(), 'team_member');
+        // } elseif (!$request->sync_with_google_calendar && $teamMember->google_calendar_event_id) {
+        //     $calendarService = new GoogleCalendarService();
+        //     $calendarService->deleteEvent($teamMember->google_calendar_event_id, createdBy());
+        //     $teamMember->update(['google_calendar_event_id' => null]);
+        // }
 
         return redirect()->back()->with('success', 'Team member assignment updated successfully.');
     }

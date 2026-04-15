@@ -2,17 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Facades\Settings;
+use App\Http\Controllers;
 use App\Http\Controllers\LandingPage\CustomPageController;
-use Inertia\Inertia;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\PayPalPaymentController;
-use App\Http\Controllers\StripePaymentController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 use Stancl\Tenancy\Features\UserImpersonation;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomainOrSubdomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
-use App\Http\Controllers;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,8 +28,7 @@ Route::middleware([
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
 
-    require __DIR__ . '/auth.php';
-
+    require __DIR__.'/auth.php';
 
     // Public route: token logs in the user without email/password. Do not add 'auth' middleware.
     Route::get('/impersonate/{token}', function (string $token) {
@@ -134,7 +129,6 @@ Route::middleware([
             // Analytics routes
             Route::get('dashboard/analytics', [Controllers\DashboardAnalyticsController::class, 'index'])->name('dashboard.analytics.index');
 
-
             // Users routes with granular permissions
             Route::middleware('permission:manage-users')->group(function () {
                 Route::get('users', [Controllers\UserController::class, 'index'])->middleware('permission:manage-users')->name('users.index');
@@ -151,7 +145,6 @@ Route::middleware([
                 Route::put('users/{user}/reset-password', [Controllers\UserController::class, 'resetPassword'])->middleware('permission:reset-password-users')->name('users.reset-password');
                 Route::put('users/{user}/toggle-status', [Controllers\UserController::class, 'toggleStatus'])->middleware('permission:toggle-status-users')->name('users.toggle-status');
             });
-
 
             // Permissions routes with granular permissions
             Route::middleware('permission:manage-permissions')->group(function () {
@@ -176,7 +169,7 @@ Route::middleware([
                 Route::patch('roles/{role}', [Controllers\RoleController::class, 'update'])->middleware('permission:edit-roles');
                 Route::delete('roles/{role}', [Controllers\RoleController::class, 'destroy'])->middleware('permission:delete-roles')->name('roles.destroy');
             });
-            
+
             // Quick action form data
             Route::get('quick-actions/case-data', [Controllers\QuickActionController::class, 'caseFormData'])->name('quick-actions.case-data');
             Route::get('quick-actions/client-data', [Controllers\QuickActionController::class, 'clientFormData'])->name('quick-actions.client-data');
@@ -188,7 +181,7 @@ Route::middleware([
                 ->middleware('permission:view-setup')
                 ->name('setup.')
                 ->group(function () {
-                    Route::get('/', fn() => Inertia::render('setup/index'))->name('index');
+                    Route::get('/', fn () => Inertia::render('setup/index'))->name('index');
 
                     Route::middleware('permission:manage-client-types')->group(function () {
                         Route::get('client-types', [Controllers\ClientTypeController::class, 'index'])->name('client-types.index');
@@ -489,11 +482,27 @@ Route::middleware([
             // Calendar route
             Route::get('calendar', [Controllers\CalendarController::class, 'index'])->name('calendar.index');
 
+            Route::get('integrations', [Controllers\IntegrationsController::class, 'index'])
+                ->middleware('permission:view-integrations|manage-google-calendar-integration')
+                ->name('integrations.index');
+
+            Route::middleware('permission:manage-google-calendar-integration')->group(function () {
+                Route::get('api/google-calendar/calendars', [Controllers\GoogleCalendarController::class, 'listCalendars'])->name('google-calendar.calendars');
+                Route::post('integrations/google-calendar/disconnect', [Controllers\IntegrationsController::class, 'disconnectGoogleCalendar'])->name('integrations.google-calendar.disconnect');
+                Route::post('integrations/google-calendar/calendar', [Controllers\IntegrationsController::class, 'updateGoogleCalendar'])->name('integrations.google-calendar.calendar');
+            });
+
             // Google Calendar API routes
             Route::get('api/google-calendar/events', [Controllers\GoogleCalendarController::class, 'getEvents'])->name('google-calendar.events');
             Route::post('api/google-calendar/sync', [Controllers\GoogleCalendarController::class, 'syncEvents'])->name('google-calendar.sync');
-            Route::get('google-calendar/auth', [Controllers\GoogleCalendarController::class, 'authorizeGoogleCalendar'])->name('google-calendar.auth');
+            Route::get('google-calendar/auth', [Controllers\GoogleCalendarController::class, 'authorizeGoogleCalendar'])
+                ->middleware('permission:manage-google-calendar-integration')
+                ->name('google-calendar.auth');
             Route::get('google-calendar/callback', [Controllers\GoogleCalendarController::class, 'callback'])->name('google-calendar.callback');
+
+            Route::get('auth/google', [Controllers\GoogleCalendarController::class, 'authorizeGoogleCalendar'])
+                ->middleware('permission:manage-google-calendar-integration')
+                ->name('google.redirect');
 
             // Court Management routes
             Route::middleware('permission:manage-courts')->group(function () {
@@ -724,7 +733,6 @@ Route::middleware([
                     ->name('tasks.update-task-status');
                 Route::get('api/tasks/calendar', [\App\Http\Controllers\TaskController::class, 'getCalendarTasks'])->middleware('permission:task_view_any')->name('api.tasks.calendar');
 
-
                 Route::get('api/tasks/case-users/{case}', [Controllers\TaskController::class, 'getCaseUsers'])->name('api.tasks.case-users');
                 Route::get('api/clients/{client}/cases', [Controllers\InvoiceController::class, 'getClientCases'])->name('api.clients.cases');
                 Route::get('api/cases/{case}/time-entries', [Controllers\InvoiceController::class, 'getCaseTimeEntries'])->name('api.cases.time-entries');
@@ -746,7 +754,6 @@ Route::middleware([
                 Route::post('task/task-comments', [Controllers\TaskCommentController::class, 'store'])->middleware('permission:create-task-comments')->name('tasks.task-comments.store');
                 Route::put('task/task-comments/{taskComment}', [Controllers\TaskCommentController::class, 'update'])->middleware('permission:edit-task-comments')->name('tasks.task-comments.update');
                 Route::delete('task/task-comments/{taskComment}', [Controllers\TaskCommentController::class, 'destroy'])->middleware('permission:delete-task-comments')->name('tasks.task-comments.destroy');
-
 
                 // Task comments
                 // Route::post('tasks/{task}/comments', [\App\Http\Controllers\TaskCommentController::class, 'store'])->middleware('permission:task_add_comments')->name('task-comments.store');
