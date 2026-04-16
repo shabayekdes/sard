@@ -11,7 +11,6 @@ import { Pagination } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Plus, Search, Filter, Eye, Edit, Copy, Trash2, LayoutGrid, List, User as UserIcon, CheckSquare, Columns, AlertTriangle } from 'lucide-react';
 import { PageTemplate } from '@/components/page-template';
@@ -23,6 +22,7 @@ import { localizedString } from '@/utils/i18n';
 import { taskPriorityTranslationKey } from '@/utils/taskPriority';
 import { CrudFormModal } from '@/components/CrudFormModal';
 import { hasPermission } from '@/utils/authorization';
+import { useInitials } from '@/hooks/use-initials';
 
 declare global {
   interface Window {
@@ -53,6 +53,29 @@ function normalizeTaskFormPriority(p: unknown): string {
   return 'medium';
 }
 
+/** Inertia sends `assigned_user` from `assignedUser()`; `assigned_to` may be a numeric FK only. */
+function getTaskAssignee(task: Task): { id: number; name: string; avatar?: string } | null {
+  const u = task.assigned_user;
+  if (u && typeof u === 'object' && typeof u.name === 'string' && u.name.trim() !== '') {
+    return u;
+  }
+  const embed = task.assigned_to;
+  if (embed && typeof embed === 'object' && typeof embed.name === 'string' && embed.name.trim() !== '') {
+    return embed;
+  }
+  return null;
+}
+
+function taskHasAssigneeId(task: Task): boolean {
+  if (getTaskAssignee(task)) return true;
+  if (task.assigned_to == null) return false;
+  if (typeof task.assigned_to === 'number') return task.assigned_to > 0;
+  if (typeof task.assigned_to === 'object' && 'id' in task.assigned_to) {
+    return Number((task.assigned_to as { id: number }).id) > 0;
+  }
+  return true;
+}
+
 interface Props {
   tasks: PaginatedData<Task>;
   projects: Project[];
@@ -76,6 +99,7 @@ interface Props {
 
 export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, projects, users, filters, userWorkspaceRole }: Props) {
   const { t, i18n } = useTranslation();
+  const getInitials = useInitials();
   const { flash, auth } = usePage().props as any;
   const permissions: string[] = Array.isArray(auth?.permissions) ? auth.permissions : [];
   const [searchTerm, setSearchTerm] = useState(filters.search || '');
@@ -408,18 +432,20 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
     {
       key: 'assigned_to',
       label: t('Assignee'),
-      render: (_: unknown, row: Task) =>
-        row.assigned_to ? (
+      render: (_: unknown, row: Task) => {
+        const assignee = getTaskAssignee(row);
+        if (!assignee) {
+          return <span className="text-sm text-gray-400">{t('Unassigned')}</span>;
+        }
+        return (
           <div className="flex items-center">
-            <Avatar className="mr-2 h-6 w-6">
-              <AvatarImage src={row.assigned_to.avatar} />
-              <AvatarFallback className="text-xs">{row.assigned_to.name?.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <span className="text-sm">{row.assigned_to.name}</span>
+            <div className="mx-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-white">
+              {getInitials(assignee.name) || '?'}
+            </div>
+            <span className="text-sm">{assignee.name}</span>
           </div>
-        ) : (
-          <span className="text-sm text-gray-400">{t('Unassigned')}</span>
-        ),
+        );
+      },
     },
     {
       key: 'progress',
@@ -512,13 +538,13 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
             </div>
             <div className="text-center">
               <div className="text-xl font-bold text-yellow-600">
-                {(Array.isArray(tasks) ? tasks : tasks?.data || []).filter(task => !task.assigned_to).length}
+                {(Array.isArray(tasks) ? tasks : tasks?.data || []).filter((task) => !taskHasAssigneeId(task)).length}
               </div>
               <div className="text-xs text-gray-600">{t('Unassigned')}</div>
             </div>
             <div className="text-center">
               <div className="text-xl font-bold text-green-600">
-                {(Array.isArray(tasks) ? tasks : tasks?.data || []).filter(task => task.assigned_to).length}
+                {(Array.isArray(tasks) ? tasks : tasks?.data || []).filter((task) => taskHasAssigneeId(task)).length}
               </div>
               <div className="text-xs text-gray-600">{t('Assigned')}</div>
             </div>
@@ -858,13 +884,14 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
                                   
                                   <div className="flex items-center justify-between">
                                     <TaskPriority priority={task.priority} showIcon />
-                                    {task.assigned_to && (
-                                      <Avatar className="h-5 w-5">
-                                        <AvatarImage src={task.assigned_to.avatar} />
-                                        <AvatarFallback className="text-xs">
-                                          {task.assigned_to.name?.charAt(0)}
-                                        </AvatarFallback>
-                                      </Avatar>
+                                    {getTaskAssignee(task) && (
+                                      <div
+                                        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-white"
+                                        title={getTaskAssignee(task)!.name}
+                                        aria-label={`${t('Assignee')}: ${getTaskAssignee(task)!.name}`}
+                                      >
+                                        {getInitials(getTaskAssignee(task)!.name) || '?'}
+                                      </div>
                                     )}
                                   </div>
                                   
@@ -966,18 +993,15 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
                       
                       <div className="flex items-center">
                         <div className="flex items-center space-x-2">
-                          {task.assigned_to ? (
+                          {getTaskAssignee(task) ? (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Avatar className="h-6 w-6 cursor-pointer">
-                                  <AvatarImage src={task.assigned_to.avatar} />
-                                  <AvatarFallback className="text-xs">
-                                    {task.assigned_to.name?.charAt(0)}
-                                  </AvatarFallback>
-                                </Avatar>
+                                <div className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-primary text-xs font-medium text-white">
+                                  {getInitials(getTaskAssignee(task)!.name) || '?'}
+                                </div>
                               </TooltipTrigger>
                               <TooltipContent>
-                                {task.assigned_to.name}
+                                {getTaskAssignee(task)!.name}
                               </TooltipContent>
                             </Tooltip>
                           ) : (

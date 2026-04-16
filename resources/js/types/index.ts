@@ -14,7 +14,9 @@ export interface Task {
     priority: string;
     task_status_id?: number | null;
     task_status?: TaskStatusOption | null;
-    assigned_to?: { id: number; name: string; avatar?: string } | null;
+    /** FK id when not expanded; prefer `assigned_user` for display from API. */
+    assigned_to?: number | { id: number; name: string; avatar?: string } | null;
+    assigned_user?: { id: number; name: string; avatar?: string } | null;
     progress?: number;
     end_date?: string | null;
     due_date?: string | null;
