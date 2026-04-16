@@ -1919,6 +1919,7 @@
     "The credit card has expired": "انتهت صلاحية البطاقة",
     "The credit card number is invalid": "رقم البطاقة غير صالح",
     "The merchant does not accept this type of credit card": "التاجر لا يقبل هذا النوع من البطاقات",
+    "The start date must not be after the due date.": "يجب ألا يكون تاريخ البدء بعد تاريخ الاستحقاق.",
     "The transaction cannot be found": "لم يتم العثور على المعاملة",
     "The transaction has been declined because of an AVS mismatch": "تم رفض المعاملة بسبب عدم تطابق العنوان (AVS)",
     "The transaction has been declined because the CVV2 value is invalid": "تم رفض المعاملة لأن قيمة CVV2 غير صالحة",

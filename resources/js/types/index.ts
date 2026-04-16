@@ -19,6 +19,8 @@ export interface Task {
     assigned_user?: { id: number; name: string; avatar?: string } | null;
     progress?: number;
     end_date?: string | null;
+    /** Planned start (datetime). */
+    start_date?: string | null;
     due_date?: string | null;
     [key: string]: unknown;
 }

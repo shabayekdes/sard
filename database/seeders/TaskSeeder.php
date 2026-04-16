@@ -60,6 +60,7 @@ class TaskSeeder extends Seeder
                 
                 for ($i = 1; $i <= $taskCount; $i++) {
                     $dueDate = rand(1, 10) > 5 ? now()->addDays(rand(1, 30)) : now()->subDays(rand(1, 15));
+                    $startDate = $dueDate->copy()->subDays(rand(0, 20));
                     $taskType = $taskTypes->random();
                     $taskStatus = $taskStatuses->random();
                     
@@ -68,6 +69,7 @@ class TaskSeeder extends Seeder
                         'title' => $taskTitles[($companyUser->id + $i - 1) % count($taskTitles)],
                         'description' => $descriptions[($companyUser->id + $i - 1) % count($descriptions)] . ' — ' . $companyUser->name . '.',
                         'priority' => $priorities[rand(0, count($priorities) - 1)]->value,
+                        'start_date' => $startDate,
                         'due_date' => $dueDate,
                         'estimated_duration' => $taskType->default_duration ?? rand(60, 300),
                         'case_id' => $cases->count() > 0 ? $cases->random()->id : null,

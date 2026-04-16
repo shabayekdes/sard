@@ -10,6 +10,9 @@ import { ProjectMilestone, Task, TaskStatusOption, User as UserType } from '@/ty
 import { hasPermission } from '@/utils/authorization';
 import { localizedString } from '@/utils/i18n';
 import { taskPriorityTranslationKey } from '@/utils/taskPriority';
+import { normalizeInertiaValidationErrors } from '@/utils/inertiaErrors';
+import { getTaskAssignee, getTaskAssigneeId } from '@/utils/taskTable';
+import { cn } from '@/lib/utils';
 import { router, usePage } from '@inertiajs/react';
 import { CheckSquare, MessageSquare, Paperclip } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -29,6 +32,7 @@ export default function TaskModal({ task, isOpen, onClose, members = [], taskSta
     const { auth } = usePage().props as { auth?: { permissions?: string[] } };
     const permissions: string[] = Array.isArray(auth?.permissions) ? auth.permissions : [];
     const [currentTask, setCurrentTask] = useState(task);
+    const [dateFieldErrors, setDateFieldErrors] = useState<Record<string, string>>({});
 
     const canEditTask = hasPermission(permissions, 'edit-tasks');
     const canAssignTask = hasPermission(permissions, 'edit-tasks') || hasPermission(permissions, 'assign-tasks');
@@ -36,6 +40,7 @@ export default function TaskModal({ task, isOpen, onClose, members = [], taskSta
 
     useEffect(() => {
         setCurrentTask(task);
+        setDateFieldErrors({});
     }, [task]);
 
     const refreshTask = async () => {
@@ -74,7 +79,7 @@ export default function TaskModal({ task, isOpen, onClose, members = [], taskSta
                 priority: priority,
                 start_date: currentTask.start_date,
                 due_date: currentTask.due_date,
-                assigned_to: currentTask.assigned_to?.id,
+                assigned_to: getTaskAssigneeId(currentTask),
                 milestone_id: currentTask.milestone_id,
             },
             {
@@ -114,6 +119,12 @@ export default function TaskModal({ task, isOpen, onClose, members = [], taskSta
     };
 
     const handleDateChange = (field: string, value: string) => {
+        setDateFieldErrors((prev) => {
+            const next = { ...prev };
+            delete next.start_date;
+            delete next.due_date;
+            return next;
+        });
         router.put(
             route('tasks.update', task.id),
             {
@@ -122,15 +133,16 @@ export default function TaskModal({ task, isOpen, onClose, members = [], taskSta
                 priority: currentTask.priority,
                 start_date: field === 'start_date' ? value || null : currentTask.start_date,
                 due_date: field === 'due_date' ? value || null : currentTask.due_date,
-                assigned_to: currentTask.assigned_to?.id,
+                assigned_to: getTaskAssigneeId(currentTask),
                 milestone_id: currentTask.milestone_id,
             },
             {
                 onSuccess: () => {
+                    setDateFieldErrors({});
                     refreshTask();
                 },
-                onError: () => {
-                    toast.error(t('Failed to update date'));
+                onError: (errors) => {
+                    setDateFieldErrors((prev) => ({ ...prev, ...normalizeInertiaValidationErrors(errors) }));
                 },
             },
         );
@@ -282,7 +294,10 @@ export default function TaskModal({ task, isOpen, onClose, members = [], taskSta
                         <div>
                             <h3 className="mb-2 text-sm font-medium text-gray-900">{t('Assignee')}</h3>
                             {canAssignTask ? (
-                                <Select value={currentTask.assigned_to?.id?.toString() || 'unassigned'} onValueChange={handleAssigneeChange}>
+                                <Select
+                                    value={getTaskAssigneeId(currentTask)?.toString() ?? 'unassigned'}
+                                    onValueChange={handleAssigneeChange}
+                                >
                                     <SelectTrigger>
                                         <SelectValue placeholder={t('Select assignee')} />
                                     </SelectTrigger>
@@ -291,7 +306,16 @@ export default function TaskModal({ task, isOpen, onClose, members = [], taskSta
                                         {(() => {
                                             const projectMembers =
                                                 currentTask.project?.members?.filter((m) => m.user?.type !== 'client').map((m) => m.user) || [];
-                                            return projectMembers.length > 0 ? projectMembers : members;
+                                            const base = projectMembers.length > 0 ? projectMembers : members;
+                                            const currentAssignee = getTaskAssignee(currentTask);
+                                            const ids = new Set(base.map((m) => m.id));
+                                            if (currentAssignee && !ids.has(currentAssignee.id)) {
+                                                return [
+                                                    { id: currentAssignee.id, name: currentAssignee.name },
+                                                    ...base,
+                                                ];
+                                            }
+                                            return base;
                                         })().map((member) => (
                                             <SelectItem key={member.id} value={member.id.toString()}>
                                                 {member.name}
@@ -300,7 +324,9 @@ export default function TaskModal({ task, isOpen, onClose, members = [], taskSta
                                     </SelectContent>
                                 </Select>
                             ) : (
-                                <div className="text-sm text-gray-600">{currentTask.assigned_to?.name ?? t('Unassigned')}</div>
+                                <div className="text-sm text-gray-600">
+                                    {getTaskAssignee(currentTask)?.name ?? t('Unassigned')}
+                                </div>
                             )}
                         </div>
                       
@@ -315,12 +341,15 @@ export default function TaskModal({ task, isOpen, onClose, members = [], taskSta
                                             type="date"
                                             value={currentTask.start_date?.split('T')[0] || ''}
                                             onChange={(e) => handleDateChange('start_date', e.target.value)}
-                                            className="mt-1"
+                                            className={cn('mt-1', dateFieldErrors.start_date && 'border-red-500')}
                                         />
                                     ) : (
                                         <div className="mt-1 text-sm text-gray-600">
                                             {currentTask.start_date ? new Date(currentTask.start_date).toLocaleDateString() : t('Not set')}
                                         </div>
+                                    )}
+                                    {dateFieldErrors.start_date && (
+                                        <p className="mt-1 text-xs text-red-600">{dateFieldErrors.start_date}</p>
                                     )}
                                 </div>
                                 <div>
@@ -330,12 +359,15 @@ export default function TaskModal({ task, isOpen, onClose, members = [], taskSta
                                             type="date"
                                             value={currentTask.due_date?.split('T')[0] || ''}
                                             onChange={(e) => handleDateChange('due_date', e.target.value)}
-                                            className="mt-1"
+                                            className={cn('mt-1', dateFieldErrors.due_date && 'border-red-500')}
                                         />
                                     ) : (
                                         <div className="mt-1 text-sm text-gray-600">
                                             {currentTask.due_date ? new Date(currentTask.due_date).toLocaleDateString() : t('Not set')}
                                         </div>
+                                    )}
+                                    {dateFieldErrors.due_date && (
+                                        <p className="mt-1 text-xs text-red-600">{dateFieldErrors.due_date}</p>
                                     )}
                                 </div>
                             </div>

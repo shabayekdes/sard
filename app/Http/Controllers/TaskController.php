@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\CaseModel;
 use App\Services\GoogleCalendarService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
@@ -96,6 +97,7 @@ class TaskController extends BaseController
             'description' => 'nullable|string',
             'priority' => ['required', Rule::enum(TaskPriority::class)],
             'due_date' => 'nullable|date',
+            'start_date' => 'nullable|date',
             'estimated_duration' => 'nullable|integer|min:1',
             'case_id' => 'nullable|exists:cases,id',
             'assigned_to' => 'nullable|exists:users,id',
@@ -146,6 +148,10 @@ class TaskController extends BaseController
             }
         }
 
+        if ($redirect = $this->redirectIfStartDateAfterDueDate($validated['start_date'] ?? null, $validated['due_date'] ?? null)) {
+            return $redirect;
+        }
+
         $task = Task::create($validated);
 
         // Handle Google Calendar sync
@@ -191,6 +197,7 @@ class TaskController extends BaseController
             'description' => 'nullable|string',
             'priority' => ['required', Rule::enum(TaskPriority::class)],
             'due_date' => 'nullable|date',
+            'start_date' => 'nullable|date',
             'estimated_duration' => 'nullable|integer|min:1',
             'case_id' => 'nullable|exists:cases,id',
             'assigned_to' => 'nullable|exists:users,id',
@@ -237,6 +244,12 @@ class TaskController extends BaseController
             if (!$taskStatus) {
                 return redirect()->back()->with('error', __('Invalid task status selected.'));
             }
+        }
+
+        $effectiveStart = array_key_exists('start_date', $validated) ? $validated['start_date'] : $task->start_date;
+        $effectiveDue = array_key_exists('due_date', $validated) ? $validated['due_date'] : $task->due_date;
+        if ($redirect = $this->redirectIfStartDateAfterDueDate($effectiveStart, $effectiveDue)) {
+            return $redirect;
         }
 
         $task->update($validated);
@@ -431,5 +444,24 @@ class TaskController extends BaseController
             'tasks' => $tasks,
             'calendar_view' => $calendarView
         ]);
+    }
+
+    /**
+     * @param  mixed  $startDate
+     * @param  mixed  $dueDate
+     */
+    private function redirectIfStartDateAfterDueDate($startDate, $dueDate): ?\Illuminate\Http\RedirectResponse
+    {
+        if ($startDate === null || $startDate === '' || $dueDate === null || $dueDate === '') {
+            return null;
+        }
+
+        if (Carbon::parse($startDate)->gt(Carbon::parse($dueDate))) {
+            return redirect()->back()
+                ->withErrors(['start_date' => __('The start date must not be after the due date.')])
+                ->withInput();
+        }
+
+        return null;
     }
 }

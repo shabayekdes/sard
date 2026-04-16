@@ -19,6 +19,7 @@ class Task extends BaseModel
         'description',
         'priority',
         'due_date',
+        'start_date',
         'estimated_duration',
         'case_id',
         'assigned_to',
@@ -32,6 +33,7 @@ class Task extends BaseModel
 
     protected $casts = [
         'due_date' => 'datetime',
+        'start_date' => 'datetime',
         'estimated_duration' => 'integer',
         'priority' => TaskPriority::class,
     ];

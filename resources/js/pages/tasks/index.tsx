@@ -23,6 +23,7 @@ import { taskPriorityTranslationKey } from '@/utils/taskPriority';
 import { CrudFormModal } from '@/components/CrudFormModal';
 import { hasPermission } from '@/utils/authorization';
 import { useInitials } from '@/hooks/use-initials';
+import { normalizeInertiaValidationErrors } from '@/utils/inertiaErrors';
 import { getTaskAssignee, getTaskPriorityBadgeClassName, isTaskOverdue, taskHasAssigneeId } from '@/utils/taskTable';
 
 declare global {
@@ -100,7 +101,8 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
   const currentLocale = i18n.language || 'en';
   const [currentItem, setCurrentItem] = useState<any>(null);
   const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
-  
+  const [taskFormErrors, setTaskFormErrors] = useState<Record<string, string>>({});
+
   const resolveTaskTypeName = (type: any) => {
       if (!type) return '-';
       const name = type.name ?? type.name_translations;
@@ -199,6 +201,7 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
   const handleAddNew = () => {
       setCurrentItem(null);
       setFormMode('create');
+      setTaskFormErrors({});
       setIsFormModalOpen(true);
   };
   
@@ -225,6 +228,7 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
       
       setCurrentItem(taskWithProject);
       setFormMode('edit');
+      setTaskFormErrors({});
       setIsFormModalOpen(true);
     } catch (error) {
       console.error('Failed to load task:', error);
@@ -316,6 +320,7 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
       if (formMode === 'create') {
           router.post(route('tasks.store'), formData, {
               onSuccess: (page) => {
+                  setTaskFormErrors({});
                   setIsFormModalOpen(false);
                   toast.dismiss();
                   if (page.props.flash.success) {
@@ -326,16 +331,18 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
               },
               onError: (errors) => {
                   toast.dismiss();
-                  if (typeof errors === 'string') {
+                  const normalized = normalizeInertiaValidationErrors(errors);
+                  if (Object.keys(normalized).length > 0) {
+                      setTaskFormErrors(normalized);
+                  } else if (typeof errors === 'string') {
                       toast.error(errors);
-                  } else {
-                      toast.error(`Failed to create task: ${Object.values(errors).join(', ')}`);
                   }
               },
           });
       } else if (formMode === 'edit') {
           router.put(route('tasks.update', currentItem.id), formData, {
               onSuccess: (page) => {
+                  setTaskFormErrors({});
                   setIsFormModalOpen(false);
                   toast.dismiss();
                   if (page.props.flash.success) {
@@ -346,10 +353,11 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
               },
               onError: (errors) => {
                   toast.dismiss();
-                  if (typeof errors === 'string') {
+                  const normalized = normalizeInertiaValidationErrors(errors);
+                  if (Object.keys(normalized).length > 0) {
+                      setTaskFormErrors(normalized);
+                  } else if (typeof errors === 'string') {
                       toast.error(errors);
-                  } else {
-                      toast.error(`Failed to update task: ${Object.values(errors).join(', ')}`);
                   }
               },
           });
@@ -1235,8 +1243,12 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
       
       <CrudFormModal
         isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
+        onClose={() => {
+          setTaskFormErrors({});
+          setIsFormModalOpen(false);
+        }}
         onSubmit={handleFormSubmit}
+        externalErrors={taskFormErrors}
         formConfig={{
           fields: [
             { name: 'title', label: t('Title'), type: 'text', required: true },
@@ -1254,6 +1266,7 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
               ],
               defaultValue: 'medium',
             },
+            { name: 'start_date', label: t('Start Date'), type: 'date' },
             { name: 'due_date', label: t('Due Date'), type: 'date' },
             { name: 'estimated_duration', label: t('Estimated Duration (minutes)'), type: 'number' },
             {

@@ -15,6 +15,23 @@ export function getTaskAssignee(task: Task): TaskAssigneeRow | null {
   return null;
 }
 
+/** Resolves assignee user id for forms and selects (FK-only `assigned_to` or `assigned_user.id`). */
+export function getTaskAssigneeId(task: Task): number | null {
+  const fromUser = task.assigned_user?.id;
+  if (typeof fromUser === 'number' && fromUser > 0) {
+    return fromUser;
+  }
+  const at = task.assigned_to;
+  if (typeof at === 'number' && at > 0) {
+    return at;
+  }
+  if (at && typeof at === 'object' && 'id' in at) {
+    const id = Number((at as { id: number }).id);
+    return Number.isFinite(id) && id > 0 ? id : null;
+  }
+  return null;
+}
+
 export function taskHasAssigneeId(task: Task): boolean {
   if (getTaskAssignee(task)) return true;
   if (task.assigned_to == null) return false;

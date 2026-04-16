@@ -87,6 +87,7 @@ export interface FormField {
     | 'switch'
     | 'file'
     | 'date'
+    | 'datetime-local'
     | 'number'
     | 'multi-select'
     | 'media-picker'

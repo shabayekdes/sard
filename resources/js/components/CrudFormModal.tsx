@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import DependentDropdown from './DependentDropdown';
 import { log } from 'node:console';
 import { useLayout } from '@/contexts/LayoutContext';
+import { toDatetimeLocalInputValue } from '@/utils/datetimeLocal';
 
 /** Resolve API value (string or translatable { en, ar }) to a string so it is never rendered as object (React error #31). */
 function resolveDisplayValue(value: unknown, locale?: string): string {
@@ -251,6 +252,9 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                     cleanData[field.name] = [cleanData[field.name].toString()];
                 }
             }
+            if (field.type === 'datetime-local' && (cleanData[field.name] === '' || cleanData[field.name] === undefined)) {
+                cleanData[field.name] = null;
+            }
         });
 
         // Apply transform function if provided
@@ -479,6 +483,21 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                         type="date"
                         placeholder={field.placeholder}
                         value={dateValue}
+                        onChange={(e) => handleChange(field.name, e.target.value)}
+                        required={field.required}
+                        className={errors[field.name] ? 'border-red-500' : 'text-start'}
+                        disabled={mode === 'view' || field.disabled}
+                    />
+                );
+
+            case 'datetime-local':
+                return (
+                    <Input
+                        id={field.name}
+                        name={field.name}
+                        type="datetime-local"
+                        placeholder={field.placeholder}
+                        value={toDatetimeLocalInputValue(formData[field.name])}
                         onChange={(e) => handleChange(field.name, e.target.value)}
                         required={field.required}
                         className={errors[field.name] ? 'border-red-500' : 'text-start'}
