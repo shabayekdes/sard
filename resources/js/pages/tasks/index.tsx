@@ -23,6 +23,7 @@ import { taskPriorityTranslationKey } from '@/utils/taskPriority';
 import { CrudFormModal } from '@/components/CrudFormModal';
 import { hasPermission } from '@/utils/authorization';
 import { useInitials } from '@/hooks/use-initials';
+import { getTaskAssignee, getTaskPriorityBadgeClassName, isTaskOverdue, taskHasAssigneeId } from '@/utils/taskTable';
 
 declare global {
   interface Window {
@@ -53,29 +54,6 @@ function normalizeTaskFormPriority(p: unknown): string {
   return 'medium';
 }
 
-/** Inertia sends `assigned_user` from `assignedUser()`; `assigned_to` may be a numeric FK only. */
-function getTaskAssignee(task: Task): { id: number; name: string; avatar?: string } | null {
-  const u = task.assigned_user;
-  if (u && typeof u === 'object' && typeof u.name === 'string' && u.name.trim() !== '') {
-    return u;
-  }
-  const embed = task.assigned_to;
-  if (embed && typeof embed === 'object' && typeof embed.name === 'string' && embed.name.trim() !== '') {
-    return embed;
-  }
-  return null;
-}
-
-function taskHasAssigneeId(task: Task): boolean {
-  if (getTaskAssignee(task)) return true;
-  if (task.assigned_to == null) return false;
-  if (typeof task.assigned_to === 'number') return task.assigned_to > 0;
-  if (typeof task.assigned_to === 'object' && 'id' in task.assigned_to) {
-    return Number((task.assigned_to as { id: number }).id) > 0;
-  }
-  return true;
-}
-
 interface Props {
   tasks: PaginatedData<Task>;
   projects: Project[];
@@ -85,6 +63,7 @@ interface Props {
   taskStatuses: TaskStatusOption[];
   filters: {
     task_status_id?: string;
+    task_type_id?: string | number;
     priority?: string;
     assigned_to?: string;
     search?: string;
@@ -104,6 +83,9 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
   const permissions: string[] = Array.isArray(auth?.permissions) ? auth.permissions : [];
   const [searchTerm, setSearchTerm] = useState(filters.search || '');
   const [selectedTaskStatus, setSelectedTaskStatus] = useState(filters.task_status_id || 'all');
+  const [selectedTaskType, setSelectedTaskType] = useState(
+    filters.task_type_id != null && filters.task_type_id !== '' ? String(filters.task_type_id) : 'all',
+  );
   const [selectedPriority, setSelectedPriority] = useState(filters.priority || 'all');
   const [selectedAssignee, setSelectedAssignee] = useState(filters.assigned_to || 'all');
   const [showFilters, setShowFilters] = useState(false);
@@ -131,6 +113,12 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
       setViewMode(queryParamToViewMode(filters.view));
     }
   }, [filters.view]);
+
+  useEffect(() => {
+    setSelectedTaskType(
+      filters.task_type_id != null && filters.task_type_id !== '' ? String(filters.task_type_id) : 'all',
+    );
+  }, [filters.task_type_id]);
   
   // Show flash messages
   useEffect(() => {
@@ -152,6 +140,7 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
     
     if (searchTerm) params.search = searchTerm;
     if (selectedTaskStatus !== 'all') params.task_status_id = selectedTaskStatus;
+    if (selectedTaskType !== 'all') params.task_type_id = selectedTaskType;
     if (selectedPriority !== 'all') params.priority = selectedPriority;
     if (selectedAssignee !== 'all') params.assigned_to = selectedAssignee;
     params.view = viewModeToQueryParam(viewMode);
@@ -163,10 +152,12 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
     const params: any = { page: 1 };
     if (searchTerm) params.search = searchTerm;
     if (key === 'task_status_id') setSelectedTaskStatus(value);
+    if (key === 'task_type_id') setSelectedTaskType(value);
     if (key === 'priority') setSelectedPriority(value);
     if (key === 'assigned_to') setSelectedAssignee(value);
     
     if (selectedTaskStatus !== 'all' && key !== 'task_status_id') params.task_status_id = selectedTaskStatus;
+    if (selectedTaskType !== 'all' && key !== 'task_type_id') params.task_type_id = selectedTaskType;
     if (selectedPriority !== 'all' && key !== 'priority') params.priority = selectedPriority;
     if (selectedAssignee !== 'all' && key !== 'assigned_to') params.assigned_to = selectedAssignee;
     if (value !== 'all') params[key] = value;
@@ -241,15 +232,28 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
   };
   
   const hasActiveFilters = () => {
-    return selectedTaskStatus !== 'all' || selectedPriority !== 'all' || selectedAssignee !== 'all' || searchTerm !== '';
+    return (
+      selectedTaskStatus !== 'all' ||
+      selectedTaskType !== 'all' ||
+      selectedPriority !== 'all' ||
+      selectedAssignee !== 'all' ||
+      searchTerm !== ''
+    );
   };
   
   const activeFilterCount = () => {
-    return (selectedTaskStatus !== 'all' ? 1 : 0) + (selectedPriority !== 'all' ? 1 : 0) + (selectedAssignee !== 'all' ? 1 : 0) + (searchTerm ? 1 : 0);
+    return (
+      (selectedTaskStatus !== 'all' ? 1 : 0) +
+      (selectedTaskType !== 'all' ? 1 : 0) +
+      (selectedPriority !== 'all' ? 1 : 0) +
+      (selectedAssignee !== 'all' ? 1 : 0) +
+      (searchTerm ? 1 : 0)
+    );
   };
   
   const handleResetFilters = () => {
     setSelectedTaskStatus('all');
+    setSelectedTaskType('all');
     setSelectedPriority('all');
     setSelectedAssignee('all');
     setSearchTerm('');
@@ -275,29 +279,13 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
     }
   };
   
-  const isTaskOverdue = (endDate: string | null) => {
-    if (!endDate) return false;
-    const today = new Date();
-    const dueDate = new Date(endDate);
-    return dueDate < today;
-  };
-  
-  const getPriorityColor = (priority: string) => {
-    const colors = {
-      low: 'bg-green-100 text-green-800',
-      medium: 'bg-yellow-100 text-yellow-800',
-      high: 'bg-orange-100 text-orange-800',
-      critical: 'bg-red-100 text-red-800'
-    };
-    return colors[priority as keyof typeof colors] || 'bg-gray-100 text-gray-800';
-  };
-
   const buildTaskIndexQuery = (overrides: Record<string, string | number | boolean | undefined> = {}) => {
     const params: Record<string, string | number | boolean | undefined> = {
       view: viewMode === 'table' ? 'list' : viewMode === 'card' ? 'grid' : 'kanban',
     };
     if (searchTerm) params.search = searchTerm;
     if (selectedTaskStatus !== 'all') params.task_status_id = selectedTaskStatus;
+    if (selectedTaskType !== 'all') params.task_type_id = selectedTaskType;
     if (selectedPriority !== 'all') params.priority = selectedPriority;
     if (selectedAssignee !== 'all') params.assigned_to = selectedAssignee;
     if (filters.sort_field) {
@@ -386,6 +374,39 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
 
   const taskTableColumns = [
     {
+      key: 'task_id',
+      label: t('Task ID'),
+      sortable: true,
+    },
+    {
+      key: 'case',
+      label: t('Case'),
+      render: (_: unknown, row: Task) => {
+        const r = row as Task & {
+          case_id?: number | null;
+          case?: { id?: number; title?: string; case_id?: string } | null;
+        };
+        const caseItem = r.case;
+        const caseId = caseItem?.id ?? r.case_id ?? null;
+        const label = caseItem?.title || caseItem?.case_id || (caseId != null ? `#${caseId}` : '-');
+        if (caseId == null) {
+          return <span className="text-sm text-muted-foreground">{label}</span>;
+        }
+        return (
+          <button
+            type="button"
+            className="text-left text-sm font-medium text-blue-600 transition-colors hover:text-blue-800 hover:underline"
+            onClick={(e) => {
+              e.stopPropagation();
+              router.get(route('cases.show', caseId));
+            }}
+          >
+            {label}
+          </button>
+        );
+      },
+    },
+    {
       key: 'title',
       label: t('Task'),
       sortable: true,
@@ -405,6 +426,16 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
       ),
     },
     {
+      key: 'priority',
+      label: t('Priority'),
+      sortable: true,
+      render: (value: string) => (
+        <Badge className={getTaskPriorityBadgeClassName(value)} variant="outline">
+          {t(taskPriorityTranslationKey(value))}
+        </Badge>
+      ),
+    },
+    {
       key: 'task_status_id',
       label: t('Task Status'),
       render: (_: unknown, row: Task) => (
@@ -416,16 +447,6 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
           }}
         >
           {localizedString(row.task_status?.name, i18n.language)}
-        </Badge>
-      ),
-    },
-    {
-      key: 'priority',
-      label: t('Priority'),
-      sortable: true,
-      render: (value: string) => (
-        <Badge className={getPriorityColor(value)} variant="outline">
-          {t(taskPriorityTranslationKey(value))}
         </Badge>
       ),
     },
@@ -479,6 +500,15 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
             <span>{due ? new Date(due).toLocaleDateString() : t('No due date')}</span>
           </div>
         );
+      },
+    },
+    {
+      key: 'task_type_id',
+      label: t('Task Type'),
+      render: (_: unknown, row: Task) => {
+        const typeName = (row as Task & { task_type?: { name?: string | Record<string, string> } | null; taskType?: { name?: string | Record<string, string> } | null }).task_type?.name
+          ?? (row as Task & { taskType?: { name?: string | Record<string, string> } | null }).taskType?.name;
+        return <span className="text-sm">{localizedString(typeName, i18n.language) || '-'}</span>;
       },
     },
   ];
@@ -582,6 +612,7 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
                         const params: any = { page: 1 };
                         if (e.target.value) params.search = e.target.value;
                         if (selectedTaskStatus !== 'all') params.task_status_id = selectedTaskStatus;
+                        if (selectedTaskType !== 'all') params.task_type_id = selectedTaskType;
                         if (selectedPriority !== 'all') params.priority = selectedPriority;
                         if (selectedAssignee !== 'all') params.assigned_to = selectedAssignee;
                         params.view = viewModeToQueryParam(viewModeRef.current);
@@ -622,6 +653,7 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
                     const params: any = { page: 1, view: 'grid' };
                     if (searchTerm) params.search = searchTerm;
                     if (selectedTaskStatus !== 'all') params.task_status_id = selectedTaskStatus;
+                    if (selectedTaskType !== 'all') params.task_type_id = selectedTaskType;
                     if (selectedPriority !== 'all') params.priority = selectedPriority;
                     if (selectedAssignee !== 'all') params.assigned_to = selectedAssignee;
                     router.get(route('tasks.index'), params, { preserveState: true, preserveScroll: true });
@@ -638,6 +670,7 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
                     const params: any = { page: 1, view: 'list' };
                     if (searchTerm) params.search = searchTerm;
                     if (selectedTaskStatus !== 'all') params.task_status_id = selectedTaskStatus;
+                    if (selectedTaskType !== 'all') params.task_type_id = selectedTaskType;
                     if (selectedPriority !== 'all') params.priority = selectedPriority;
                     if (selectedAssignee !== 'all') params.assigned_to = selectedAssignee;
                     router.get(route('tasks.index'), params, { preserveState: true, preserveScroll: true });
@@ -654,6 +687,7 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
                     const params: any = { view: 'kanban' };
                     if (searchTerm) params.search = searchTerm;
                     if (selectedTaskStatus !== 'all') params.task_status_id = selectedTaskStatus;
+                    if (selectedTaskType !== 'all') params.task_type_id = selectedTaskType;
                     if (selectedPriority !== 'all') params.priority = selectedPriority;
                     if (selectedAssignee !== 'all') params.assigned_to = selectedAssignee;
                     router.get(route('tasks.index'), params, { preserveState: true, preserveScroll: true });
@@ -680,6 +714,23 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
                       {taskStatuses.map((ts) => (
                         <SelectItem key={ts.id} value={ts.id.toString()}>
                           {localizedString(ts.name, i18n.language)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>{t('Task Type')}</Label>
+                  <Select value={selectedTaskType} onValueChange={(value) => handleFilter('task_type_id', value)}>
+                    <SelectTrigger className="w-44">
+                      <SelectValue placeholder={t('All')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t('All')}</SelectItem>
+                      {(taskTypes || []).map((type) => (
+                        <SelectItem key={type.id} value={String(type.id)}>
+                          {resolveTaskTypeName(type)}
                         </SelectItem>
                       ))}
                     </SelectContent>

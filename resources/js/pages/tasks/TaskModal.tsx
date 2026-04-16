@@ -357,7 +357,33 @@ export default function TaskModal({ task, isOpen, onClose, members = [], taskSta
                         {/* Project & Milestone */}
                         <div>
                             <h3 className="mb-2 text-sm font-medium text-gray-900">{t('Case')}</h3>
-                            <span className="text-sm text-gray-600">{currentTask.case?.title}</span>
+                            {(() => {
+                                const taskWithCase = currentTask as Task & {
+                                    case_id?: number | null;
+                                    case?: { id?: number; title?: string; case_id?: string } | null;
+                                };
+                                const caseItem = taskWithCase.case;
+                                const caseId = caseItem?.id ?? taskWithCase.case_id ?? null;
+                                const label = caseItem?.title || caseItem?.case_id || (caseId != null ? `#${caseId}` : '-');
+
+                                if (caseId == null) {
+                                    return <span className="text-sm text-gray-600">{label}</span>;
+                                }
+
+                                return (
+                                    <button
+                                        type="button"
+                                        className="text-left text-sm font-medium text-blue-600 transition-colors hover:text-blue-800 hover:underline"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onClose();
+                                            router.get(route('cases.show', caseId));
+                                        }}
+                                    >
+                                        {label}
+                                    </button>
+                                );
+                            })()}
 
                             {currentTask.milestone && (
                                 <div className="mt-2">

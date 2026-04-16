@@ -9,14 +9,20 @@ import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { hasPermission } from '@/utils/authorization';
+import { localizedString } from '@/utils/i18n';
+import { taskPriorityTranslationKey } from '@/utils/taskPriority';
+import { getTaskAssignee, getTaskPriorityBadgeClassName, isTaskOverdue } from '@/utils/taskTable';
+import { useInitials } from '@/hooks/use-initials';
 import { router, usePage } from '@inertiajs/react';
-import { ArrowLeft, Clock, FileText, Pencil, Plus, Search, Users, CheckSquare, Calendar } from 'lucide-react';
+import type { Task } from '@/types';
+import { AlertTriangle, ArrowLeft, Clock, FileText, Pencil, Plus, Search, Users, CheckSquare, Calendar } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GoogleCalendarModal from '@/components/GoogleCalendarModal';
 
 export default function CaseShow() {
     const { t, i18n } = useTranslation();
+    const getInitials = useInitials();
     const currentLocale = i18n.language || 'en';
     const {
         auth,
@@ -61,7 +67,6 @@ export default function CaseShow() {
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [isViewTeamModalOpen, setIsViewTeamModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
     const [currentItem, setCurrentItem] = useState<any>(null);
     const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
     const [selectedCitation, setSelectedCitation] = useState<any>(null);
@@ -561,31 +566,7 @@ export default function CaseShow() {
             case 'delete':
                 setIsDeleteModalOpen(true);
                 break;
-            case 'toggle-status':
-                setIsStatusModalOpen(true);
-                break;
         }
-    };
-
-    const handleTaskStatusChange = (formData: any) => {
-        router.put(route('tasks.update', currentItem.id), {
-            ...currentItem,
-            status: formData.status,
-            task_type_id: currentItem.task_type_id || currentItem.taskType?.id,
-            assigned_to: currentItem.assigned_to || currentItem.assignedUser?.id,
-            case_id: currentItem.case_id || currentItem.case?.id,
-            task_status_id: currentItem.task_status_id || currentItem.taskStatus?.id
-        }, {
-            onSuccess: () => {
-                setIsStatusModalOpen(false);
-                toast.dismiss();
-                toast.success(t('Task status updated'));
-            },
-            onError: (errors) => {
-                toast.dismiss();
-                toast.error(`Failed to update task status: ${Object.values(errors).join(', ')}`);
-            }
-        });
     };
 
     const handleTaskSubmit = (formData: any) => {
@@ -2033,16 +2014,16 @@ export default function CaseShow() {
                                         },
                                         {
                                             name: 'task_status',
-                                            label: t('Status'),
+                                            label: t('Task Status'),
                                             type: 'select',
                                             value: taskStatus,
                                             onChange: setTaskStatus,
                                             options: [
-                                                { value: 'all', label: t('All Statuses') },
-                                                { value: 'not_started', label: t('Not Started') },
-                                                { value: 'in_progress', label: t('In Progress') },
-                                                { value: 'completed', label: t('Completed') },
-                                                { value: 'on_hold', label: t('On Hold') },
+                                                { value: 'all', label: t('All') },
+                                                ...(taskStatuses?.map((status: any) => ({
+                                                    value: status.id.toString(),
+                                                    label: getTranslatedValue(status.name),
+                                                })) || []),
                                             ],
                                         },
                                         {
@@ -2118,74 +2099,118 @@ export default function CaseShow() {
                                     },
                                     {
                                         key: 'title',
-                                        label: t('Title'),
+                                        label: t('Task'),
                                         sortable: true,
-                                    },
-                                    {
-                                        key: 'task_type',
-                                        label: t('Type'),
-                                        render: (value: any) => (
-                                            <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
-                                                {getTranslatedValue(value?.name) || '-'}
-                                            </span>
+                                        render: (_: unknown, row: Task) => (
+                                            <div>
+                                                <button
+                                                    type="button"
+                                                    className="cursor-pointer text-left text-sm font-medium text-gray-900 transition-colors hover:text-blue-600 dark:text-gray-100 dark:hover:text-blue-400"
+                                                    onClick={() => handleTaskAction('view', row)}
+                                                >
+                                                    {row.title}
+                                                </button>
+                                                {row.description ? (
+                                                    <div className="max-w-xs truncate text-sm text-gray-500 dark:text-gray-400">
+                                                        {row.description}
+                                                    </div>
+                                                ) : null}
+                                            </div>
                                         ),
                                     },
                                     {
                                         key: 'priority',
                                         label: t('Priority'),
-                                        render: (value: string) => {
-                                            const colors = {
-                                                critical: 'bg-red-50 text-red-700',
-                                                high: 'bg-orange-50 text-orange-700',
-                                                medium: 'bg-yellow-50 text-yellow-700',
-                                                low: 'bg-green-50 text-green-700',
-                                            };
-                                            return (
-                                                <span
-                                                    className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${colors[value as keyof typeof colors] || colors.medium
-                                                        }`}
-                                                >
-                                                    {t(value?.charAt(0).toUpperCase() + value?.slice(1))}
-                                                </span>
-                                            );
-                                        },
+                                        sortable: true,
+                                        render: (value: string) => (
+                                            <Badge className={getTaskPriorityBadgeClassName(value)} variant="outline">
+                                                {t(taskPriorityTranslationKey(value))}
+                                            </Badge>
+                                        ),
                                     },
                                     {
                                         key: 'task_status_id',
-                                        label: t('Status'),
-                                        render: (_: unknown, row: any) => {
-                                            const ts = row.task_status ?? row.taskStatus;
+                                        label: t('Task Status'),
+                                        render: (_: unknown, row: Task) => {
+                                            const ts = row.task_status ?? (row as any).taskStatus;
                                             if (!ts) return <span>-</span>;
-                                            const color = ts.color ?? '#94a3b8';
                                             return (
                                                 <Badge
                                                     variant="outline"
-                                                    className="text-xs font-medium"
                                                     style={{
-                                                        backgroundColor: `${color}20`,
-                                                        borderColor: color,
-                                                        color,
+                                                        backgroundColor: (ts.color ?? '#ccc') + '20',
+                                                        borderColor: ts.color ?? '#ccc',
                                                     }}
                                                 >
-                                                    {getTranslatedValue(ts.name)}
+                                                    {localizedString(ts.name, i18n.language)}
                                                 </Badge>
                                             );
                                         },
                                     },
                                     {
-                                        key: 'assignedUser',
-                                        label: t('Assigned To'),
-                                        render: (value: any, row: any) =>
-                                            value?.name ||
-                                            row?.assigned_user?.name ||
-                                            users?.find((u: any) => u.id.toString() === row?.assigned_to?.toString())?.name ||
-                                            '-',
+                                        key: 'assigned_to',
+                                        label: t('Assignee'),
+                                        render: (_: unknown, row: Task) => {
+                                            const assignee = getTaskAssignee(row);
+                                            if (!assignee) {
+                                                return <span className="text-sm text-gray-400">{t('Unassigned')}</span>;
+                                            }
+                                            return (
+                                                <div className="flex items-center">
+                                                    <div className="mx-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-white">
+                                                        {getInitials(assignee.name) || '?'}
+                                                    </div>
+                                                    <span className="text-sm">{assignee.name}</span>
+                                                </div>
+                                            );
+                                        },
+                                    },
+                                    {
+                                        key: 'progress',
+                                        label: t('Progress'),
+                                        render: (_: unknown, row: Task) => (
+                                            <div className="flex items-center">
+                                                <div className="mr-2 h-2 w-16 rounded-full bg-gray-200 dark:bg-gray-700">
+                                                    <div
+                                                        className="h-2 rounded-full bg-green-600"
+                                                        style={{ width: `${row.progress ?? 0}%` }}
+                                                    />
+                                                </div>
+                                                <span className="text-sm text-gray-900 dark:text-gray-100">
+                                                    {row.progress ?? 0}%
+                                                </span>
+                                            </div>
+                                        ),
                                     },
                                     {
                                         key: 'due_date',
                                         label: t('Due Date'),
                                         sortable: true,
-                                        type: 'date',
+                                        render: (_: unknown, row: Task) => {
+                                            const due = row.due_date ?? null;
+                                            return (
+                                                <div className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100">
+                                                    {due && isTaskOverdue(due) && (
+                                                        <Badge variant="destructive" className="text-xs">
+                                                            <AlertTriangle className="mr-1 h-3 w-3" />
+                                                            {t('Overdue')}
+                                                        </Badge>
+                                                    )}
+                                                    <span>
+                                                        {due ? new Date(due).toLocaleDateString() : t('No due date')}
+                                                    </span>
+                                                </div>
+                                            );
+                                        },
+                                    },
+                                    {
+                                        key: 'task_type_id',
+                                        label: t('Task Type'),
+                                        render: (_: unknown, row: Task) => {
+                                            const typeName = (row as Task & { task_type?: { name?: string | Record<string, string> } | null; taskType?: { name?: string | Record<string, string> } | null }).task_type?.name
+                                                ?? (row as Task & { taskType?: { name?: string | Record<string, string> } | null }).taskType?.name;
+                                            return <span className="text-sm">{localizedString(typeName, i18n.language) || '-'}</span>;
+                                        },
                                     },
                                 ]}
                                 actions={[
@@ -2193,25 +2218,22 @@ export default function CaseShow() {
                                         label: t('View'),
                                         icon: 'Eye',
                                         action: 'view',
-                                        className: 'text-primary',
+                                        className: 'text-blue-500',
+                                        requiredPermission: 'view-tasks',
                                     },
                                     {
                                         label: t('Edit'),
                                         icon: 'Edit',
                                         action: 'edit',
                                         className: 'text-amber-500',
-                                    },
-                                    {
-                                        label: t('Change Status'),
-                                        icon: 'CheckCircle',
-                                        action: 'toggle-status',
-                                        className: 'text-green-500',
+                                        requiredPermission: 'edit-tasks',
                                     },
                                     {
                                         label: t('Delete'),
                                         icon: 'Trash2',
                                         action: 'delete',
                                         className: 'text-red-500',
+                                        requiredPermission: 'delete-tasks',
                                     },
                                 ]}
                                 data={tasks?.data || []}
@@ -3207,35 +3229,6 @@ export default function CaseShow() {
                     }}
                     title={t('View Task')}
                     mode="view"
-                />
-            )}
-
-            {/* Task Status Change Modal */}
-            {activeTab === 'tasks' && (
-                <CrudFormModal
-                    isOpen={isStatusModalOpen}
-                    onClose={() => setIsStatusModalOpen(false)}
-                    onSubmit={handleTaskStatusChange}
-                    formConfig={{
-                        fields: [
-                            {
-                                name: 'status',
-                                label: t('Status'),
-                                type: 'select',
-                                required: true,
-                                options: [
-                                    { value: 'not_started', label: t('Not Started') },
-                                    { value: 'in_progress', label: t('In Progress') },
-                                    { value: 'completed', label: t('Completed') },
-                                    { value: 'on_hold', label: t('On Hold') },
-                                ],
-                            },
-                        ],
-                        modalSize: 'sm',
-                    }}
-                    initialData={currentItem ? { status: currentItem.status } : null}
-                    title={t('Change Task Status')}
-                    mode="edit"
                 />
             )}
 
