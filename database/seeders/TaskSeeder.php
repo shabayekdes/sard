@@ -71,7 +71,7 @@ class TaskSeeder extends Seeder
                         'priority' => $priorities[rand(0, count($priorities) - 1)]->value,
                         'start_date' => $startDate,
                         'due_date' => $dueDate,
-                        'estimated_duration' => $taskType->default_duration ?? rand(60, 300),
+                        'estimated_duration' => $taskType->default_duration ?? rand(1, 8),
                         'case_id' => $cases->count() > 0 ? $cases->random()->id : null,
                         'assigned_to' => $users->count() > 0 ? $users->random()->id : null,
                         'task_type_id' => $taskType->id,

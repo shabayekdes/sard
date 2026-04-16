@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Translatable\HasTranslations;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
+/** @property int|null $default_duration Whole hours (not minutes) */
 class TaskType extends BaseModel
 {
     use BelongsToTenant, HasFactory, HasTranslations, AutoApplyPermissionCheck;

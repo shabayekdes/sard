@@ -115,7 +115,7 @@ export default function TaskShow() {
             <div>
               <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Estimated Duration')}</dt>
               <dd className="mt-1 text-sm text-gray-900 dark:text-white">
-                {task?.estimated_duration ? `${task.estimated_duration} ${t('minutes')}` : '-'}
+                {task?.estimated_duration ? `${task.estimated_duration} ${t('hours')}` : '-'}
               </dd>
             </div>
 

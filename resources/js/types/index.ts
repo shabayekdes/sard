@@ -48,12 +48,6 @@ export interface Project {
     [key: string]: unknown;
 }
 
-export interface ProjectMilestone {
-    id: number;
-    title: string;
-    [key: string]: unknown;
-}
-
 export interface SharedData {
     auth: {
         user: {

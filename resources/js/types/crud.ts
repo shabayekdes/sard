@@ -95,6 +95,8 @@ export interface FormField {
     | 'dependent-dropdown';
     placeholder?: string;
     required?: boolean;
+    /** Used by CrudFormModal in create mode when initial value is missing (e.g. select sentinels). */
+    defaultValue?: string | number | boolean;
     multiple?: boolean; // For media-picker and multi-select fields
     disabled?: boolean; // For disabling fields
     step?: string | number; // For number input step

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
+/** @property int|null $estimated_duration Whole hours (not minutes) */
 class Task extends BaseModel
 {
     use BelongsToTenant, HasFactory, AutoApplyPermissionCheck;

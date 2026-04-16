@@ -24,7 +24,13 @@ import { CrudFormModal } from '@/components/CrudFormModal';
 import { hasPermission } from '@/utils/authorization';
 import { useInitials } from '@/hooks/use-initials';
 import { normalizeInertiaValidationErrors } from '@/utils/inertiaErrors';
-import { getTaskAssignee, getTaskPriorityBadgeClassName, isTaskOverdue, taskHasAssigneeId } from '@/utils/taskTable';
+import {
+  getTaskAssignee,
+  getTaskAssigneeId,
+  getTaskPriorityBadgeClassName,
+  isTaskOverdue,
+  taskHasAssigneeId,
+} from '@/utils/taskTable';
 
 declare global {
   interface Window {
@@ -43,6 +49,21 @@ function queryParamToViewMode(v?: string): 'card' | 'table' | 'kanban' {
   if (v === 'list') return 'table';
   if (v === 'kanban') return 'kanban';
   return 'kanban';
+}
+
+/** CrudFormModal select sentinels (Radix Select disallows empty string values). */
+const TASK_FORM_NO_CASE = '__no_case__';
+const TASK_FORM_UNASSIGNED = '__unassigned__';
+
+function transformTaskCrudFormData(data: Record<string, unknown>): Record<string, unknown> {
+  const caseId = data.case_id;
+  const assignedTo = data.assigned_to;
+  return {
+    ...data,
+    case_id: caseId === TASK_FORM_NO_CASE || caseId === '' || caseId == null ? '' : caseId,
+    assigned_to:
+      assignedTo === TASK_FORM_UNASSIGNED || assignedTo === '' || assignedTo == null ? '' : assignedTo,
+  };
 }
 
 /** Ensures priority matches Select values (lowercase) when API sends a string or enum-shaped object. */
@@ -1237,7 +1258,6 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
           }}
           members={users}
           taskStatuses={taskStatuses}
-          milestones={selectedTask.project?.milestones || []}
         />
       )}
       
@@ -1268,30 +1288,34 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
             },
             { name: 'start_date', label: t('Start Date'), type: 'date' },
             { name: 'due_date', label: t('Due Date'), type: 'date' },
-            { name: 'estimated_duration', label: t('Estimated Duration (minutes)'), type: 'number' },
+            { name: 'estimated_duration', label: t('Estimated Duration (hours)'), type: 'number' },
             {
-              name: 'case_assignment',
-              label: t('Case & Assignment'),
-              type: 'dependent-dropdown',
-              dependentConfig: (() => {
-                const caseOptions = (cases || []).map((c: any) => ({
-                  value: c.id.toString(),
+              name: 'case_id',
+              label: t('Case'),
+              type: 'select',
+              placeholder: t('Select Case'),
+              defaultValue: TASK_FORM_NO_CASE,
+              options: [
+                { value: TASK_FORM_NO_CASE, label: t('No case') },
+                ...(cases || []).map((c: { id: number; title?: string; case_id?: string }) => ({
+                  value: String(c.id),
                   label: c.title || c.case_id || `Case ${c.id}`,
-                }));
-                return [
-                  {
-                    name: 'case_id',
-                    label: t('Case'),
-                    options: caseOptions,
-                  },
-                  {
-                    name: 'assigned_to',
-                    label: t('Assigned To'),
-                    apiEndpoint: '/api/tasks/case-users/{case_id}',
-                    showCurrentValue: true,
-                  },
-                ];
-              })(),
+                })),
+              ],
+            },
+            {
+              name: 'assigned_to',
+              label: t('Assigned To'),
+              type: 'select',
+              placeholder: t('Select assignee'),
+              defaultValue: TASK_FORM_UNASSIGNED,
+              options: [
+                { value: TASK_FORM_UNASSIGNED, label: t('Unassigned') },
+                ...(users || []).map((u) => ({
+                  value: String(u.id),
+                  label: u.name,
+                })),
+              ],
             },
             {
               name: 'task_type_id',
@@ -1319,12 +1343,20 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
             },
           ],
           modalSize: 'xl',
+          transformData: transformTaskCrudFormData,
         }}
         initialData={currentItem ? {
           ...currentItem,
           priority: normalizeTaskFormPriority(currentItem.priority),
-          case_id: currentItem.case_id != null ? String(currentItem.case_id) : (currentItem.case?.id != null ? String(currentItem.case.id) : ''),
-          assigned_to: currentItem.assigned_to != null ? String(currentItem.assigned_to) : (currentItem.assigned_user?.id != null ? String(currentItem.assigned_user.id) : ''),
+          case_id: (() => {
+            const row = currentItem as Task & { case_id?: number | null; case?: { id?: number } | null };
+            const id = row.case?.id ?? row.case_id ?? null;
+            return id != null ? String(id) : TASK_FORM_NO_CASE;
+          })(),
+          assigned_to: (() => {
+            const id = getTaskAssigneeId(currentItem);
+            return id != null ? String(id) : TASK_FORM_UNASSIGNED;
+          })(),
           task_type_id: currentItem.task_type_id != null ? String(currentItem.task_type_id) : (currentItem.task_type?.id != null ? String(currentItem.task_type.id) : ''),
           task_status_id: currentItem.task_status_id != null ? String(currentItem.task_status_id) : (currentItem.task_status?.id != null ? String(currentItem.task_status.id) : ''),
         } : undefined}

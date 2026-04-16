@@ -3212,7 +3212,9 @@ export default function CaseShow() {
                         due_date: currentItem?.due_date
                             ? window.appSettings?.formatDate(currentItem.due_date) || new Date(currentItem.due_date).toLocaleDateString()
                             : '-',
-                        estimated_duration: currentItem?.estimated_duration ? `${currentItem.estimated_duration} hours` : '-',
+                        estimated_duration: currentItem?.estimated_duration
+                            ? `${currentItem.estimated_duration} ${t('hours')}`
+                            : '-',
                         assigned_to_name:
                             currentItem?.assignedUser?.name ||
                             currentItem?.assigned_user?.name ||

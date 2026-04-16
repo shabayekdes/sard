@@ -283,7 +283,6 @@ class TaskController extends BaseController
             'taskStatus',
             'assignedUser',
             'creator',
-            // 'milestone',
             'comments.user',
             'checklists.assignedTo',
             'checklists.creator',
@@ -329,7 +328,6 @@ class TaskController extends BaseController
             'task' => $task,
             'members' => [], //$projectMembers->isNotEmpty() ? $projectMembers : $allMembers,
             'taskStatuses' => $taskStatuses,
-            'milestones' => [], //$milestones,
         ]);
     }
 

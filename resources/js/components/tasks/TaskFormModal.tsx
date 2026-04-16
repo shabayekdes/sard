@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Save } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
-import { Task, Project, ProjectMilestone, User } from '@/types';
+import { Task, Project, User } from '@/types';
 import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 
@@ -17,16 +17,14 @@ interface Props {
     task?: Task;
     projects: Project[];
     members: User[];
-    milestones?: ProjectMilestone[];
     googleCalendarEnabled?: boolean;
 }
 
-export default function TaskFormModal({ isOpen, onClose, task, projects, members, milestones = [], googleCalendarEnabled = false }: Props) {
+export default function TaskFormModal({ isOpen, onClose, task, projects, members, googleCalendarEnabled = false }: Props) {
     const { t } = useTranslation();
     const isEditing = !!task;
     const [formData, setFormData] = useState({
         project_id: task?.project_id?.toString() || '',
-        milestone_id: task?.milestone_id?.toString() || 'none',
         title: task?.title || '',
         description: task?.description || '',
         priority: task?.priority || 'medium',
@@ -36,7 +34,6 @@ export default function TaskFormModal({ isOpen, onClose, task, projects, members
         is_googlecalendar_sync: task?.is_googlecalendar_sync || false
     });
 
-    const [currentMilestones, setCurrentMilestones] = useState<ProjectMilestone[]>([]);
     const [currentMembers, setCurrentMembers] = useState<User[]>([]);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,13 +43,11 @@ export default function TaskFormModal({ isOpen, onClose, task, projects, members
         if (task) {
             // Editing mode - populate with task data
             const project = projects.find(p => p.id === task.project_id);
-            setCurrentMilestones(project?.milestones || []);
             const projectMembers = project?.members?.filter(member => member.user?.type !== 'client').map(member => member.user) || [];
             setCurrentMembers(projectMembers.length > 0 ? projectMembers : members);
             
             setFormData({
                 project_id: task.project_id?.toString() || '',
-                milestone_id: task.milestone_id?.toString() || 'none',
                 title: task.title,
                 description: task.description || '',
                 priority: task.priority,
@@ -65,7 +60,6 @@ export default function TaskFormModal({ isOpen, onClose, task, projects, members
             // Create mode - reset to defaults
             setFormData({
                 project_id: '',
-                milestone_id: 'none',
                 title: '',
                 description: '',
                 priority: 'medium',
@@ -74,25 +68,19 @@ export default function TaskFormModal({ isOpen, onClose, task, projects, members
                 assigned_to: 'none',
                 is_googlecalendar_sync: false
             });
-            setCurrentMilestones([]);
             setCurrentMembers([]);
         }
     }, [task, projects, members]);
 
     const handleProjectChange = (projectId: string) => {
         setFormData(prev => ({
-            ...prev, 
-            project_id: projectId, 
-            milestone_id: 'none', 
-            assigned_to: 'none'
+            ...prev,
+            project_id: projectId,
+            assigned_to: 'none',
         }));
-        
+
         const project = projects.find(p => p.id.toString() === projectId);
-        
-        // Load project milestones
-        const milestones = project?.milestones || [];
-        setCurrentMilestones(milestones);
-        
+
         // Load project members (not clients)
         const projectMembers = project?.members?.filter(member => member.user?.type !== 'client').map(member => member.user) || [];
         setCurrentMembers(projectMembers.length > 0 ? projectMembers : members);
@@ -108,8 +96,7 @@ export default function TaskFormModal({ isOpen, onClose, task, projects, members
         
         const submitData = {
             ...formData,
-            milestone_id: formData.milestone_id === 'none' ? '' : formData.milestone_id,
-            assigned_to: formData.assigned_to === 'none' ? '' : formData.assigned_to
+            assigned_to: formData.assigned_to === 'none' ? '' : formData.assigned_to,
         };
         
         if (isEditing) {
@@ -148,7 +135,8 @@ export default function TaskFormModal({ isOpen, onClose, task, projects, members
                     {!isEditing && (
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                {t('Project')} <span className="text-red-500">*</span> <span className="text-xs text-gray-500">({t('Select to load milestones & team members')})</span>
+                                {t('Project')} <span className="text-red-500">*</span>{' '}
+                                <span className="text-xs text-gray-500">({t('Select to load team members')})</span>
                             </label>
                             <Select value={formData.project_id || ''} onValueChange={handleProjectChange}>
                                 <SelectTrigger className={errors.project_id ? 'border-red-500' : ''}>
@@ -163,27 +151,6 @@ export default function TaskFormModal({ isOpen, onClose, task, projects, members
                                 </SelectContent>
                             </Select>
                             {errors.project_id && <p className="text-sm text-red-600 mt-1">{errors.project_id}</p>}
-                        </div>
-                    )}
-
-                    {formData.project_id && (
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                {t('Milestone')}
-                            </label>
-                            <Select value={formData.milestone_id} onValueChange={(value) => setFormData({...formData, milestone_id: value})}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder={currentMilestones.length > 0 ? t('Select a milestone (optional)') : t('No milestones available')} />
-                                </SelectTrigger>
-                                <SelectContent className="z-[9999]">
-                                    <SelectItem value="none">{t('No milestone')}</SelectItem>
-                                    {currentMilestones.map((milestone) => (
-                                        <SelectItem key={milestone.id} value={milestone.id.toString()}>
-                                            {milestone.title}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
                         </div>
                     )}
 

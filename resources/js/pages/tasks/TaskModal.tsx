@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProjectMilestone, Task, TaskStatusOption, User as UserType } from '@/types';
+import { Task, TaskStatusOption, User as UserType } from '@/types';
 import { hasPermission } from '@/utils/authorization';
 import { localizedString } from '@/utils/i18n';
 import { taskPriorityTranslationKey } from '@/utils/taskPriority';
@@ -24,7 +24,6 @@ interface Props {
     onClose: () => void;
     members?: UserType[];
     taskStatuses: TaskStatusOption[];
-    milestones: ProjectMilestone[];
 }
 
 export default function TaskModal({ task, isOpen, onClose, members = [], taskStatuses }: Props) {
@@ -80,7 +79,6 @@ export default function TaskModal({ task, isOpen, onClose, members = [], taskSta
                 start_date: currentTask.start_date,
                 due_date: currentTask.due_date,
                 assigned_to: getTaskAssigneeId(currentTask),
-                milestone_id: currentTask.milestone_id,
             },
             {
                 onSuccess: () => {
@@ -105,7 +103,6 @@ export default function TaskModal({ task, isOpen, onClose, members = [], taskSta
                 start_date: currentTask.start_date,
                 due_date: currentTask.due_date,
                 assigned_to: assignedUserId,
-                milestone_id: currentTask.milestone_id,
             },
             {
                 onSuccess: () => {
@@ -134,7 +131,6 @@ export default function TaskModal({ task, isOpen, onClose, members = [], taskSta
                 start_date: field === 'start_date' ? value || null : currentTask.start_date,
                 due_date: field === 'due_date' ? value || null : currentTask.due_date,
                 assigned_to: getTaskAssigneeId(currentTask),
-                milestone_id: currentTask.milestone_id,
             },
             {
                 onSuccess: () => {
@@ -416,13 +412,6 @@ export default function TaskModal({ task, isOpen, onClose, members = [], taskSta
                                     </button>
                                 );
                             })()}
-
-                            {currentTask.milestone && (
-                                <div className="mt-2">
-                                    <h3 className="mb-1 text-sm font-medium text-gray-900">{t('Milestone')}</h3>
-                                    <span className="text-sm text-gray-600">{currentTask.milestone.title}</span>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>
