@@ -188,6 +188,10 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
         // Basic validation
         const newErrors: Record<string, string> = {};
         formConfig.fields.forEach((field) => {
+            if (field.type === 'section') {
+                return;
+            }
+
             // For file fields in edit mode, they're never required
             if (field.type === 'file' && mode === 'edit') {
                 return;
@@ -246,6 +250,10 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
 
         // Process multi-select fields before submission
         formConfig.fields.forEach((field) => {
+            if (field.type === 'section') {
+                delete cleanData[field.name];
+                return;
+            }
             if (field.type === 'multi-select' && cleanData[field.name]) {
                 // Ensure it's an array of strings
                 if (!Array.isArray(cleanData[field.name])) {
@@ -268,6 +276,10 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
     const renderField = (field: FormField) => {
         // Check if field should be conditionally rendered
         if (field.conditional && !field.conditional(mode, formData)) {
+            return null;
+        }
+
+        if (field.type === 'section') {
             return null;
         }
 
@@ -979,6 +991,19 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                     if (field.conditional && !field.conditional(mode, formData)) {
                                         return null;
                                     }
+                                    if (field.type === 'section') {
+                                        return (
+                                            <div
+                                                key={field.name}
+                                                className="w-full border-t border-border pt-4 mt-2 first:mt-0 first:border-t-0 first:pt-0"
+                                                style={{ gridColumn: '1 / -1', width: '100%' }}
+                                            >
+                                                <h3 className="text-sm font-semibold tracking-tight text-foreground">
+                                                    {field.label}
+                                                </h3>
+                                            </div>
+                                        );
+                                    }
                                     return (
                                         <div
                                             key={field.name}
@@ -1005,6 +1030,18 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                 {formConfig.fields.map((field) => {
                                     if (field.conditional && !field.conditional(mode, formData)) {
                                         return null;
+                                    }
+                                    if (field.type === 'section') {
+                                        return (
+                                            <div
+                                                key={field.name}
+                                                className="w-full border-t border-border pt-4 mt-2 first:mt-0 first:border-t-0 first:pt-0"
+                                            >
+                                                <h3 className="text-sm font-semibold tracking-tight text-foreground">
+                                                    {field.label}
+                                                </h3>
+                                            </div>
+                                        );
                                     }
                                     return (
                                         <div
@@ -1034,6 +1071,18 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                     {fields.map((field) => {
                                         if (field.conditional && !field.conditional(mode, formData)) {
                                             return null;
+                                        }
+                                        if (field.type === 'section') {
+                                            return (
+                                                <div
+                                                    key={field.name}
+                                                    className="w-full border-t border-border pt-4 mt-2 first:mt-0 first:border-t-0 first:pt-0"
+                                                >
+                                                    <h3 className="text-sm font-semibold tracking-tight text-foreground">
+                                                        {field.label}
+                                                    </h3>
+                                                </div>
+                                            );
                                         }
                                         return (
                                             <div

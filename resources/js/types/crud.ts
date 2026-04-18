@@ -92,7 +92,9 @@ export interface FormField {
     | 'multi-select'
     | 'media-picker'
     | 'custom'
-    | 'dependent-dropdown';
+    | 'dependent-dropdown'
+    /** Non-input heading that groups fields (full width; no value submitted). */
+    | 'section';
     placeholder?: string;
     required?: boolean;
     /** Used by CrudFormModal in create mode when initial value is missing (e.g. select sentinels). */

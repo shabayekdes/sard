@@ -1271,8 +1271,36 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
         externalErrors={taskFormErrors}
         formConfig={{
           fields: [
+            { name: '_section_task_details', label: t('Task form section task details'), type: 'section' },
             { name: 'title', label: t('Title'), type: 'text', required: true },
+            {
+              name: 'assigned_to',
+              label: t('Assignee'),
+              type: 'select',
+              placeholder: t('Select assignee'),
+              defaultValue: TASK_FORM_UNASSIGNED,
+              options: [
+                { value: TASK_FORM_UNASSIGNED, label: t('Unassigned') },
+                ...(users || []).map((u) => ({
+                  value: String(u.id),
+                  label: u.name,
+                })),
+              ],
+            },
             { name: 'description', label: t('Description'), type: 'textarea' },
+            { name: '_section_classification', label: t('Task form section classification'), type: 'section' },
+            {
+              name: 'task_status_id',
+              label: t('Task Status'),
+              type: 'select',
+              placeholder: t('Select Task Status'),
+              options: [
+                ...(taskStatuses || []).map((status: any) => ({
+                  value: status.id.toString(),
+                  label: status.name,
+                })),
+              ],
+            },
             {
               name: 'priority',
               label: t('Priority'),
@@ -1286,37 +1314,6 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
               ],
               defaultValue: 'medium',
             },
-            { name: 'start_date', label: t('Start Date'), type: 'date' },
-            { name: 'due_date', label: t('Due Date'), type: 'date' },
-            { name: 'estimated_duration', label: t('Estimated Duration (hours)'), type: 'number' },
-            {
-              name: 'case_id',
-              label: t('Case'),
-              type: 'select',
-              placeholder: t('Select Case'),
-              defaultValue: TASK_FORM_NO_CASE,
-              options: [
-                { value: TASK_FORM_NO_CASE, label: t('No case') },
-                ...(cases || []).map((c: { id: number; title?: string; case_id?: string }) => ({
-                  value: String(c.id),
-                  label: c.title || c.case_id || `Case ${c.id}`,
-                })),
-              ],
-            },
-            {
-              name: 'assigned_to',
-              label: t('Assigned To'),
-              type: 'select',
-              placeholder: t('Select assignee'),
-              defaultValue: TASK_FORM_UNASSIGNED,
-              options: [
-                { value: TASK_FORM_UNASSIGNED, label: t('Unassigned') },
-                ...(users || []).map((u) => ({
-                  value: String(u.id),
-                  label: u.name,
-                })),
-              ],
-            },
             {
               name: 'task_type_id',
               label: t('Task Type'),
@@ -1329,15 +1326,28 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
                 })),
               ],
             },
+            { name: '_section_schedule', label: t('Task form section schedule'), type: 'section' },
+            { name: 'start_date', label: t('Start Date'), type: 'date' },
+            { name: 'due_date', label: t('Due Date'), type: 'date' },
             {
-              name: 'task_status_id',
-              label: t('Task Status'),
+              name: 'estimated_duration',
+              label: t('Estimated Duration (hours)'),
+              type: 'number',
+              step: 1,
+              min: 0,
+            },
+            { name: '_section_case', label: t('Task form section case'), type: 'section' },
+            {
+              name: 'case_id',
+              label: t('Case'),
               type: 'select',
-              placeholder: t('Select Task Status'),
+              placeholder: t('Select Case'),
+              defaultValue: TASK_FORM_NO_CASE,
               options: [
-                ...(taskStatuses || []).map((status: any) => ({
-                  value: status.id.toString(),
-                  label: status.name,
+                { value: TASK_FORM_NO_CASE, label: t('No case') },
+                ...(cases || []).map((c: { id: number; title?: string; case_id?: string }) => ({
+                  value: String(c.id),
+                  label: c.title || c.case_id || `Case ${c.id}`,
                 })),
               ],
             },
