@@ -164,7 +164,20 @@ export function AppSidebar() {
             });
         }
 
-        // 2. Client
+        // 2. Calendar
+        if (
+            hasPermission(permissions, 'manage-calendar') ||
+            hasPermission(permissions, 'manage-any-calendar') ||
+            hasPermission(permissions, 'manage-own-calendar')
+        ) {
+            items.push({
+                title: t('Calendar'),
+                href: route('calendar.index'),
+                icon: CalendarFold,
+            });
+        }
+
+        // 3. Clients
         if (
             hasPermission(permissions, 'manage-clients') ||
             hasPermission(permissions, 'manage-any-clients') ||
@@ -176,7 +189,7 @@ export function AppSidebar() {
                 href: route('clients.index'),
             });
         }
-        // 3. Cases
+        // 4. Cases
         if (
             hasPermission(permissions, 'manage-cases') ||
             hasPermission(permissions, 'manage-any-cases') ||
@@ -234,22 +247,10 @@ export function AppSidebar() {
                 icon: FileSearch,
             });
         }
-
-        // 4. Calendar
         if (
-            hasPermission(permissions, 'manage-calendar') ||
-            hasPermission(permissions, 'manage-any-calendar') ||
-            hasPermission(permissions, 'manage-own-calendar')
-        ) {
-            items.push({
-                title: t('Calendar'),
-                href: route('calendar.index'),
-                icon: CalendarFold,
-            });
-        }
-        if (
-            hasPermission(permissions, 'view-integrations') ||
-            hasPermission(permissions, 'manage-google-calendar-integration')
+            !hasPermission(permissions, 'view-setup') &&
+            (hasPermission(permissions, 'view-integrations') ||
+                hasPermission(permissions, 'manage-google-calendar-integration'))
         ) {
             items.push({
                 title: t('Electronic Integrations'),
@@ -458,8 +459,12 @@ export function AppSidebar() {
         // General settings: label only if at least one of Setup, User Management, or Settings
         const hasSetup = hasPermission(permissions, 'view-setup');
         const hasSettings = hasPermission(permissions, 'manage-settings');
+        const hasIntegrations =
+            hasPermission(permissions, 'view-integrations') ||
+            hasPermission(permissions, 'manage-google-calendar-integration');
 
-        const hasGeneralSection = userManagementChildren.length > 0 || hasSetup || companyProfilesChildren.length > 0;
+        const hasGeneralSection =
+            userManagementChildren.length > 0 || hasSetup || companyProfilesChildren.length > 0 || hasSettings;
         if (hasGeneralSection) {
             items.push({ type: 'label', title: t('General settings') });
             if (userManagementChildren.length > 0) {
@@ -476,7 +481,22 @@ export function AppSidebar() {
                     children: companyProfilesChildren,
                 });
             }
-            if (hasSetup) {
+            if (hasSetup && hasIntegrations) {
+                items.push({
+                    title: t('Setup'),
+                    icon: Settings,
+                    children: [
+                        {
+                            title: t('Master Data'),
+                            href: route('setup.index'),
+                        },
+                        {
+                            title: t('Electronic Integrations'),
+                            href: route('integrations.index'),
+                        },
+                    ],
+                });
+            } else if (hasSetup) {
                 items.push({
                     title: t('Master Data'),
                     href: route('setup.index'),
