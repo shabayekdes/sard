@@ -1,17 +1,8 @@
 "use client"
 
-import * as React from "react"
 import { format } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { Input } from "@/components/ui/input"
+import { GregorianHijriDateField } from "@/components/GregorianHijriDateField"
 
 interface DatePickerProps {
   selected?: Date
@@ -21,6 +12,18 @@ interface DatePickerProps {
   disabled?: boolean
 }
 
+function ymdToLocalDate(ymd: string): Date | undefined {
+  if (!ymd) return undefined
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd.trim())
+  if (!m) return undefined
+  const y = parseInt(m[1]!, 10)
+  const mo = parseInt(m[2]!, 10) - 1
+  const d = parseInt(m[3]!, 10)
+  const dt = new Date(y, mo, d)
+  if (dt.getFullYear() !== y || dt.getMonth() !== mo || dt.getDate() !== d) return undefined
+  return dt
+}
+
 export function DatePicker({
   selected,
   onSelect,
@@ -28,39 +31,33 @@ export function DatePicker({
   placeholder = "Pick a date",
   disabled = false,
 }: DatePickerProps) {
-  const [date, setDate] = React.useState<string>(selected ? format(selected, 'yyyy-MM-dd') : '');
-  
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDate(e.target.value);
-    
-    if (e.target.value) {
-      const newDate = new Date(e.target.value);
-      if (onSelect) onSelect(newDate);
-      if (onChange) onChange(newDate);
-    } else {
-      if (onSelect) onSelect(undefined);
-      if (onChange) onChange(undefined);
+  const ymd = selected ? format(selected, 'yyyy-MM-dd') : ''
+
+  const emit = (date: Date | undefined) => {
+    if (onSelect) onSelect(date)
+    if (onChange) onChange(date)
+  }
+
+  const handleGregorianChange = (g: string) => {
+    if (!g) {
+      emit(undefined)
+      return
     }
-  };
-  
-  React.useEffect(() => {
-    if (selected) {
-      setDate(format(selected, 'yyyy-MM-dd'));
-    } else {
-      setDate('');
-    }
-  }, [selected]);
+    const d = ymdToLocalDate(g)
+    emit(d)
+  }
 
   return (
-    <div className="relative">
-      <CalendarIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-      <Input
-        type="date"
-        value={date}
-        onChange={handleDateChange}
-        className="pl-9 w-[240px]"
+    <div className="w-full max-w-md">
+      <GregorianHijriDateField
+        value={ymd}
+        onChange={handleGregorianChange}
+        mode="date"
         disabled={disabled}
       />
+      {!selected && placeholder && (
+        <span className="sr-only">{placeholder}</span>
+      )}
     </div>
   )
 }

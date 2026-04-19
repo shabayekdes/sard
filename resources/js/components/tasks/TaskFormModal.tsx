@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { GregorianHijriDateField } from '@/components/GregorianHijriDateField';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -226,10 +227,10 @@ export default function TaskFormModal({ isOpen, onClose, task, projects, members
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 {t('Start Date')}
                             </label>
-                            <Input
-                                type="date"
+                            <GregorianHijriDateField
+                                id="task_form_start_date"
                                 value={formData.start_date}
-                                onChange={(e) => setFormData({...formData, start_date: e.target.value})}
+                                onChange={(v) => setFormData({ ...formData, start_date: v })}
                             />
                         </div>
 
@@ -237,10 +238,10 @@ export default function TaskFormModal({ isOpen, onClose, task, projects, members
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 {t('Due Date')}
                             </label>
-                            <Input
-                                type="date"
+                            <GregorianHijriDateField
+                                id="task_form_end_date"
                                 value={formData.end_date}
-                                onChange={(e) => setFormData({...formData, end_date: e.target.value})}
+                                onChange={(v) => setFormData({ ...formData, end_date: v })}
                             />
                         </div>
                     </div>

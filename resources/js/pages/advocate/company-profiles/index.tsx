@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { GregorianHijriDateField } from '@/components/GregorianHijriDateField';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -182,13 +183,11 @@ export default function CompanyProfiles() {
               <Label htmlFor="establishment_date" className="text-sm font-medium">
                 {t('Establishment Date')}
               </Label>
-              <Input
+              <GregorianHijriDateField
                 id="establishment_date"
-                type="date"
                 value={formData.establishment_date}
-                onChange={(e) => handleChange('establishment_date', e.target.value)}
+                onChange={(v) => handleChange('establishment_date', v)}
                 disabled={!isEditing}
-                placeholder={t('Establishment Date')}
                 className="text-sm"
               />
             </div>

@@ -10,6 +10,8 @@ import { Switch } from '@/components/ui/switch';
 import { Plus, Trash2, GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLayout } from '@/contexts/LayoutContext';
+import { GregorianHijriDateField } from '@/components/GregorianHijriDateField';
+import { toDatetimeLocalInputValue } from '@/utils/datetimeLocal';
 
 export interface RepeaterField {
   name: string;
@@ -228,8 +230,24 @@ export function Repeater({
         break;
 
       case 'date':
+        fieldNode = (
+          <GregorianHijriDateField
+            id={fieldId}
+            value={value || ''}
+            onChange={onChange}
+            mode="date"
+            required={field.required}
+            disabled={field.disabled}
+            min={field.min != null ? String(field.min) : undefined}
+            max={field.max != null ? String(field.max) : undefined}
+            className={field.className}
+            error={Boolean(errorMessage)}
+            helperText={errorMessage || undefined}
+          />
+        );
+        break;
+
       case 'time':
-      case 'datetime-local':
         fieldNode = (
           <Input
             id={fieldId}
@@ -241,6 +259,24 @@ export function Repeater({
             min={field.min}
             max={field.max}
             className={cn(field.className, errorClassName)}
+          />
+        );
+        break;
+
+      case 'datetime-local':
+        fieldNode = (
+          <GregorianHijriDateField
+            id={fieldId}
+            value={toDatetimeLocalInputValue(value)}
+            onChange={onChange}
+            mode="datetime-local"
+            required={field.required}
+            disabled={field.disabled}
+            min={field.min != null ? String(field.min) : undefined}
+            max={field.max != null ? String(field.max) : undefined}
+            className={field.className}
+            error={Boolean(errorMessage)}
+            helperText={errorMessage || undefined}
           />
         );
         break;

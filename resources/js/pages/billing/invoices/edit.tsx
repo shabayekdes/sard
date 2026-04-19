@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { GregorianHijriDateField } from '@/components/GregorianHijriDateField';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
@@ -335,20 +336,20 @@ export default function EditInvoice() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="invoice_date">{t('Invoice Date')} *</Label>
-                    <Input
-                      type="date"
+                    <GregorianHijriDateField
+                      id="invoice_date"
                       value={formData.invoice_date}
-                      onChange={(e) => updateFormData('invoice_date', e.target.value)}
+                      onChange={(v) => updateFormData('invoice_date', v)}
                       required
                     />
                   </div>
                   
                   <div>
                     <Label htmlFor="due_date">{t('Due Date')} *</Label>
-                    <Input
-                      type="date"
+                    <GregorianHijriDateField
+                      id="due_date"
                       value={formData.due_date}
-                      onChange={(e) => updateFormData('due_date', e.target.value)}
+                      onChange={(v) => updateFormData('due_date', v)}
                       required
                     />
                   </div>

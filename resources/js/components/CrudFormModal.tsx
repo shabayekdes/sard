@@ -17,7 +17,7 @@ import { FormField } from '@/types/crud';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import DependentDropdown from './DependentDropdown';
-import { log } from 'node:console';
+import { GregorianHijriDateField } from '@/components/GregorianHijriDateField';
 import { useLayout } from '@/contexts/LayoutContext';
 import { toDatetimeLocalInputValue } from '@/utils/datetimeLocal';
 
@@ -478,8 +478,7 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                     </div>
                 );
 
-            case 'date':
-                // Format date value for input (YYYY-MM-DD format)
+            case 'date': {
                 const dateValue = formData[field.name]
                     ? formData[field.name] instanceof Date
                         ? formData[field.name].toISOString().split('T')[0]
@@ -487,35 +486,45 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                             ? formData[field.name].split('T')[0]
                             : formData[field.name]
                     : '';
+                const rawDateErr = errors[field.name];
+                const dateErrMsg = Array.isArray(rawDateErr) ? rawDateErr[0] : rawDateErr;
 
                 return (
-                    <Input
+                    <GregorianHijriDateField
                         id={field.name}
                         name={field.name}
-                        type="date"
-                        placeholder={field.placeholder}
-                        value={dateValue}
-                        onChange={(e) => handleChange(field.name, e.target.value)}
+                        value={dateValue || ''}
+                        onChange={(v) => handleChange(field.name, v)}
+                        mode="date"
                         required={field.required}
-                        className={errors[field.name] ? 'border-red-500' : 'text-start'}
+                        error={Boolean(errors[field.name])}
+                        helperText={typeof dateErrMsg === 'string' ? dateErrMsg : undefined}
                         disabled={mode === 'view' || field.disabled}
+                        min={field.min != null ? String(field.min) : undefined}
+                        max={field.max != null ? String(field.max) : undefined}
                     />
                 );
+            }
 
-            case 'datetime-local':
+            case 'datetime-local': {
+                const rawDtErr = errors[field.name];
+                const dtErrMsg = Array.isArray(rawDtErr) ? rawDtErr[0] : rawDtErr;
                 return (
-                    <Input
+                    <GregorianHijriDateField
                         id={field.name}
                         name={field.name}
-                        type="datetime-local"
-                        placeholder={field.placeholder}
                         value={toDatetimeLocalInputValue(formData[field.name])}
-                        onChange={(e) => handleChange(field.name, e.target.value)}
+                        onChange={(v) => handleChange(field.name, v)}
+                        mode="datetime-local"
                         required={field.required}
-                        className={errors[field.name] ? 'border-red-500' : 'text-start'}
+                        error={Boolean(errors[field.name])}
+                        helperText={typeof dtErrMsg === 'string' ? dtErrMsg : undefined}
                         disabled={mode === 'view' || field.disabled}
+                        min={field.min != null ? String(field.min) : undefined}
+                        max={field.max != null ? String(field.max) : undefined}
                     />
                 );
+            }
 
             case 'number':
                 return (
