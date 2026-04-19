@@ -11,16 +11,14 @@ use Illuminate\Support\Facades\Auth;
 class RoleController extends BaseController
 {
     /**
-     * Constructor to apply middleware
-     */
-   
-
-    /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $roles = Role::withPermissionCheck()->with(['permissions', 'creator'])->latest()->paginate(10);
+        $roles = Role::withPermissionCheck()
+            ->with(['permissions', 'creator'])
+            ->whereNot('name', 'client')
+            ->latest()->paginate(10);
 
         $permissions = $this->getFilteredPermissions();
 
