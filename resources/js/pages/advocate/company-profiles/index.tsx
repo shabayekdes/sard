@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,62 +12,84 @@ import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { PhoneInput, defaultCountries } from 'react-international-phone';
 
+const defaultOfficeFields = {
+  address: '',
+  consultation_fees: '',
+  office_hours: '',
+  success_rate: '',
+  name: '',
+  registration_number: '',
+  establishment_date: '',
+  cr: '',
+  tax_number: '',
+  company_size: 'solo',
+  business_type: 'PROFESSIONAL_COMPANY',
+  default_setup: '',
+  services_offered: '',
+  description: '',
+};
+
 export default function CompanyProfiles() {
   const { t } = useTranslation();
-  const { companyProfile, officeSizeOptions = [], businessTypeOptions = [], phoneCountries = [], defaultCountry = '' } = usePage().props as any;
+  const {
+    companyProfile,
+    officeSizeOptions = [],
+    businessTypeOptions = [],
+    phoneCountries = [],
+    defaultCountry = '',
+    registrationDomain = '',
+    tenantCity = '',
+    accountUser,
+  } = usePage().props as any;
 
   const phoneCountriesByCode = useMemo(
     () => new Map((phoneCountries || []).map((country: any) => [String(country.code).toLowerCase(), country])),
     [phoneCountries],
   );
-  const phoneCountryCodes = (phoneCountries || []).map((country: any) => String(country.code || '').toLowerCase()).filter((code: string) => code);
+  const phoneCountryCodes = (phoneCountries || [])
+    .map((country: any) => String(country.code || '').toLowerCase())
+    .filter((code: string) => code);
   const allowedPhoneCountries = phoneCountryCodes.length
     ? defaultCountries.filter((country) => phoneCountryCodes.includes(String(country[1]).toLowerCase()))
     : defaultCountries;
   const defaultPhoneCountry =
     phoneCountriesByCode.get(String(defaultCountry).toLowerCase()) || phoneCountriesByCode.get('sa') || (phoneCountries || [])[0];
+
+  const buildFormState = useCallback(() => {
+    const office = companyProfile
+      ? {
+          address: companyProfile.address || '',
+          consultation_fees: companyProfile.consultation_fees || '',
+          office_hours: companyProfile.office_hours || '',
+          success_rate: companyProfile.success_rate || '',
+          name: companyProfile.name || '',
+          registration_number: companyProfile.registration_number || '',
+          establishment_date: companyProfile.establishment_date ? companyProfile.establishment_date.split('T')[0] : '',
+          cr: companyProfile.cr || '',
+          tax_number: companyProfile.tax_number || '',
+          company_size: companyProfile.company_size || 'solo',
+          business_type: companyProfile.business_type || 'PROFESSIONAL_COMPANY',
+          default_setup: companyProfile.default_setup || '',
+          services_offered: companyProfile.services_offered || '',
+          description: companyProfile.description || '',
+        }
+      : { ...defaultOfficeFields };
+
+    return {
+      full_name: accountUser?.name ?? '',
+      account_email: accountUser?.email ?? '',
+      account_phone: accountUser?.phone ?? '',
+      account_city: tenantCity ?? '',
+      ...office,
+    };
+  }, [companyProfile, accountUser, tenantCity]);
+
   const [isEditing, setIsEditing] = useState(!companyProfile);
-  const [formData, setFormData] = useState({
-    email: '',
-    phone: '',
-    address: '',
-    consultation_fees: '',
-    office_hours: '',
-    success_rate: '',
-    name: '',
-    registration_number: '',
-    establishment_date: '',
-    cr: '',
-    tax_number: '',
-    company_size: 'solo',
-    business_type: 'PROFESSIONAL_COMPANY',
-    default_setup: '',
-    services_offered: '',
-    description: '',
-  });
+  const [formData, setFormData] = useState(buildFormState);
 
   useEffect(() => {
-    if (companyProfile) {
-      setFormData({
-        email: companyProfile.email || '',
-        phone: companyProfile.phone || '',
-        address: companyProfile.address || '',
-        consultation_fees: companyProfile.consultation_fees || '',
-        office_hours: companyProfile.office_hours || '',
-        success_rate: companyProfile.success_rate || '',
-        name: companyProfile.name || '',
-        registration_number: companyProfile.registration_number || '',
-        establishment_date: companyProfile.establishment_date ? companyProfile.establishment_date.split('T')[0] : '',
-        cr: companyProfile.cr || '',
-        tax_number: companyProfile.tax_number || '',
-        company_size: companyProfile.company_size || 'solo',
-        business_type: companyProfile.business_type || 'PROFESSIONAL_COMPANY',
-        default_setup: companyProfile.default_setup || '',
-        services_offered: companyProfile.services_offered || '',
-        description: companyProfile.description || '',
-      });
-    }
-  }, [companyProfile]);
+    setFormData(buildFormState());
+  }, [buildFormState]);
 
   const handleChange = (name: string, value: any) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -76,9 +98,24 @@ export default function CompanyProfiles() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const submitData = {
-      ...formData,
-      company_size: formData.company_size || 'solo',
+      full_name: formData.full_name,
+      account_email: formData.account_email,
+      account_phone: formData.account_phone,
+      account_city: formData.account_city,
+      name: formData.name,
+      registration_number: formData.registration_number,
+      establishment_date: formData.establishment_date,
       business_type: formData.business_type || 'PROFESSIONAL_COMPANY',
+      cr: formData.cr,
+      tax_number: formData.tax_number,
+      address: formData.address,
+      office_hours: formData.office_hours,
+      company_size: formData.company_size || 'solo',
+      consultation_fees: formData.consultation_fees,
+      success_rate: formData.success_rate,
+      services_offered: formData.services_offered,
+      description: formData.description,
+      default_setup: formData.default_setup,
     };
 
     if (companyProfile) {
@@ -126,81 +163,131 @@ export default function CompanyProfiles() {
     { title: t('Company Profile') },
   ];
 
+  const toggleEdit = () => {
+    if (isEditing) {
+      setFormData(buildFormState());
+    }
+    setIsEditing(!isEditing);
+  };
+
   const pageActions = [
     {
       label: isEditing ? t('Cancel') : t('Edit Company Profile'),
       icon: isEditing ? null : <Edit className="h-4 w-4 mr-2" />,
       variant: (isEditing ? 'outline' : 'default') as 'outline' | 'default',
-      onClick: () => setIsEditing(!isEditing),
+      onClick: toggleEdit,
     },
   ];
 
+  const disabled = !isEditing;
+  const domainDisplay = registrationDomain || '—';
+
   return (
-    <PageTemplate
-      title={t('Company Profile')}
-      url="/advocate/company-profiles"
-      actions={pageActions}
-      breadcrumbs={breadcrumbs}
-    >
-      <form onSubmit={handleSubmit}>
+    <PageTemplate title={t('Company Profile')} url="/advocate/company-profiles" actions={pageActions} breadcrumbs={breadcrumbs}>
+      <form onSubmit={handleSubmit} className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-semibold">{t('Office Details')}</CardTitle>
-            <CardDescription className="text-sm text-muted-foreground">
-              {t('Office Registration Data and Commercial Information')}
-            </CardDescription>
+            <CardTitle className="text-lg font-semibold">{t('Account information')}</CardTitle>
+            <CardDescription className="text-sm text-muted-foreground">{t('Account information subtitle')}</CardDescription>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+          <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="full_name" className="text-sm font-medium">
+                {t('Full Name')}
+              </Label>
+              <Input
+                id="full_name"
+                value={formData.full_name}
+                onChange={(e) => handleChange('full_name', e.target.value)}
+                disabled={disabled}
+                placeholder={t('Full Name')}
+                className="text-sm"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="registration_domain" className="text-sm font-medium">
+                {t('Domain')}
+              </Label>
+              <Input id="registration_domain" value={domainDisplay} readOnly className="text-sm bg-muted" />
+              <p className="text-xs text-muted-foreground">{t('Registration domain hint')}</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="account_phone" className="text-sm font-medium">
+                {t('Phone Number')}
+              </Label>
+              <div className="phone-left-selector">
+                <PhoneInput
+                  defaultCountry={(defaultPhoneCountry?.code || '').toLowerCase() || undefined}
+                  value={formData.account_phone}
+                  countries={allowedPhoneCountries}
+                  inputProps={{ name: 'account_phone', readOnly: disabled }}
+                  className="w-full"
+                  inputClassName="w-full !h-10 !border !border-input !bg-background !text-sm !text-foreground disabled:!opacity-100 disabled:!cursor-default"
+                  countrySelectorStyleProps={{
+                    buttonClassName: '!h-10 !border !border-input !bg-background disabled:!opacity-100',
+                    dropdownStyleProps: {
+                      className: '!bg-background !text-foreground phone-country-dropdown',
+                    },
+                  }}
+                  onChange={(value) => handleChange('account_phone', value || '')}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="account_email" className="text-sm font-medium">
+                {t('Email address')}
+              </Label>
+              <Input
+                id="account_email"
+                type="email"
+                value={formData.account_email}
+                onChange={(e) => handleChange('account_email', e.target.value)}
+                disabled={disabled}
+                placeholder={t('Email address')}
+                className="text-sm"
+              />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="account_city" className="text-sm font-medium">
+                {t('City')}
+              </Label>
+              <Input
+                id="account_city"
+                value={formData.account_city}
+                onChange={(e) => handleChange('account_city', e.target.value)}
+                disabled={disabled}
+                placeholder={t('City')}
+                className="text-sm max-w-xl"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">{t('Office information')}</CardTitle>
+            <CardDescription className="text-sm text-muted-foreground">{t('Office information subtitle')}</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-2">
               <Label htmlFor="name" className="text-sm font-medium">
-                {t('Office Name')}
+                {t('Company or Office Name')}
               </Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => handleChange('name', e.target.value)}
-                disabled={!isEditing}
+                disabled={disabled}
                 required={isEditing}
-                placeholder={t('Office Name')}
+                placeholder={t('Company or Office Name')}
                 className="text-sm"
               />
             </div>
-            <div>
-              <Label htmlFor="registration_number" className="text-sm font-medium">
-                {t('Registration Number')}
-              </Label>
-              <Input
-                id="registration_number"
-                value={formData.registration_number}
-                onChange={(e) => handleChange('registration_number', e.target.value)}
-                disabled={!isEditing}
-                placeholder={t('Enter Registry Number')}
-                className="text-sm"
-              />
-            </div>
-            <div>
-              <Label htmlFor="establishment_date" className="text-sm font-medium">
-                {t('Establishment Date')}
-              </Label>
-              <Input
-                id="establishment_date"
-                type="date"
-                value={formData.establishment_date}
-                onChange={(e) => handleChange('establishment_date', e.target.value)}
-                disabled={!isEditing}
-                placeholder={t('Establishment Date')}
-                className="text-sm"
-              />
-            </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="business_type" className="text-sm font-medium">
                 {t('Business Type')}
               </Label>
-              <Select
-                value={formData.business_type || 'PROFESSIONAL_COMPANY'}
-                onValueChange={(value) => handleChange('business_type', value)}
-                disabled={!isEditing}
-              >
+              <Select value={formData.business_type || 'PROFESSIONAL_COMPANY'} onValueChange={(value) => handleChange('business_type', value)} disabled={disabled}>
                 <SelectTrigger className="text-sm">
                   <SelectValue placeholder={t('Choose Activity Type')} />
                 </SelectTrigger>
@@ -213,7 +300,33 @@ export default function CompanyProfiles() {
                 </SelectContent>
               </Select>
             </div>
-            <div>
+            <div className="space-y-2">
+              <Label htmlFor="registration_number" className="text-sm font-medium">
+                {t('Registration Number')}
+              </Label>
+              <Input
+                id="registration_number"
+                value={formData.registration_number}
+                onChange={(e) => handleChange('registration_number', e.target.value)}
+                disabled={disabled}
+                placeholder={t('Enter Registry Number')}
+                className="text-sm"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="establishment_date" className="text-sm font-medium">
+                {t('Establishment Date')}
+              </Label>
+              <Input
+                id="establishment_date"
+                type="date"
+                value={formData.establishment_date}
+                onChange={(e) => handleChange('establishment_date', e.target.value)}
+                disabled={disabled}
+                className="text-sm"
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="cr" className="text-sm font-medium">
                 {t('Commercial Register')}
               </Label>
@@ -221,12 +334,12 @@ export default function CompanyProfiles() {
                 id="cr"
                 value={formData.cr}
                 onChange={(e) => handleChange('cr', e.target.value)}
-                disabled={!isEditing}
+                disabled={disabled}
                 placeholder={t('Commercial Register')}
                 className="text-sm"
               />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="tax_number" className="text-sm font-medium">
                 {t('Tax Number')}
               </Label>
@@ -234,12 +347,12 @@ export default function CompanyProfiles() {
                 id="tax_number"
                 value={formData.tax_number}
                 onChange={(e) => handleChange('tax_number', e.target.value)}
-                disabled={!isEditing}
+                disabled={disabled}
                 placeholder={t('Enter Tax Number')}
                 className="text-sm"
               />
             </div>
-            <div className="md:col-span-2">
+            <div className="space-y-2 md:col-span-2">
               <Label htmlFor="address" className="text-sm font-medium">
                 {t('Address')}
               </Label>
@@ -247,49 +360,13 @@ export default function CompanyProfiles() {
                 id="address"
                 value={formData.address}
                 onChange={(e) => handleChange('address', e.target.value)}
-                disabled={!isEditing}
+                disabled={disabled}
                 rows={2}
                 placeholder={t('Address')}
                 className="text-sm"
               />
             </div>
-            <div>
-              <Label htmlFor="email" className="text-sm font-medium">
-                {t('Email')} *
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleChange('email', e.target.value)}
-                disabled={!isEditing}
-                placeholder={t('Email')}
-                className="text-sm"
-              />
-            </div>
-            <div>
-              <Label htmlFor="phone" className="text-sm font-medium">
-                {t('Phone Number')} *
-              </Label>
-              <div className="phone-left-selector">
-                <PhoneInput
-                  defaultCountry={(defaultPhoneCountry?.code || '').toLowerCase() || undefined}
-                  value={formData.phone}
-                  countries={allowedPhoneCountries}
-                  inputProps={{ name: 'phone', required: isEditing, readOnly: !isEditing }}
-                  className="w-full"
-                  inputClassName="w-full !h-10 !border !border-input !bg-background !text-sm !text-foreground disabled:!opacity-100 disabled:!cursor-default"
-                  countrySelectorStyleProps={{
-                    buttonClassName: '!h-10 !border !border-input !bg-background disabled:!opacity-100',
-                    dropdownStyleProps: {
-                      className: '!bg-background !text-foreground phone-country-dropdown',
-                    },
-                  }}
-                  onChange={(value) => handleChange('phone', value || '')}
-                />
-              </div>
-            </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="office_hours" className="text-sm font-medium">
                 {t('Working Hours')}
               </Label>
@@ -297,20 +374,16 @@ export default function CompanyProfiles() {
                 id="office_hours"
                 value={formData.office_hours}
                 onChange={(e) => handleChange('office_hours', e.target.value)}
-                disabled={!isEditing}
+                disabled={disabled}
                 placeholder={t('Working Hours')}
                 className="text-sm"
               />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="company_size" className="text-sm font-medium">
                 {t('Office Size')}
               </Label>
-              <Select
-                value={formData.company_size || 'solo'}
-                onValueChange={(value) => handleChange('company_size', value)}
-                disabled={!isEditing}
-              >
+              <Select value={formData.company_size || 'solo'} onValueChange={(value) => handleChange('company_size', value)} disabled={disabled}>
                 <SelectTrigger className="text-sm">
                   <SelectValue placeholder={t('Choose Office Size')} />
                 </SelectTrigger>
@@ -323,49 +396,39 @@ export default function CompanyProfiles() {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label htmlFor="default_setup" className="text-sm font-medium">
-                {t('Default Setup')}
-              </Label>
-              <Input
-                id="default_setup"
-                value={formData.default_setup}
-                onChange={(e) => handleChange('default_setup', e.target.value)}
-                disabled={!isEditing}
-                placeholder={t('Default Setup')}
-                className="text-sm"
-              />
-            </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="consultation_fees" className="text-sm font-medium">
-                {t('Consultation Fees')}
+                {t('Consultation Fees (SAR)')}
               </Label>
               <Input
                 id="consultation_fees"
                 type="number"
+                min="0"
+                step="0.01"
                 value={formData.consultation_fees}
                 onChange={(e) => handleChange('consultation_fees', e.target.value)}
-                disabled={!isEditing}
-                placeholder={t('Consultation Fees')}
+                disabled={disabled}
+                placeholder={t('Consultation Fees (SAR)')}
                 className="text-sm"
               />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="success_rate" className="text-sm font-medium">
-                {t('Success Rate')}
+                {t('Success Rate (%)')}
               </Label>
               <Input
                 id="success_rate"
                 type="number"
+                min={0}
                 max={100}
                 value={formData.success_rate}
                 onChange={(e) => handleChange('success_rate', e.target.value)}
-                disabled={!isEditing}
-                placeholder={t('Success Rate')}
+                disabled={disabled}
+                placeholder={t('Success Rate (%)')}
                 className="text-sm"
               />
             </div>
-            <div className="md:col-span-2">
+            <div className="space-y-2 md:col-span-2">
               <Label htmlFor="services_offered" className="text-sm font-medium">
                 {t('Services Provided')}
               </Label>
@@ -373,13 +436,13 @@ export default function CompanyProfiles() {
                 id="services_offered"
                 value={formData.services_offered}
                 onChange={(e) => handleChange('services_offered', e.target.value)}
-                disabled={!isEditing}
+                disabled={disabled}
                 rows={3}
                 placeholder={t('Services Provided')}
                 className="text-sm"
               />
             </div>
-            <div className="md:col-span-2">
+            <div className="space-y-2 md:col-span-2">
               <Label htmlFor="description" className="text-sm font-medium">
                 {t('Description')}
               </Label>
@@ -387,7 +450,7 @@ export default function CompanyProfiles() {
                 id="description"
                 value={formData.description}
                 onChange={(e) => handleChange('description', e.target.value)}
-                disabled={!isEditing}
+                disabled={disabled}
                 rows={3}
                 placeholder={t('Description')}
                 className="text-sm"
@@ -395,8 +458,9 @@ export default function CompanyProfiles() {
             </div>
           </CardContent>
         </Card>
+
         {isEditing && (
-          <div className="flex justify-end mt-6">
+          <div className="flex justify-end">
             <Button type="submit" className="flex items-center gap-2">
               <Save className="h-4 w-4" />
               {companyProfile ? t('Update Profile') : t('Create Profile')}
