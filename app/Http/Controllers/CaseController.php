@@ -684,6 +684,28 @@ class CaseController extends BaseController
             ];
         });
 
+        $courtTypes = CourtType::where('tenant_id', createdBy())
+            ->where('status', 'active')
+            ->get(['id', 'name'])
+            ->map(function ($courtType) {
+                return [
+                    'id' => $courtType->id,
+                    'name' => $courtType->name,
+                    'name_translations' => $courtType->getTranslations('name'),
+                ];
+            });
+
+        $circleTypes = CircleType::where('tenant_id', createdBy())
+            ->where('status', 'active')
+            ->get(['id', 'name'])
+            ->map(function ($circleType) {
+                return [
+                    'id' => $circleType->id,
+                    'name' => $circleType->name,
+                    'name_translations' => $circleType->getTranslations('name'),
+                ];
+            });
+
         $caseData = $case->toArray();
         $caseDocuments = CaseDocument::where('case_id', $case->id)->get();
         $caseData['documents'] = $caseDocuments->map(function ($doc) {
@@ -723,6 +745,8 @@ class CaseController extends BaseController
             'caseCategories' => $caseCategories,
             'caseStatuses' => $caseStatuses,
             'courts' => $courts,
+            'courtTypes' => $courtTypes,
+            'circleTypes' => $circleTypes,
             'countries' => $countries,
             'documentTypes' => $documentTypes,
             'googleCalendarEnabled' => $googleCalendarEnabled,
