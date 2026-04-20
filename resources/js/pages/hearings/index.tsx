@@ -10,11 +10,23 @@ import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
+import { Card, CardContent } from '@/components/ui/card';
 import { capitalize } from '@/utils/helpers';
 
 export default function Hearings() {
   const { t, i18n } = useTranslation();
-  const { auth, hearings, cases, courts, courtTypes, circleTypes, hearingTypes, googleCalendarEnabled, filters: pageFilters = {} } = usePage().props as any;
+  const {
+    auth,
+    hearings,
+    cases,
+    courts,
+    courtTypes,
+    circleTypes,
+    hearingTypes,
+    googleCalendarEnabled,
+    hearingStats = { total: 0, this_week: 0, future: 0, past: 0 },
+    filters: pageFilters = {},
+  } = usePage().props as any;
   const permissions = auth?.permissions || [];
   const currentLocale = i18n.language || 'en';
 
@@ -312,6 +324,37 @@ export default function Hearings() {
 
   return (
       <PageTemplate title={t('Session Management')} url="/hearings" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+          <Card className="mb-4 hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                      <div className="text-center">
+                          <div className="text-xl font-bold text-blue-600">
+                              {(hearingStats.total ?? 0).toLocaleString()}
+                          </div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">{t('Total hearings')}</div>
+                      </div>
+                      <div className="text-center">
+                          <div className="text-xl font-bold text-violet-600">
+                              {(hearingStats.this_week ?? 0).toLocaleString()}
+                          </div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">{t('Hearings this week')}</div>
+                      </div>
+                      <div className="text-center">
+                          <div className="text-xl font-bold text-emerald-600">
+                              {(hearingStats.future ?? 0).toLocaleString()}
+                          </div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">{t('Hearings in the future')}</div>
+                      </div>
+                      <div className="text-center">
+                          <div className="text-xl font-bold text-amber-600">
+                              {(hearingStats.past ?? 0).toLocaleString()}
+                          </div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">{t('Hearings in the past')}</div>
+                      </div>
+                  </div>
+              </CardContent>
+          </Card>
+
           <div className="mb-4 rounded-lg bg-white">
               <SearchAndFilterBar
                   searchTerm={searchTerm}

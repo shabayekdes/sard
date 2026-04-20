@@ -12,6 +12,7 @@ use App\Models\CaseTimeline;
 use App\Models\EventType;
 use App\Services\GoogleCalendarService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 
 class HearingController extends BaseController
@@ -88,6 +89,25 @@ class HearingController extends BaseController
 
         $googleCalendarEnabled = Settings::boolean('GOOGLE_CALENDAR_ENABLED');
 
+        $todayRiyadh = Carbon::now('Asia/Riyadh')->toDateString();
+        $nowRiyadh = Carbon::now('Asia/Riyadh');
+        $dayOfWeek = $nowRiyadh->dayOfWeek; // 0 = Sunday .. 6 = Saturday
+        $weekStart = $nowRiyadh->copy()->subDays($dayOfWeek)->startOfDay();
+        $weekEnd = $weekStart->copy()->addDays(6);
+
+        $hearingStats = [
+            'total' => Hearing::withPermissionCheck()->count(),
+            'this_week' => Hearing::withPermissionCheck()
+                ->whereBetween('hearing_date', [$weekStart->toDateString(), $weekEnd->toDateString()])
+                ->count(),
+            'future' => Hearing::withPermissionCheck()
+                ->where('hearing_date', '>', $todayRiyadh)
+                ->count(),
+            'past' => Hearing::withPermissionCheck()
+                ->where('hearing_date', '<', $todayRiyadh)
+                ->count(),
+        ];
+
         return Inertia::render('hearings/index', [
             'hearings' => $hearings,
             'cases' => $cases,
@@ -96,6 +116,7 @@ class HearingController extends BaseController
             'circleTypes' => $circleTypes,
             'hearingTypes' => $hearingTypes,
             'googleCalendarEnabled' => $googleCalendarEnabled,
+            'hearingStats' => $hearingStats,
             'filters' => $request->all(['search', 'status', 'court_id', 'court_type_id', 'circle_type_id', 'sort_field', 'sort_direction', 'per_page']),
         ]);
     }
