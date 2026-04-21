@@ -11,19 +11,15 @@ import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { Card, CardContent } from '@/components/ui/card';
-import { capitalize } from '@/utils/helpers';
 
 export default function Hearings() {
   const { t, i18n } = useTranslation();
   const {
     auth,
     hearings,
-    cases,
     courts,
     courtTypes,
     circleTypes,
-    hearingTypes,
-    googleCalendarEnabled,
     hearingStats = { total: 0, this_week: 0, future: 0, past: 0 },
     filters: pageFilters = {},
   } = usePage().props as any;
@@ -46,12 +42,9 @@ export default function Hearings() {
   const [selectedCourtType, setSelectedCourtType] = useState(pageFilters.court_type_id || 'all');
   const [selectedCircleType, setSelectedCircleType] = useState(pageFilters.circle_type_id || 'all');
   const [showFilters, setShowFilters] = useState(false);
-  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<any>(null);
-  const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,8 +85,7 @@ export default function Hearings() {
         setIsViewModalOpen(true);
         break;
       case 'edit':
-        setFormMode('edit');
-        setIsFormModalOpen(true);
+        router.get(route('hearings.edit', item.id));
         break;
       case 'delete':
         setIsDeleteModalOpen(true);
@@ -102,59 +94,7 @@ export default function Hearings() {
   };
 
   const handleAddNew = () => {
-    setCurrentItem(null);
-    setFormMode('create');
-    setFormErrors({});
-    setIsFormModalOpen(true);
-  };
-
-  const normalizeHearingForm = (fd: Record<string, unknown>) => {
-    const data = { ...fd };
-    if (data.court_id === '' || data.court_id === 'none') {
-      data.court_id = null;
-    }
-    return data;
-  };
-
-  const handleFormSubmit = (formData: any) => {
-    const payload = normalizeHearingForm(formData);
-    if (formMode === 'create') {
-      router.post(route('hearings.store'), payload, {
-        preserveState: true,
-        preserveScroll: true,
-        onSuccess: (page) => {
-          setIsFormModalOpen(false);
-          setFormErrors({});
-          toast.dismiss();
-          if (page.props.flash.success) {
-            toast.success(page.props.flash.success);
-          }
-        },
-        onError: (errors) => {
-          toast.dismiss();
-          setFormErrors(errors as Record<string, string>);
-          toast.error(t('Failed to create {{model}}: {{errors}}', { model: t('Hearing'), errors: Object.values(errors).join(', ') }));
-        }
-      });
-    } else if (formMode === 'edit') {
-      router.put(route('hearings.update', currentItem.id), payload, {
-        preserveState: true,
-        preserveScroll: true,
-        onSuccess: (page) => {
-          setIsFormModalOpen(false);
-          setFormErrors({});
-          toast.dismiss();
-          if (page.props.flash.success) {
-            toast.success(page.props.flash.success);
-          }
-        },
-        onError: (errors) => {
-          toast.dismiss();
-          setFormErrors(errors as Record<string, string>);
-          toast.error(t('Failed to update {{model}}: {{errors}}', { model: t('Hearing'), errors: Object.values(errors).join(', ') }));
-        }
-      });
-    }
+    router.get(route('hearings.create'));
   };
 
   const handleDeleteConfirm = () => {
@@ -166,7 +106,7 @@ export default function Hearings() {
           toast.success(page.props.flash.success);
         }
       },
-      onError: (errors) => {
+      onError: () => {
         toast.dismiss();
         toast.error('Failed to delete hearing');
       }
@@ -459,99 +399,6 @@ export default function Hearings() {
                   }}
               />
           </div>
-
-          <CrudFormModal
-              isOpen={isFormModalOpen}
-              onClose={() => {
-                  setIsFormModalOpen(false);
-                  setFormErrors({});
-              }}
-              onSubmit={handleFormSubmit}
-              externalErrors={formErrors}
-              formConfig={{
-                  fields: [
-                      {
-                          name: 'case_id',
-                          label: t('Case'),
-                          type: 'select',
-                          required: true,
-                          options: cases ? cases.map((c: any) => ({ value: c.id.toString(), label: `${c.case_id} - ${c.title}` })) : [],
-                      },
-                      {
-                          name: 'court_id',
-                          label: t('Court'),
-                          type: 'select',
-                          options: [
-                              { value: '', label: t('No court') },
-                              ...(courts
-                                  ? courts.map((c: any) => {
-                                        const courtName = c.name || '';
-                                        const courtType = c.court_type ? getTranslatedValue(c.court_type.name) : '';
-                                        const circleType = c.circle_type ? getTranslatedValue(c.circle_type.name) : '';
-                                        const parts = [courtName];
-                                        if (courtType) parts.push(courtType);
-                                        if (circleType) parts.push(circleType);
-                                        return {
-                                            value: c.id.toString(),
-                                            label: parts.join(' + '),
-                                        };
-                                    })
-                                  : []),
-                          ],
-                      },
-                      {
-                          name: 'circle_number',
-                          label: t('Circle Number'),
-                          type: 'text',
-                      },
-                      {
-                          name: 'hearing_type_id',
-                          label: t('Session Type'),
-                          type: 'select',
-                          required: true,
-                          options: [
-                              { value: 'none', label: t('Select Type') },
-                              ...(hearingTypes
-                                  ? hearingTypes.map((ht: any) => ({
-                                        value: ht.id.toString(),
-                                        label: getTranslatedValue(ht.name),
-                                    }))
-                                  : []),
-                          ],
-                      },
-                      { name: 'title', label: t('Title'), type: 'text', required: true },
-                      { name: 'description', label: t('Description'), type: 'textarea' },
-                      { name: 'hearing_date', label: t('Date'), type: 'date', required: true },
-                      { name: 'hearing_time', label: t('Time'), type: 'time', required: true },
-                      { name: 'duration_minutes', label: t('Duration (minutes)'), type: 'number', defaultValue: 60 },
-                      { name: 'url', label: t('URL'), type: 'text' },
-                      {
-                          name: 'status',
-                          label: t('Status'),
-                          type: 'select',
-                          options: statusOptions.filter((opt) => opt.value !== 'all'),
-                          defaultValue: 'scheduled',
-                      },
-                      { name: 'notes', label: t('Notes'), type: 'textarea' },
-                      ...(formMode === 'edit' ? [{ name: 'outcome', label: t('Outcome'), type: 'textarea' }] : []),
-                  ].concat(
-                      googleCalendarEnabled && formMode === 'create'
-                          ? [
-                                {
-                                    name: 'sync_with_google_calendar',
-                                    label: t('Synchronize in Google Calendar'),
-                                    type: 'switch',
-                                    defaultValue: false,
-                                },
-                            ]
-                          : [],
-                  ),
-                  modalSize: 'xl',
-              }}
-              initialData={currentItem}
-              title={formMode === 'create' ? t('Schedule New Session') : t('Edit Session')}
-              mode={formMode}
-          />
 
           <CrudFormModal
               isOpen={isViewModalOpen}

@@ -474,6 +474,12 @@ Route::middleware([
             // Hearing routes
             Route::middleware('permission:manage-hearings')->group(function () {
                 Route::get('hearings', [Controllers\HearingController::class, 'index'])->name('hearings.index');
+                Route::get('hearings/create', [Controllers\HearingController::class, 'create'])
+                    ->middleware('permission:create-hearings')
+                    ->name('hearings.create');
+                Route::get('hearings/{hearing}/edit', [Controllers\HearingController::class, 'edit'])
+                    ->middleware('permission:edit-hearings')
+                    ->name('hearings.edit');
                 Route::post('hearings', [Controllers\HearingController::class, 'store'])->middleware('permission:create-hearings')->name('hearings.store');
                 Route::put('hearings/{hearing}', [Controllers\HearingController::class, 'update'])->middleware('permission:edit-hearings')->name('hearings.update');
                 Route::delete('hearings/{hearing}', [Controllers\HearingController::class, 'destroy'])->middleware('permission:delete-hearings')->name('hearings.destroy');

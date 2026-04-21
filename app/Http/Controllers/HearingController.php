@@ -121,6 +121,78 @@ class HearingController extends BaseController
         ]);
     }
 
+    public function create(Request $request)
+    {
+        return Inertia::render('hearings/form', $this->hearingFormPageProps($request, null));
+    }
+
+    public function edit(Request $request, $id)
+    {
+        $hearing = Hearing::withPermissionCheck()
+            ->with(['case', 'court.courtType', 'court.circleType', 'hearingType'])
+            ->where('id', $id)
+            ->first();
+
+        if (!$hearing) {
+            return redirect()->route('hearings.index')->with('error', __(':model not found.', ['model' => __('Hearing')]));
+        }
+
+        return Inertia::render('hearings/form', $this->hearingFormPageProps($request, $hearing));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function hearingFormPageProps(Request $request, ?Hearing $hearing = null): array
+    {
+        $cases = CaseModel::withPermissionCheck()->get(['id', 'case_id', 'title', 'file_number']);
+        $courts = Court::withPermissionCheck()
+            ->with(['courtType', 'circleType'])
+            ->where('status', 'active')
+            ->get(['id', 'name', 'court_type_id', 'circle_type_id']);
+        $courtTypes = \App\Models\CourtType::withPermissionCheck()
+            ->where('status', 'active')
+            ->get(['id', 'name']);
+        $circleTypes = \App\Models\CircleType::withPermissionCheck()
+            ->where('status', 'active')
+            ->get(['id', 'name']);
+        $hearingTypes = HearingType::withPermissionCheck()
+            ->where('status', 'active')
+            ->get(['id', 'name']);
+        $googleCalendarEnabled = Settings::boolean('GOOGLE_CALENDAR_ENABLED');
+
+        $fromCase = $request->boolean('from_case');
+        $queryCaseId = $request->query('case_id') ? (int) $request->query('case_id') : null;
+        $returnToCaseId = null;
+        if ($fromCase) {
+            $returnToCaseId = $hearing?->case_id ?? $queryCaseId;
+        }
+
+        $hideCaseField = $fromCase && ($hearing?->case_id || $queryCaseId);
+        $reminderMinutes = null;
+        if ($hearing) {
+            $reminderMinutes = \App\Models\HearingNotification::where('hearing_id', $hearing->id)
+                ->where('status', 'pending')
+                ->orderBy('minutes_before')
+                ->value('minutes_before');
+        }
+
+        return [
+            'mode' => $hearing ? 'edit' : 'create',
+            'hearing' => $hearing,
+            'cases' => $cases,
+            'courts' => $courts,
+            'courtTypes' => $courtTypes,
+            'circleTypes' => $circleTypes,
+            'hearingTypes' => $hearingTypes,
+            'googleCalendarEnabled' => $googleCalendarEnabled,
+            'prefillCaseId' => $queryCaseId,
+            'hideCaseField' => $hideCaseField,
+            'returnToCaseId' => $returnToCaseId,
+            'reminderMinutes' => $reminderMinutes,
+        ];
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -133,6 +205,7 @@ class HearingController extends BaseController
             'hearing_date' => 'required|date|after_or_equal:today',
             'hearing_time' => 'required|date_format:H:i',
             'duration_minutes' => 'nullable|integer|min:15|max:480',
+            'reminder_minutes' => 'nullable|integer|min:1|max:10080',
             'url' => 'nullable|url|max:500',
             'status' => 'nullable|in:scheduled,in_progress,completed,postponed,cancelled',
             'notes' => 'nullable|string',
@@ -141,7 +214,7 @@ class HearingController extends BaseController
 
         $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'scheduled';
-        $validated['duration_minutes'] = $validated['duration_minutes'] ?? 60;
+        $validated['duration_minutes'] = $validated['duration_minutes'] ?? 30;
 
         $hearing = Hearing::create($validated);
 
@@ -159,7 +232,7 @@ class HearingController extends BaseController
         $hearing->load(['hearingType', 'court', 'case.client']);
 
         // Create default notifications
-        $this->createDefaultNotifications($hearing);
+        $this->createDefaultNotifications($hearing, $validated['reminder_minutes'] ?? null);
 
         // Trigger notifications
         event(new \App\Events\NewHearingCreated($hearing, $request->all()));
@@ -204,6 +277,7 @@ class HearingController extends BaseController
             'hearing_date' => 'required|date|after_or_equal:today',
             'hearing_time' => 'required|date_format:H:i',
             'duration_minutes' => 'nullable|integer|min:15|max:480',
+            'reminder_minutes' => 'nullable|integer|min:1|max:10080',
             'url' => 'nullable|url|max:500',
             'status' => 'nullable|in:scheduled,in_progress,completed,postponed,cancelled',
             'notes' => 'nullable|string',
@@ -230,8 +304,8 @@ class HearingController extends BaseController
         }
 
         // Update notifications if date/time changed
-        if (isset($validated['hearing_date']) || isset($validated['hearing_time'])) {
-            $this->updateNotifications($hearing);
+        if (isset($validated['hearing_date']) || isset($validated['hearing_time']) || isset($validated['reminder_minutes'])) {
+            $this->updateNotifications($hearing, $validated['reminder_minutes'] ?? null);
         }
 
         return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Hearing')]));
@@ -258,9 +332,9 @@ class HearingController extends BaseController
         return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Hearing')]));
     }
 
-    private function createDefaultNotifications($hearing)
+    private function createDefaultNotifications($hearing, $customReminderMinutes = null)
     {
-        $reminderTimes = [1440, 60, 15]; // 24 hours, 1 hour, 15 minutes
+        $reminderTimes = $customReminderMinutes ? [(int) $customReminderMinutes] : [1440, 60, 15];
         $date = date('Y-m-d', strtotime($hearing->hearing_date));
         $time = date('H:i', strtotime($hearing->hearing_time));
         $hearingDateTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $date . ' ' . $time);
@@ -277,7 +351,7 @@ class HearingController extends BaseController
         }
     }
 
-    private function updateNotifications($hearing)
+    private function updateNotifications($hearing, $customReminderMinutes = null)
     {
         // Delete existing pending notifications
         \App\Models\HearingNotification::where('hearing_id', $hearing->id)
@@ -285,6 +359,6 @@ class HearingController extends BaseController
             ->delete();
 
         // Create new notifications
-        $this->createDefaultNotifications($hearing);
+        $this->createDefaultNotifications($hearing, $customReminderMinutes);
     }
 }
