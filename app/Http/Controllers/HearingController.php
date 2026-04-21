@@ -184,7 +184,6 @@ class HearingController extends BaseController
             $returnToCaseId = $hearing?->case_id ?? $queryCaseId;
         }
 
-        $hideCaseField = $fromCase && ($hearing?->case_id || $queryCaseId);
         $reminderMinutes = [];
         if ($hearing) {
             $reminderMinutes = \App\Models\HearingNotification::where('hearing_id', $hearing->id)
@@ -197,6 +196,22 @@ class HearingController extends BaseController
         }
 
         $initialCaseId = $hearing?->case_id ?? ($queryCaseId ? (int) $queryCaseId : null);
+
+        $prefillCourtId = null;
+        if (!$hearing && $queryCaseId) {
+            $prefillCase = CaseModel::withPermissionCheck()
+                ->where('id', $queryCaseId)
+                ->first(['id', 'court_id']);
+            if ($prefillCase && $prefillCase->court_id) {
+                $courtOk = Court::withPermissionCheck()
+                    ->where('id', $prefillCase->court_id)
+                    ->where('status', 'active')
+                    ->exists();
+                if ($courtOk) {
+                    $prefillCourtId = (int) $prefillCase->court_id;
+                }
+            }
+        }
 
         if ($hearing) {
             $hearing->loadMissing('teamMembers:id,name,email');
@@ -212,7 +227,7 @@ class HearingController extends BaseController
             'hearingTypes' => $hearingTypes,
             'googleCalendarEnabled' => $googleCalendarEnabled,
             'prefillCaseId' => $queryCaseId,
-            'hideCaseField' => $hideCaseField,
+            'prefillCourtId' => $prefillCourtId,
             'returnToCaseId' => $returnToCaseId,
             'reminderMinutes' => $reminderMinutes,
             'teamMemberOptions' => $this->hearingCaseTeamUserOptions($initialCaseId),

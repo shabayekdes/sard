@@ -122,7 +122,7 @@ export default function HearingForm() {
     hearingTypes: any[];
     googleCalendarEnabled: boolean;
     prefillCaseId: number | null;
-    hideCaseField: boolean;
+    prefillCourtId: number | null;
     returnToCaseId: number | null;
     reminderMinutes: number[];
     teamMemberOptions?: { value: number; label: string }[];
@@ -141,7 +141,7 @@ export default function HearingForm() {
     hearingTypes,
     googleCalendarEnabled,
     prefillCaseId,
-    hideCaseField,
+    prefillCourtId = null,
     returnToCaseId,
     reminderMinutes,
     teamMemberOptions = [],
@@ -171,7 +171,12 @@ export default function HearingForm() {
         : prefillCaseId
           ? String(prefillCaseId)
           : '',
-    court_id: hearing?.court_id != null ? String(hearing.court_id) : '',
+    court_id:
+      mode === 'edit' && hearing && hearing.court_id != null
+        ? String(hearing.court_id)
+        : prefillCourtId != null
+          ? String(prefillCourtId)
+          : '',
     circle_number: hearing?.circle_number ?? '',
     judge_name: hearing?.judge_name ?? '',
     hearing_type_id: hearing?.hearing_type_id != null ? String(hearing.hearing_type_id) : 'none',
@@ -195,12 +200,7 @@ export default function HearingForm() {
       : [],
   }));
 
-  const effectiveCaseIdStr = useMemo(() => {
-    if (hideCaseField) {
-      return String(prefillCaseId ?? hearing?.case_id ?? '');
-    }
-    return form.case_id || '';
-  }, [hideCaseField, prefillCaseId, hearing?.case_id, form.case_id]);
+  const effectiveCaseIdStr = useMemo(() => form.case_id || '', [form.case_id]);
 
   useEffect(() => {
     const caseId = effectiveCaseIdStr.trim();
@@ -365,7 +365,7 @@ export default function HearingForm() {
   };
 
   const buildPayload = () => {
-    const caseId = hideCaseField ? String(prefillCaseId ?? hearing?.case_id ?? '') : form.case_id;
+    const caseId = form.case_id;
     const court_id = form.court_id && form.court_id !== 'none' ? form.court_id : null;
     const hearing_type_id = form.hearing_type_id && form.hearing_type_id !== 'none' ? form.hearing_type_id : null;
     const payload: Record<string, unknown> = {
@@ -529,7 +529,7 @@ export default function HearingForm() {
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className={hideCaseField ? 'space-y-2 md:col-span-2' : 'space-y-2'}>
+              <div className="space-y-2">
                 <Label required>{t('Session Type')}</Label>
                 <Select value={form.hearing_type_id} onValueChange={(v) => update('hearing_type_id', v)}>
                   <SelectTrigger className="h-10 w-full" aria-invalid={errors.hearing_type_id ? true : undefined}>
@@ -547,24 +547,22 @@ export default function HearingForm() {
                 {errors.hearing_type_id ? <p className="text-sm text-destructive">{errors.hearing_type_id}</p> : null}
               </div>
 
-              {!hideCaseField && (
-                <div className="space-y-2">
-                  <Label required>{t('Case')}</Label>
-                  <Select value={form.case_id || ''} onValueChange={(v) => update('case_id', v)}>
-                    <SelectTrigger className="h-10 w-full" aria-invalid={errors.case_id ? true : undefined}>
-                      <SelectValue placeholder={t('Select')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(cases || []).map((c) => (
-                        <SelectItem key={c.id} value={String(c.id)}>
-                          {`${c.case_id || ''} - ${c.title || ''}`.trim()}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.case_id ? <p className="text-sm text-destructive">{errors.case_id}</p> : null}
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label required>{t('Case')}</Label>
+                <Select value={form.case_id || ''} onValueChange={(v) => update('case_id', v)}>
+                  <SelectTrigger className="h-10 w-full" aria-invalid={errors.case_id ? true : undefined}>
+                    <SelectValue placeholder={t('Select')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(cases || []).map((c) => (
+                      <SelectItem key={c.id} value={String(c.id)}>
+                        {`${c.case_id || ''} - ${c.title || ''}`.trim()}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.case_id ? <p className="text-sm text-destructive">{errors.case_id}</p> : null}
+              </div>
             </div>
 
             <div className="space-y-2">
