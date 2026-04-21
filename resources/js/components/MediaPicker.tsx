@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -14,6 +14,17 @@ interface MediaPickerProps {
   multiple?: boolean;
   placeholder?: string;
   showPreview?: boolean;
+  /** When `media_id`, value is comma-separated Spatie `media.id` values (library files only). */
+  valueMode?: 'url' | 'media_id';
+}
+
+interface MediaIndexItem {
+  id: number;
+  name: string;
+  file_name: string;
+  url: string;
+  thumb_url: string;
+  mime_type: string;
 }
 
 export default function MediaPicker({
@@ -22,11 +33,52 @@ export default function MediaPicker({
   onChange,
   multiple = false,
   placeholder = 'Select image...',
-  showPreview = true
+  showPreview = true,
+  valueMode = 'url',
 }: MediaPickerProps) {
   const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mediaIndex, setMediaIndex] = useState<MediaIndexItem[]>([]);
+  const wasModalOpen = useRef(false);
   const { storageSettings } = usePage().props as any;
+
+  const fetchMediaIndex = useCallback(async () => {
+    try {
+      const response = await fetch(route('api.media.index'), {
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      });
+      if (!response.ok) {
+        return;
+      }
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setMediaIndex(data);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (valueMode !== 'media_id') {
+      return;
+    }
+    fetchMediaIndex();
+  }, [valueMode, fetchMediaIndex]);
+
+  useEffect(() => {
+    if (valueMode !== 'media_id') {
+      return;
+    }
+    if (wasModalOpen.current && !isModalOpen) {
+      fetchMediaIndex();
+    }
+    wasModalOpen.current = isModalOpen;
+  }, [isModalOpen, valueMode, fetchMediaIndex]);
 
   const handleSelect = (selectedUrl: string) => {
     onChange(selectedUrl);
@@ -36,16 +88,36 @@ export default function MediaPicker({
     onChange('');
   };
 
-  const imageUrls = value ? value.split(',').filter(Boolean) : [];
+  const mediaIdList = value ? value.split(',').map((s) => s.trim()).filter(Boolean) : [];
+
+  const imageUrls =
+    valueMode === 'media_id'
+      ? mediaIdList
+          .map((id) => mediaIndex.find((m) => String(m.id) === id)?.url)
+          .filter((u): u is string => Boolean(u))
+      : value
+        ? value.split(',').filter(Boolean)
+        : [];
 
   // Extract filename from URL for display
-  const getDisplayValue = (url: string) => {
-    if (!url) return '';
-    const urls = url.split(',').filter(Boolean);
-    return urls.map(u => {
-      const filename = u.split('/').pop() || u;
-      return filename.split('?')[0]; // Remove query parameters
-    }).join(', ');
+  const getDisplayValue = (raw: string) => {
+    if (!raw) return '';
+    if (valueMode === 'media_id') {
+      const ids = raw.split(',').map((s) => s.trim()).filter(Boolean);
+      return ids
+        .map((id) => {
+          const row = mediaIndex.find((m) => String(m.id) === id);
+          return row?.name || row?.file_name || id;
+        })
+        .join(', ');
+    }
+    const urls = raw.split(',').filter(Boolean);
+    return urls
+      .map((u) => {
+        const filename = u.split('/').pop() || u;
+        return filename.split('?')[0];
+      })
+      .join(', ');
   };
 
   // Get display URL for images
@@ -99,7 +171,7 @@ export default function MediaPicker({
             const isDoc = url.toLowerCase().includes('.doc') || url.toLowerCase().includes('.docx') || url.includes('document');
 
             return (
-              <div key={index} className="relative">
+              <div key={`${valueMode}-${index}-${url.slice(0, 32)}`} className="relative">
                 {isPdf ? (
                   <div className="w-full h-20 bg-red-50 border border-red-200 rounded flex flex-col items-center justify-center">
                     <div className="w-8 h-8 bg-red-100 rounded flex items-center justify-center mb-1">
@@ -148,6 +220,7 @@ export default function MediaPicker({
         onClose={() => setIsModalOpen(false)}
         onSelect={handleSelect}
         multiple={multiple}
+        valueMode={valueMode}
       />
     </div>
   );

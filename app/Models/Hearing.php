@@ -15,6 +15,7 @@ class Hearing extends BaseModel
         'case_id',
         'court_id',
         'circle_number',
+        'judge_name',
         'hearing_type_id',
         'title',
         'description',

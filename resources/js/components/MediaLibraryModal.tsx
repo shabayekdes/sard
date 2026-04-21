@@ -26,8 +26,10 @@ interface MediaItem {
 interface MediaLibraryModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSelect: (url: string) => void;
+    onSelect: (value: string) => void;
     multiple?: boolean;
+    /** `url` (default): comma-separated public URLs. `media_id`: comma-separated Spatie media row ids (media library). */
+    valueMode?: 'url' | 'media_id';
 }
 
 interface StorageSettings {
@@ -35,7 +37,7 @@ interface StorageSettings {
     max_file_size_mb: number;
 }
 
-export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple = false }: MediaLibraryModalProps) {
+export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple = false, valueMode = 'url' }: MediaLibraryModalProps) {
     const { t } = useTranslation();
     const { isRtl } = useLayout();
     const { auth, storageSettings, csrf_token } = usePage().props as any;
@@ -84,10 +86,13 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
         }
     }, []);
 
+    const itemKey = (item: MediaItem) => (valueMode === 'media_id' ? String(item.id) : item.url);
+
     useEffect(() => {
         if (isOpen) {
             fetchMedia();
             setSearchTerm('');
+            setSelectedItems([]);
         }
     }, [isOpen, fetchMedia]);
 
@@ -199,11 +204,12 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
         }
     };
 
-    const handleSelect = (url: string) => {
+    const handleSelectItem = (item: MediaItem) => {
+        const key = itemKey(item);
         if (multiple) {
-            setSelectedItems((prev) => (prev.includes(url) ? prev.filter((item) => item !== url) : [...prev, url]));
+            setSelectedItems((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
         } else {
-            onSelect(url);
+            onSelect(key);
             onClose();
         }
     };
@@ -328,11 +334,11 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
                                         <div
                                             key={item.id}
                                             className={`group relative cursor-pointer overflow-hidden rounded-lg transition-all hover:scale-105 ${
-                                                selectedItems.includes(item.url)
+                                                selectedItems.includes(itemKey(item))
                                                     ? 'ring-primary shadow-lg ring-2'
                                                     : 'border-border hover:border-primary/50 border hover:shadow-md'
                                             }`}
-                                            onClick={() => handleSelect(item.url)}
+                                            onClick={() => handleSelectItem(item)}
                                         >
                                             <div className="bg-muted relative aspect-square">
                                                 {item.mime_type.startsWith('image/') ? (
@@ -368,7 +374,7 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
                                                 )}
 
                                                 {/* Selection Indicator */}
-                                                {selectedItems.includes(item.url) && (
+                                                {selectedItems.includes(itemKey(item)) && (
                                                     <div className="bg-primary/30 absolute inset-0 flex items-center justify-center">
                                                         <div className="bg-primary text-primary-foreground rounded-full p-1.5">
                                                             <Check className="h-4 w-4" />

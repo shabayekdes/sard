@@ -11,10 +11,30 @@ import { Plus, Trash2, GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLayout } from '@/contexts/LayoutContext';
 
+export type RepeaterCustomRenderArgs = {
+  value: any;
+  onChange: (value: any) => void;
+  itemIndex: number;
+  field: RepeaterField;
+};
+
 export interface RepeaterField {
   name: string;
   label: string;
-  type: 'text' | 'textarea' | 'number' | 'email' | 'password' | 'file' | 'media-picker' | 'select' | 'switch' | 'date' | 'time' | 'datetime-local';
+  type:
+    | 'text'
+    | 'textarea'
+    | 'number'
+    | 'email'
+    | 'password'
+    | 'file'
+    | 'media-picker'
+    | 'select'
+    | 'switch'
+    | 'date'
+    | 'time'
+    | 'datetime-local'
+    | 'custom';
   placeholder?: string;
   required?: boolean;
   options?: { value: string | number; label: string }[];
@@ -25,6 +45,8 @@ export interface RepeaterField {
   defaultValue?: any;
   className?: string;
   disabled?: boolean;
+  /** When type is `custom`, render the cell content (presets, composed inputs, etc.). */
+  render?: (args: RepeaterCustomRenderArgs) => React.ReactNode;
 }
 
 export interface RepeaterProps {
@@ -118,6 +140,10 @@ export function Repeater({
     let fieldNode: React.ReactNode;
 
     switch (field.type) {
+      case 'custom':
+        fieldNode = field.render ? field.render({ value, onChange, itemIndex, field }) : null;
+        break;
+
       case 'textarea':
         fieldNode = (
           <Textarea

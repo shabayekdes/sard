@@ -10,11 +10,96 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { CrudFormModal } from '@/components/CrudFormModal';
+import MediaPicker from '@/components/MediaPicker';
 import { toast } from '@/components/custom-toast';
 import { hasPermission } from '@/utils/authorization';
+import { Repeater, type RepeaterField } from '@/components/ui/repeater';
 import { ArrowLeft, Plus } from 'lucide-react';
 
 type DurationUnit = 'minutes' | 'hours';
+
+type HearingReminderRowState = { minutes: number; custom: boolean };
+
+function HearingReminderWhenCell({
+  value,
+  onChange,
+  presets,
+  remindersInvalid,
+}: {
+  value: HearingReminderRowState;
+  onChange: (next: HearingReminderRowState) => void;
+  presets: { label: string; value: number }[];
+  remindersInvalid?: boolean;
+}) {
+  const { t } = useTranslation();
+  const row = value ?? { minutes: 60, custom: false };
+
+  const setPreset = (v: string) => {
+    if (v === 'custom') {
+      onChange({ ...row, custom: true, minutes: row.minutes || 30 });
+    } else {
+      onChange({ custom: false, minutes: Number(v) });
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-2">
+        {presets.map((option) => (
+          <Button
+            key={option.value}
+            type="button"
+            size="sm"
+            variant={!row.custom && row.minutes === option.value ? 'default' : 'outline'}
+            className="rounded-full"
+            onClick={() => setPreset(String(option.value))}
+          >
+            {option.label}
+          </Button>
+        ))}
+        <Button
+          type="button"
+          size="sm"
+          variant={row.custom ? 'default' : 'outline'}
+          className="rounded-full"
+          onClick={() => setPreset('custom')}
+        >
+          {t('Custom')}
+        </Button>
+      </div>
+      {row.custom ? (
+        <div className="max-w-xs space-y-2 pt-1">
+          <Label>{t('Reminder (minutes before)')}</Label>
+          <Input
+            type="number"
+            min={1}
+            max={10080}
+            className="h-10"
+            value={row.minutes}
+            onChange={(e) => onChange({ ...row, minutes: Number(e.target.value || 0) })}
+            aria-invalid={remindersInvalid ? true : undefined}
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function hearingAttachmentsToPickerValue(v: unknown): string {
+  if (!Array.isArray(v)) {
+    return '';
+  }
+  return v
+    .map((x) => {
+      if (typeof x === 'number' && Number.isFinite(x) && x > 0) {
+        return String(Math.floor(x));
+      }
+      const n = parseInt(String(x), 10);
+      return Number.isNaN(n) || n <= 0 ? '' : String(n);
+    })
+    .filter(Boolean)
+    .join(',');
+}
 
 function normalizeHearingTime(t: string | null | undefined) {
   if (t == null) return '';
@@ -38,7 +123,7 @@ export default function HearingForm() {
     prefillCaseId: number | null;
     hideCaseField: boolean;
     returnToCaseId: number | null;
-    reminderMinutes: number | null;
+    reminderMinutes: number[];
   };
   const { auth } = usePage().props as any;
   const permissions = auth?.permissions || [];
@@ -70,6 +155,8 @@ export default function HearingForm() {
     return 'minutes';
   });
 
+  const presetReminderMinutes = [60, 180, 1440, 4320];
+
   const [form, setForm] = useState(() => ({
     case_id:
       mode === 'edit' && hearing
@@ -79,16 +166,21 @@ export default function HearingForm() {
           : '',
     court_id: hearing?.court_id != null ? String(hearing.court_id) : '',
     circle_number: hearing?.circle_number ?? '',
+    judge_name: hearing?.judge_name ?? '',
     hearing_type_id: hearing?.hearing_type_id != null ? String(hearing.hearing_type_id) : 'none',
     title: hearing?.title ?? '',
     description: hearing?.description ?? '',
     hearing_date: hearing?.hearing_date ? (hearing.hearing_date as string).split('T')[0] : '',
     hearing_time: normalizeHearingTime(hearing?.hearing_time),
     duration_minutes: hearing?.duration_minutes ?? 30,
-    reminder_minutes: reminderMinutes ?? 60,
+    reminder_minutes: (Array.isArray(reminderMinutes) && reminderMinutes.length > 0 ? reminderMinutes : []).map((m) => ({
+      minutes: Number(m) || 60,
+      custom: !presetReminderMinutes.includes(Number(m)),
+    })),
     url: hearing?.url ?? '',
     status: hearing?.status ?? 'scheduled',
     notes: hearing?.notes ?? '',
+    attachments: hearingAttachmentsToPickerValue(hearing?.attachments),
     outcome: hearing?.outcome ?? '',
     sync_with_google_calendar: false,
   }));
@@ -132,6 +224,36 @@ export default function HearingForm() {
     if (u === durationUnit) return;
     setDurationUnit(u);
   };
+
+  const reminderPresetOptions = useMemo(
+    () => [
+      { label: t('1 hour before'), value: 60 },
+      { label: t('3 hours before'), value: 180 },
+      { label: t('1 day before'), value: 1440 },
+      { label: t('3 days before'), value: 4320 },
+    ],
+    [t],
+  );
+
+  const reminderRepeaterFields: RepeaterField[] = useMemo(
+    () => [
+      {
+        name: 'reminder',
+        label: t('When'),
+        type: 'custom',
+        defaultValue: { minutes: 60, custom: false },
+        render: ({ value, onChange }) => (
+          <HearingReminderWhenCell
+            value={value}
+            onChange={onChange}
+            presets={reminderPresetOptions}
+            remindersInvalid={Boolean(errors.reminder_minutes)}
+          />
+        ),
+      },
+    ],
+    [t, reminderPresetOptions, errors.reminder_minutes],
+  );
 
   const quickCourtFormConfig = useMemo(() => {
     const typeOptions = (courtTypes || []).map((type: any) => ({
@@ -194,16 +316,30 @@ export default function HearingForm() {
       case_id: caseId,
       court_id,
       circle_number: form.circle_number || null,
+      judge_name: form.judge_name?.trim() ? form.judge_name.trim() : null,
       hearing_type_id,
       title: form.title,
       description: form.description || null,
       hearing_date: form.hearing_date,
       hearing_time: form.hearing_time,
       duration_minutes: Math.round(Number(form.duration_minutes)),
-      reminder_minutes: form.reminder_minutes ? Math.round(Number(form.reminder_minutes)) : null,
+      reminder_minutes: form.reminder_minutes
+        .map((r) => Math.round(Number(r.minutes)))
+        .filter((m) => !Number.isNaN(m) && m > 0),
       url: form.url || null,
       status: form.status,
       notes: form.notes || null,
+      attachments: (() => {
+        const s = form.attachments?.trim();
+        if (!s) {
+          return null;
+        }
+        const ids = s
+          .split(',')
+          .map((x) => parseInt(x.trim(), 10))
+          .filter((n) => !Number.isNaN(n) && n > 0);
+        return ids.length ? ids : null;
+      })(),
     };
     if (mode === 'edit') {
       payload.outcome = form.outcome || null;
@@ -244,7 +380,8 @@ export default function HearingForm() {
       setErrors((er) => ({ ...er, duration_minutes: t('Duration must be between 15 and 480 minutes.') }));
       return;
     }
-    if (p.reminder_minutes != null && (Number(p.reminder_minutes) < 1 || Number(p.reminder_minutes) > 10080)) {
+    const reminderMinutes = Array.isArray(p.reminder_minutes) ? p.reminder_minutes : [];
+    if (reminderMinutes.some((m) => Number(m) < 1 || Number(m) > 10080)) {
       setProcessing(false);
       setErrors((er) => ({ ...er, reminder_minutes: t('Reminder must be between 1 and 10080 minutes.') }));
       return;
@@ -380,38 +517,38 @@ export default function HearingForm() {
 
         <Card>
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="space-y-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="min-w-0 space-y-2">
                 <Label required>{t('Date')}</Label>
                 <Input
                   type="date"
                   value={form.hearing_date}
                   onChange={(e) => update('hearing_date', e.target.value)}
-                  className="h-10"
+                  className="h-10 w-full"
                   aria-invalid={errors.hearing_date ? true : undefined}
                 />
                 {errors.hearing_date ? <p className="text-sm text-destructive">{errors.hearing_date}</p> : null}
               </div>
-              <div className="space-y-2">
+              <div className="min-w-0 space-y-2">
                 <Label required>{t('Time')}</Label>
                 <Input
                   type="time"
                   value={form.hearing_time}
                   onChange={(e) => update('hearing_time', e.target.value)}
-                  className="h-10"
+                  className="h-10 w-full"
                   aria-invalid={errors.hearing_time ? true : undefined}
                 />
                 {errors.hearing_time ? <p className="text-sm text-destructive">{errors.hearing_time}</p> : null}
               </div>
-              <div className="space-y-2">
+              <div className="min-w-0 space-y-2">
                 <Label>{t('Duration (minutes)')}</Label>
-                <div className="flex gap-2">
+                <div className="flex min-w-0 gap-2">
                   <Input
                     type="number"
                     min={durationUnit === 'hours' ? 0.25 : 15}
                     max={durationUnit === 'hours' ? 8 : 480}
                     step={durationUnit === 'hours' ? 0.25 : 1}
-                    className="h-10"
+                    className="h-10 min-w-0 flex-1"
                     value={displayDuration}
                     onChange={(e) => setDisplayDuration(e.target.value)}
                     aria-invalid={errors.duration_minutes ? true : undefined}
@@ -421,7 +558,7 @@ export default function HearingForm() {
                     variant={durationUnit === 'minutes' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => onDurationUnitChange('minutes')}
-                    className="h-10"
+                    className="h-10 shrink-0 px-2 sm:px-3"
                   >
                     {t('minutes')}
                   </Button>
@@ -430,30 +567,36 @@ export default function HearingForm() {
                     variant={durationUnit === 'hours' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => onDurationUnitChange('hours')}
-                    className="h-10"
+                    className="h-10 shrink-0 px-2 sm:px-3"
                   >
                     {t('Hours')}
                   </Button>
                 </div>
                 {errors.duration_minutes ? <p className="text-sm text-destructive">{errors.duration_minutes}</p> : null}
               </div>
-              <div className="space-y-2">
-                <Label>{t('Reminder (minutes before)')}</Label>
-                <Input
-                  type="number"
-                  min={1}
-                  max={10080}
-                  className="h-10"
-                  value={form.reminder_minutes}
-                  onChange={(e) => update('reminder_minutes', e.target.value === '' ? '' : Number(e.target.value))}
-                  aria-invalid={errors.reminder_minutes ? true : undefined}
-                />
-                {errors.reminder_minutes ? <p className="text-sm text-destructive">{errors.reminder_minutes}</p> : null}
-              </div>
             </div>
           </CardContent>
         </Card>
-
+        <div className="mt-4 rounded-lg border p-4">
+              <div className="mb-3 text-sm font-medium">{t('Reminders')}</div>
+              <Repeater
+                fields={reminderRepeaterFields}
+                value={form.reminder_minutes.map((r) => ({ reminder: r }))}
+                onChange={(items) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    reminder_minutes: items.map((it) => it.reminder as HearingReminderRowState),
+                  }))
+                }
+                minItems={0}
+                maxItems={-1}
+                addButtonText={t('Add Reminder')}
+                removeButtonText={t('Remove')}
+                showItemNumbers={false}
+                emptyMessage="No reminders yet."
+              />
+              {errors.reminder_minutes ? <p className="mt-2 text-sm text-destructive">{errors.reminder_minutes}</p> : null}
+            </div>
         <Card>
           <CardContent className="space-y-4 p-6">
             <div className="space-y-2">
@@ -469,48 +612,62 @@ export default function HearingForm() {
               {errors.url ? <p className="text-sm text-destructive">{errors.url}</p> : null}
             </div>
 
-            <div className="space-y-2">
-              <Label>{t('Court')}</Label>
-              <div className="flex gap-2">
-                <div className="min-w-0 flex-1">
-                  <Select value={form.court_id || 'none'} onValueChange={(v) => update('court_id', v === 'none' ? '' : v)}>
-                    <SelectTrigger className="h-10 w-full">
-                      <SelectValue placeholder={t('No court')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">{t('No court')}</SelectItem>
-                      {(courts || []).map((c) => {
-                        const courtName = c.name || '';
-                        const courtType = c.court_type ? getTranslatedValue(c.court_type.name) : '';
-                        const circleType = c.circle_type ? getTranslatedValue(c.circle_type.name) : '';
-                        const parts = [courtName];
-                        if (courtType) parts.push(courtType);
-                        if (circleType) parts.push(circleType);
-                        return (
-                          <SelectItem key={c.id} value={String(c.id)}>
-                            {parts.join(' + ')}
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="min-w-0 space-y-2 md:col-span-1">
+                <Label>{t('Court')}</Label>
+                <div className="flex gap-2">
+                  <div className="min-w-0 flex-1">
+                    <Select value={form.court_id || 'none'} onValueChange={(v) => update('court_id', v === 'none' ? '' : v)}>
+                      <SelectTrigger className="h-10 w-full">
+                        <SelectValue placeholder={t('No court')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">{t('No court')}</SelectItem>
+                        {(courts || []).map((c) => {
+                          const courtName = c.name || '';
+                          const courtType = c.court_type ? getTranslatedValue(c.court_type.name) : '';
+                          const circleType = c.circle_type ? getTranslatedValue(c.circle_type.name) : '';
+                          const parts = [courtName];
+                          if (courtType) parts.push(courtType);
+                          if (circleType) parts.push(circleType);
+                          return (
+                            <SelectItem key={c.id} value={String(c.id)}>
+                              {parts.join(' + ')}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {canQuickCreateCourt && (
+                    <Button type="button" variant="outline" className="h-10 shrink-0" onClick={() => setCourtModalOpen(true)} aria-label={t('Add court')}>
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
-                {canQuickCreateCourt && (
-                  <Button type="button" variant="outline" className="h-10 shrink-0" onClick={() => setCourtModalOpen(true)} aria-label={t('Add court')}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                )}
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label>{t('Circle Number')}</Label>
-              <Input
-                className="h-10"
-                value={form.circle_number}
-                onChange={(e) => update('circle_number', e.target.value)}
-                aria-invalid={errors.circle_number ? true : undefined}
-              />
+              <div className="min-w-0 space-y-2 md:col-span-1">
+                <Label>{t('Circle Number')}</Label>
+                <Input
+                  className="h-10 w-full"
+                  value={form.circle_number}
+                  onChange={(e) => update('circle_number', e.target.value)}
+                  aria-invalid={errors.circle_number ? true : undefined}
+                />
+                {errors.circle_number ? <p className="text-sm text-destructive">{errors.circle_number}</p> : null}
+              </div>
+
+              <div className="min-w-0 space-y-2 md:col-span-1">
+                <Label>{t('Judge name')}</Label>
+                <Input
+                  className="h-10 w-full"
+                  value={form.judge_name}
+                  onChange={(e) => update('judge_name', e.target.value)}
+                  aria-invalid={errors.judge_name ? true : undefined}
+                />
+                {errors.judge_name ? <p className="text-sm text-destructive">{errors.judge_name}</p> : null}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -536,6 +693,19 @@ export default function HearingForm() {
             <div className="space-y-2">
               <Label>{t('Notes')}</Label>
               <Textarea value={form.notes} onChange={(e) => update('notes', e.target.value)} rows={2} />
+            </div>
+
+            <div className="space-y-2">
+              <MediaPicker
+                label={t('Attachments')}
+                value={form.attachments}
+                onChange={(v) => update('attachments', v)}
+                multiple
+                valueMode="media_id"
+                placeholder={t('Select files...')}
+                showPreview
+              />
+              {errors.attachments ? <p className="text-sm text-destructive">{errors.attachments}</p> : null}
             </div>
 
             {mode === 'edit' && (

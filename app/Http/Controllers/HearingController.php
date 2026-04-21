@@ -7,6 +7,7 @@ use App\Models\Hearing;
 use App\Models\CaseModel;
 use App\Models\Court;
 use App\Models\HearingType;
+use App\Models\MediaItem;
 use App\Models\Setting;
 use App\Models\CaseTimeline;
 use App\Models\EventType;
@@ -14,6 +15,7 @@ use App\Services\GoogleCalendarService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class HearingController extends BaseController
 {
@@ -89,7 +91,6 @@ class HearingController extends BaseController
 
         $googleCalendarEnabled = Settings::boolean('GOOGLE_CALENDAR_ENABLED');
 
-        $todayRiyadh = Carbon::now('Asia/Riyadh')->toDateString();
         $nowRiyadh = Carbon::now('Asia/Riyadh');
         $dayOfWeek = $nowRiyadh->dayOfWeek; // 0 = Sunday .. 6 = Saturday
         $weekStart = $nowRiyadh->copy()->subDays($dayOfWeek)->startOfDay();
@@ -100,11 +101,11 @@ class HearingController extends BaseController
             'this_week' => Hearing::withPermissionCheck()
                 ->whereBetween('hearing_date', [$weekStart->toDateString(), $weekEnd->toDateString()])
                 ->count(),
-            'future' => Hearing::withPermissionCheck()
-                ->where('hearing_date', '>', $todayRiyadh)
+            'scheduled' => Hearing::withPermissionCheck()
+                ->where('status', 'scheduled')
                 ->count(),
-            'past' => Hearing::withPermissionCheck()
-                ->where('hearing_date', '<', $todayRiyadh)
+            'completed' => Hearing::withPermissionCheck()
+                ->where('status', 'completed')
                 ->count(),
         ];
 
@@ -169,12 +170,15 @@ class HearingController extends BaseController
         }
 
         $hideCaseField = $fromCase && ($hearing?->case_id || $queryCaseId);
-        $reminderMinutes = null;
+        $reminderMinutes = [];
         if ($hearing) {
             $reminderMinutes = \App\Models\HearingNotification::where('hearing_id', $hearing->id)
                 ->where('status', 'pending')
                 ->orderBy('minutes_before')
-                ->value('minutes_before');
+                ->pluck('minutes_before')
+                ->map(fn ($m) => (int) $m)
+                ->values()
+                ->all();
         }
 
         return [
@@ -199,22 +203,32 @@ class HearingController extends BaseController
             'case_id' => 'required|exists:cases,id,tenant_id,' . createdBy(),
             'court_id' => 'nullable|exists:courts,id,tenant_id,' . createdBy(),
             'circle_number' => 'nullable|string|max:255',
+            'judge_name' => 'nullable|string|max:255',
             'hearing_type_id' => 'required|exists:hearing_types,id,tenant_id,' . createdBy(),
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'hearing_date' => 'required|date|after_or_equal:today',
             'hearing_time' => 'required|date_format:H:i',
             'duration_minutes' => 'nullable|integer|min:15|max:480',
-            'reminder_minutes' => 'nullable|integer|min:1|max:10080',
+            'reminder_minutes' => 'nullable|array',
+            'reminder_minutes.*' => 'integer|min:1|max:10080',
             'url' => 'nullable|url|max:500',
             'status' => 'nullable|in:scheduled,in_progress,completed,postponed,cancelled',
             'notes' => 'nullable|string',
+            'attachments' => 'nullable',
             'sync_with_google_calendar' => 'nullable|boolean',
         ]);
 
+        $validated['attachments'] = $this->normalizeHearingAttachments($request);
         $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'scheduled';
         $validated['duration_minutes'] = $validated['duration_minutes'] ?? 30;
+        $validatedReminderMinutes = collect($validated['reminder_minutes'] ?? [])
+            ->map(fn ($m) => (int) $m)
+            ->filter(fn ($m) => $m > 0)
+            ->unique()
+            ->values()
+            ->all();
 
         $hearing = Hearing::create($validated);
 
@@ -232,7 +246,7 @@ class HearingController extends BaseController
         $hearing->load(['hearingType', 'court', 'case.client']);
 
         // Create default notifications
-        $this->createDefaultNotifications($hearing, $validated['reminder_minutes'] ?? null);
+        $this->createDefaultNotifications($hearing, $validatedReminderMinutes);
 
         // Trigger notifications
         event(new \App\Events\NewHearingCreated($hearing, $request->all()));
@@ -271,20 +285,24 @@ class HearingController extends BaseController
             'case_id' => 'required|exists:cases,id,tenant_id,' . createdBy(),
             'court_id' => 'nullable|exists:courts,id,tenant_id,' . createdBy(),
             'circle_number' => 'nullable|string|max:255',
+            'judge_name' => 'nullable|string|max:255',
             'hearing_type_id' => 'required|exists:hearing_types,id,tenant_id,' . createdBy(),
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'hearing_date' => 'required|date|after_or_equal:today',
             'hearing_time' => 'required|date_format:H:i',
             'duration_minutes' => 'nullable|integer|min:15|max:480',
-            'reminder_minutes' => 'nullable|integer|min:1|max:10080',
+            'reminder_minutes' => 'nullable|array',
+            'reminder_minutes.*' => 'integer|min:1|max:10080',
             'url' => 'nullable|url|max:500',
             'status' => 'nullable|in:scheduled,in_progress,completed,postponed,cancelled',
             'notes' => 'nullable|string',
+            'attachments' => 'nullable',
             'outcome' => 'nullable|string',
             'sync_with_google_calendar' => 'nullable|boolean',
         ]);
 
+        $validated['attachments'] = $this->normalizeHearingAttachments($request);
         $hearing->update($validated);
 
         // Handle Google Calendar sync
@@ -304,8 +322,15 @@ class HearingController extends BaseController
         }
 
         // Update notifications if date/time changed
+        $validatedReminderMinutes = collect($validated['reminder_minutes'] ?? [])
+            ->map(fn ($m) => (int) $m)
+            ->filter(fn ($m) => $m > 0)
+            ->unique()
+            ->values()
+            ->all();
+
         if (isset($validated['hearing_date']) || isset($validated['hearing_time']) || isset($validated['reminder_minutes'])) {
-            $this->updateNotifications($hearing, $validated['reminder_minutes'] ?? null);
+            $this->updateNotifications($hearing, $validatedReminderMinutes);
         }
 
         return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Hearing')]));
@@ -332,9 +357,12 @@ class HearingController extends BaseController
         return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Hearing')]));
     }
 
-    private function createDefaultNotifications($hearing, $customReminderMinutes = null)
+    private function createDefaultNotifications($hearing, array $customReminderMinutes = [])
     {
-        $reminderTimes = $customReminderMinutes ? [(int) $customReminderMinutes] : [1440, 60, 15];
+        $reminderTimes = $customReminderMinutes;
+        if (empty($reminderTimes)) {
+            return;
+        }
         $date = date('Y-m-d', strtotime($hearing->hearing_date));
         $time = date('H:i', strtotime($hearing->hearing_time));
         $hearingDateTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $date . ' ' . $time);
@@ -351,7 +379,7 @@ class HearingController extends BaseController
         }
     }
 
-    private function updateNotifications($hearing, $customReminderMinutes = null)
+    private function updateNotifications($hearing, array $customReminderMinutes = [])
     {
         // Delete existing pending notifications
         \App\Models\HearingNotification::where('hearing_id', $hearing->id)
@@ -360,5 +388,59 @@ class HearingController extends BaseController
 
         // Create new notifications
         $this->createDefaultNotifications($hearing, $customReminderMinutes);
+    }
+
+    /**
+     * Store only Spatie media row ids (files that exist in the tenant media library).
+     *
+     * @return array<int, int>|null
+     */
+    private function normalizeHearingAttachments(Request $request): ?array
+    {
+        if (!$request->has('attachments') || $request->attachments === null || $request->attachments === '') {
+            return null;
+        }
+
+        $raw = $request->input('attachments');
+        if (is_string($raw)) {
+            $ids = array_map('intval', array_filter(array_map('trim', explode(',', $raw))));
+        } elseif (is_array($raw)) {
+            $ids = array_map('intval', array_values(array_filter($raw)));
+        } else {
+            return null;
+        }
+
+        $ids = array_values(array_unique(array_filter($ids, fn (int $id) => $id > 0)));
+
+        if ($ids === []) {
+            return null;
+        }
+
+        $tenantId = createdBy();
+        $user = auth()->user();
+
+        $query = Media::query()
+            ->whereIn('id', $ids)
+            ->where('model_type', MediaItem::class);
+
+        if ($user && ($user->type === 'superadmin' || $user->hasPermissionTo('manage-any-media'))) {
+            // no extra tenant filter
+        } else {
+            $query->where(function ($q) use ($tenantId) {
+                $q->where('tenant_id', $tenantId)->orWhereNull('tenant_id');
+            });
+        }
+
+        $allowed = $query->pluck('id')->all();
+        $allowedSet = array_fill_keys($allowed, true);
+
+        $ordered = [];
+        foreach ($ids as $id) {
+            if (!empty($allowedSet[$id])) {
+                $ordered[] = $id;
+            }
+        }
+
+        return $ordered === [] ? null : $ordered;
     }
 }

@@ -20,7 +20,7 @@ export default function Hearings() {
     courts,
     courtTypes,
     circleTypes,
-    hearingStats = { total: 0, this_week: 0, future: 0, past: 0 },
+    hearingStats = { total: 0, this_week: 0, scheduled: 0, completed: 0 },
     filters: pageFilters = {},
   } = usePage().props as any;
   const permissions = auth?.permissions || [];
@@ -281,15 +281,15 @@ export default function Hearings() {
                       </div>
                       <div className="text-center">
                           <div className="text-xl font-bold text-emerald-600">
-                              {(hearingStats.future ?? 0).toLocaleString()}
+                              {(hearingStats.scheduled ?? 0).toLocaleString()}
                           </div>
-                          <div className="text-xs text-gray-600 dark:text-gray-400">{t('Hearings in the future')}</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">{t('Scheduled')}</div>
                       </div>
                       <div className="text-center">
                           <div className="text-xl font-bold text-amber-600">
-                              {(hearingStats.past ?? 0).toLocaleString()}
+                              {(hearingStats.completed ?? 0).toLocaleString()}
                           </div>
-                          <div className="text-xs text-gray-600 dark:text-gray-400">{t('Hearings in the past')}</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">{t('Completed')}</div>
                       </div>
                   </div>
               </CardContent>
