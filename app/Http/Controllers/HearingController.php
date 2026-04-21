@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Facades\Settings;
-use App\Models\Hearing;
 use App\Models\CaseModel;
+use App\Models\CaseTeamMember;
+use App\Models\Hearing;
 use App\Models\Court;
 use App\Models\HearingType;
 use App\Models\MediaItem;
@@ -130,7 +131,7 @@ class HearingController extends BaseController
     public function edit(Request $request, $id)
     {
         $hearing = Hearing::withPermissionCheck()
-            ->with(['case', 'court.courtType', 'court.circleType', 'hearingType'])
+            ->with(['case', 'court.courtType', 'court.circleType', 'hearingType', 'teamMembers:id,name,email'])
             ->where('id', $id)
             ->first();
 
@@ -181,6 +182,12 @@ class HearingController extends BaseController
                 ->all();
         }
 
+        $initialCaseId = $hearing?->case_id ?? ($queryCaseId ? (int) $queryCaseId : null);
+
+        if ($hearing) {
+            $hearing->loadMissing('teamMembers:id,name,email');
+        }
+
         return [
             'mode' => $hearing ? 'edit' : 'create',
             'hearing' => $hearing,
@@ -194,7 +201,13 @@ class HearingController extends BaseController
             'hideCaseField' => $hideCaseField,
             'returnToCaseId' => $returnToCaseId,
             'reminderMinutes' => $reminderMinutes,
+            'teamMemberOptions' => $this->hearingCaseTeamUserOptions($initialCaseId),
         ];
+    }
+
+    public function caseTeamUsers(int $caseId)
+    {
+        return response()->json(['users' => $this->hearingCaseTeamUserOptions($caseId)]);
     }
 
     public function store(Request $request)
@@ -216,10 +229,14 @@ class HearingController extends BaseController
             'status' => 'nullable|in:scheduled,in_progress,completed,postponed,cancelled',
             'notes' => 'nullable|string',
             'attachments' => 'nullable',
+            'team_member_ids' => 'nullable|array',
+            'team_member_ids.*' => 'integer',
             'sync_with_google_calendar' => 'nullable|boolean',
         ]);
 
         $validated['attachments'] = $this->normalizeHearingAttachments($request);
+        $teamMemberIds = $this->normalizeTeamMemberIds($request, (int) $validated['case_id']);
+        unset($validated['team_member_ids']);
         $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'scheduled';
         $validated['duration_minutes'] = $validated['duration_minutes'] ?? 30;
@@ -231,6 +248,7 @@ class HearingController extends BaseController
             ->all();
 
         $hearing = Hearing::create($validated);
+        $this->syncHearingTeamMembers($hearing, $teamMemberIds);
 
         // Handle Google Calendar sync
         if ($hearing && $request->sync_with_google_calendar) {
@@ -298,12 +316,17 @@ class HearingController extends BaseController
             'status' => 'nullable|in:scheduled,in_progress,completed,postponed,cancelled',
             'notes' => 'nullable|string',
             'attachments' => 'nullable',
+            'team_member_ids' => 'nullable|array',
+            'team_member_ids.*' => 'integer',
             'outcome' => 'nullable|string',
             'sync_with_google_calendar' => 'nullable|boolean',
         ]);
 
         $validated['attachments'] = $this->normalizeHearingAttachments($request);
+        $teamMemberIds = $this->normalizeTeamMemberIds($request, (int) $validated['case_id']);
+        unset($validated['team_member_ids']);
         $hearing->update($validated);
+        $this->syncHearingTeamMembers($hearing, $teamMemberIds);
 
         // Handle Google Calendar sync
         if ($request->sync_with_google_calendar && !$hearing->google_calendar_event_id) {
@@ -388,6 +411,88 @@ class HearingController extends BaseController
 
         // Create new notifications
         $this->createDefaultNotifications($hearing, $customReminderMinutes);
+    }
+
+    /**
+     * @return list<array{value: int, label: string}>
+     */
+    private function hearingCaseTeamUserOptions(?int $caseId): array
+    {
+        if (!$caseId) {
+            return [];
+        }
+
+        $case = CaseModel::withPermissionCheck()
+            ->where('id', $caseId)
+            ->with(['teamMembers' => function ($q) {
+                $q->where('status', 'active');
+            }, 'teamMembers.user'])
+            ->first();
+
+        if (!$case) {
+            return [];
+        }
+
+        return $case->teamMembers
+            ->filter(fn ($tm) => $tm->user)
+            ->map(function ($tm) {
+                $user = $tm->user;
+                $label = $user->name;
+                if (!empty($user->email)) {
+                    $label .= ' (' . $user->email . ')';
+                }
+
+                return [
+                    'value' => (int) $user->id,
+                    'label' => $label,
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function normalizeTeamMemberIds(Request $request, int $caseId): array
+    {
+        $raw = $request->input('team_member_ids', []);
+        if (!is_array($raw) || $raw === []) {
+            return [];
+        }
+
+        $ids = collect($raw)
+            ->map(fn ($v) => (int) $v)
+            ->filter(fn ($id) => $id > 0)
+            ->unique()
+            ->values();
+
+        if ($ids->isEmpty()) {
+            return [];
+        }
+
+        $allowed = CaseTeamMember::query()
+            ->where('case_id', $caseId)
+            ->where('tenant_id', createdBy())
+            ->where('status', 'active')
+            ->pluck('user_id');
+
+        return $ids->intersect($allowed)->values()->all();
+    }
+
+    /**
+     * @param  list<int>  $userIds
+     */
+    private function syncHearingTeamMembers(Hearing $hearing, array $userIds): void
+    {
+        $tenantId = (string) $hearing->tenant_id;
+        $payload = [];
+        foreach (array_values(array_unique(array_map('intval', $userIds))) as $id) {
+            if ($id > 0) {
+                $payload[$id] = ['tenant_id' => $tenantId];
+            }
+        }
+        $hearing->teamMembers()->sync($payload);
     }
 
     /**

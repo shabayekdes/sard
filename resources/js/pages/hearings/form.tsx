@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { PageTemplate } from '@/components/page-template';
@@ -14,6 +14,7 @@ import MediaPicker from '@/components/MediaPicker';
 import { toast } from '@/components/custom-toast';
 import { hasPermission } from '@/utils/authorization';
 import { Repeater, type RepeaterField } from '@/components/ui/repeater';
+import MultiSelect from '@/components/ui/multi-select';
 import { ArrowLeft, Plus } from 'lucide-react';
 
 type DurationUnit = 'minutes' | 'hours';
@@ -111,7 +112,7 @@ function normalizeHearingTime(t: string | null | undefined) {
 
 export default function HearingForm() {
   const { t, i18n } = useTranslation();
-  const props = usePage().props as {
+  const props = usePage().props as unknown as {
     mode: 'create' | 'edit';
     hearing?: any;
     cases: any[];
@@ -124,6 +125,7 @@ export default function HearingForm() {
     hideCaseField: boolean;
     returnToCaseId: number | null;
     reminderMinutes: number[];
+    teamMemberOptions?: { value: number; label: string }[];
   };
   const { auth } = usePage().props as any;
   const permissions = auth?.permissions || [];
@@ -142,7 +144,12 @@ export default function HearingForm() {
     hideCaseField,
     returnToCaseId,
     reminderMinutes,
+    teamMemberOptions = [],
   } = props;
+
+  const [teamMemberSelectOptions, setTeamMemberSelectOptions] = useState<{ value: string; label: string }[]>(() =>
+    (teamMemberOptions ?? []).map((o) => ({ value: String(o.value), label: o.label })),
+  );
 
   const canQuickCreateCourt = hasPermission(permissions, 'create-courts');
   const [courtModalOpen, setCourtModalOpen] = useState(false);
@@ -183,7 +190,56 @@ export default function HearingForm() {
     attachments: hearingAttachmentsToPickerValue(hearing?.attachments),
     outcome: hearing?.outcome ?? '',
     sync_with_google_calendar: false,
+    team_member_ids: Array.isArray(hearing?.team_members)
+      ? (hearing.team_members as { id: number }[]).map((u) => String(u.id))
+      : [],
   }));
+
+  const effectiveCaseIdStr = useMemo(() => {
+    if (hideCaseField) {
+      return String(prefillCaseId ?? hearing?.case_id ?? '');
+    }
+    return form.case_id || '';
+  }, [hideCaseField, prefillCaseId, hearing?.case_id, form.case_id]);
+
+  useEffect(() => {
+    const caseId = effectiveCaseIdStr.trim();
+    if (!caseId) {
+      setTeamMemberSelectOptions([]);
+      setForm((p) => ({ ...p, team_member_ids: [] }));
+      return;
+    }
+    let cancelled = false;
+    fetch(route('api.hearings.case-team-users', Number(caseId)), {
+      headers: {
+        Accept: 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      credentials: 'same-origin',
+    })
+      .then((res) => res.json())
+      .then((data: { users?: { value: number; label: string }[] }) => {
+        if (cancelled) return;
+        const opts = (data.users ?? []).map((u) => ({
+          value: String(u.value),
+          label: u.label,
+        }));
+        setTeamMemberSelectOptions(opts);
+        const allowed = new Set(opts.map((o) => o.value));
+        setForm((p) => ({
+          ...p,
+          team_member_ids: p.team_member_ids.filter((id) => allowed.has(id)),
+        }));
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setTeamMemberSelectOptions([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [effectiveCaseIdStr]);
 
   const update = useCallback((field: keyof typeof form, value: string | boolean | number) => {
     setForm((prev) => ({ ...prev, [field]: value } as typeof form));
@@ -287,7 +343,7 @@ export default function HearingForm() {
   }, [courtTypes, circleTypes, t, currentLocale]);
 
   const handleQuickCourtSubmit = (courtData: Record<string, unknown>) => {
-    router.post(route('courts.store'), courtData, {
+    router.post(route('courts.store'), courtData as any, {
       preserveState: true,
       preserveScroll: true,
       onSuccess: (p) => {
@@ -340,6 +396,9 @@ export default function HearingForm() {
           .filter((n) => !Number.isNaN(n) && n > 0);
         return ids.length ? ids : null;
       })(),
+      team_member_ids: form.team_member_ids
+        .map((id) => parseInt(id, 10))
+        .filter((n) => !Number.isNaN(n) && n > 0),
     };
     if (mode === 'edit') {
       payload.outcome = form.outcome || null;
@@ -511,6 +570,28 @@ export default function HearingForm() {
             <div className="space-y-2">
               <Label>{t('Description')}</Label>
               <Textarea value={form.description} onChange={(e) => update('description', e.target.value)} rows={3} />
+            </div>
+
+            <div className="space-y-2">
+              <Label>{t('Team Members')}</Label>
+              <MultiSelect
+                {...({
+                  options: teamMemberSelectOptions,
+                  value: form.team_member_ids,
+                  onChange: (selected: string[]) => {
+                    setForm((prev) => ({ ...prev, team_member_ids: selected }));
+                    setErrors((e) => {
+                      const n = { ...e };
+                      delete n.team_member_ids;
+                      return n;
+                    });
+                  },
+                  disabled: !effectiveCaseIdStr.trim(),
+                  placeholder: effectiveCaseIdStr.trim() ? t('Select') : t('Select Case'),
+                  searchPlaceholder: `${t('Search')}...`,
+                } as any)}
+              />
+              {errors.team_member_ids ? <p className="text-sm text-destructive">{errors.team_member_ids}</p> : null}
             </div>
           </CardContent>
         </Card>

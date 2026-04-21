@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\AutoApplyPermissionCheck;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class Hearing extends BaseModel
@@ -66,6 +67,13 @@ class Hearing extends BaseModel
     public function hearingType()
     {
         return $this->belongsTo(HearingType::class);
+    }
+
+    public function teamMembers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'hearing_team_members')
+            ->withPivot('tenant_id')
+            ->withTimestamps();
     }
 
     public function creator()

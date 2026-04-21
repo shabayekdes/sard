@@ -483,6 +483,9 @@ Route::middleware([
                 Route::post('hearings', [Controllers\HearingController::class, 'store'])->middleware('permission:create-hearings')->name('hearings.store');
                 Route::put('hearings/{hearing}', [Controllers\HearingController::class, 'update'])->middleware('permission:edit-hearings')->name('hearings.update');
                 Route::delete('hearings/{hearing}', [Controllers\HearingController::class, 'destroy'])->middleware('permission:delete-hearings')->name('hearings.destroy');
+                Route::get('api/hearings/case-team-users/{caseId}', [Controllers\HearingController::class, 'caseTeamUsers'])
+                    ->whereNumber('caseId')
+                    ->name('api.hearings.case-team-users');
             });
 
             // Calendar route
