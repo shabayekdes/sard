@@ -11,6 +11,8 @@ import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useInitials } from '@/hooks/use-initials';
 
 export default function Hearings() {
   const { t, i18n } = useTranslation();
@@ -35,6 +37,8 @@ export default function Hearings() {
     }
     return '-';
   };
+
+  const getInitials = useInitials();
 
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
   const [selectedStatus, setSelectedStatus] = useState(pageFilters.status || 'all');
@@ -183,8 +187,54 @@ export default function Hearings() {
       }
     },
     {
-      key: 'circle_number',
-      label: t('Circle Number')
+      key: 'hearing_type',
+      label: t('Session Type'),
+      render: (_value: unknown, row: any) => {
+        const name = row?.hearing_type ? getTranslatedValue(row.hearing_type.name) : '';
+        return name && name !== '-' ? name : '-';
+      },
+    },
+    {
+      key: 'judge_name',
+      label: t('Judge name'),
+      sortable: true,
+      render: (value: string | null | undefined) => (value && String(value).trim() ? String(value).trim() : '-'),
+    },
+    {
+      key: 'team_members',
+      label: t('Team Members'),
+      render: (_value: unknown, row: any) => {
+        const members = Array.isArray(row?.team_members) ? row.team_members : [];
+        if (members.length === 0) {
+          return <span className="text-muted-foreground">-</span>;
+        }
+        const maxShown = 4;
+        const shown = members.slice(0, maxShown);
+        const extra = members.length - shown.length;
+        return (
+          <div className="flex items-center">
+            <div className="flex -space-x-2">
+              {shown.map((u: { id: number; name?: string; avatar?: string | null }) => (
+                <Avatar
+                  key={u.id}
+                  className="h-8 w-8 border-2 border-background ring-0"
+                  title={u.name || ''}
+                >
+                  <AvatarImage src={u.avatar || undefined} alt={u.name || ''} />
+                  <AvatarFallback className="text-xs font-medium">
+                    {getInitials(u.name || '?')}
+                  </AvatarFallback>
+                </Avatar>
+              ))}
+            </div>
+            {extra > 0 ? (
+              <span className="ml-2 text-xs text-muted-foreground" title={members.slice(maxShown).map((u: { name?: string }) => u.name).filter(Boolean).join(', ')}>
+                +{extra}
+              </span>
+            ) : null}
+          </div>
+        );
+      },
     },
     {
       key: 'hearing_date',
@@ -410,7 +460,9 @@ export default function Hearings() {
                       { name: 'title', label: t('Title'), type: 'text', readOnly: true },
                       { name: 'case', label: t('Case'), type: 'text', readOnly: true },
                       { name: 'court', label: t('Court'), type: 'text', readOnly: true },
-                      { name: 'hearing_type', label: t('Type'), type: 'text', readOnly: true },
+                      { name: 'judge_name', label: t('Judge name'), type: 'text', readOnly: true },
+                      { name: 'hearing_type', label: t('Session Type'), type: 'text', readOnly: true },
+                      { name: 'team_members', label: t('Team Members'), type: 'text', readOnly: true },
                       { name: 'description', label: t('Description'), type: 'textarea', readOnly: true },
                       { name: 'hearing_date', label: t('Date'), type: 'text', readOnly: true },
                       { name: 'hearing_time', label: t('Time'), type: 'text', readOnly: true },
@@ -444,8 +496,11 @@ export default function Hearings() {
                             return parts.join(' + ');
                         })()
                       : '-',
-                  circle_number: currentItem?.circle_number || '-',
+                  judge_name: currentItem?.judge_name?.trim() || '-',
                   hearing_type: getTranslatedValue(currentItem?.hearing_type?.name) || '-',
+                  team_members: Array.isArray(currentItem?.team_members)
+                      ? currentItem.team_members.map((u: { name?: string }) => u.name).filter(Boolean).join(', ') || '-'
+                      : '-',
                   hearing_date: currentItem?.hearing_date
                       ? window.appSettings?.formatDate(currentItem.hearing_date) || new Date(currentItem.hearing_date).toLocaleDateString()
                       : '-',

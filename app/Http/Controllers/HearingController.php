@@ -27,7 +27,8 @@ class HearingController extends BaseController
                 'case',
                 'court.courtType',
                 'court.circleType',
-                'hearingType'
+                'hearingType',
+                'teamMembers',
             ]);
 
         if ($request->has('search') && !empty($request->search)) {
