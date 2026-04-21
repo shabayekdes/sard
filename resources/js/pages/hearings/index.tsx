@@ -14,14 +14,22 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useInitials } from '@/hooks/use-initials';
 
+function dateToYmd(d: Date | undefined): string {
+  if (!d || Number.isNaN(d.getTime())) return '';
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 export default function Hearings() {
   const { t, i18n } = useTranslation();
   const {
     auth,
     hearings,
-    courts,
-    courtTypes,
-    circleTypes,
+    cases = [],
+    hearingTypes = [],
+    hearingFilterUsers = [],
     hearingStats = { total: 0, this_week: 0, scheduled: 0, completed: 0 },
     filters: pageFilters = {},
   } = usePage().props as any;
@@ -42,9 +50,11 @@ export default function Hearings() {
 
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
   const [selectedStatus, setSelectedStatus] = useState(pageFilters.status || 'all');
-  const [selectedCourt, setSelectedCourt] = useState(pageFilters.court_id || 'all');
-  const [selectedCourtType, setSelectedCourtType] = useState(pageFilters.court_type_id || 'all');
-  const [selectedCircleType, setSelectedCircleType] = useState(pageFilters.circle_type_id || 'all');
+  const [selectedHearingType, setSelectedHearingType] = useState(pageFilters.hearing_type_id || 'all');
+  const [selectedCase, setSelectedCase] = useState(pageFilters.case_id || 'all');
+  const [selectedAssigned, setSelectedAssigned] = useState(pageFilters.assigned_to || 'all');
+  const [hearingDateFrom, setHearingDateFrom] = useState<string>(pageFilters.hearing_date_from || '');
+  const [hearingDateTo, setHearingDateTo] = useState<string>(pageFilters.hearing_date_to || '');
   const [showFilters, setShowFilters] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -55,31 +65,41 @@ export default function Hearings() {
     applyFilters();
   };
 
+  const hearingListFilterParams = () => ({
+    search: searchTerm || undefined,
+    status: selectedStatus !== 'all' ? selectedStatus : undefined,
+    hearing_type_id: selectedHearingType !== 'all' ? selectedHearingType : undefined,
+    case_id: selectedCase !== 'all' ? selectedCase : undefined,
+    assigned_to: selectedAssigned !== 'all' ? selectedAssigned : undefined,
+    hearing_date_from: hearingDateFrom || undefined,
+    hearing_date_to: hearingDateTo || undefined,
+  });
+
   const applyFilters = () => {
-    router.get(route('hearings.index'), {
-      page: 1,
-      search: searchTerm || undefined,
-      status: selectedStatus !== 'all' ? selectedStatus : undefined,
-      court_id: selectedCourt !== 'all' ? selectedCourt : undefined,
-      court_type_id: selectedCourtType !== 'all' ? selectedCourtType : undefined,
-      circle_type_id: selectedCircleType !== 'all' ? selectedCircleType : undefined,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+      route('hearings.index'),
+      {
+        page: 1,
+        ...hearingListFilterParams(),
+        per_page: pageFilters.per_page,
+      },
+      { preserveState: true, preserveScroll: true },
+    );
   };
 
   const handleSort = (field: string) => {
     const direction = pageFilters.sort_field === field && pageFilters.sort_direction === 'asc' ? 'desc' : 'asc';
-    router.get(route('hearings.index'), {
-      sort_field: field,
-      sort_direction: direction,
-      page: 1,
-      search: searchTerm || undefined,
-      status: selectedStatus !== 'all' ? selectedStatus : undefined,
-      court_id: selectedCourt !== 'all' ? selectedCourt : undefined,
-      court_type_id: selectedCourtType !== 'all' ? selectedCourtType : undefined,
-      circle_type_id: selectedCircleType !== 'all' ? selectedCircleType : undefined,
-      per_page: pageFilters.per_page
-    }, { preserveState: true, preserveScroll: true });
+    router.get(
+      route('hearings.index'),
+      {
+        sort_field: field,
+        sort_direction: direction,
+        page: 1,
+        ...hearingListFilterParams(),
+        per_page: pageFilters.per_page,
+      },
+      { preserveState: true, preserveScroll: true },
+    );
   };
 
   const handleAction = (action: string, item: any) => {
@@ -120,13 +140,15 @@ export default function Hearings() {
   const handleResetFilters = () => {
     setSearchTerm('');
     setSelectedStatus('all');
-    setSelectedCourt('all');
-    setSelectedCourtType('all');
-    setSelectedCircleType('all');
+    setSelectedHearingType('all');
+    setSelectedCase('all');
+    setSelectedAssigned('all');
+    setHearingDateFrom('');
+    setHearingDateTo('');
     setShowFilters(false);
     router.get(route('hearings.index'), {
       page: 1,
-      per_page: pageFilters.per_page
+      per_page: pageFilters.per_page,
     }, { preserveState: true, preserveScroll: true });
   };
 
@@ -288,28 +310,28 @@ export default function Hearings() {
     { value: 'cancelled', label: t('Cancelled') }
   ];
 
-  const courtOptions = [
-    { value: 'all', label: t('All Courts') },
-    ...(courts || []).map((court: any) => ({
-      value: court.id.toString(),
-      label: court.name
-    }))
+  const hearingTypeFilterOptions = [
+    { value: 'all', label: t('All') },
+    ...(hearingTypes || []).map((ht: any) => ({
+      value: String(ht.id),
+      label: getTranslatedValue(ht.name),
+    })),
   ];
 
-  const courtTypeOptions = [
-    { value: 'all', label: t('All Court Types') },
-    ...(courtTypes || []).map((type: any) => ({
-      value: type.id.toString(),
-      label: getTranslatedValue(type.name),
-    }))
+  const caseFilterOptions = [
+    { value: 'all', label: t('All Cases') },
+    ...(cases || []).map((c: any) => ({
+      value: String(c.id),
+      label: `${c.case_id || ''} — ${c.title || ''}`.trim(),
+    })),
   ];
 
-  const circleTypeOptions = [
-    { value: 'all', label: t('All Circle Types') },
-    ...(circleTypes || []).map((type: any) => ({
-      value: type.id.toString(),
-      label: getTranslatedValue(type.name),
-    }))
+  const assignedUserFilterOptions = [
+    { value: 'all', label: t('All') },
+    ...(hearingFilterUsers || []).map((u: any) => ({
+      value: String(u.id),
+      label: u.email ? `${u.name} (${u.email})` : u.name,
+    })),
   ];
 
   return (
@@ -353,35 +375,49 @@ export default function Hearings() {
                   filters={[
                       {
                           name: 'status',
-                          label: t('Status'),
+                          label: t('Hearings filter — Session status'),
                           type: 'select',
                           value: selectedStatus,
                           onChange: setSelectedStatus,
                           options: statusOptions,
                       },
                       {
-                          name: 'court_id',
-                          label: t('Court'),
+                          name: 'hearing_type_id',
+                          label: t('Hearings filter — Session type'),
                           type: 'select',
-                          value: selectedCourt,
-                          onChange: setSelectedCourt,
-                          options: courtOptions,
+                          value: selectedHearingType,
+                          onChange: setSelectedHearingType,
+                          options: hearingTypeFilterOptions,
                       },
                       {
-                          name: 'court_type_id',
-                          label: t('Court Type'),
+                          name: 'case_id',
+                          label: t('Hearings filter — Case'),
                           type: 'select',
-                          value: selectedCourtType,
-                          onChange: setSelectedCourtType,
-                          options: courtTypeOptions,
+                          value: selectedCase,
+                          onChange: setSelectedCase,
+                          options: caseFilterOptions,
                       },
                       {
-                          name: 'circle_type_id',
-                          label: t('Circle Type'),
+                          name: 'assigned_to',
+                          label: t('Hearings filter — Assigned to'),
                           type: 'select',
-                          value: selectedCircleType,
-                          onChange: setSelectedCircleType,
-                          options: circleTypeOptions,
+                          value: selectedAssigned,
+                          onChange: setSelectedAssigned,
+                          options: assignedUserFilterOptions,
+                      },
+                      {
+                          name: 'hearing_date_from',
+                          label: t('Hearings filter — Date from'),
+                          type: 'date',
+                          value: hearingDateFrom || undefined,
+                          onChange: (d: Date | undefined) => setHearingDateFrom(dateToYmd(d)),
+                      },
+                      {
+                          name: 'hearing_date_to',
+                          label: t('Hearings filter — Date to'),
+                          type: 'date',
+                          value: hearingDateTo || undefined,
+                          onChange: (d: Date | undefined) => setHearingDateTo(dateToYmd(d)),
                       },
                   ]}
                   showFilters={showFilters}
@@ -389,16 +425,20 @@ export default function Hearings() {
                   hasActiveFilters={() =>
                       searchTerm !== '' ||
                       selectedStatus !== 'all' ||
-                      selectedCourt !== 'all' ||
-                      selectedCourtType !== 'all' ||
-                      selectedCircleType !== 'all'
+                      selectedHearingType !== 'all' ||
+                      selectedCase !== 'all' ||
+                      selectedAssigned !== 'all' ||
+                      hearingDateFrom !== '' ||
+                      hearingDateTo !== ''
                   }
                   activeFilterCount={() =>
                       (searchTerm ? 1 : 0) +
                       (selectedStatus !== 'all' ? 1 : 0) +
-                      (selectedCourt !== 'all' ? 1 : 0) +
-                      (selectedCourtType !== 'all' ? 1 : 0) +
-                      (selectedCircleType !== 'all' ? 1 : 0)
+                      (selectedHearingType !== 'all' ? 1 : 0) +
+                      (selectedCase !== 'all' ? 1 : 0) +
+                      (selectedAssigned !== 'all' ? 1 : 0) +
+                      (hearingDateFrom ? 1 : 0) +
+                      (hearingDateTo ? 1 : 0)
                   }
                   onResetFilters={handleResetFilters}
                   onApplyFilters={applyFilters}
@@ -438,11 +478,7 @@ export default function Hearings() {
                           {
                               page: 1,
                               per_page: parseInt(value),
-                              search: searchTerm || undefined,
-                              status: selectedStatus !== 'all' ? selectedStatus : undefined,
-                              court_id: selectedCourt !== 'all' ? selectedCourt : undefined,
-                              court_type_id: selectedCourtType !== 'all' ? selectedCourtType : undefined,
-                              circle_type_id: selectedCircleType !== 'all' ? selectedCircleType : undefined,
+                              ...hearingListFilterParams(),
                           },
                           { preserveState: true, preserveScroll: true },
                       );

@@ -140,7 +140,16 @@ export function SearchAndFilterBar({
                 )}
                 {filter.type === 'date' && (
                   <DatePicker
-                    selected={filter.value as Date | undefined}
+                    selected={(() => {
+                      const v = filter.value;
+                      if (v instanceof Date && !Number.isNaN(v.getTime())) {
+                        return v;
+                      }
+                      if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) {
+                        return new Date(`${v}T12:00:00`);
+                      }
+                      return undefined;
+                    })()}
                     onSelect={filter.onChange}
                     onChange={filter.onChange}
                   />

@@ -9,6 +9,7 @@ use App\Models\Hearing;
 use App\Models\Court;
 use App\Models\HearingType;
 use App\Models\MediaItem;
+use App\Models\User;
 use App\Models\Setting;
 use App\Models\CaseTimeline;
 use App\Models\EventType;
@@ -52,20 +53,26 @@ class HearingController extends BaseController
             $query->where('status', $request->status);
         }
 
-        if ($request->has('court_id') && !empty($request->court_id) && $request->court_id !== 'all') {
-            $query->where('court_id', $request->court_id);
+        if ($request->filled('hearing_type_id') && $request->hearing_type_id !== 'all') {
+            $query->where('hearing_type_id', $request->hearing_type_id);
         }
 
-        if ($request->has('court_type_id') && !empty($request->court_type_id) && $request->court_type_id !== 'all') {
-            $query->whereHas('court', function($q) use ($request) {
-                $q->where('court_type_id', $request->court_type_id);
+        if ($request->filled('case_id') && $request->case_id !== 'all') {
+            $query->where('case_id', $request->case_id);
+        }
+
+        if ($request->filled('assigned_to') && $request->assigned_to !== 'all') {
+            $query->whereHas('teamMembers', function ($q) use ($request) {
+                $q->where('users.id', $request->assigned_to);
             });
         }
 
-        if ($request->has('circle_type_id') && !empty($request->circle_type_id) && $request->circle_type_id !== 'all') {
-            $query->whereHas('court', function($q) use ($request) {
-                $q->where('circle_type_id', $request->circle_type_id);
-            });
+        if ($request->filled('hearing_date_from')) {
+            $query->whereDate('hearing_date', '>=', $request->hearing_date_from);
+        }
+
+        if ($request->filled('hearing_date_to')) {
+            $query->whereDate('hearing_date', '<=', $request->hearing_date_to);
         }
 
         if ($request->has('sort_field') && !empty($request->sort_field)) {
@@ -77,19 +84,16 @@ class HearingController extends BaseController
         $hearings = $query->paginate($request->per_page ?? 10);
 
         $cases = CaseModel::withPermissionCheck()->get(['id', 'case_id', 'title', 'file_number']);
-        $courts = Court::withPermissionCheck()
-            ->with(['courtType', 'circleType'])
-            ->where('status', 'active')
-            ->get(['id', 'name', 'court_type_id', 'circle_type_id']);
-        $courtTypes = \App\Models\CourtType::withPermissionCheck()
-            ->where('status', 'active')
-            ->get(['id', 'name']);
-        $circleTypes = \App\Models\CircleType::withPermissionCheck()
-            ->where('status', 'active')
-            ->get(['id', 'name']);
         $hearingTypes = HearingType::withPermissionCheck()
             ->where('status', 'active')
             ->get(['id', 'name']);
+        $hearingFilterUsers = User::withPermissionCheck()
+            ->where('status', 'active')
+            ->whereDoesntHave('roles', function ($q) {
+                $q->where('name', 'client');
+            })
+            ->orderBy('name')
+            ->get(['id', 'name', 'email']);
 
         $googleCalendarEnabled = Settings::boolean('GOOGLE_CALENDAR_ENABLED');
 
@@ -114,13 +118,22 @@ class HearingController extends BaseController
         return Inertia::render('hearings/index', [
             'hearings' => $hearings,
             'cases' => $cases,
-            'courts' => $courts,
-            'courtTypes' => $courtTypes,
-            'circleTypes' => $circleTypes,
             'hearingTypes' => $hearingTypes,
+            'hearingFilterUsers' => $hearingFilterUsers,
             'googleCalendarEnabled' => $googleCalendarEnabled,
             'hearingStats' => $hearingStats,
-            'filters' => $request->all(['search', 'status', 'court_id', 'court_type_id', 'circle_type_id', 'sort_field', 'sort_direction', 'per_page']),
+            'filters' => $request->all([
+                'search',
+                'status',
+                'hearing_type_id',
+                'case_id',
+                'assigned_to',
+                'hearing_date_from',
+                'hearing_date_to',
+                'sort_field',
+                'sort_direction',
+                'per_page',
+            ]),
         ]);
     }
 
