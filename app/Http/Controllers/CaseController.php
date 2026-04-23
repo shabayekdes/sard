@@ -343,6 +343,9 @@ class CaseController extends BaseController
 
         $googleCalendarEnabled = Settings::boolean('GOOGLE_CALENDAR_ENABLED');
 
+        $casesForTaskForm = CaseModel::where('tenant_id', createdBy())
+            ->get(['id', 'case_id', 'title']);
+
         // Get latest hearing (done or upcoming) for this case
         // Prioritize upcoming hearings, then show the most recent completed one
         $latestHearing = Hearing::withPermissionCheck()
@@ -432,6 +435,7 @@ class CaseController extends BaseController
             'roles' => $roles,
             'taskTypes' => $taskTypes,
             'taskStatuses' => $taskStatuses,
+            'cases' => $casesForTaskForm,
             'courts' => $courts,
             'courtTypes' => $courtTypes,
             'circleTypes' => $circleTypes,
