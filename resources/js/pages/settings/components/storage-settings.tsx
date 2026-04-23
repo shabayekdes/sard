@@ -4,13 +4,13 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useState, useMemo, useRef } from 'react';
-import { Save, HardDrive, Search } from 'lucide-react';
+import { Save, HardDrive, Search, Cloud } from 'lucide-react';
 import { SettingsSection } from '@/components/settings-section';
 import { useTranslation } from 'react-i18next';
 import { router } from '@inertiajs/react';
 import { toast } from '@/components/custom-toast';
 
-type StorageType = 'public' | 's3' | 'wasabi';
+type StorageType = 'public' | 's3' | 'wasabi' | 'gcs';
 
 interface StorageSettings {
   storageType: StorageType;
@@ -31,6 +31,13 @@ interface StorageSettings {
   wasabiBucket: string;
   wasabiUrl: string;
   wasabiRoot: string;
+  // Google Cloud Storage
+  googleCloudKeyFile: string;
+  googleCloudProjectId: string;
+  googleCloudStorageBucket: string;
+  googleCloudStoragePathPrefix: string;
+  googleCloudStorageApiUri: string;
+  googleCloudStorageApiEndpoint: string;
 }
 
 interface StorageSettingsProps {
@@ -150,7 +157,13 @@ export default function StorageSettings({ settings = {} }: StorageSettingsProps)
     wasabiRegion: settings.WASABI_REGION || 'us-east-1',
     wasabiBucket: settings.WASABI_BUCKET || '',
     wasabiUrl: settings.WASABI_URL || '',
-    wasabiRoot: settings.WASABI_ROOT || ''
+    wasabiRoot: settings.WASABI_ROOT || '',
+    googleCloudKeyFile: settings.GOOGLE_CLOUD_KEY_FILE || '',
+    googleCloudProjectId: settings.GOOGLE_CLOUD_PROJECT_ID || '',
+    googleCloudStorageBucket: settings.GOOGLE_CLOUD_STORAGE_BUCKET || '',
+    googleCloudStoragePathPrefix: settings.GOOGLE_CLOUD_STORAGE_PATH_PREFIX || '',
+    googleCloudStorageApiUri: settings.GOOGLE_CLOUD_STORAGE_API_URI || '',
+    googleCloudStorageApiEndpoint: settings.GOOGLE_CLOUD_STORAGE_API_ENDPOINT || ''
   };
   const [storageSettings, setStorageSettings] = useState<StorageSettings>(initialStorage);
   const initialValuesRef = useRef<StorageSettings>(initialStorage);
@@ -220,6 +233,12 @@ export default function StorageSettings({ settings = {} }: StorageSettingsProps)
     if (storageSettings.wasabiBucket !== init.wasabiBucket) formData.wasabiBucket = storageSettings.wasabiBucket;
     if (storageSettings.wasabiUrl !== init.wasabiUrl) formData.wasabiUrl = storageSettings.wasabiUrl;
     if (storageSettings.wasabiRoot !== init.wasabiRoot) formData.wasabiRoot = storageSettings.wasabiRoot;
+    if (storageSettings.googleCloudKeyFile !== init.googleCloudKeyFile) formData.googleCloudKeyFile = storageSettings.googleCloudKeyFile;
+    if (storageSettings.googleCloudProjectId !== init.googleCloudProjectId) formData.googleCloudProjectId = storageSettings.googleCloudProjectId;
+    if (storageSettings.googleCloudStorageBucket !== init.googleCloudStorageBucket) formData.googleCloudStorageBucket = storageSettings.googleCloudStorageBucket;
+    if (storageSettings.googleCloudStoragePathPrefix !== init.googleCloudStoragePathPrefix) formData.googleCloudStoragePathPrefix = storageSettings.googleCloudStoragePathPrefix;
+    if (storageSettings.googleCloudStorageApiUri !== init.googleCloudStorageApiUri) formData.googleCloudStorageApiUri = storageSettings.googleCloudStorageApiUri;
+    if (storageSettings.googleCloudStorageApiEndpoint !== init.googleCloudStorageApiEndpoint) formData.googleCloudStorageApiEndpoint = storageSettings.googleCloudStorageApiEndpoint;
 
     if (Object.keys(formData).length === 0) {
       toast.info(t('No changes to save'));
@@ -471,6 +490,82 @@ export default function StorageSettings({ settings = {} }: StorageSettingsProps)
     </div>
   );
 
+  const renderGcsFields = () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-2 md:col-span-2">
+          <Label htmlFor="googleCloudKeyFile">{t('Google Cloud key file path')}</Label>
+          <Input
+            id="googleCloudKeyFile"
+            value={storageSettings.googleCloudKeyFile}
+            onChange={(e) => handleSettingChange('googleCloudKeyFile', e.target.value)}
+            placeholder="/var/www/app/storage/credentials/gcs-service-account.json"
+          />
+          <p className="text-muted-foreground text-sm">
+            {t('Optional if GOOGLE_APPLICATION_CREDENTIALS is set on the server. Absolute path to the service account JSON.')}
+          </p>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="googleCloudProjectId">{t('Google Cloud project ID')}</Label>
+          <Input
+            id="googleCloudProjectId"
+            value={storageSettings.googleCloudProjectId}
+            onChange={(e) => handleSettingChange('googleCloudProjectId', e.target.value)}
+            placeholder="my-gcp-project"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="googleCloudStorageBucket">{t('GCS bucket name')}</Label>
+          <Input
+            id="googleCloudStorageBucket"
+            value={storageSettings.googleCloudStorageBucket}
+            onChange={(e) => handleSettingChange('googleCloudStorageBucket', e.target.value)}
+            placeholder="my-app-bucket"
+          />
+        </div>
+        <div className="space-y-2 md:col-span-2">
+          <Label htmlFor="googleCloudStoragePathPrefix">{t('Object key prefix')}</Label>
+          <Input
+            id="googleCloudStoragePathPrefix"
+            value={storageSettings.googleCloudStoragePathPrefix}
+            onChange={(e) => handleSettingChange('googleCloudStoragePathPrefix', e.target.value)}
+            placeholder="uploads"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="googleCloudStorageApiUri">{t('Storage API URI (public URL base)')}</Label>
+          <Input
+            id="googleCloudStorageApiUri"
+            value={storageSettings.googleCloudStorageApiUri}
+            onChange={(e) => handleSettingChange('googleCloudStorageApiUri', e.target.value)}
+            placeholder="https://storage.googleapis.com"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="googleCloudStorageApiEndpoint">{t('API endpoint (optional)')}</Label>
+          <Input
+            id="googleCloudStorageApiEndpoint"
+            value={storageSettings.googleCloudStorageApiEndpoint}
+            onChange={(e) => handleSettingChange('googleCloudStorageApiEndpoint', e.target.value)}
+          />
+        </div>
+      </div>
+      <div className="space-y-6">
+        {renderFileTypeSelector()}
+        <div className="space-y-2">
+          <Label htmlFor="gcsMaxUploadSize">{t('Max Upload Size (KB)')}</Label>
+          <Input
+            id="gcsMaxUploadSize"
+            type="number"
+            value={storageSettings.maxUploadSize}
+            onChange={(e) => handleSettingChange('maxUploadSize', e.target.value)}
+            placeholder="2048"
+          />
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <SettingsSection
       title={t("Storage Settings")}
@@ -488,7 +583,7 @@ export default function StorageSettings({ settings = {} }: StorageSettingsProps)
           className="w-full"
           onValueChange={(value) => setStorageSettings(prev => ({ ...prev, storageType: value as StorageType }))}
         >
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2 gap-1 sm:grid-cols-4">
             <TabsTrigger value="public" className="flex items-center gap-2">
               <HardDrive className="h-4 w-4" />
               {t("Public Storage")}
@@ -500,6 +595,10 @@ export default function StorageSettings({ settings = {} }: StorageSettingsProps)
             <TabsTrigger value="wasabi" className="flex items-center gap-2">
               <span>🗄️</span>
               {t("Wasabi")}
+            </TabsTrigger>
+            <TabsTrigger value="gcs" className="flex items-center gap-2">
+              <Cloud className="h-4 w-4" />
+              {t('Google Cloud Storage')}
             </TabsTrigger>
           </TabsList>
           
@@ -516,6 +615,11 @@ export default function StorageSettings({ settings = {} }: StorageSettingsProps)
           <TabsContent value="wasabi" className="mt-6">
             <h3 className="text-base font-medium mb-4">{t("Wasabi Storage Settings")}</h3>
             {renderWasabiFields()}
+          </TabsContent>
+
+          <TabsContent value="gcs" className="mt-6">
+            <h3 className="text-base font-medium mb-4">{t('Google Cloud Storage settings')}</h3>
+            {renderGcsFields()}
           </TabsContent>
         </Tabs>
       </form>

@@ -103,6 +103,7 @@ return [
             'local',
             'public',
             // 's3',
+            // 'gcs', // with FILESYSTEM_DISK=gcs: isolates tenant objects via filesystems.disks.gcs.root suffix
         ],
 
         /**

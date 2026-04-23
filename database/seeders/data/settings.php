@@ -49,6 +49,12 @@ return [
     ['key' => 'WASABI_BUCKET', 'group' => 'storage', 'value' => ''],
     ['key' => 'WASABI_URL', 'group' => 'storage', 'value' => ''],
     ['key' => 'WASABI_ROOT', 'group' => 'storage', 'value' => ''],
+    ['key' => 'GOOGLE_CLOUD_KEY_FILE', 'group' => 'storage', 'value' => env('GOOGLE_CLOUD_KEY_FILE', '')],
+    ['key' => 'GOOGLE_CLOUD_PROJECT_ID', 'group' => 'storage', 'value' => env('GOOGLE_CLOUD_PROJECT_ID', '')],
+    ['key' => 'GOOGLE_CLOUD_STORAGE_BUCKET', 'group' => 'storage', 'value' => env('GOOGLE_CLOUD_STORAGE_BUCKET', '')],
+    ['key' => 'GOOGLE_CLOUD_STORAGE_PATH_PREFIX', 'group' => 'storage', 'value' => env('GOOGLE_CLOUD_STORAGE_PATH_PREFIX', '')],
+    ['key' => 'GOOGLE_CLOUD_STORAGE_API_URI', 'group' => 'storage', 'value' => env('GOOGLE_CLOUD_STORAGE_API_URI', '')],
+    ['key' => 'GOOGLE_CLOUD_STORAGE_API_ENDPOINT', 'group' => 'storage', 'value' => env('GOOGLE_CLOUD_STORAGE_API_ENDPOINT', '')],
 
     // Currency Settings
     ['key' => 'DECIMAL_FORMAT', 'group' => 'currency', 'value' => '2'],

@@ -27,6 +27,7 @@ class DynamicStorageService
                 'use_path_style_endpoint' => !empty($config['s3']['endpoint']),
                 'visibility' => 'public',
             ]);
+            Storage::forgetDisk('s3');
         }
         
         // Configure Wasabi disk if credentials exist
@@ -41,6 +42,30 @@ class DynamicStorageService
                 'use_path_style_endpoint' => false,
                 'visibility' => 'public',
             ]);
+            Storage::forgetDisk('wasabi');
+        }
+
+        if (StorageConfigService::hasValidGcsConfig($config)) {
+            $g = $config['gcs'];
+            Config::set('filesystems.disks.gcs', array_merge(
+                config('filesystems.disks.gcs', []),
+                [
+                    'driver' => 'gcs',
+                    'key_file_path' => !empty($g['key_file_path']) ? $g['key_file_path'] : null,
+                    'key_file' => [],
+                    'project_id' => !empty($g['project_id']) ? $g['project_id'] : null,
+                    'bucket' => $g['bucket'],
+                    'root' => $g['path_prefix'] ?? '',
+                    'storage_api_uri' => !empty($g['storage_api_uri']) ? $g['storage_api_uri'] : null,
+                    'api_endpoint' => !empty($g['api_endpoint']) ? $g['api_endpoint'] : null,
+                    'visibility' => 'public',
+                    'visibility_handler' => \League\Flysystem\GoogleCloudStorage\UniformBucketLevelAccessVisibility::class,
+                    'metadata' => ['cacheControl' => 'public,max-age=86400'],
+                    'throw' => false,
+                    'report' => false,
+                ]
+            ));
+            Storage::forgetDisk('gcs');
         }
     }
 

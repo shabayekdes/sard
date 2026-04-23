@@ -31,22 +31,21 @@ class TenancySetting
             $publicDiskUrl = rtrim(config('app.url'), '/') . '/storage/' . $tenantSuffix;
 
             config([
-                'filesystems.default' => $settings['STORAGE_TYPE'] ?? 'public',
                 'filesystems.disks.public' => array_merge(
                     config('filesystems.disks.public', []),
                     ['url' => $publicDiskUrl]
                 ),
-                'filesystems.disks.s3' => [
-                    'driver' => 's3',
-                    'key' => $settings['AWS_ACCESS_KEY_ID'] ?? null,
-                    'secret' => $settings['AWS_SECRET_ACCESS_KEY'] ?? null,
-                    'region' => $settings['AWS_DEFAULT_REGION'] ?? null,
-                    'bucket' => $settings['AWS_BUCKET'] ?? null,
-                    'url' => $settings['AWS_URL'] ?? null,
-                    'endpoint' => $settings['AWS_ENDPOINT'] ?? null,
-                    'use_path_style_endpoint' => !empty($settings['AWS_ENDPOINT']),
-                    'visibility' => 'public',
-                ],
+                // 'filesystems.disks.s3' => [
+                //     'driver' => 's3',
+                //     'key' => $settings['AWS_ACCESS_KEY_ID'] ?? null,
+                //     'secret' => $settings['AWS_SECRET_ACCESS_KEY'] ?? null,
+                //     'region' => $settings['AWS_DEFAULT_REGION'] ?? null,
+                //     'bucket' => $settings['AWS_BUCKET'] ?? null,
+                //     'url' => $settings['AWS_URL'] ?? null,
+                //     'endpoint' => $settings['AWS_ENDPOINT'] ?? null,
+                //     'use_path_style_endpoint' => !empty($settings['AWS_ENDPOINT']),
+                //     'visibility' => 'public',
+                // ],
                 'filesystems.disks.wasabi' => [
                     'driver' => 's3',
                     'key' => $settings['WASABI_ACCESS_KEY'] ?? null,
@@ -57,6 +56,15 @@ class TenancySetting
                     'use_path_style_endpoint' => false,
                     'visibility' => 'public',
                 ],
+                // 'filesystems.disks.gcs' => [
+                //     'driver' => 'gcs',
+                //     'key_file_path' => $settings['GOOGLE_CLOUD_KEY_FILE'] ?? null,
+                //     'project_id' => $settings['GOOGLE_CLOUD_PROJECT_ID'] ?? null,
+                //     'bucket' => $settings['GOOGLE_CLOUD_STORAGE_BUCKET'] ?? null,
+                //     'path_prefix' => $tenantSuffix, // Stancl tenancy uses this for tenant-specific paths
+                //     'url' => $settings['GOOGLE_CLOUD_URL'] ?? null,
+                //     'visibility' => 'public',
+                // ]
             ]);
 
             // Ensure tenant public storage directory exists so uploads (e.g. media/3/) can create subdirs (0775 for live web server)
