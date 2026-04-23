@@ -192,6 +192,31 @@ export default function InvoicePayment() {
         return { subtotalWithoutTax, tax, total: amt };
     };
 
+    const termsText = (() => {
+        const billingInfo = clientBillingInfo?.[invoice.client_id];
+        if (!billingInfo) return '';
+
+        const custom =
+            typeof billingInfo.custom_payment_terms === 'string' ? billingInfo.custom_payment_terms.trim() : '';
+        if (custom) return custom;
+
+        if (!billingInfo.payment_terms) return '';
+        if (billingInfo.payment_terms === 'custom') return '';
+
+        const termsMap: Record<string, string> = {
+            net_15: t('Net 15 days'),
+            net_30: t('Net 30 days'),
+            net_45: t('Net 45 days'),
+            net_60: t('Net 60 days'),
+            due_on_receipt: t('Due on receipt'),
+        };
+        const mapped = termsMap[billingInfo.payment_terms];
+        if (mapped) return mapped;
+        return typeof billingInfo.payment_terms === 'string' ? billingInfo.payment_terms : '';
+    })();
+
+    const notesText = typeof invoice?.notes === 'string' ? invoice.notes.trim() : '';
+
     const isOverdue = new Date(invoice.due_date) < new Date();
 
     const handleGatewaySelect = (gatewayId: string) => {
@@ -595,43 +620,27 @@ export default function InvoicePayment() {
                                 </CardContent>
                             </Card>
 
-                            {/* Additional Information */}
-                            <Card className="border-0 shadow-sm">
-                                <CardContent className="p-6">
-                                    <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                                        <div>
-                                            <h4 className="mb-2 text-sm font-semibold text-gray-700">{t('Notes')}</h4>
-                                            <p className="text-sm text-gray-600">
-                                                {invoice.notes || t('Thank you for your business. Please remit payment by due date.')}
-                                            </p>
+                            {/* Terms & Notes — same rules as billing/invoices/show */}
+                            {(termsText || notesText) && (
+                                <Card className="border-0 shadow-sm">
+                                    <CardContent className="p-6">
+                                        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                                            {termsText ? (
+                                                <div>
+                                                    <h4 className="mb-2 text-sm font-semibold text-gray-700">{t('Terms')}</h4>
+                                                    <p className="text-sm text-gray-600">{termsText}</p>
+                                                </div>
+                                            ) : null}
+                                            {notesText ? (
+                                                <div>
+                                                    <h4 className="mb-2 text-sm font-semibold text-gray-700">{t('Notes')}</h4>
+                                                    <p className="text-sm text-gray-600">{invoice.notes}</p>
+                                                </div>
+                                            ) : null}
                                         </div>
-                                        <div>
-                                            <h4 className="mb-2 text-sm font-semibold text-gray-700">{t('Terms')}</h4>
-                                            <p className="text-sm text-gray-600">
-                                                {(() => {
-                                                    const billingInfo = clientBillingInfo?.[invoice.client_id];
-                                                    if (billingInfo?.custom_payment_terms) {
-                                                        return billingInfo.custom_payment_terms;
-                                                    }
-                                                    if (billingInfo?.payment_terms) {
-                                                        const termsMap: Record<string, string> = {
-                                                            net_15: t('Net 15 days'),
-                                                            net_30: t('Net 30 days'),
-                                                            net_45: t('Net 45 days'),
-                                                            net_60: t('Net 60 days'),
-                                                            due_on_receipt: t('Due on receipt'),
-                                                            custom: billingInfo.custom_payment_terms || t('Custom terms'),
-                                                        };
-                                                        const termText = termsMap[billingInfo.payment_terms] || billingInfo.payment_terms;
-                                                        return `${termText}. ${t('Late payment fee of 1.5% per month applies.')}`;
-                                                    }
-                                                    return t('Net 30 days. Late payment fee of 1.5% per month applies.');
-                                                })()}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                    </CardContent>
+                                </Card>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -197,21 +197,27 @@ export default function ShowInvoice() {
 
     const termsText = (() => {
         const billingInfo = clientBillingInfo?.[invoice.client_id];
-        if (billingInfo?.custom_payment_terms) return billingInfo.custom_payment_terms;
-        if (billingInfo?.payment_terms) {
-            const termsMap: Record<string, string> = {
-                net_15: t('Net 15 days'),
-                net_30: t('Net 30 days'),
-                net_45: t('Net 45 days'),
-                net_60: t('Net 60 days'),
-                due_on_receipt: t('Due on receipt'),
-                custom: billingInfo.custom_payment_terms || t('Custom terms'),
-            };
-            const termText = termsMap[billingInfo.payment_terms] ?? billingInfo.payment_terms;
-            return `${termText}. ${t('Late payment fee of 1.5% per month applies.')}`;
-        }
-        return t('Net 30 days. Late payment fee of 1.5% per month applies.');
+        if (!billingInfo) return '';
+
+        const custom = typeof billingInfo.custom_payment_terms === 'string' ? billingInfo.custom_payment_terms.trim() : '';
+        if (custom) return custom;
+
+        if (!billingInfo.payment_terms) return '';
+        if (billingInfo.payment_terms === 'custom') return '';
+
+        const termsMap: Record<string, string> = {
+            net_15: t('Net 15 days'),
+            net_30: t('Net 30 days'),
+            net_45: t('Net 45 days'),
+            net_60: t('Net 60 days'),
+            due_on_receipt: t('Due on receipt'),
+        };
+        const mapped = termsMap[billingInfo.payment_terms];
+        if (mapped) return mapped;
+        return typeof billingInfo.payment_terms === 'string' ? billingInfo.payment_terms : '';
     })();
+
+    const notesText = typeof invoice?.notes === 'string' ? invoice.notes.trim() : '';
 
     return (
         <PageTemplate
@@ -486,27 +492,31 @@ export default function ShowInvoice() {
                     </CardContent>
                 </Card>
 
-                {/* Terms & Notes */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <h4 className="text-sm font-semibold">{t('Terms')}</h4>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-muted-foreground text-sm">{termsText}</p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <h4 className="text-sm font-semibold">{t('Notes')}</h4>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-muted-foreground text-sm">
-                                {invoice?.notes || t('Thank you for your business. Please remit payment by due date.')}
-                            </p>
-                        </CardContent>
-                    </Card>
-                </div>
+                {/* Terms & Notes — only when client billing terms or invoice notes exist */}
+                {(termsText || notesText) && (
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                        {termsText ? (
+                            <Card>
+                                <CardHeader className="pb-2">
+                                    <h4 className="text-sm font-semibold">{t('Terms')}</h4>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-muted-foreground text-sm">{termsText}</p>
+                                </CardContent>
+                            </Card>
+                        ) : null}
+                        {notesText ? (
+                            <Card>
+                                <CardHeader className="pb-2">
+                                    <h4 className="text-sm font-semibold">{t('Notes')}</h4>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-muted-foreground text-sm">{invoice.notes}</p>
+                                </CardContent>
+                            </Card>
+                        ) : null}
+                    </div>
+                )}
             </div>
 
             <CrudFormModal
