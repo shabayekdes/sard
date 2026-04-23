@@ -10,10 +10,12 @@ import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
+import { ClientTableCell } from '@/components/client-table-cell';
 import LineItemsBuilder from '@/components/LineItemsBuilder';
 
 export default function Invoices() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLocale = i18n.language || 'en';
   const { auth, invoices, clients, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
 
@@ -235,7 +237,7 @@ export default function Invoices() {
     {
       key: 'client',
       label: t('Client'),
-      render: (value: any) => value?.name || '-'
+      render: (_value: any, row: any) => <ClientTableCell client={row.client} locale={currentLocale} />,
     },
     {
       key: 'total_amount',

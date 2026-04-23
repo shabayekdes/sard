@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { resolveClientName } from '@/components/client-table-cell';
 
 import { PageTemplate } from '@/components/page-template';
 import { 
@@ -62,7 +63,8 @@ export default function Analytics({
   customReports,
   planInfo
 }: AnalyticsProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLocale = i18n.language || 'en';
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedTaskMonth, setSelectedTaskMonth] = useState(new Date().getMonth() + 1);
   const [selectedCaseYear, setSelectedCaseYear] = useState(new Date().getFullYear());
@@ -267,7 +269,14 @@ export default function Analytics({
                     <div key={index} className="flex items-center justify-between p-4 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 transition-colors">
                       <div>
                         <p className="font-semibold text-sm">{invoice.invoice_number}</p>
-                        <p className="text-xs text-muted-foreground">{invoice.client?.name}</p>
+                        <p className="inline-flex min-w-0 flex-wrap items-center gap-1 text-xs text-muted-foreground" dir="ltr">
+                          <span>{resolveClientName(invoice.client?.name, currentLocale) || '-'}</span>
+                          {invoice.client?.deleted_at ? (
+                            <Badge variant="outline" className="h-5 shrink-0 px-1.5 py-0 text-[10px] font-normal">
+                              {t('Deleted')}
+                            </Badge>
+                          ) : null}
+                        </p>
                       </div>
                       <span className="font-bold text-red-600 text-lg">
                         ${invoice.total_amount.toLocaleString()}

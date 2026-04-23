@@ -10,11 +10,13 @@ import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
+import { ClientTableCell } from '@/components/client-table-cell';
 import { Switch } from '@/components/ui/switch';
 import { CurrencyAmount } from '@/components/currency-amount';
 
 export default function BillingRates() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLocale = i18n.language || 'en';
   const { auth, billingRates, users, clients, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
 
@@ -215,7 +217,9 @@ export default function BillingRates() {
     {
       key: 'client',
       label: t('Client'),
-      render: (value: any) => value?.name || t('Default Rate')
+      render: (_value: any, row: any) => (
+        <ClientTableCell client={row.client} locale={currentLocale} fallback={t('Default Rate')} />
+      ),
     },
     {
       key: 'rate_type',

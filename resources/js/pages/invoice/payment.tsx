@@ -44,9 +44,11 @@ import { ToyyibPayPaymentModal } from '@/components/payment-modals/toyyibpay-pay
 import { YooKassaPaymentModal } from '@/components/payment-modals/yookassa-payment-modal';
 import { SkrillPaymentModal } from '@/components/payment-modals/skrill-payment-modal';
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { resolveClientName } from '@/components/client-table-cell';
 
 export default function InvoicePayment() {
     const { t, i18n } = useTranslation();
+    const currentLocale = i18n.language || 'en';
     const { invoice, enabledGateways, remainingAmount, clientBillingInfo, currencies, paypalClientId, flutterwavePublicKey, tapPublicKey, paystackPublicKey, bankDetail, flash, company, companyProfile, companyLogo, favicon, appName } = usePage().props as any;
     const [selectedGateway, setSelectedGateway] = useState<string | null>(null);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -507,7 +509,16 @@ export default function InvoicePayment() {
                                             <User className="h-5 w-5 text-gray-500" />
                                             <p className="text-sm font-medium text-gray-500">{t('Bill To')}</p>
                                         </div>
-                                        <p className="mt-2 text-lg font-bold text-gray-900">{invoice.client?.name || '-'}</p>
+                                        <p className="mt-2 inline-flex min-w-0 flex-row flex-wrap items-center gap-1.5 text-lg font-bold text-gray-900" dir="ltr">
+                                            <span className="min-w-0 text-start">
+                                                {resolveClientName(invoice.client?.name, currentLocale) || '-'}
+                                            </span>
+                                            {invoice.client?.deleted_at ? (
+                                                <Badge variant="outline" className="shrink-0 font-normal text-muted-foreground" dir="auto">
+                                                    {t('Deleted')}
+                                                </Badge>
+                                            ) : null}
+                                        </p>
                                         <dl className="mt-4 space-y-2 text-sm">
                                             <div className="flex flex-wrap gap-x-2">
                                                 <dt className="font-semibold text-gray-700">{t('Address')}:</dt>
@@ -515,7 +526,9 @@ export default function InvoicePayment() {
                                             </div>
                                             <div className="flex flex-wrap gap-x-2">
                                                 <dt className="font-semibold text-gray-700">{t('Phone')}:</dt>
-                                                <dd className="text-gray-600">{invoice.client?.phone || '-'}</dd>
+                                                <dd className="text-gray-600" dir="ltr">
+                                                    <span className="inline-block tabular-nums">{invoice.client?.phone || '-'}</span>
+                                                </dd>
                                             </div>
                                             <div className="flex flex-wrap gap-x-2">
                                                 <dt className="font-semibold text-gray-700">{t('Email')}:</dt>
@@ -662,7 +675,9 @@ export default function InvoicePayment() {
                                     </span>
                                     <span className="font-bold text-primary"><CurrencyAmount amount={totalAmount} /></span>
                                 </div>
-                                <div className="mt-1 text-xs text-primary/80">{invoice.client?.name}</div>
+                                <div className="mt-1 text-xs text-primary/80" dir="ltr">
+                                    {resolveClientName(invoice.client?.name, currentLocale) || '-'}
+                                </div>
                                 <div className="mt-1 text-xs text-primary/80">
                                     {t('Remaining')}: <CurrencyAmount amount={remainingAmountRounded} />
                                 </div>

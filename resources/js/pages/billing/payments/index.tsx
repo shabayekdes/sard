@@ -11,6 +11,7 @@ import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
+import { ClientTableCell, resolveClientName } from '@/components/client-table-cell';
 import { formatCurrencyAmount } from '@/components/currency-amount';
 import { capitalize } from '@/utils/helpers';
 import { Button } from '@/components/ui/button';
@@ -19,7 +20,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 
 export default function Payments() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLocale = i18n.language || 'en';
   const { auth, payments, invoices, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
 
@@ -239,7 +241,7 @@ export default function Payments() {
     {
       key: 'client',
       label: t('Client'),
-      render: (value: any, row: any) => row.invoice?.client?.name || '-'
+      render: (_value: any, row: any) => <ClientTableCell client={row.invoice?.client} locale={currentLocale} />,
     },
     {
       key: 'amount',
@@ -332,7 +334,7 @@ export default function Payments() {
     { value: 'all', label: t('All Invoices') },
     ...(invoices || []).map((invoice: any) => ({
       value: invoice.id.toString(),
-      label: `${invoice.invoice_number} - ${invoice.client?.name}`
+      label: `${invoice.invoice_number} - ${resolveClientName(invoice.client?.name, currentLocale) || '-'}`
     }))
   ];
 
@@ -481,7 +483,7 @@ export default function Payments() {
               disabled: isAutoOpen,
               options: (invoices || []).map((invoice: any) => ({
                 value: invoice.id.toString(),
-                label: `${invoice.invoice_number} - ${invoice.client?.name}`,
+                label: `${invoice.invoice_number} - ${resolveClientName(invoice.client?.name, currentLocale) || '-'}`,
               })),
             },
             {

@@ -9,6 +9,7 @@ import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
+import { ClientTableCell } from '@/components/client-table-cell';
 
 function resolveTranslatable(val: unknown, locale: string): string {
   if (val == null) return '';
@@ -201,21 +202,7 @@ export default function Cases() {
     {
       key: 'client',
       label: t('Client'),
-      render: (value: any, row: any) => {
-        if (!row.client) return '-';
-        return (
-          <button
-            type="button"
-            onClick={() => router.get(route('clients.show', row.client.id))}
-            className="flex flex-col text-left text-primary hover:text-primary/80 hover:underline focus:outline-none cursor-pointer"
-          >
-            <span>{resolveTranslatable(row.client.name, currentLocale) || '-'}</span>
-            {row.client.phone && (
-              <span className="text-sm text-gray-500 dark:text-gray-400">{row.client.phone}</span>
-            )}
-          </button>
-        );
-      }
+      render: (_value: any, row: any) => <ClientTableCell client={row.client} locale={currentLocale} />,
     },
     {
       key: 'case_status',

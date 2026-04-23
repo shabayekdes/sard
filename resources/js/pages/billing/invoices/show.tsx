@@ -10,9 +10,12 @@ import { router, usePage } from '@inertiajs/react';
 import { ArrowLeft, DollarSign, Download, Edit, FileText, Link, MoreVerticalIcon, Send, User } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Badge } from '@/components/ui/badge';
+import { resolveClientName } from '@/components/client-table-cell';
 
 export default function ShowInvoice() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const currentLocale = i18n.language || 'en';
     const {
         invoice,
         auth,
@@ -335,14 +338,26 @@ export default function ShowInvoice() {
                                 <User className="text-muted-foreground h-5 w-5" />
                                 <h3 className="text-base font-semibold">{t('Bill To')}</h3>
                             </div>
-                            <p className="font-medium">{invoice?.client?.name || '-'}</p>
+                            <p className="inline-flex min-w-0 flex-row flex-wrap items-center gap-1.5 font-medium" dir="ltr">
+                                <span className="min-w-0 text-start">
+                                    {resolveClientName(invoice?.client?.name, currentLocale) || '-'}
+                                </span>
+                                {invoice?.client?.deleted_at ? (
+                                    <Badge variant="outline" className="shrink-0 font-normal text-muted-foreground" dir="auto">
+                                        {t('Deleted')}
+                                    </Badge>
+                                ) : null}
+                            </p>
                         </CardHeader>
                         <CardContent className="space-y-2 text-sm">
                             <p>
                                 <span className="text-muted-foreground font-medium">{t('Address')}:</span> {invoice?.client?.address || '-'}
                             </p>
                             <p>
-                                <span className="text-muted-foreground font-medium">{t('Phone Number')}:</span> {invoice?.client?.phone || '-'}
+                                <span className="text-muted-foreground font-medium">{t('Phone Number')}:</span>{' '}
+                                <span dir="ltr" className="inline-block tabular-nums">
+                                    {invoice?.client?.phone || '-'}
+                                </span>
                             </p>
                             <p>
                                 <span className="text-muted-foreground font-medium">{t('Email')}:</span> {invoice?.client?.email || '-'}
@@ -532,7 +547,7 @@ export default function ShowInvoice() {
                             required: true,
                             disabled: true,
                             options: [
-                                { value: String(invoice.id), label: `${invoice.invoice_number || invoice.id} - ${invoice.client?.name || '-'}` },
+                                { value: String(invoice.id), label: `${invoice.invoice_number || invoice.id} - ${resolveClientName(invoice.client?.name, currentLocale) || '-'}` },
                             ],
                         },
                         {
