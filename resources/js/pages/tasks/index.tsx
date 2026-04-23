@@ -1293,7 +1293,13 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
               name: 'task_status_id',
               label: t('Task Status'),
               type: 'select',
+              required: true,
+              selectAllowEmpty: false,
               placeholder: t('Select Task Status'),
+              defaultValue:
+                taskStatuses?.[0]?.id != null && taskStatuses[0].id !== undefined
+                  ? String(taskStatuses[0].id)
+                  : undefined,
               options: [
                 ...(taskStatuses || []).map((status: any) => ({
                   value: status.id.toString(),

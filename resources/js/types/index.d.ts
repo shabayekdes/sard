@@ -46,6 +46,7 @@ export interface FormField {
   label: string;
   type: 'text' | 'email' | 'password' | 'select' | 'textarea' | 'checkbox' | 'radio' | 'file';
   placeholder?: string;
+  selectAllowEmpty?: boolean;
   required?: boolean;
   defaultValue?: string | number | boolean;
   validation?: string;

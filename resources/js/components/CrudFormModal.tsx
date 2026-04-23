@@ -114,6 +114,23 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
             }
         });
 
+        // Non-clearable selects (static options only): ensure a value in create mode
+        if (mode === 'create') {
+            formConfig.fields.forEach((field) => {
+                if (field.type !== 'select' || field.selectAllowEmpty !== false || field.relation) {
+                    return;
+                }
+                const options = field.options || [];
+                if (options.length === 0) {
+                    return;
+                }
+                const v = cleanData[field.name];
+                if (v === undefined || v === null || v === '') {
+                    cleanData[field.name] = String(options[0].value);
+                }
+            });
+        }
+
         setFormData(cleanData || {});
         setErrors({});
 
@@ -597,11 +614,14 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                             actualValue = idxMatch[1];
                         }
                     }
+                    if (field.selectAllowEmpty === false && (actualValue === '' || actualValue == null)) {
+                        return;
+                    }
                     handleChange(field.name, actualValue);
                 };
 
                 return (
-                    <Select value={currentValue} onValueChange={handleSelectChange} disabled={mode === 'view' || field.disabled}>
+                    <Select value={currentValue} onValueChange={handleSelectChange} disabled={mode === 'view' || field.disabled} required={field.required}>
                         <SelectTrigger className={errors[field.name] ? 'border-red-500' : 'text-start'}>
                             <SelectValue placeholder={field.placeholder || t('Select {{label}}', { label: field.label })}>
                                 {displayText || field.placeholder || t('Select {{label}}', { label: field.label })}
