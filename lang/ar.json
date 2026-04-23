@@ -4233,5 +4233,7 @@
   "Total Tasks": "إجمالي المهام",
   "task": "مهمة",
   "Progress": "التقدم",
-  "Event Time": "وقت الحدث"
+  "Event Time": "وقت الحدث",
+  "Invoice created successfully": "تم إنشاء الفاتورة بنجاح",
+  "Failed to create invoice: {{details}}": "فشل إنشاء الفاتورة: {{details}}"
 }

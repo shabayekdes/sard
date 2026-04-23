@@ -264,7 +264,7 @@ export default function CreateInvoice() {
     setFormErrors({});
 
     if (!formData.client_id) {
-      toast.error('Please select a client');
+      toast.error(t('Please select a client.'));
       return;
     }
 
@@ -286,12 +286,11 @@ export default function CreateInvoice() {
       total_amount: calculateTotal()
     };
 
-    toast.loading('Creating invoice...');
 
     router.post(route('billing.invoices.store'), submitData, {
       onSuccess: () => {
         toast.dismiss();
-        toast.success('Invoice created successfully');
+        toast.success(t('Invoice created successfully'));
         router.get(route('billing.invoices.index'));
       },
       onError: (errors) => {
@@ -299,7 +298,7 @@ export default function CreateInvoice() {
         const normalizedErrors = normalizeErrors(errors);
         setFormErrors(normalizedErrors);
         const errorMessages = Object.values(normalizedErrors).filter(Boolean).join(', ');
-        toast.error(`Failed to create invoice: ${errorMessages}`);
+        toast.error(t('Failed to create invoice: {{details}}', { details: errorMessages }));
       }
     });
   };
@@ -478,7 +477,7 @@ export default function CreateInvoice() {
                 </div>
 
                 <div>
-                  <Label htmlFor="tax_rate">{t('Tax Rate')} (%)</Label>
+                  <Label htmlFor="tax_rate">{t('Tax Rate (%)')}</Label>
                   <Input
                     type="number"
                     value={formData.tax_rate}
