@@ -477,12 +477,26 @@ Route::middleware([
                 Route::get('hearings/create', [Controllers\HearingController::class, 'create'])
                     ->middleware('permission:create-hearings')
                     ->name('hearings.create');
+                Route::get('hearings/{hearing}', [Controllers\HearingController::class, 'show'])->name('hearings.show');
                 Route::get('hearings/{hearing}/edit', [Controllers\HearingController::class, 'edit'])
                     ->middleware('permission:edit-hearings')
                     ->name('hearings.edit');
                 Route::post('hearings', [Controllers\HearingController::class, 'store'])->middleware('permission:create-hearings')->name('hearings.store');
                 Route::put('hearings/{hearing}', [Controllers\HearingController::class, 'update'])->middleware('permission:edit-hearings')->name('hearings.update');
+                Route::put('hearings/{hearing}/minutes', [Controllers\HearingController::class, 'updateMinutes'])
+                    ->middleware('permission:edit-hearings')
+                    ->name('hearings.minutes.update');
+                Route::put('hearings/{hearing}/attachments', [Controllers\HearingController::class, 'updateAttachments'])
+                    ->middleware('permission:edit-hearings')
+                    ->name('hearings.attachments.update');
                 Route::delete('hearings/{hearing}', [Controllers\HearingController::class, 'destroy'])->middleware('permission:delete-hearings')->name('hearings.destroy');
+                Route::post('hearings/{hearing}/team-members', [Controllers\HearingController::class, 'attachTeamMember'])
+                    ->middleware('permission:edit-hearings')
+                    ->name('hearings.team-members.store');
+                Route::delete('hearings/{hearing}/team-members/{user}', [Controllers\HearingController::class, 'detachTeamMember'])
+                    ->middleware('permission:edit-hearings')
+                    ->whereNumber('user')
+                    ->name('hearings.team-members.destroy');
                 Route::get('api/hearings/case-team-users/{caseId}', [Controllers\HearingController::class, 'caseTeamUsers'])
                     ->whereNumber('caseId')
                     ->name('api.hearings.case-team-users');

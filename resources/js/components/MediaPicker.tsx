@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -16,9 +16,11 @@ interface MediaPickerProps {
   showPreview?: boolean;
   /** When `media_id`, value is comma-separated Spatie `media.id` values (library files only). */
   valueMode?: 'url' | 'media_id';
+  /** e.g. files attached to a record (Hearing) so labels/previews work when not in the library list */
+  supplementalMedia?: MediaIndexItem[];
 }
 
-interface MediaIndexItem {
+export interface MediaIndexItem {
   id: number;
   name: string;
   file_name: string;
@@ -35,6 +37,7 @@ export default function MediaPicker({
   placeholder = 'Select image...',
   showPreview = true,
   valueMode = 'url',
+  supplementalMedia = [],
 }: MediaPickerProps) {
   const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -80,6 +83,17 @@ export default function MediaPicker({
     wasModalOpen.current = isModalOpen;
   }, [isModalOpen, valueMode, fetchMediaIndex]);
 
+  const mergedForLookup = useMemo(() => {
+    const m = new Map<string, MediaIndexItem>();
+    for (const it of mediaIndex) {
+      m.set(String(it.id), it);
+    }
+    for (const it of supplementalMedia) {
+      m.set(String(it.id), it);
+    }
+    return Array.from(m.values());
+  }, [mediaIndex, supplementalMedia]);
+
   const handleSelect = (selectedUrl: string) => {
     onChange(selectedUrl);
   };
@@ -93,7 +107,7 @@ export default function MediaPicker({
   const imageUrls =
     valueMode === 'media_id'
       ? mediaIdList
-          .map((id) => mediaIndex.find((m) => String(m.id) === id)?.url)
+          .map((id) => mergedForLookup.find((m) => String(m.id) === id)?.url)
           .filter((u): u is string => Boolean(u))
       : value
         ? value.split(',').filter(Boolean)
@@ -106,7 +120,7 @@ export default function MediaPicker({
       const ids = raw.split(',').map((s) => s.trim()).filter(Boolean);
       return ids
         .map((id) => {
-          const row = mediaIndex.find((m) => String(m.id) === id);
+          const row = mergedForLookup.find((m) => String(m.id) === id);
           return row?.name || row?.file_name || id;
         })
         .join(', ');

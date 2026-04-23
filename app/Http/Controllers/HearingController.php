@@ -16,6 +16,7 @@ use App\Models\EventType;
 use App\Services\GoogleCalendarService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -142,6 +143,46 @@ class HearingController extends BaseController
         return Inertia::render('hearings/form', $this->hearingFormPageProps($request, null));
     }
 
+    public function show(Request $request, $id)
+    {
+        $hearing = Hearing::withPermissionCheck()
+            ->with([
+                'case.client:id,name',
+                'court.courtType',
+                'court.circleType',
+                'hearingType',
+                'teamMembers' => function ($query) {
+                    $query->with('roles');
+                },
+            ])
+            ->where('id', $id)
+            ->first();
+
+        if (!$hearing) {
+            return redirect()->route('hearings.index')->with('error', __(':model not found.', ['model' => __('Hearing')]));
+        }
+
+        $reminderMinutes = \App\Models\HearingNotification::where('hearing_id', $hearing->id)
+            ->where('status', 'pending')
+            ->orderBy('minutes_before')
+            ->pluck('minutes_before')
+            ->map(fn ($m) => (int) $m)
+            ->values()
+            ->all();
+
+        $returnToCaseId = null;
+        if ($request->filled('case_id')) {
+            $returnToCaseId = (int) $request->query('case_id');
+        }
+
+        return Inertia::render('hearings/show', [
+            'hearing' => $hearing,
+            'hearingAttachmentMedia' => $this->hearingAttachmentMediaList($hearing),
+            'reminderMinutes' => $reminderMinutes,
+            'returnToCaseId' => $returnToCaseId,
+        ]);
+    }
+
     public function edit(Request $request, $id)
     {
         $hearing = Hearing::withPermissionCheck()
@@ -231,6 +272,9 @@ class HearingController extends BaseController
             'returnToCaseId' => $returnToCaseId,
             'reminderMinutes' => $reminderMinutes,
             'teamMemberOptions' => $this->hearingCaseTeamUserOptions($initialCaseId),
+            'hearingAttachmentMedia' => $hearing
+                ? $this->hearingAttachmentMediaList($hearing)
+                : [],
         ];
     }
 
@@ -263,9 +307,8 @@ class HearingController extends BaseController
             'sync_with_google_calendar' => 'nullable|boolean',
         ]);
 
-        $validated['attachments'] = $this->normalizeHearingAttachments($request);
         $teamMemberIds = $this->normalizeTeamMemberIds($request, (int) $validated['case_id']);
-        unset($validated['team_member_ids']);
+        unset($validated['team_member_ids'], $validated['attachments']);
         $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'scheduled';
         $validated['duration_minutes'] = $validated['duration_minutes'] ?? 30;
@@ -278,6 +321,11 @@ class HearingController extends BaseController
 
         $hearing = Hearing::create($validated);
         $this->syncHearingTeamMembers($hearing, $teamMemberIds);
+        $attachmentInput = $this->parseHearingAttachmentIdsFromRequest($request, null);
+        if ($attachmentInput === null) {
+            $attachmentInput = [];
+        }
+        $this->syncHearingAttachmentMedia($hearing, $attachmentInput);
 
         // Handle Google Calendar sync
         if ($hearing && $request->sync_with_google_calendar) {
@@ -351,11 +399,14 @@ class HearingController extends BaseController
             'sync_with_google_calendar' => 'nullable|boolean',
         ]);
 
-        $validated['attachments'] = $this->normalizeHearingAttachments($request);
         $teamMemberIds = $this->normalizeTeamMemberIds($request, (int) $validated['case_id']);
-        unset($validated['team_member_ids']);
+        unset($validated['team_member_ids'], $validated['attachments']);
         $hearing->update($validated);
         $this->syncHearingTeamMembers($hearing, $teamMemberIds);
+        $attachmentInput = $this->parseHearingAttachmentIdsFromRequest($request, $hearing);
+        if ($attachmentInput !== null) {
+            $this->syncHearingAttachmentMedia($hearing, $attachmentInput);
+        }
 
         // Handle Google Calendar sync
         if ($request->sync_with_google_calendar && !$hearing->google_calendar_event_id) {
@@ -388,6 +439,51 @@ class HearingController extends BaseController
         return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Hearing')]));
     }
 
+    public function updateMinutes(Request $request, int $id)
+    {
+        $hearing = Hearing::withPermissionCheck()
+            ->where('id', $id)
+            ->first();
+
+        if (!$hearing) {
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Hearing')]));
+        }
+
+        $validated = $request->validate([
+            'minutes_title' => 'nullable|string|max:500',
+            'minutes_date' => 'nullable|date',
+            'minutes_content' => 'nullable|string',
+        ]);
+
+        $hearing->update($validated);
+
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Hearing')]));
+    }
+
+    public function updateAttachments(Request $request, int $id): \Illuminate\Http\RedirectResponse
+    {
+        $hearing = Hearing::withPermissionCheck()
+            ->where('id', $id)
+            ->first();
+
+        if (!$hearing) {
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Hearing')]));
+        }
+
+        $request->validate([
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'integer|min:1',
+        ]);
+
+        $attachmentInput = $this->parseHearingAttachmentIdsFromRequest($request, $hearing);
+        if ($attachmentInput === null) {
+            $attachmentInput = [];
+        }
+        $this->syncHearingAttachmentMedia($hearing, $attachmentInput);
+
+        return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Hearing')]));
+    }
+
     public function destroy($id)
     {
         $hearing = Hearing::withPermissionCheck()
@@ -407,6 +503,62 @@ class HearingController extends BaseController
         $hearing->delete();
 
         return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Hearing')]));
+    }
+
+    public function attachTeamMember(Request $request, int $hearing): \Illuminate\Http\RedirectResponse
+    {
+        $model = Hearing::withPermissionCheck()
+            ->where('id', $hearing)
+            ->first();
+
+        if (!$model) {
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Hearing')]));
+        }
+
+        if (!$model->case_id) {
+            return redirect()->back()->with('error', __('Hearing has no case.'));
+        }
+
+        $validated = $request->validate([
+            'user_id' => 'required|integer',
+        ]);
+
+        $userId = (int) $validated['user_id'];
+
+        $request->merge(['team_member_ids' => [$userId]]);
+
+        $allowed = $this->normalizeTeamMemberIds($request, (int) $model->case_id);
+        if (!in_array($userId, $allowed, true)) {
+            return redirect()->back()->with('error', __('This user is not on the case team.'));
+        }
+
+        if ($model->teamMembers()->where('users.id', $userId)->exists()) {
+            return redirect()->back()->with('error', __('User is already assigned to this session.'));
+        }
+
+        $tenantId = (string) $model->tenant_id;
+        $model->teamMembers()->attach($userId, ['tenant_id' => $tenantId]);
+
+        return redirect()->back()->with('success', __('Team member added to session.'));
+    }
+
+    public function detachTeamMember(Request $request, int $hearing, int $user): \Illuminate\Http\RedirectResponse
+    {
+        $model = Hearing::withPermissionCheck()
+            ->where('id', $hearing)
+            ->first();
+
+        if (!$model) {
+            return redirect()->back()->with('error', __(':model not found.', ['model' => __('Hearing')]));
+        }
+
+        if (!$model->teamMembers()->where('users.id', $user)->exists()) {
+            return redirect()->back()->with('error', __('User is not assigned to this session.'));
+        }
+
+        $model->teamMembers()->detach($user);
+
+        return redirect()->back()->with('success', __('Team member removed from session.'));
     }
 
     private function createDefaultNotifications($hearing, array $customReminderMinutes = [])
@@ -525,56 +677,270 @@ class HearingController extends BaseController
     }
 
     /**
-     * Store only Spatie media row ids (files that exist in the tenant media library).
+     * Media rows for the hearing (Spatie, ordered).
      *
-     * @return array<int, int>|null
+     * @return list<array{id: int, name: string, file_name: string, url: string, thumb_url: string, size: int, mime_type: string|null}>
      */
-    private function normalizeHearingAttachments(Request $request): ?array
+    private function hearingAttachmentMediaList(Hearing $hearing): array
     {
-        if (!$request->has('attachments') || $request->attachments === null || $request->attachments === '') {
-            return null;
+        $out = [];
+        foreach ($hearing->getMedia(Hearing::HEARING_FILES_COLLECTION)->sortBy('order_column') as $m) {
+            try {
+                $originalUrl = $this->hearingMediaFullUrl($m->getUrl());
+                $thumbUrl = $originalUrl;
+                try {
+                    $thumbUrl = $this->hearingMediaFullUrl($m->getUrl('thumb'));
+                } catch (\Exception $e) {
+                }
+                $out[] = [
+                    'id' => (int) $m->id,
+                    'name' => $m->name,
+                    'file_name' => $m->file_name,
+                    'url' => $originalUrl,
+                    'thumb_url' => $thumbUrl,
+                    'size' => (int) $m->size,
+                    'mime_type' => $m->mime_type,
+                ];
+            } catch (\Exception $e) {
+                continue;
+            }
         }
 
+        return $out;
+    }
+
+    private function hearingMediaFullUrl(string $url): string
+    {
+        if (str_starts_with($url, 'http')) {
+            return $url;
+        }
+
+        $baseUrl = request()->getSchemeAndHttpHost();
+
+        return $baseUrl . $url;
+    }
+
+    /**
+     * Ordered library media ids and/or this hearing’s media row ids, filtered by permission.
+     * `null` = the request had no "attachments" key (skip sync; edit form partial submit).
+     *
+     * @return list<int>|null
+     */
+    private function parseHearingAttachmentIdsFromRequest(Request $request, ?Hearing $hearing): ?array
+    {
+        if (! array_key_exists('attachments', $request->all())) {
+            return $hearing ? null : [];
+        }
         $raw = $request->input('attachments');
+        if ($raw === null || $raw === '' || (is_array($raw) && $raw === [])) {
+            return [];
+        }
         if (is_string($raw)) {
             $ids = array_map('intval', array_filter(array_map('trim', explode(',', $raw))));
         } elseif (is_array($raw)) {
             $ids = array_map('intval', array_values(array_filter($raw)));
         } else {
-            return null;
+            return [];
         }
-
-        $ids = array_values(array_unique(array_filter($ids, fn (int $id) => $id > 0)));
-
+        $ids = array_values(array_filter($ids, fn (int $id) => $id > 0));
         if ($ids === []) {
-            return null;
+            return [];
         }
 
-        $tenantId = createdBy();
+        return $this->filterAllowlistedAttachmentSourceIds($hearing, $ids);
+    }
+
+    /**
+     * @param  list<int>  $orderedRequestIds
+     * @return list<int>
+     */
+    private function filterAllowlistedAttachmentSourceIds(?Hearing $hearing, array $orderedRequestIds): array
+    {
         $user = auth()->user();
+        $tenantId = createdBy();
+        $hearingId = $hearing?->id;
+        $onHearingSet = $hearing
+            ? array_fill_keys(
+                $hearing->getMedia(Hearing::HEARING_FILES_COLLECTION)->pluck('id')->map(fn ($k) => (int) $k)->all(),
+                true,
+            )
+            : [];
 
-        $query = Media::query()
-            ->whereIn('id', $ids)
-            ->where('model_type', MediaItem::class);
-
-        if ($user && ($user->type === 'superadmin' || $user->hasPermissionTo('manage-any-media'))) {
-            // no extra tenant filter
-        } else {
-            $query->where(function ($q) use ($tenantId) {
-                $q->where('tenant_id', $tenantId)->orWhereNull('tenant_id');
-            });
-        }
-
-        $allowed = $query->pluck('id')->all();
-        $allowedSet = array_fill_keys($allowed, true);
-
-        $ordered = [];
-        foreach ($ids as $id) {
-            if (!empty($allowedSet[$id])) {
-                $ordered[] = $id;
+        $out = [];
+        $seen = [];
+        foreach ($orderedRequestIds as $rawId) {
+            $id = (int) $rawId;
+            if ($id < 1) {
+                continue;
+            }
+            if (isset($seen[$id])) {
+                continue;
+            }
+            $m = Media::query()->whereKey($id)->first();
+            if (! $m) {
+                continue;
+            }
+            if ($m->model_type === Hearing::class
+                && (int) $m->model_id === (int) $hearingId
+                && $m->collection_name === Hearing::HEARING_FILES_COLLECTION) {
+                if (isset($onHearingSet[$m->id])) {
+                    $out[] = (int) $m->id;
+                    $seen[$id] = true;
+                }
+                continue;
+            }
+            if ($m->model_type === MediaItem::class && $this->mediaFromLibraryPassesTenant($m, $user, $tenantId)) {
+                $out[] = (int) $m->id;
+                $seen[$id] = true;
             }
         }
 
-        return $ordered === [] ? null : $ordered;
+        return $out;
+    }
+
+    private function mediaFromLibraryPassesTenant(Media $m, $user, $tenantId): bool
+    {
+        if ($m->model_type !== MediaItem::class) {
+            return false;
+        }
+        if ($user && ($user->type === 'superadmin' || $user->hasPermissionTo('manage-any-media'))) {
+            return true;
+        }
+        if ($m->tenant_id === null) {
+            return true;
+        }
+
+        return (string) $m->tenant_id === (string) $tenantId;
+    }
+
+    /**
+     * @param  list<int>  $orderedSourceIds
+     */
+    private function syncHearingAttachmentMedia(Hearing $hearing, array $orderedSourceIds): void
+    {
+        if ($orderedSourceIds === []) {
+            $hearing->clearMediaCollection(Hearing::HEARING_FILES_COLLECTION);
+
+            return;
+        }
+
+        $hearing = $hearing->fresh() ?? $hearing;
+        $resolvedHearingFileIds = [];
+        $seen = [];
+        foreach ($orderedSourceIds as $sourceId) {
+            $m = Media::query()->whereKey($sourceId)->first();
+            if (! $m) {
+                continue;
+            }
+            if ($m->model_type === Hearing::class && (int) $m->model_id === (int) $hearing->id
+                && $m->collection_name === Hearing::HEARING_FILES_COLLECTION) {
+                $hid = (int) $m->id;
+            } elseif ($m->model_type === MediaItem::class) {
+                $existing = $hearing->getMedia(Hearing::HEARING_FILES_COLLECTION)
+                    ->first(function ($h) use ($m) {
+                        return (int) $h->getCustomProperty('imported_from_media_id', 0) === (int) $m->id;
+                    });
+                if ($existing) {
+                    $hid = (int) $existing->id;
+                } else {
+                    $created = $this->copyMediaRowToHearing($hearing, $m);
+                    if (! $created) {
+                        continue;
+                    }
+                    $hid = (int) $created->id;
+                }
+            } else {
+                continue;
+            }
+            if (isset($seen[$hid])) {
+                continue;
+            }
+            $resolvedHearingFileIds[] = $hid;
+            $seen[$hid] = true;
+        }
+
+        $keep = array_fill_keys($resolvedHearingFileIds, true);
+        foreach ($hearing->getMedia(Hearing::HEARING_FILES_COLLECTION) as $existing) {
+            if (empty($keep[$existing->id] ?? null)) {
+                $existing->delete();
+            }
+        }
+        $hearing->load('media');
+        foreach (array_values($resolvedHearingFileIds) as $i => $mediaId) {
+            Media::query()->whereKey($mediaId)->update(['order_column' => $i + 1]);
+        }
+    }
+
+    private function copyMediaRowToHearing(Hearing $hearing, Media $source): ?Media
+    {
+        if ($source->model_type !== MediaItem::class) {
+            return null;
+        }
+        $filePath = $this->getAbsoluteFilePathForSpatieMedia($source);
+        if (! $filePath) {
+            return null;
+        }
+        $isTemp = str_starts_with($filePath, sys_get_temp_dir());
+        try {
+            $new = $hearing->addMedia($filePath)
+                ->usingName($source->name)
+                ->usingFileName($source->file_name)
+                ->withCustomProperties(array_merge(
+                    is_array($source->custom_properties) ? $source->custom_properties : (array) $source->custom_properties,
+                    ['imported_from_media_id' => (int) $source->id]
+                ))
+                ->toMediaCollection(Hearing::HEARING_FILES_COLLECTION, $source->disk);
+            $new->tenant_id = (string) $hearing->tenant_id;
+            $new->save();
+
+            return $new;
+        } catch (\Throwable) {
+            return null;
+        } finally {
+            if ($isTemp && is_file($filePath)) {
+                @unlink($filePath);
+            }
+        }
+    }
+
+    private function getAbsoluteFilePathForSpatieMedia(Media $media): ?string
+    {
+        try {
+            $path = $media->getPath();
+            if (is_string($path) && is_readable($path)) {
+                return $path;
+            }
+        } catch (\Throwable) {
+        }
+        $pathGenerator = app(config('media-library.path_generator'));
+        $relativePath = $pathGenerator->getPath($media) . $media->file_name;
+        $disk = $media->disk ?? (string) config('media-library.disk_name', 'public');
+        $storage = Storage::disk($disk);
+        if (! $storage->exists($relativePath)) {
+            return null;
+        }
+        if (in_array($disk, ['public', 'local'], true) && method_exists($storage, 'path')) {
+            $full = $storage->path($relativePath);
+            if (is_readable($full)) {
+                return $full;
+            }
+        }
+        $tmp = @tempnam(sys_get_temp_dir(), 'hm_');
+        if (! $tmp) {
+            return null;
+        }
+        $contents = $storage->get($relativePath);
+        if ($contents === null || $contents === '') {
+            @unlink($tmp);
+
+            return null;
+        }
+        if (@file_put_contents($tmp, $contents) === false) {
+            @unlink($tmp);
+
+            return null;
+        }
+
+        return $tmp;
     }
 }

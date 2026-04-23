@@ -4,7 +4,6 @@ import { usePage, router } from '@inertiajs/react';
 import { Plus, Calendar, Clock } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
-import { CrudFormModal } from '@/components/CrudFormModal';
 import { CrudDeleteModal } from '@/components/CrudDeleteModal';
 import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +12,7 @@ import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useInitials } from '@/hooks/use-initials';
+import { HearingMinutesModal } from '@/pages/hearings/HearingMinutesModal';
 
 function dateToYmd(d: Date | undefined): string {
   if (!d || Number.isNaN(d.getTime())) return '';
@@ -57,7 +57,8 @@ export default function Hearings() {
   const [hearingDateTo, setHearingDateTo] = useState<string>(pageFilters.hearing_date_to || '');
   const [showFilters, setShowFilters] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isMinutesModalOpen, setIsMinutesModalOpen] = useState(false);
+  const [minutesTarget, setMinutesTarget] = useState<any>(null);
   const [currentItem, setCurrentItem] = useState<any>(null);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -103,15 +104,19 @@ export default function Hearings() {
   };
 
   const handleAction = (action: string, item: any) => {
-    setCurrentItem(item);
     switch (action) {
       case 'view':
-        setIsViewModalOpen(true);
+        router.get(route('hearings.show', item.id));
         break;
       case 'edit':
         router.get(route('hearings.edit', item.id));
         break;
+      case 'minutes':
+        setMinutesTarget(item);
+        setIsMinutesModalOpen(true);
+        break;
       case 'delete':
+        setCurrentItem(item);
         setIsDeleteModalOpen(true);
         break;
     }
@@ -297,6 +302,7 @@ export default function Hearings() {
 
   const actions = [
     { label: t('View'), icon: 'Eye', action: 'view', className: 'text-blue-500', requiredPermission: 'view-hearings' },
+    { label: t('Hearing minutes'), icon: 'FileSpreadsheet', action: 'minutes', className: 'text-emerald-600', requiredPermission: 'edit-hearings' },
     { label: t('Edit'), icon: 'Edit', action: 'edit', className: 'text-amber-500', requiredPermission: 'edit-hearings' },
     { label: t('Delete'), icon: 'Trash2', action: 'delete', className: 'text-red-500', requiredPermission: 'delete-hearings' }
   ];
@@ -486,77 +492,33 @@ export default function Hearings() {
               />
           </div>
 
-          <CrudFormModal
-              isOpen={isViewModalOpen}
-              onClose={() => setIsViewModalOpen(false)}
-              onSubmit={() => {}}
-              formConfig={{
-                  fields: [
-                      { name: 'hearing_id', label: t('Session ID'), type: 'text', readOnly: true },
-                      { name: 'title', label: t('Title'), type: 'text', readOnly: true },
-                      { name: 'case', label: t('Case'), type: 'text', readOnly: true },
-                      { name: 'court', label: t('Court'), type: 'text', readOnly: true },
-                      { name: 'judge_name', label: t('Judge name'), type: 'text', readOnly: true },
-                      { name: 'hearing_type', label: t('Session Type'), type: 'text', readOnly: true },
-                      { name: 'team_members', label: t('Team Members'), type: 'text', readOnly: true },
-                      { name: 'description', label: t('Description'), type: 'textarea', readOnly: true },
-                      { name: 'hearing_date', label: t('Date'), type: 'text', readOnly: true },
-                      { name: 'hearing_time', label: t('Time'), type: 'text', readOnly: true },
-                      { name: 'duration_minutes', label: t('Duration (minutes)'), type: 'text', readOnly: true },
-                      { name: 'status', label: t('Status'), type: 'text', readOnly: true },
-                      { name: 'notes', label: t('Notes'), type: 'textarea', readOnly: true },
-                  ],
-                  modalSize: 'xl',
-              }}
-              initialData={{
-                  ...currentItem,
-                  case: currentItem?.case
-                      ? (() => {
-                            const caseId = currentItem.case.case_id || '-';
-                            const caseName = currentItem.case.title || '-';
-                            const caseNumber = currentItem.case.file_number || '';
-                            if (caseNumber) {
-                                return `${caseId} + ${caseName} + ${caseNumber}`;
-                            }
-                            return `${caseId} + ${caseName}`;
-                        })()
-                      : '-',
-                  court: currentItem?.court
-                      ? (() => {
-                            const courtName = currentItem.court.name || '-';
-                            const courtType = currentItem.court.court_type ? getTranslatedValue(currentItem.court.court_type.name) : '';
-                            const circleType = currentItem.court.circle_type ? getTranslatedValue(currentItem.court.circle_type.name) : '';
-                            const parts = [courtName];
-                            if (courtType) parts.push(courtType);
-                            if (circleType) parts.push(circleType);
-                            return parts.join(' + ');
-                        })()
-                      : '-',
-                  judge_name: currentItem?.judge_name?.trim() || '-',
-                  hearing_type: getTranslatedValue(currentItem?.hearing_type?.name) || '-',
-                  team_members: Array.isArray(currentItem?.team_members)
-                      ? currentItem.team_members.map((u: { name?: string }) => u.name).filter(Boolean).join(', ') || '-'
-                      : '-',
-                  hearing_date: currentItem?.hearing_date
-                      ? window.appSettings?.formatDate(currentItem.hearing_date) || new Date(currentItem.hearing_date).toLocaleDateString()
-                      : '-',
-                  hearing_time: currentItem?.hearing_time
-                      ? (window.appSettings?.formatTime(`2000-01-01T${currentItem.hearing_time}`) || currentItem.hearing_time)
-                      : '-',
-                  duration_minutes: currentItem?.duration_minutes ? `${currentItem.duration_minutes} minutes` : '-',
-                  url: currentItem?.url || '-',
-                  status: currentItem?.status ? t(currentItem.status.charAt(0).toUpperCase() + currentItem.status.slice(1).replace('_', ' ')) : '-',
-              }}
-              title={t('View Session Details')}
-              mode="view"
-          />
-
           <CrudDeleteModal
               isOpen={isDeleteModalOpen}
               onClose={() => setIsDeleteModalOpen(false)}
               onConfirm={handleDeleteConfirm}
               itemName={currentItem?.title || ''}
               entityName="Hearing"
+          />
+
+          <HearingMinutesModal
+            open={isMinutesModalOpen}
+            onOpenChange={(open) => {
+              setIsMinutesModalOpen(open);
+              if (!open) {
+                setMinutesTarget(null);
+              }
+            }}
+            hearing={
+              minutesTarget
+                ? {
+                    id: minutesTarget.id,
+                    session_title: minutesTarget.title,
+                    minutes_title: minutesTarget.minutes_title,
+                    minutes_date: minutesTarget.minutes_date,
+                    minutes_content: minutesTarget.minutes_content,
+                  }
+                : null
+            }
           />
       </PageTemplate>
   );

@@ -188,8 +188,6 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
 
 
 
-  const [isSessionViewOpen, setIsSessionViewOpen] = useState(false);
-  const [currentSession, setCurrentSession] = useState<any>(null);
   const [selectedCaseYear, setSelectedCaseYear] = useState<number>(new Date().getFullYear());
   const [selectedRevenueYear, setSelectedRevenueYear] = useState<number>(new Date().getFullYear());
   const [selectedTaskYear, setSelectedTaskYear] = useState<number>(new Date().getFullYear());
@@ -206,38 +204,14 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
       return;
     }
     const targetId = Number(viewId);
-    const target = upcomingHearings.find((item) => Number(item.id) === targetId);
-    if (target) {
-      setCurrentSession(target);
-      setIsSessionViewOpen(true);
+    if (!Number.isFinite(targetId) || targetId <= 0) {
+      return;
     }
-  }, [upcomingHearings]);
+    router.get(route('hearings.show', targetId), {}, { replace: true });
+  }, []);
 
   const openSessionView = (session: any) => {
-    setCurrentSession(session);
-    setIsSessionViewOpen(true);
-    router.get(route('dashboard'), { view: session.id }, { preserveState: true, preserveScroll: true, replace: true });
-  };
-
-  const closeSessionView = () => {
-    setIsSessionViewOpen(false);
-    setCurrentSession(null);
-    router.get(route('dashboard'), {}, { preserveState: true, preserveScroll: true, replace: true });
-  };
-
-  const formatCourtLabel = (court: any) => {
-    if (!court) return '-';
-    if (typeof court === 'string') return court;
-    const parts = [court.name, court.court_type, court.circle_type].filter(Boolean);
-    return parts.length ? parts.join(' + ') : '-';
-  };
-
-  const formatCaseLabel = (caseItem: any) => {
-    if (!caseItem) return '-';
-    const caseId = caseItem.case_id || '-';
-    const caseName = caseItem.title || '-';
-    const caseNumber = caseItem.file_number || '';
-    return caseNumber ? `${caseId} + ${caseName} + ${caseNumber}` : `${caseId} + ${caseName}`;
+    router.get(route('hearings.show', session.id));
   };
 
   const openTaskView = (task: any) => {
@@ -778,43 +752,6 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
 
 
       </div>
-
-      <CrudFormModal
-        isOpen={isSessionViewOpen}
-        onClose={closeSessionView}
-        onSubmit={() => { }}
-        formConfig={{
-          fields: [
-            { name: 'hearing_id', label: t('Session ID'), type: 'text' },
-            { name: 'title', label: t('Title'), type: 'text' },
-            { name: 'case', label: t('Case'), type: 'text' },
-            { name: 'court', label: t('Court'), type: 'text' },
-            { name: 'hearing_type', label: t('Type'), type: 'text' },
-            { name: 'description', label: t('Description'), type: 'textarea' },
-            { name: 'hearing_date', label: t('Date'), type: 'text' },
-            { name: 'hearing_time', label: t('Time'), type: 'text' },
-            { name: 'duration_minutes', label: t('Duration (minutes)'), type: 'text' },
-            { name: 'status', label: t('Status'), type: 'text' },
-            { name: 'notes', label: t('Notes'), type: 'textarea' }
-          ],
-          modalSize: 'xl'
-        }}
-        initialData={{
-          ...currentSession,
-          case: formatCaseLabel(currentSession?.case),
-          court: formatCourtLabel(currentSession?.court),
-          hearing_type: getTranslatedLabel(
-            currentSession?.hearing_type?.name_translations || currentSession?.type_translations,
-            currentSession?.hearing_type?.name || currentSession?.type
-          ),
-          hearing_date: currentSession?.hearing_date || currentSession?.date || '-',
-          hearing_time: currentSession?.hearing_time || currentSession?.time || '-',
-          duration_minutes: currentSession?.duration_minutes ? `${currentSession.duration_minutes} minutes` : '-',
-          status: currentSession?.status || '-'
-        }}
-        title={t('View Session Details')}
-        mode="view"
-      />
 
       <CrudFormModal
         isOpen={isTaskViewOpen}

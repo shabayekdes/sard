@@ -117,7 +117,6 @@ export default function CaseShow() {
     const [hearingCourtTypeId, setHearingCourtTypeId] = useState(filters.hearing_court_type_id || 'all');
     const [hearingCircleTypeId, setHearingCircleTypeId] = useState(filters.hearing_circle_type_id || 'all');
     const [showHearingFilters, setShowHearingFilters] = useState(false);
-    const [isHearingViewModalOpen, setIsHearingViewModalOpen] = useState(false);
     const [isHearingDeleteModalOpen, setIsHearingDeleteModalOpen] = useState(false);
     const [currentHearing, setCurrentHearing] = useState<any>(null);
 
@@ -657,15 +656,15 @@ export default function CaseShow() {
     };
 
     const handleHearingAction = (action: string, item: any) => {
-        setCurrentHearing(item);
         switch (action) {
             case 'view':
-                setIsHearingViewModalOpen(true);
+                router.get(route('hearings.show', item.id), { case_id: caseData.id });
                 break;
             case 'edit':
                 router.get(route('hearings.edit', item.id), { from_case: 1 });
                 break;
             case 'delete':
+                setCurrentHearing(item);
                 setIsHearingDeleteModalOpen(true);
                 break;
         }
@@ -3250,43 +3249,6 @@ export default function CaseShow() {
 
             {activeTab === 'hearings' && (
                 <>
-                    <CrudFormModal
-                        isOpen={isHearingViewModalOpen}
-                        onClose={() => setIsHearingViewModalOpen(false)}
-                        onSubmit={() => { }}
-                        formConfig={{
-                            fields: [
-                                { name: 'hearing_id', label: t('Session ID'), type: 'text', readOnly: true },
-                                { name: 'title', label: t('Title'), type: 'text', readOnly: true },
-                                { name: 'description', label: t('Description'), type: 'textarea', readOnly: true },
-                                { name: 'court', label: t('Court'), type: 'text', readOnly: true },
-                                { name: 'hearing_type', label: t('Type'), type: 'text', readOnly: true },
-                                { name: 'hearing_date', label: t('Date'), type: 'text', readOnly: true },
-                                { name: 'hearing_time', label: t('Time'), type: 'text', readOnly: true },
-                                { name: 'duration_minutes', label: t('Duration (minutes)'), type: 'text', readOnly: true },
-                                { name: 'status', label: t('Status'), type: 'text', readOnly: true },
-                                { name: 'notes', label: t('Notes'), type: 'textarea', readOnly: true },
-                                { name: 'outcome', label: t('Outcome'), type: 'textarea', readOnly: true }
-                            ],
-                            modalSize: 'xl'
-                        }}
-                        initialData={{
-                            ...currentHearing,
-                            court: currentHearing?.court ? (() => {
-                                const courtName = currentHearing.court.name || '-';
-                                const courtType = currentHearing.court.court_type ? getTranslatedValue(currentHearing.court.court_type.name) : '';
-                                return courtType ? `${courtName} + ${courtType}` : courtName;
-                            })() : '-',
-                            hearing_type: getTranslatedValue(currentHearing?.hearing_type?.name) || '-',
-                            hearing_date: currentHearing?.hearing_date ? (window.appSettings?.formatDate(currentHearing.hearing_date) || new Date(currentHearing.hearing_date).toLocaleDateString()) : '-',
-                            hearing_time: currentHearing?.hearing_time || '-',
-                            duration_minutes: currentHearing?.duration_minutes ? `${currentHearing.duration_minutes} minutes` : '-',
-                            status: currentHearing?.status ? t(currentHearing.status.charAt(0).toUpperCase() + currentHearing.status.slice(1).replace('_', ' ')) : '-'
-                        }}
-                        title={t('View Hearing Details')}
-                        mode='view'
-                    />
-
                     <CrudDeleteModal
                         isOpen={isHearingDeleteModalOpen}
                         onClose={() => setIsHearingDeleteModalOpen(false)}

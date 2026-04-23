@@ -126,6 +126,15 @@ export default function HearingForm() {
     returnToCaseId: number | null;
     reminderMinutes: number[];
     teamMemberOptions?: { value: number; label: string }[];
+    /** Spatie media rows for this hearing (for MediaPicker when ids are on the model, not in the library) */
+    hearingAttachmentMedia?: Array<{
+      id: number;
+      name: string;
+      file_name: string;
+      url: string;
+      thumb_url: string;
+      mime_type: string | null;
+    }>;
   };
   const { auth } = usePage().props as any;
   const permissions = auth?.permissions || [];
@@ -145,6 +154,7 @@ export default function HearingForm() {
     returnToCaseId,
     reminderMinutes,
     teamMemberOptions = [],
+    hearingAttachmentMedia = [],
   } = props;
 
   const [teamMemberSelectOptions, setTeamMemberSelectOptions] = useState<{ value: string; label: string }[]>(() =>
@@ -783,6 +793,14 @@ export default function HearingForm() {
                 valueMode="media_id"
                 placeholder={t('Select files...')}
                 showPreview
+                supplementalMedia={hearingAttachmentMedia.map((m) => ({
+                  id: m.id,
+                  name: m.name,
+                  file_name: m.file_name,
+                  url: m.url,
+                  thumb_url: m.thumb_url,
+                  mime_type: m.mime_type || '',
+                }))}
               />
               {errors.attachments ? <p className="text-sm text-destructive">{errors.attachments}</p> : null}
             </div>
