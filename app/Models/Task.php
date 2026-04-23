@@ -120,4 +120,15 @@ class Task extends BaseModel
         $completed = $checklists->where('is_completed', true)->count();
         return (int) (($completed / $checklists->count()) * 100);
     }
+
+    /**
+     * Reload checklist rows from the database and persist derived progress.
+     * Call after creating or deleting checklist items so progress matches completion ratio.
+     */
+    public function refreshProgressFromChecklists(): void
+    {
+        $this->unsetRelation('checklists');
+        $this->load('checklists');
+        $this->update(['progress' => $this->calculateProgress()]);
+    }
 }
