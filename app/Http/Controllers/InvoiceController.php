@@ -9,6 +9,7 @@ use App\Models\InvoiceLineItem;
 use App\Models\Client;
 use App\Models\ClientBillingInfo;
 use App\Models\Currency;
+use App\Models\PaymentSetting;
 use App\Services\EmailTemplateService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -130,6 +131,11 @@ class InvoiceController extends BaseController
             ->select('id', 'name', 'code', 'symbol')
             ->get();
 
+        $bankDetailRaw = PaymentSetting::where('tenant_id', $invoice->tenant_id)
+            ->where('key', 'bank_detail')
+            ->value('value');
+        $bankDetail = is_string($bankDetailRaw) && trim($bankDetailRaw) !== '' ? $bankDetailRaw : null;
+
         return Inertia::render('billing/invoices/show', [
             'invoice' => $invoice,
             'amountPaid' => $amountPaid,
@@ -137,7 +143,8 @@ class InvoiceController extends BaseController
             'companyProfile' => $companyProfile,
             'invoiceItems' => $invoiceItems,
             'clientBillingInfo' => $clientBillingInfo,
-            'currencies' => $currencies
+            'currencies' => $currencies,
+            'bankDetail' => $bankDetail,
         ]);
     }
 

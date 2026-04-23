@@ -325,6 +325,7 @@ Route::middleware([
                 Route::get('clients/{client}/edit', [Controllers\ClientController::class, 'edit'])->middleware('permission:edit-clients')->name('clients.edit');
                 Route::get('clients/{client}', [Controllers\ClientController::class, 'show'])->middleware('permission:view-clients')->name('clients.show');
                 Route::post('clients', [Controllers\ClientController::class, 'store'])->middleware('permission:create-clients')->name('clients.store');
+                Route::post('clients/quick-store', [Controllers\ClientController::class, 'quickStore'])->middleware('permission:create-clients')->name('clients.quick-store');
                 Route::put('clients/{client}', [Controllers\ClientController::class, 'update'])->middleware('permission:edit-clients')->name('clients.update');
                 Route::delete('clients/{client}', [Controllers\ClientController::class, 'destroy'])->middleware('permission:delete-clients')->name('clients.destroy');
                 Route::put('clients/{client}/toggle-status', [Controllers\ClientController::class, 'toggleStatus'])->middleware('permission:edit-clients')->name('clients.toggle-status');

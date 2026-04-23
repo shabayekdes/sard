@@ -153,6 +153,17 @@
         </div>
     </div>
 
+    @if (filled($bank_detail ?? null) && trim((string) $bank_detail) !== '')
+        <div class="pdf-card mb-6">
+            <div class="pdf-card-header pdf-card-header-small">
+                <h4 class="pdf-card-title-small">بيانات البنك</h4>
+            </div>
+            <div class="pdf-card-content">
+                <p class="pdf-muted-text">{!! nl2br(e($bank_detail)) !!}</p>
+            </div>
+        </div>
+    @endif
+
     <!-- الشروط والملاحظات -->
     <div class="pdf-two-cards flex gap-3 mb-6">
         <div class="pdf-card flex-grow-1">

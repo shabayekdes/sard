@@ -1,5 +1,6 @@
 import { toast } from '@/components/custom-toast';
 import { CrudFormModal } from '@/components/CrudFormModal';
+import { QuickClientModal } from '@/components/quick-client-modal';
 import { PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,11 +53,14 @@ export default function EditCase() {
         circleTypes,
         countries,
         documentTypes,
+        phoneCountries = [],
+        defaultCountry = '',
         errors = {},
         base_url,
     } = usePage().props as any;
     const permissions = auth?.permissions || [];
     const canQuickCreateCourt = hasPermission(permissions, 'create-courts');
+    const canQuickCreateClient = hasPermission(permissions, 'create-clients');
     const { isRtl } = useLayout();
     const currentLocale = i18n.language || 'en';
     const caseId = caseProp?.id;
@@ -107,6 +111,7 @@ export default function EditCase() {
 
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
     const [courtModalOpen, setCourtModalOpen] = useState(false);
+    const [clientModalOpen, setClientModalOpen] = useState(false);
     const normalizedErrors = useMemo(() => {
         const next: Record<string, string> = {};
         Object.entries(errors || {}).forEach(([key, value]) => {
@@ -255,12 +260,15 @@ export default function EditCase() {
             });
     }, [clients]);
 
-    const clientDropdownFields = useMemo(() => {
-        const options = uniqueClients.map((c: any) => ({ value: String(c.id), label: c.name }));
-        if (auth?.user && !uniqueClients.some((c: any) => String(c.id) === String(auth.user?.id))) {
-            options.push({ value: auth.user.id.toString(), label: `${auth.user.name} (Me)` });
+    const clientSelectOptions = useMemo(() => {
+        const rows: ([string | number | null, string] | [null, string])[] = [[null, t('Select Client')]];
+        uniqueClients.forEach((c) => {
+            rows.push([c.id, c.name]);
+        });
+        if (auth?.user && !uniqueClients.some((c) => String(c.id) === String(auth.user?.id))) {
+            rows.push([auth.user.id, `${auth.user.name} (Me)`]);
         }
-        return [{ name: 'client_id', label: t('Client'), required: true, options }];
+        return rows;
     }, [uniqueClients, auth, t]);
 
     const categorySubcategoryTypeFields = useMemo(
@@ -396,12 +404,32 @@ export default function EditCase() {
                 <div className="mb-6 rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div className="space-y-2">
-                            <DependentDropdown
-                                fields={clientDropdownFields}
-                                values={{ client_id: formData.client_id ?? '' }}
-                                onChange={(fieldName, value) => updateField(fieldName, value)}
-                                errors={{ client_id: getFieldError('client_id') }}
-                            />
+                            <Label required>{t('Client')}</Label>
+                            <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+                                <FormSelect
+                                    value={formData.client_id ?? ''}
+                                    onValueChange={(v) => updateField('client_id', v)}
+                                    placeholder={t('Select Client')}
+                                    options={clientSelectOptions}
+                                    wrapperClassName="min-w-0 w-full space-y-0"
+                                />
+                                {canQuickCreateClient && (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-10 w-10 shrink-0 justify-self-center"
+                                        title={t('Quick add client')}
+                                        aria-label={t('Quick add client')}
+                                        onClick={() => setClientModalOpen(true)}
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                    </Button>
+                                )}
+                            </div>
+                            {getFieldError('client_id') ? (
+                                <p className="text-sm text-destructive mt-1">{getFieldError('client_id')}</p>
+                            ) : null}
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="title">{t('Case Title')}</Label>
@@ -623,6 +651,16 @@ export default function EditCase() {
                         )}
                     </div>
                 </div>
+
+                {canQuickCreateClient && (
+                    <QuickClientModal
+                        open={clientModalOpen}
+                        onOpenChange={setClientModalOpen}
+                        phoneCountries={phoneCountries}
+                        defaultCountry={defaultCountry}
+                        onCreated={(clientId) => updateField('client_id', clientId)}
+                    />
+                )}
 
                 {canQuickCreateCourt && (
                     <CrudFormModal

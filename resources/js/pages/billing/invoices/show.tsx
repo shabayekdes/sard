@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { CurrencyAmount } from '@/components/currency-amount';
 import { hasPermission } from '@/utils/authorization';
 import { router, usePage } from '@inertiajs/react';
-import { ArrowLeft, DollarSign, Download, Edit, FileText, Link, MoreVerticalIcon, Send, User } from 'lucide-react';
+import { ArrowLeft, Banknote, DollarSign, Download, Edit, FileText, Link, MoreVerticalIcon, Send, User } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +24,7 @@ export default function ShowInvoice() {
         companyProfile,
         amountPaid: amountPaidProp,
         remainingAmount: remainingAmountProp,
+        bankDetail,
     } = usePage().props as any;
     const permissions = auth?.permissions || [];
     const isClient = auth?.user?.type === 'client';
@@ -506,6 +507,20 @@ export default function ShowInvoice() {
                         </div>
                     </CardContent>
                 </Card>
+
+                {typeof bankDetail === 'string' && bankDetail.trim() ? (
+                    <Card className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+                        <CardHeader className="pb-2">
+                            <div className="flex items-center gap-2">
+                                <Banknote className="text-muted-foreground h-5 w-5" />
+                                <h3 className="text-base font-semibold">{t('Bank Details')}</h3>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-muted-foreground whitespace-pre-wrap text-sm">{bankDetail}</p>
+                        </CardContent>
+                    </Card>
+                ) : null}
 
                 {/* Terms & Notes — only when client billing terms or invoice notes exist */}
                 {(termsText || notesText) && (

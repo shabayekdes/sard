@@ -390,6 +390,125 @@ class ClientController extends Controller
     }
 
     /**
+     * Minimal client create from case forms (name, phone, business type, optional portal login).
+     */
+    public function quickStore(Request $request)
+    {
+        $this->authorize('create', Client::class);
+
+        $authUser = auth()->user();
+        if ($authUser->type === 'company' && $authUser->plan) {
+            $currentClients = Client::where('tenant_id', $authUser->tenant_id)->count();
+            $maxClients = $authUser->plan->max_clients;
+            $isUnlimited = $authUser->plan->isUnlimitedLimit($maxClients);
+
+            if (! $isUnlimited && $currentClients >= $maxClients) {
+                return redirect()->back()->with('error', __('Client limit exceeded. Your plan allows maximum :max clients. Please upgrade your plan.', ['max' => $maxClients]));
+            }
+        } elseif ($authUser->type !== 'superadmin' && $authUser->tenant_id) {
+            $companyUser = User::where('tenant_id', $authUser->tenant_id)->where('type', 'company')->first();
+            if ($companyUser && $companyUser->plan) {
+                $currentClients = Client::where('tenant_id', $companyUser->tenant_id)->count();
+                $maxClients = $companyUser->plan->max_clients;
+                $isUnlimited = $companyUser->plan->isUnlimitedLimit($maxClients);
+
+                if (! $isUnlimited && $currentClients >= $maxClients) {
+                    return redirect()->back()->with('error', __('Client limit exceeded. Your company plan allows maximum :max clients. Please contact your administrator.', ['max' => $maxClients]));
+                }
+            }
+        }
+
+        $loginEnabled = $request->boolean('client_login_enabled');
+
+        $rules = [
+            'name' => 'required|string|max:255',
+            'client_login_enabled' => 'sometimes|boolean',
+            'country_id' => 'required|exists:countries,id',
+            'phone' => 'required|string|unique:clients,phone',
+            'business_type' => 'required|string|in:b2c,b2b',
+        ];
+
+        $emailUnique = Rule::unique('clients', 'email')->where(fn ($q) => $q->where('tenant_id', createdBy()));
+        if ($loginEnabled) {
+            $rules['email'] = ['required', 'string', 'email', 'max:255', $emailUnique];
+            $rules['password'] = ['required', 'string', 'min:6'];
+        } else {
+            $rules['email'] = ['nullable', 'string', 'email', 'max:255', $emailUnique];
+        }
+
+        $validated = $request->validate($rules);
+
+        $phoneCountry = Country::where('id', $validated['country_id'])
+            ->whereNotNull('country_code')
+            ->first();
+
+        if (! $phoneCountry) {
+            return redirect()->back()->withErrors(['country_id' => __('Invalid phone country')]);
+        }
+
+        $phoneValidator = Validator::make(
+            ['phone' => $validated['phone']],
+            ['phone' => 'phone:'.$phoneCountry->country_code],
+            ['phone.phone' => __('Please enter a valid phone number for the selected country.')],
+        );
+
+        if ($phoneValidator->fails()) {
+            return redirect()->back()->withErrors($phoneValidator)->withInput();
+        }
+
+        $plainPassword = $validated['password'] ?? null;
+        unset($validated['password'], $validated['client_login_enabled']);
+        $validated['email'] = isset($validated['email']) && $validated['email'] !== '' ? $validated['email'] : null;
+
+        if ($loginEnabled && $validated['email'] && $plainPassword) {
+            $validated['user_id'] = $this->linkClientPortalUser($validated['name'], $validated['email'], $plainPassword)->id;
+        } else {
+            $validated['user_id'] = null;
+        }
+
+        $validated['tenant_id'] = createdBy();
+        $validated['status'] = 'active';
+        $validated['client_type_id'] = null;
+        $validated['tax_rate'] = (float) Settings::string('DEFAULT_TAX_RATE', 15);
+        if (($validated['business_type'] ?? 'b2c') === 'b2b') {
+            $validated['nationality_id'] = null;
+            $validated['gender'] = null;
+        } else {
+            $validated['nationality_id'] = $validated['country_id'];
+            $validated['gender'] = 'male';
+        }
+
+        $client = Client::create($validated);
+
+        event(new \App\Events\NewClientCreated($client, $request->all()));
+
+        $emailError = session()->pull('email_error');
+        $slackError = session()->pull('slack_error');
+        $twilioError = session()->pull('twilio_error');
+
+        $errors = [];
+        if ($emailError) {
+            $errors[] = __('Email send failed: ').$emailError;
+        }
+        if ($slackError) {
+            $errors[] = __('Slack send failed: ').$slackError;
+        }
+        if ($twilioError) {
+            $errors[] = __('SMS send failed: ').$twilioError;
+        }
+
+        if (! empty($errors)) {
+            $message = __('Client created successfully, but ').implode(', ', $errors);
+
+            return redirect()->back()->with('warning', $message)->with('created_client_id', $client->id);
+        }
+
+        return redirect()->back()
+            ->with('success', __(':model created successfully.', ['model' => __('Client')]))
+            ->with('created_client_id', $client->id);
+    }
+
+    /**
      * Create or restore a portal user for a client (tenant-scoped, type client).
      */
     private function linkClientPortalUser(string $name, string $email, string $plainPassword): User
