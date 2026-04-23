@@ -3,18 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Facades\Settings;
-use App\Models\Client;
-use Illuminate\Auth\Events\Registered;
-use App\Models\ClientType;
-use App\Models\CaseType;
 use App\Models\CaseStatus;
-use App\Models\Court;
+use App\Models\CaseType;
+use App\Models\Client;
 use App\Models\ClientDocument;
-use App\Models\DocumentType;
+use App\Models\ClientType;
 use App\Models\Country;
+use App\Models\Court;
+use App\Models\DocumentType;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class ClientController extends Controller
@@ -32,28 +33,28 @@ class ClientController extends Controller
             ->withCount('cases');
 
         // Handle search
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                    ->orWhere('email', 'like', '%' . $request->search . '%')
-                    ->orWhere('phone', 'like', '%' . $request->search . '%')
-                    ->orWhere('client_id', 'like', '%' . $request->search . '%')
-                    ->orWhere('company_name', 'like', '%' . $request->search . '%');
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('email', 'like', '%'.$request->search.'%')
+                    ->orWhere('phone', 'like', '%'.$request->search.'%')
+                    ->orWhere('client_id', 'like', '%'.$request->search.'%')
+                    ->orWhere('company_name', 'like', '%'.$request->search.'%');
             });
         }
 
         // Handle client type filter
-        if ($request->has('client_type_id') && !empty($request->client_type_id) && $request->client_type_id !== 'all') {
+        if ($request->has('client_type_id') && ! empty($request->client_type_id) && $request->client_type_id !== 'all') {
             $query->where('client_type_id', $request->client_type_id);
         }
 
         // Handle status filter
-        if ($request->has('status') && !empty($request->status) && $request->status !== 'all') {
+        if ($request->has('status') && ! empty($request->status) && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
 
         // Handle sorting (default to latest)
-        if ($request->has('sort_field') && !empty($request->sort_field)) {
+        if ($request->has('sort_field') && ! empty($request->sort_field)) {
             $query->orderBy($request->sort_field, $request->sort_direction ?? 'asc');
         } else {
             $query->latest('id');
@@ -67,6 +68,7 @@ class ClientController extends Controller
                 $client->clientType->name_translations = $client->clientType->getTranslations('name');
                 $client->clientType->description_translations = $client->clientType->getTranslations('description');
             }
+
             return $client;
         });
 
@@ -110,18 +112,18 @@ class ClientController extends Controller
             'clients' => $clients,
             'clientTypes' => $clientTypes,
             'planLimits' => $planLimits,
-            'filters' => $request->only(['search', 'client_type_id', 'status', 'per_page', 'sort_field', 'sort_direction'])
+            'filters' => $request->only(['search', 'client_type_id', 'status', 'per_page', 'sort_field', 'sort_direction']),
         ]);
     }
 
     public function create()
     {
-        return Inertia::render('clients/create', $this->getClientFormProps());
+        return Inertia::render('clients/form', $this->getClientFormProps());
     }
 
     public function edit(Client $client)
     {
-        $client->load(['clientType', 'creator', 'documents']);
+        $client->load(['clientType', 'creator', 'documents', 'user']);
 
         if ($client->clientType) {
             $client->clientType->name_translations = $client->clientType->getTranslations('name');
@@ -133,16 +135,19 @@ class ClientController extends Controller
             $client->documents = $client->documents->map(function ($doc) {
                 return [
                     'document_name' => $doc->document_name,
-                    'document_type_id' => $doc->document_type_id ? (string)$doc->document_type_id : '',
+                    'document_type_id' => $doc->document_type_id ? (string) $doc->document_type_id : '',
                     'file' => $doc->file_path,
                 ];
             })->values()->all();
         }
 
         return Inertia::render(
-            'clients/edit',
+            'clients/form',
             array_merge(
-                ['client' => $client],
+                [
+                    'client' => $client,
+                    'has_portal_user' => (bool) $client->user,
+                ],
                 $this->getClientFormProps()
             )
         );
@@ -237,7 +242,7 @@ class ClientController extends Controller
             $maxClients = $authUser->plan->max_clients;
             $isUnlimited = $authUser->plan->isUnlimitedLimit($maxClients);
 
-            if (!$isUnlimited && $currentClients >= $maxClients) {
+            if (! $isUnlimited && $currentClients >= $maxClients) {
                 return redirect()->back()->with('error', __('Client limit exceeded. Your plan allows maximum :max clients. Please upgrade your plan.', ['max' => $maxClients]));
             }
         } elseif ($authUser->type !== 'superadmin' && $authUser->tenant_id) {
@@ -247,16 +252,17 @@ class ClientController extends Controller
                 $maxClients = $companyUser->plan->max_clients;
                 $isUnlimited = $companyUser->plan->isUnlimitedLimit($maxClients);
 
-                if (!$isUnlimited && $currentClients >= $maxClients) {
+                if (! $isUnlimited && $currentClients >= $maxClients) {
                     return redirect()->back()->with('error', __('Client limit exceeded. Your company plan allows maximum :max clients. Please contact your administrator.', ['max' => $maxClients]));
                 }
             }
         }
 
-        $validated = $request->validate([
+        $loginEnabled = $request->boolean('client_login_enabled');
+
+        $rules = [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:clients,email',
-            'password' => 'required|string|min:6',
+            'client_login_enabled' => 'sometimes|boolean',
             'country_id' => 'required|exists:countries,id',
             'phone' => 'required|string|unique:clients,phone',
             'business_type' => 'required|string|in:b2c,b2b',
@@ -280,19 +286,29 @@ class ClientController extends Controller
             'documents.*.file' => 'required_with:documents|string',
             'documents.*.description' => 'nullable|string',
             'documents.*.status' => 'nullable|in:active,archived',
-        ]);
+        ];
+
+        $emailUnique = Rule::unique('clients', 'email')->where(fn ($q) => $q->where('tenant_id', createdBy()));
+        if ($loginEnabled) {
+            $rules['email'] = ['required', 'string', 'email', 'max:255', $emailUnique];
+            $rules['password'] = ['required', 'string', 'min:6'];
+        } else {
+            $rules['email'] = ['nullable', 'string', 'email', 'max:255', $emailUnique];
+        }
+
+        $validated = $request->validate($rules);
 
         $phoneCountry = Country::where('id', $validated['country_id'])
             ->whereNotNull('country_code')
             ->first();
 
-        if (!$phoneCountry) {
+        if (! $phoneCountry) {
             return redirect()->back()->withErrors(['country_id' => __('Invalid phone country')]);
         }
 
         $phoneValidator = Validator::make(
             ['phone' => $validated['phone']],
-            ['phone' => 'phone:' . $phoneCountry->country_code],
+            ['phone' => 'phone:'.$phoneCountry->country_code],
             ['phone.phone' => __('Please enter a valid phone number for the selected country.')],
         );
 
@@ -307,60 +323,30 @@ class ClientController extends Controller
         $validated['status'] = $validated['status'] ?? 'active';
 
         // Check if client type belongs to the current user's company
-        if (!empty($validated['client_type_id'])) {
+        if (! empty($validated['client_type_id'])) {
             $clientType = ClientType::where('id', $validated['client_type_id'])
                 ->where('tenant_id', createdBy())
                 ->first();
 
-            if (!$clientType) {
+            if (! $clientType) {
                 return redirect()->back()->with('error', __('Invalid client type selected.'));
             }
         }
 
-        // Check if client with same email already exists for this company
-        if (!empty($validated['email'])) {
-            $exists = Client::where('email', $validated['email'])
-                ->where('tenant_id', createdBy())
-                ->exists();
+        $plainPassword = $validated['password'] ?? null;
+        unset($validated['password'], $validated['client_login_enabled']);
+        $validated['email'] = isset($validated['email']) && $validated['email'] !== '' ? $validated['email'] : null;
 
-            if ($exists) {
-                return redirect()->back()->with('error', __(':model with this email already exists.', ['model' => __('Client')]));
-            }
-        }
-
-        // Create user account for client first when email and password provided (so we have user_id for client)
-        $user = null;
-        if (!empty($validated['email']) && !empty($validated['password'])) {
-            $user = User::create([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
-                'type' => 'client',
-                'tenant_id' => createdBy(),
-            ]);
-
-            // Assign client role
-            $clientRole = \Spatie\Permission\Models\Role::where('name', 'client')->first();
-            if ($clientRole) {
-                $user->assignRole($clientRole);
-            }
-
+        if ($loginEnabled && $validated['email'] && $plainPassword) {
+            $user = $this->linkClientPortalUser($validated['name'], $validated['email'], $plainPassword);
             $validated['user_id'] = $user->id;
-
-            // Send verification email when email verification is enabled (same as registration)
-            $emailVerificationEnabled = Settings::boolean('EMAIL_VERIFICATION_ENABLED');
-            if ($emailVerificationEnabled) {
-                try {
-                    event(new Registered($user));
-                } catch (\Exception $e) {
-                    session()->flash('email_error', $e->getMessage());
-                }
-            }
+        } else {
+            $validated['user_id'] = null;
         }
 
         $client = Client::create($validated);
 
-        if (!empty($documents)) {
+        if (! empty($documents)) {
             foreach ($documents as $document) {
                 $filePath = $this->convertToRelativePath($document['file'] ?? '');
                 ClientDocument::create([
@@ -385,17 +371,17 @@ class ClientController extends Controller
 
         $errors = [];
         if ($emailError) {
-            $errors[] = __('Email send failed: ') . $emailError;
+            $errors[] = __('Email send failed: ').$emailError;
         }
         if ($slackError) {
-            $errors[] = __('Slack send failed: ') . $slackError;
+            $errors[] = __('Slack send failed: ').$slackError;
         }
         if ($twilioError) {
-            $errors[] = __('SMS send failed: ') . $twilioError;
+            $errors[] = __('SMS send failed: ').$twilioError;
         }
 
-        if (!empty($errors)) {
-            $message = __('Client created successfully, but ') . implode(', ', $errors);
+        if (! empty($errors)) {
+            $message = __('Client created successfully, but ').implode(', ', $errors);
 
             return redirect()->back()->with('warning', $message);
         }
@@ -403,13 +389,65 @@ class ClientController extends Controller
         return redirect()->route('clients.index')->with('success', __(':model created successfully.', ['model' => __('Client')]));
     }
 
+    /**
+     * Create or restore a portal user for a client (tenant-scoped, type client).
+     */
+    private function linkClientPortalUser(string $name, string $email, string $plainPassword): User
+    {
+        $tenantId = createdBy();
+
+        $trashed = User::onlyTrashed()
+            ->where('tenant_id', $tenantId)
+            ->where('type', 'client')
+            ->where('email', $email)
+            ->first();
+
+        if ($trashed) {
+            $trashed->restore();
+            $trashed->update([
+                'name' => $name,
+                'password' => \Illuminate\Support\Facades\Hash::make($plainPassword),
+            ]);
+            $clientRole = \Spatie\Permission\Models\Role::where('name', 'client')->first();
+            if ($clientRole && ! $trashed->hasRole($clientRole)) {
+                $trashed->assignRole($clientRole);
+            }
+
+            return $trashed;
+        }
+
+        $user = User::create([
+            'name' => $name,
+            'email' => $email,
+            'password' => \Illuminate\Support\Facades\Hash::make($plainPassword),
+            'type' => 'client',
+            'tenant_id' => $tenantId,
+        ]);
+
+        $clientRole = \Spatie\Permission\Models\Role::where('name', 'client')->first();
+        if ($clientRole) {
+            $user->assignRole($clientRole);
+        }
+
+        $emailVerificationEnabled = Settings::boolean('EMAIL_VERIFICATION_ENABLED');
+        if ($emailVerificationEnabled) {
+            try {
+                event(new Registered($user));
+            } catch (\Exception $e) {
+                session()->flash('email_error', $e->getMessage());
+            }
+        }
+
+        return $user;
+    }
+
     private function convertToRelativePath(string $url): string
     {
-        if (!$url) {
+        if (! $url) {
             return $url;
         }
 
-        if (!str_starts_with($url, 'http')) {
+        if (! str_starts_with($url, 'http')) {
             return $url;
         }
 
@@ -424,11 +462,17 @@ class ClientController extends Controller
     public function update(Request $request, Client $client)
     {
         try {
-            $validated = $request->validate([
+            $loginEnabled = $request->boolean('client_login_enabled');
+
+            $emailUnique = Rule::unique('clients', 'email')
+                ->where(fn ($q) => $q->where('tenant_id', createdBy()))
+                ->ignore($client->id);
+
+            $rules = [
                 'name' => 'required|string|max:255',
-                'email' => 'required|email|max:255|unique:clients,email,' . $client->id,
+                'client_login_enabled' => 'sometimes|boolean',
                 'country_id' => 'required|exists:countries,id',
-                'phone' => 'required|string|unique:clients,phone,' . $client->id,
+                'phone' => 'required|string|unique:clients,phone,'.$client->id,
                 'business_type' => 'required|string|in:b2c,b2b',
                 'nationality_id' => 'nullable|exists:countries,id',
                 'gender' => 'nullable|string|in:male,female',
@@ -450,7 +494,19 @@ class ClientController extends Controller
                 'documents.*.file' => 'required_with:documents|string',
                 'documents.*.description' => 'nullable|string',
                 'documents.*.status' => 'nullable|in:active,archived',
-            ], [
+            ];
+
+            if ($loginEnabled) {
+                $rules['email'] = ['required', 'string', 'email', 'max:255', $emailUnique];
+                $rules['password'] = $client->user
+                    ? ['nullable', 'string', 'min:6']
+                    : ['required', 'string', 'min:6'];
+            } else {
+                $rules['email'] = ['nullable', 'string', 'email', 'max:255', $emailUnique];
+                $rules['password'] = ['nullable', 'string', 'min:6'];
+            }
+
+            $validated = $request->validate($rules, [
                 'name.required' => __('Client name is required.'),
                 'email.required' => __('Email is required.'),
                 'email.email' => __('Please enter a valid email address.'),
@@ -463,13 +519,13 @@ class ClientController extends Controller
                 ->whereNotNull('country_code')
                 ->first();
 
-            if (!$phoneCountry) {
+            if (! $phoneCountry) {
                 return redirect()->back()->withErrors(['country_id' => __('Invalid phone country')]);
             }
 
             $phoneValidator = Validator::make(
                 ['phone' => $validated['phone']],
-                ['phone' => 'phone:' . $phoneCountry->country_code],
+                ['phone' => 'phone:'.$phoneCountry->country_code],
                 ['phone.phone' => __('Please enter a valid phone number for the selected country.')],
             );
 
@@ -478,41 +534,44 @@ class ClientController extends Controller
             }
 
             // Check if client type belongs to the current user's company
-            if (!empty($validated['client_type_id'])) {
+            if (! empty($validated['client_type_id'])) {
                 $clientType = ClientType::withPermissionCheck()
                     ->where('id', $validated['client_type_id'])
                     ->first();
 
-                if (!$clientType) {
+                if (! $clientType) {
                     return redirect()->back()->with('error', __('Invalid client type selected.'));
                 }
             }
 
-            // Check if client with same email already exists for this company (excluding current)
-            if (!empty($validated['email'])) {
-                $exists = Client::where('email', $validated['email'])
-                    ->where('tenant_id', createdBy())
-                    ->where('id', '!=', $client->id)
-                    ->exists();
-
-                if ($exists) {
-                    return redirect()->back()->with('error', __(':model with this email already exists.', ['model' => __('Client')]));
-                }
-            }
+            $plainPassword = $validated['password'] ?? null;
+            unset($validated['password'], $validated['client_login_enabled']);
+            $validated['email'] = isset($validated['email']) && $validated['email'] !== '' ? $validated['email'] : null;
 
             $documents = $validated['documents'] ?? [];
             unset($validated['documents']);
 
-            $client->update($validated);
+            if (! $loginEnabled) {
+                $client->user?->delete();
+                $validated['user_id'] = null;
+            } elseif ($validated['email'] && $plainPassword && ! $client->user) {
+                $user = $this->linkClientPortalUser($validated['name'], $validated['email'], $plainPassword);
+                $validated['user_id'] = $user->id;
+            }
 
-            // Sync email to linked client user (via relation)
-            if (!empty($validated['email']) && $client->user) {
-                $client->user->update(['email' => $validated['email']]);
+            $client->update($validated);
+            $client->refresh();
+
+            if ($loginEnabled && $client->user && $validated['email']) {
+                $client->user->update([
+                    'name' => $validated['name'],
+                    'email' => $validated['email'],
+                ]);
             }
 
             // Replace client documents with repeater payload
             ClientDocument::where('client_id', $client->id)->delete();
-            if (!empty($documents)) {
+            if (! empty($documents)) {
                 foreach ($documents as $document) {
                     $filePath = $this->convertToRelativePath($document['file'] ?? '');
                     ClientDocument::create([
@@ -600,28 +659,28 @@ class ClientController extends Controller
             });
         }
 
-        if ($request->has('case_type_id') && !empty($request->case_type_id) && $request->case_type_id !== 'all') {
+        if ($request->has('case_type_id') && ! empty($request->case_type_id) && $request->case_type_id !== 'all') {
             $casesQuery->where('case_type_id', $request->case_type_id);
         }
 
-        if ($request->has('case_status_id') && !empty($request->case_status_id) && $request->case_status_id !== 'all') {
+        if ($request->has('case_status_id') && ! empty($request->case_status_id) && $request->case_status_id !== 'all') {
             $casesQuery->where('case_status_id', $request->case_status_id);
         }
 
-        if ($request->has('priority') && !empty($request->priority) && $request->priority !== 'all') {
+        if ($request->has('priority') && ! empty($request->priority) && $request->priority !== 'all') {
             $casesQuery->where('priority', $request->priority);
         }
 
-        if ($request->has('status') && !empty($request->status) && $request->status !== 'all') {
+        if ($request->has('status') && ! empty($request->status) && $request->status !== 'all') {
             $casesQuery->where('status', $request->status);
         }
 
-        if ($request->has('court_id') && !empty($request->court_id) && $request->court_id !== 'all') {
+        if ($request->has('court_id') && ! empty($request->court_id) && $request->court_id !== 'all') {
             $casesQuery->where('court_id', $request->court_id);
         }
 
         // Apply sorting
-        if ($request->has('sort_field') && !empty($request->sort_field)) {
+        if ($request->has('sort_field') && ! empty($request->sort_field)) {
             $casesQuery->orderBy($request->sort_field, $request->sort_direction ?? 'asc');
         } else {
             $casesQuery->latest();
@@ -662,7 +721,7 @@ class ClientController extends Controller
         }
 
         // Apply sorting for invoices
-        if ($request->has('invoice_sort_field') && !empty($request->invoice_sort_field)) {
+        if ($request->has('invoice_sort_field') && ! empty($request->invoice_sort_field)) {
             $invoicesQuery->orderBy($request->invoice_sort_field, $request->invoice_sort_direction ?? 'asc');
         } else {
             $invoicesQuery->latest('invoice_date');
@@ -674,6 +733,7 @@ class ClientController extends Controller
         $invoices->getCollection()->transform(function ($invoice) {
             $totalPaid = $invoice->payments->sum('amount');
             $invoice->remaining_amount = max(0, $invoice->total_amount - $totalPaid);
+
             return $invoice;
         });
 
@@ -696,7 +756,7 @@ class ClientController extends Controller
         }
 
         // Apply sorting for payments
-        if ($request->has('payment_sort_field') && !empty($request->payment_sort_field)) {
+        if ($request->has('payment_sort_field') && ! empty($request->payment_sort_field)) {
             $paymentsQuery->orderBy($request->payment_sort_field, $request->payment_sort_direction ?? 'asc');
         } else {
             $paymentsQuery->latest('payment_date');
@@ -714,7 +774,7 @@ class ClientController extends Controller
             }
 
             // Ensure invoice_id is included and invoice relationship is preserved
-            if (!isset($paymentData['invoice_id']) && $payment->invoice_id) {
+            if (! isset($paymentData['invoice_id']) && $payment->invoice_id) {
                 $paymentData['invoice_id'] = $payment->invoice_id;
             }
 
@@ -743,7 +803,7 @@ class ClientController extends Controller
         $currencies = \App\Models\Currency::where('status', 'active')
             ->orderBy('code')
             ->get(['id', 'name', 'code', 'symbol'])
-            ->map(fn($c) => ['value' => $c->code, 'label' => $c->name . ' (' . $c->code . ')']);
+            ->map(fn ($c) => ['value' => $c->code, 'label' => $c->name.' ('.$c->code.')']);
 
         return Inertia::render('clients/show', [
             'client' => $client,
@@ -788,6 +848,7 @@ class ClientController extends Controller
     {
         try {
             $client->delete();
+
             return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Client')]));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to delete :model', ['model' => __('Client')]));
@@ -800,6 +861,7 @@ class ClientController extends Controller
         try {
             $client->status = $client->status === 'active' ? 'inactive' : 'active';
             $client->save();
+
             return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Client')]));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to update :model status', ['model' => __('Client')]));
@@ -810,7 +872,7 @@ class ClientController extends Controller
     {
         $this->authorize('update', $client);
 
-        if (!auth()->user()->can('reset-client-password')) {
+        if (! auth()->user()->can('reset-client-password')) {
             return redirect()->back()->with('error', __('You do not have permission to reset :model passwords.', ['model' => __('Client')]));
         }
 
@@ -820,7 +882,7 @@ class ClientController extends Controller
 
         $user = $client->user;
 
-        if (!$user) {
+        if (! $user) {
             return redirect()->back()->with('error', __('No user account found for this :model.', ['model' => __('Client')]));
         }
 

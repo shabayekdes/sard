@@ -51,6 +51,7 @@
     "Client": "العميل",
     "Client ID": "معرّف العميل",
     "Client Name": "اسم العميل",
+    "Enable client login": "تفعيل تسجيل دخول العميل",
     "Client type": "نوع العميل",
     "Clients": "العملاء",
     ":model created successfully.": "تم إنشاء :model بنجاح.",
