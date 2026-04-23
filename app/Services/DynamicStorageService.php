@@ -14,34 +14,40 @@ class DynamicStorageService
     {
         $config = StorageConfigService::getStorageConfig();
         
-        // Configure S3 disk if credentials exist
+        // Configure S3 disk if credentials exist (merge so FilesystemTenancyBootstrapper `root` is kept)
         if (!empty($config['s3']['key']) && !empty($config['s3']['secret'])) {
-            Config::set('filesystems.disks.s3', [
-                'driver' => 's3',
-                'key' => $config['s3']['key'],
-                'secret' => $config['s3']['secret'],
-                'region' => $config['s3']['region'],
-                'bucket' => $config['s3']['bucket'],
-                'url' => $config['s3']['url'] ?: null,
-                'endpoint' => $config['s3']['endpoint'] ?: null,
-                'use_path_style_endpoint' => !empty($config['s3']['endpoint']),
-                'visibility' => 'public',
-            ]);
+            Config::set('filesystems.disks.s3', array_merge(
+                config('filesystems.disks.s3', []),
+                [
+                    'driver' => 's3',
+                    'key' => $config['s3']['key'],
+                    'secret' => $config['s3']['secret'],
+                    'region' => $config['s3']['region'],
+                    'bucket' => $config['s3']['bucket'],
+                    'url' => $config['s3']['url'] ?: null,
+                    'endpoint' => $config['s3']['endpoint'] ?: null,
+                    'use_path_style_endpoint' => !empty($config['s3']['endpoint']),
+                    'visibility' => 'public',
+                ]
+            ));
             Storage::forgetDisk('s3');
         }
-        
-        // Configure Wasabi disk if credentials exist
+
+        // Configure Wasabi disk if credentials exist (merge so tenant `root` prefix is kept)
         if (!empty($config['wasabi']['key']) && !empty($config['wasabi']['secret'])) {
-            Config::set('filesystems.disks.wasabi', [
-                'driver' => 's3',
-                'key' => $config['wasabi']['key'],
-                'secret' => $config['wasabi']['secret'],
-                'region' => $config['wasabi']['region'],
-                'bucket' => $config['wasabi']['bucket'],
-                'endpoint' => 'https://s3.' . $config['wasabi']['region'] . '.wasabisys.com',
-                'use_path_style_endpoint' => false,
-                'visibility' => 'public',
-            ]);
+            Config::set('filesystems.disks.wasabi', array_merge(
+                config('filesystems.disks.wasabi', []),
+                [
+                    'driver' => 's3',
+                    'key' => $config['wasabi']['key'],
+                    'secret' => $config['wasabi']['secret'],
+                    'region' => $config['wasabi']['region'],
+                    'bucket' => $config['wasabi']['bucket'],
+                    'endpoint' => 'https://s3.' . $config['wasabi']['region'] . '.wasabisys.com',
+                    'use_path_style_endpoint' => false,
+                    'visibility' => 'public',
+                ]
+            ));
             Storage::forgetDisk('wasabi');
         }
 

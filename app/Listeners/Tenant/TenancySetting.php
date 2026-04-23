@@ -46,16 +46,19 @@ class TenancySetting
                 //     'use_path_style_endpoint' => !empty($settings['AWS_ENDPOINT']),
                 //     'visibility' => 'public',
                 // ],
-                'filesystems.disks.wasabi' => [
-                    'driver' => 's3',
-                    'key' => $settings['WASABI_ACCESS_KEY'] ?? null,
-                    'secret' => $settings['WASABI_SECRET_KEY'] ?? null,
-                    'region' => $settings['WASABI_REGION'] ?? null,
-                    'bucket' => $settings['WASABI_BUCKET'] ?? null,
-                    'endpoint' => !empty($settings['WASABI_REGION']) ? 'https://s3.' . $settings['WASABI_REGION'] . '.wasabisys.com' : null,
-                    'use_path_style_endpoint' => false,
-                    'visibility' => 'public',
-                ],
+                'filesystems.disks.wasabi' => array_merge(
+                    config('filesystems.disks.wasabi', []),
+                    [
+                        'driver' => 's3',
+                        'key' => $settings['WASABI_ACCESS_KEY'] ?? null,
+                        'secret' => $settings['WASABI_SECRET_KEY'] ?? null,
+                        'region' => $settings['WASABI_REGION'] ?? null,
+                        'bucket' => $settings['WASABI_BUCKET'] ?? null,
+                        'endpoint' => !empty($settings['WASABI_REGION']) ? 'https://s3.' . $settings['WASABI_REGION'] . '.wasabisys.com' : null,
+                        'use_path_style_endpoint' => false,
+                        'visibility' => 'public',
+                    ]
+                ),
                 // 'filesystems.disks.gcs' => [
                 //     'driver' => 'gcs',
                 //     'key_file_path' => $settings['GOOGLE_CLOUD_KEY_FILE'] ?? null,

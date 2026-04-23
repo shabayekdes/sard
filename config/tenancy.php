@@ -102,8 +102,9 @@ return [
         'disks' => [
             'local',
             'public',
-            // 's3',
-            // 'gcs', // with FILESYSTEM_DISK=gcs: isolates tenant objects via filesystems.disks.gcs.root suffix
+            's3',
+            'wasabi',
+            // 'gcs': use after aligning filesystems.disks.gcs with a `root` key (see DynamicStorageService); bootstrapper prefixes `root` only.
         ],
 
         /**
