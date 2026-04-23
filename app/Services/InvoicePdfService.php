@@ -190,8 +190,12 @@ class InvoicePdfService
 
     private function buildLogoDataUri(?string $logoPath): ?string
     {
-        if (!$logoPath || str_starts_with($logoPath, 'http://') || str_starts_with($logoPath, 'https://')) {
+        if (!$logoPath) {
             return null;
+        }
+
+        if (str_starts_with($logoPath, 'http://') || str_starts_with($logoPath, 'https://')) {
+            return $logoPath;
         }
 
         $relativePath = ltrim($logoPath, '/');
