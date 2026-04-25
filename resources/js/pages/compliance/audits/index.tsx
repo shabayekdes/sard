@@ -247,12 +247,12 @@ export default function ComplianceAudits() {
       key: 'audit_date',
       label: t('Audit Date'),
       sortable: true,
-      render: (value: string) => window.appSettings?.formatDateTime(value, false) || new Date(value).toLocaleDateString()
+      type: 'date' as const,
     },
     {
       key: 'completion_date',
       label: t('Completion'),
-      render: (value: string) => value ? (window.appSettings?.formatDateTime(value, false) || new Date(value).toLocaleDateString()) : '-'
+      type: 'date' as const,
     }
   ];
 

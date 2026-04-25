@@ -63,11 +63,12 @@ export default function CouponDetailsPage() {
       label: t('Discount Applied'), 
       render: (value: number) => window.appSettings?.formatCurrency(value) || `$${value.toFixed(2)}`
     },
-    { 
-      key: 'used_at', 
-      label: t('Used At'), 
+    {
+      key: 'used_at',
+      label: t('Used At'),
       sortable: true,
-      render: (value: string) => window.appSettings?.formatDateTime(value) || value
+      type: 'datetime' as const,
+      inlineTime: true,
     }
   ];
 

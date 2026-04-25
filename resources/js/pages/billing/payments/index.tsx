@@ -283,7 +283,7 @@ export default function Payments() {
     {
       key: 'payment_date',
       label: t('Date'),
-      render: (value: string) => window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()
+      type: 'date' as const,
     },
 
   ];

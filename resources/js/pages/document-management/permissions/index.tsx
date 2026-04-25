@@ -1,6 +1,7 @@
 import { CrudDeleteModal } from '@/components/CrudDeleteModal';
 import { CrudFormModal } from '@/components/CrudFormModal';
 import { CrudTable } from '@/components/CrudTable';
+import { Datetime } from '@/components/datetime';
 import { PageTemplate } from '@/components/page-template';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
@@ -170,23 +171,17 @@ export default function DocumentPermissionsIndex() {
         {
             key: 'expires_at',
             label: t('Expires'),
-            render: (value: string) => (
-                <div className="flex items-center gap-2">
-                    {value ? (
-                        <>
-                            <Clock className="h-4 w-4 text-gray-500" />
-                            <span className="text-sm">{window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()}</span>
-                        </>
-                    ) : (
-                        <span className="text-sm text-gray-500">{t('Permanent')}</span>
-                    )}
-                </div>
-            ),
+            render: (value: string) =>
+                value ? (
+                    <Datetime value={value} variant="date" />
+                ) : (
+                    <span className="text-sm text-gray-500">{t('Permanent')}</span>
+                ),
         },
         {
             key: 'created_at',
             label: t('Granted'),
-        type: 'date',
+            type: 'date' as const,
         },
     ];
 

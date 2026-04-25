@@ -29,6 +29,8 @@ export interface TableColumn {
     switchPermission?: string;
     /** For type 'datetime': row key (dot notation) for a separate time value (e.g. `hearing_time`), shown on the second line. */
     timeKey?: string;
+    /** For type 'datetime': when `timeKey` is absent, show time from the main column value (full ISO). */
+    inlineTime?: boolean;
     render?: (value: any, row: any) => React.ReactNode;
 }
 

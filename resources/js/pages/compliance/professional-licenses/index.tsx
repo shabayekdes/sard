@@ -4,6 +4,7 @@ import { usePage, router } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
+import { Datetime } from '@/components/datetime';
 import { CrudFormModal } from '@/components/CrudFormModal';
 import { CrudDeleteModal } from '@/components/CrudDeleteModal';
 import { toast } from '@/components/custom-toast';
@@ -195,7 +196,8 @@ export default function ProfessionalLicenses() {
       key: 'expiry_date',
       label: t('Expiry Date'),
       sortable: true,
-      render: (value: string, row: any) => {
+      render: (value: string) => {
+        if (!value) return '-';
         const expiryDate = new Date(value);
         const today = new Date();
         const daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
@@ -208,15 +210,13 @@ export default function ProfessionalLicenses() {
         }
 
         return (
-          <span className={className}>
-            {window.appSettings?.formatDate(value) || expiryDate.toLocaleDateString()}
+          <div className={className}>
+            <Datetime value={value} variant="date" showIcons={false} />
             {daysUntilExpiry <= 30 && daysUntilExpiry >= 0 && (
               <span className="block text-xs">({daysUntilExpiry} days left)</span>
             )}
-            {daysUntilExpiry < 0 && (
-              <span className="block text-xs">(Expired)</span>
-            )}
-          </span>
+            {daysUntilExpiry < 0 && <span className="block text-xs">({t('Expired')})</span>}
+          </div>
         );
       }
     },
@@ -457,7 +457,11 @@ export default function ProfessionalLicenses() {
               label: t('Expiry Date'),
               type: 'text',
               render: () => {
-                const expiryDate = new Date(currentItem?.expiry_date);
+                const raw = currentItem?.expiry_date;
+                if (!raw) {
+                  return <div className="rounded-md border bg-gray-50 p-2">-</div>;
+                }
+                const expiryDate = new Date(raw);
                 const today = new Date();
                 const daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
@@ -465,17 +469,20 @@ export default function ProfessionalLicenses() {
                 let statusText = '';
                 if (daysUntilExpiry < 0) {
                   className = 'text-red-600';
-                  statusText = ' (Expired)';
+                  statusText = ` (${t('Expired')})`;
                 } else if (daysUntilExpiry <= 30) {
                   className = 'text-orange-600';
                   statusText = ` (${daysUntilExpiry} days left)`;
                 }
 
-                return <div className="rounded-md border bg-gray-50 p-2">
-                  <span className={className}>
-                    {window.appSettings?.formatDate(currentItem?.expiry_date) || expiryDate.toLocaleDateString()}{statusText}
-                  </span>
-                </div>;
+                return (
+                  <div className="rounded-md border bg-gray-50 p-2">
+                    <div className={className}>
+                      <Datetime value={raw} variant="date" showIcons={false} />
+                      {statusText ? <span className="text-sm">{statusText}</span> : null}
+                    </div>
+                  </div>
+                );
               }
             },
             {

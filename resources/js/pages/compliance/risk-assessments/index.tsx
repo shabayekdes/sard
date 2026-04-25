@@ -267,7 +267,7 @@ export default function RiskAssessments() {
       key: 'assessment_date',
       label: t('Assessment Date'),
       sortable: true,
-      render: (value: string) => window.appSettings?.formatDateTime(value, false) || new Date(value).toLocaleDateString()
+      type: 'date' as const,
     }
   ];
 

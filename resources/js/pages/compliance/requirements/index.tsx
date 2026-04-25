@@ -199,7 +199,7 @@ export default function ComplianceRequirements() {
       key: 'deadline',
       label: t('Deadline'),
       sortable: true,
-      render: (value: string) => value ? (window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()) : '-'
+      type: 'date' as const,
     },
     {
       key: 'status',

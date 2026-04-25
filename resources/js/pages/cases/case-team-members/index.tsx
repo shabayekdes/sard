@@ -223,7 +223,7 @@ export default function CaseTeamMembers() {
       key: 'assigned_date',
       label: t('Assigned Date'),
       sortable: true,
-      render: (value: string) => new Date(value).toLocaleDateString()
+      type: 'date' as const,
     },
     {
       key: 'status',

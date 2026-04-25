@@ -252,12 +252,12 @@ export default function Invoices() {
     {
       key: 'invoice_date',
       label: t('Invoice Date'),
-      render: (value: string) => window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()
+      type: 'date' as const,
     },
     {
       key: 'due_date',
       label: t('Due Date'),
-      render: (value: string) => window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()
+      type: 'date' as const,
     },
     {
       key: 'status',

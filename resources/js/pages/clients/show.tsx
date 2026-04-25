@@ -265,7 +265,7 @@ export default function ClientShow() {
             key: 'filing_date',
             label: t('Filing Date'),
             sortable: true,
-            render: (value: string) => (value ? window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString() : '-'),
+            type: 'date' as const,
         },
     ];
 
@@ -307,13 +307,13 @@ export default function ClientShow() {
             key: 'invoice_date',
             label: t('Invoice Date'),
             sortable: true,
-            render: (value: string) => (value ? window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString() : '-'),
+            type: 'date' as const,
         },
         {
             key: 'due_date',
             label: t('Due Date'),
             sortable: true,
-            render: (value: string) => (value ? window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString() : '-'),
+            type: 'date' as const,
         },
         {
             key: 'status',
@@ -373,7 +373,7 @@ export default function ClientShow() {
             key: 'payment_date',
             label: t('Payment Date'),
             sortable: true,
-            render: (value: string) => (value ? window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString() : '-'),
+            type: 'date' as const,
         },
     ];
 
@@ -610,7 +610,7 @@ export default function ClientShow() {
         {
             key: 'created_at',
             label: t('Upload Date'),
-            render: (value: string) => (value ? window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString() : '-'),
+            type: 'date' as const,
         },
     ];
 

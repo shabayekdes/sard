@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
-import { Plus, Scale, Star, Calendar } from 'lucide-react';
+import { Plus, Scale, Star } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
 import { CrudFormModal } from '@/components/CrudFormModal';
@@ -216,12 +216,7 @@ export default function LegalPrecedents() {
     {
       key: 'decision_date',
       label: t('Decision Date'),
-      render: (value: string) => (
-        <div className="flex items-center gap-2">
-          {value && <Calendar className="h-4 w-4 text-gray-500" />}
-          <span>{value ? (window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()) : '-'}</span>
-        </div>
-      )
+      type: 'date' as const,
     },
     {
       key: 'status',

@@ -100,7 +100,8 @@ export default function NewsletterPage() {
     {
       key: 'subscribed_at',
       label: t('Subscribed At'),
-      render: (value: string) => new Date(value).toLocaleDateString()
+      type: 'datetime' as const,
+      inlineTime: true,
     },
     {
       key: 'unsubscribed_at',
@@ -116,7 +117,8 @@ export default function NewsletterPage() {
     {
       key: 'unsubscribed_at',
       label: t('Unsubscribed At'),
-      render: (value: string) => value ? new Date(value).toLocaleDateString() : '-'
+      type: 'datetime' as const,
+      inlineTime: true,
     }
   ];
 

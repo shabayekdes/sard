@@ -419,24 +419,18 @@ export default function Companies() {
     {
       key: 'plan_expire_date',
       label: t('Plan Expire Date'),
-      render: (value: string) =>
-        value
-          ? (window.appSettings?.formatDateTime(value, false) || new Date(value).toLocaleDateString())
-          : '-'
+      type: 'date' as const,
     },
     {
       key: 'latest_plan_ordered_at',
       label: t('Latest Plan Order'),
-      render: (value: string) =>
-        value
-          ? (window.appSettings?.formatDateTime(value, false) || new Date(value).toLocaleDateString())
-          : '-'
+      type: 'date' as const,
     },
     {
       key: 'created_at',
       label: t('Created At'),
       sortable: true,
-      render: (value: string) => window.appSettings?.formatDateTime(value, false) || new Date(value).toLocaleDateString()
+      type: 'date' as const,
     }
   ];
 

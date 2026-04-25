@@ -239,12 +239,12 @@ export default function FeeStructures() {
     {
       key: 'effective_date',
       label: t('Effective Date'),
-      render: (value: string) => window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()
+      type: 'date' as const,
     },
     {
       key: 'end_date',
       label: t('End Date'),
-      render: (value: string) => value ? (window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()) : '-'
+      type: 'date' as const,
     },
     {
       key: 'status',

@@ -231,7 +231,7 @@ export default function CaseTimelines() {
       key: 'event_date',
       label: t('Event Date'),
       sortable: true,
-      render: (value: string) => new Date(value).toLocaleDateString()
+      type: 'date' as const,
     },
     {
       key: 'event_time',

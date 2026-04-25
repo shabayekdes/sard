@@ -250,12 +250,12 @@ export default function BillingRates() {
       key: 'effective_date',
       label: t('Effective Date'),
       sortable: true,
-      render: (value: string) => window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()
+      type: 'date' as const,
     },
     {
       key: 'end_date',
       label: t('End Date'),
-      render: (value: string) => value ? (window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()) : '-'
+      type: 'date' as const,
     },
     {
       key: 'status',

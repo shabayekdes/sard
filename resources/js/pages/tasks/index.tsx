@@ -4,6 +4,7 @@ import TaskModal from './TaskModal';
 import TaskPriority from '@/components/tasks/TaskPriority';
 import TaskStatusChanger from '@/components/tasks/TaskStatusChanger';
 import { CrudTable } from '@/components/CrudTable';
+import { Datetime } from '@/components/datetime';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -526,7 +527,7 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
                 {t('Overdue')}
               </Badge>
             )}
-            <span>{due ? new Date(due).toLocaleDateString() : t('No due date')}</span>
+            <Datetime value={due ?? undefined} variant="date" emptyLabel={t('No due date')} className="text-sm text-gray-900" />
           </div>
         );
       },
@@ -996,7 +997,12 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
                                           {t('Overdue')}
                                         </Badge>
                                       )}
-                                      <span>{task.due_date ? new Date(task.due_date).toLocaleDateString() : t('No due date')}</span>
+                                      <Datetime
+                                        value={task.due_date ?? undefined}
+                                        variant="date"
+                                        emptyLabel={t('No due date')}
+                                        className="text-xs text-gray-500"
+                                      />
                                     </div>
                                   </div>
                                 </div>
@@ -1065,9 +1071,12 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
                               {t('Overdue')}
                             </Badge>
                           )}
-                          <span className="text-muted-foreground">
-                              {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No due date'}
-                          </span>
+                          <Datetime
+                            value={task.due_date ?? undefined}
+                            variant="date"
+                            emptyLabel={t('No due date')}
+                            className="text-xs text-muted-foreground"
+                          />
                         </div>
                       </div>
                       

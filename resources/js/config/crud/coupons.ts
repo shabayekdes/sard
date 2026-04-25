@@ -132,7 +132,7 @@ export const couponsConfig: CrudConfig = {
         key: 'expiry_date',
         label: t('Expiry Date'),
         sortable: true,
-        render: (value) => `${window.appSettings.formatDateTime(value, false)}`
+        type: 'date' as const,
       },
       { key: 'code', label: t('Code'), sortable: true },
       {

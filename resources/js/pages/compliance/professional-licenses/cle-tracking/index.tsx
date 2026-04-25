@@ -4,6 +4,7 @@ import { usePage, router } from '@inertiajs/react';
 import { Plus, Download } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
+import { Datetime } from '@/components/datetime';
 import { CrudFormModal } from '@/components/CrudFormModal';
 import { CrudDeleteModal } from '@/components/CrudDeleteModal';
 import { toast } from '@/components/custom-toast';
@@ -238,7 +239,7 @@ export default function CleTracking() {
       key: 'completion_date',
       label: t('Completion Date'),
       sortable: true,
-      render: (value: string) => window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()
+      type: 'date' as const,
     },
     {
       key: 'expiry_date',
@@ -248,9 +249,9 @@ export default function CleTracking() {
         const expiryDate = new Date(value);
         const isExpired = expiryDate < new Date();
         return (
-          <span className={isExpired ? 'text-red-600' : 'text-gray-900'}>
-            {window.appSettings?.formatDate(value) || expiryDate.toLocaleDateString()}
-          </span>
+          <div className={isExpired ? 'text-red-600' : 'text-gray-900'}>
+            <Datetime value={value} variant="date" showIcons={false} />
+          </div>
         );
       }
     },
@@ -507,12 +508,14 @@ export default function CleTracking() {
                 const expiry = new Date(expiryDate);
                 const isExpired = expiry < new Date();
 
-                return <div className="rounded-md border bg-gray-50 p-2">
-                  <span className={isExpired ? 'text-red-600' : 'text-gray-900'}>
-                    {window.appSettings?.formatDate(expiryDate) || expiry.toLocaleDateString()}
-                    {isExpired && ' (Expired)'}
-                  </span>
-                </div>;
+                return (
+                  <div className="rounded-md border bg-gray-50 p-2">
+                    <div className={isExpired ? 'text-red-600' : 'text-gray-900'}>
+                      <Datetime value={expiryDate} variant="date" showIcons={false} />
+                      {isExpired ? <span className="ml-1 text-sm">({t('Expired')})</span> : null}
+                    </div>
+                  </div>
+                );
               }
             },
             { name: 'certificate_number', label: t('Certificate Number'), type: 'text' },

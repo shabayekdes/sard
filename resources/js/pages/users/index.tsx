@@ -345,7 +345,7 @@ export default function Users() {
       key: 'created_at',
       label: t('Joined'),
       sortable: true,
-        type: 'date',
+      type: 'date' as const,
     }
   ];
 

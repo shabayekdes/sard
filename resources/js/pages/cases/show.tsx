@@ -1,4 +1,5 @@
 import { CurrencyAmount } from '@/components/currency-amount';
+import { Datetime } from '@/components/datetime';
 import { CrudDeleteModal } from '@/components/CrudDeleteModal';
 import { CrudFormModal } from '@/components/CrudFormModal';
 import { CrudTable } from '@/components/CrudTable';
@@ -863,7 +864,7 @@ export default function CaseShow() {
             key: 'event_date',
             label: t('Event Date'),
             sortable: true,
-            render: (value: string) => window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString(),
+            type: 'date' as const,
         },
         {
             key: 'event_time',
@@ -910,7 +911,7 @@ export default function CaseShow() {
             key: 'assigned_date',
             label: t('Assigned Date'),
             sortable: true,
-            render: (value: string) => window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString(),
+            type: 'date' as const,
         },
         {
             key: 'status',
@@ -2244,9 +2245,12 @@ export default function CaseShow() {
                                                             {t('Overdue')}
                                                         </Badge>
                                                     )}
-                                                    <span>
-                                                        {due ? new Date(due).toLocaleDateString() : t('No due date')}
-                                                    </span>
+                                                    <Datetime
+                                                        value={due ?? undefined}
+                                                        variant="date"
+                                                        emptyLabel={t('No due date')}
+                                                        className="text-sm text-gray-900 dark:text-gray-100"
+                                                    />
                                                 </div>
                                             );
                                         },
@@ -2486,18 +2490,8 @@ export default function CaseShow() {
                                         key: 'hearing_date',
                                         label: t('Date & Time'),
                                         sortable: true,
-                                        render: (value: string, row: any) => (
-                                            <div className="flex flex-col">
-                                                <div className="flex items-center gap-1">
-                                                    <Calendar className="h-3 w-3" />
-                                                    <span>{window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString()}</span>
-                                                </div>
-                                                <div className="flex items-center gap-1 text-xs text-gray-500">
-                                                    <Clock className="h-3 w-3" />
-                                                    <span>{window.appSettings?.formatTime(`2000-01-01T${row.hearing_time}`) || row.hearing_time}</span>
-                                                </div>
-                                            </div>
-                                        ),
+                                        type: 'datetime' as const,
+                                        timeKey: 'hearing_time',
                                     },
                                     {
                                         key: 'status',

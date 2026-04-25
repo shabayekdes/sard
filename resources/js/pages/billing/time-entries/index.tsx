@@ -220,7 +220,7 @@ export default function TimeEntries() {
       key: 'entry_date',
       label: t('Date'),
       sortable: true,
-      render: (value: string) => new Date(value).toLocaleDateString()
+      type: 'date' as const,
     },
     {
       key: 'user',

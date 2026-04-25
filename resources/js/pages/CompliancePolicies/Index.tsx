@@ -76,8 +76,8 @@ export default function CompliancePolicies() {
 
   const columns = [
     { key: 'policy_name', label: t('Policy Name'), sortable: true },
-    { key: 'effective_date', label: t('Effective Date'), sortable: true, render: (value: string) => new Date(value).toLocaleDateString() },
-    { key: 'review_date', label: t('Review Date'), render: (value: string) => value ? new Date(value).toLocaleDateString() : '-' },
+    { key: 'effective_date', label: t('Effective Date'), sortable: true, type: 'date' as const },
+    { key: 'review_date', label: t('Review Date'), type: 'date' as const },
     {
       key: 'status',
       label: t('Status'),

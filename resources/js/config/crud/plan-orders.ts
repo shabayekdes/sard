@@ -1,5 +1,4 @@
 import { CrudConfig } from '@/types/crud';
-import { columnRenderers } from '@/utils/columnRenderers';
 import { t } from '@/utils/i18n';
 
 export const planOrdersConfig: CrudConfig = {
@@ -18,11 +17,11 @@ export const planOrdersConfig: CrudConfig = {
   table: {
     columns: [
       { key: 'order_number', label: t('Order Number'), sortable: true },
-      { 
-        key: 'ordered_at', 
-        label: t('Order Date'), 
-        sortable: true, 
-        render: (value) => `${window.appSettings.formatDateTime(value, false)}`
+      {
+        key: 'ordered_at',
+        label: t('Order Date'),
+        sortable: true,
+        type: 'date' as const,
       },
       { 
         key: 'user.name', 
