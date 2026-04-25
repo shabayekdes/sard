@@ -551,18 +551,6 @@ export default function InvoicePayment() {
                                 </Card>
                             </div>
 
-                            {typeof bankDetail === 'string' && bankDetail.trim() ? (
-                                <Card className="overflow-hidden rounded-xl border border-[#F1F1F4] bg-white shadow-sm">
-                                    <CardContent className="p-6">
-                                        <div className="flex items-center gap-2">
-                                            <Banknote className="h-5 w-5 text-gray-500" />
-                                            <p className="text-sm font-medium text-gray-500">{t('Bank Details')}</p>
-                                        </div>
-                                        <p className="mt-3 whitespace-pre-wrap text-sm text-gray-600">{bankDetail}</p>
-                                    </CardContent>
-                                </Card>
-                            ) : null}
-
                             {/* Products table and summary (same structure as billing/invoices/show) */}
                             {invoice.line_items && invoice.line_items.length > 0 && (
                                 <Card className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
@@ -644,6 +632,18 @@ export default function InvoicePayment() {
                                     </div>
                                 </CardContent>
                             </Card>
+
+                            {typeof bankDetail === 'string' && bankDetail.trim() ? (
+                                <Card className="overflow-hidden rounded-xl border border-[#F1F1F4] bg-white shadow-sm">
+                                    <CardContent className="p-6">
+                                        <div className="flex items-center gap-2">
+                                            <Banknote className="h-5 w-5 text-gray-500" />
+                                            <p className="text-sm font-medium text-gray-500">{t('Bank Details')}</p>
+                                        </div>
+                                        <p className="mt-3 whitespace-pre-wrap text-sm text-gray-600">{bankDetail}</p>
+                                    </CardContent>
+                                </Card>
+                            ) : null}
 
                             {/* Terms & Notes — same rules as billing/invoices/show */}
                             {(termsText || notesText) && (
