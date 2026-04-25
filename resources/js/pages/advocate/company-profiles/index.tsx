@@ -35,6 +35,7 @@ export default function CompanyProfiles() {
     companyProfile,
     officeSizeOptions = [],
     businessTypeOptions = [],
+    tenantCityOptions = [],
     phoneCountries = [],
     defaultCountry = '',
     registrationDomain = '',
@@ -251,14 +252,22 @@ export default function CompanyProfiles() {
               <Label htmlFor="account_city" className="text-sm font-medium">
                 {t('City')}
               </Label>
-              <Input
-                id="account_city"
-                value={formData.account_city}
-                onChange={(e) => handleChange('account_city', e.target.value)}
+              <Select
+                value={formData.account_city || ''}
+                onValueChange={(value) => handleChange('account_city', value)}
                 disabled={disabled}
-                placeholder={t('City')}
-                className="text-sm max-w-xl"
-              />
+              >
+                <SelectTrigger id="account_city" className="text-sm max-w-xl">
+                  <SelectValue placeholder={t('Choose city')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {(tenantCityOptions as { value: string; labelKey: string }[]).map((option) => (
+                    <SelectItem key={option.value} value={option.value} className="text-sm">
+                      {t(option.labelKey)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
