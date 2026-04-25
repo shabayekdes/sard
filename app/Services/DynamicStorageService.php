@@ -14,33 +14,64 @@ class DynamicStorageService
     {
         $config = StorageConfigService::getStorageConfig();
         
-        // Configure S3 disk if credentials exist
+        // Configure S3 disk if credentials exist (merge so FilesystemTenancyBootstrapper `root` is kept)
         if (!empty($config['s3']['key']) && !empty($config['s3']['secret'])) {
-            Config::set('filesystems.disks.s3', [
-                'driver' => 's3',
-                'key' => $config['s3']['key'],
-                'secret' => $config['s3']['secret'],
-                'region' => $config['s3']['region'],
-                'bucket' => $config['s3']['bucket'],
-                'url' => $config['s3']['url'] ?: null,
-                'endpoint' => $config['s3']['endpoint'] ?: null,
-                'use_path_style_endpoint' => !empty($config['s3']['endpoint']),
-                'visibility' => 'public',
-            ]);
+            Config::set('filesystems.disks.s3', array_merge(
+                config('filesystems.disks.s3', []),
+                [
+                    'driver' => 's3',
+                    'key' => $config['s3']['key'],
+                    'secret' => $config['s3']['secret'],
+                    'region' => $config['s3']['region'],
+                    'bucket' => $config['s3']['bucket'],
+                    'url' => $config['s3']['url'] ?: null,
+                    'endpoint' => $config['s3']['endpoint'] ?: null,
+                    'use_path_style_endpoint' => !empty($config['s3']['endpoint']),
+                    'visibility' => 'public',
+                ]
+            ));
+            Storage::forgetDisk('s3');
         }
-        
-        // Configure Wasabi disk if credentials exist
+
+        // Configure Wasabi disk if credentials exist (merge so tenant `root` prefix is kept)
         if (!empty($config['wasabi']['key']) && !empty($config['wasabi']['secret'])) {
-            Config::set('filesystems.disks.wasabi', [
-                'driver' => 's3',
-                'key' => $config['wasabi']['key'],
-                'secret' => $config['wasabi']['secret'],
-                'region' => $config['wasabi']['region'],
-                'bucket' => $config['wasabi']['bucket'],
-                'endpoint' => 'https://s3.' . $config['wasabi']['region'] . '.wasabisys.com',
-                'use_path_style_endpoint' => false,
-                'visibility' => 'public',
-            ]);
+            Config::set('filesystems.disks.wasabi', array_merge(
+                config('filesystems.disks.wasabi', []),
+                [
+                    'driver' => 's3',
+                    'key' => $config['wasabi']['key'],
+                    'secret' => $config['wasabi']['secret'],
+                    'region' => $config['wasabi']['region'],
+                    'bucket' => $config['wasabi']['bucket'],
+                    'endpoint' => 'https://s3.' . $config['wasabi']['region'] . '.wasabisys.com',
+                    'use_path_style_endpoint' => false,
+                    'visibility' => 'public',
+                ]
+            ));
+            Storage::forgetDisk('wasabi');
+        }
+
+        if (StorageConfigService::hasValidGcsConfig($config)) {
+            $g = $config['gcs'];
+            Config::set('filesystems.disks.gcs', array_merge(
+                config('filesystems.disks.gcs', []),
+                [
+                    'driver' => 'gcs',
+                    'key_file_path' => !empty($g['key_file_path']) ? $g['key_file_path'] : null,
+                    'key_file' => [],
+                    'project_id' => !empty($g['project_id']) ? $g['project_id'] : null,
+                    'bucket' => $g['bucket'],
+                    'root' => $g['path_prefix'] ?? '',
+                    'storage_api_uri' => !empty($g['storage_api_uri']) ? $g['storage_api_uri'] : null,
+                    'api_endpoint' => !empty($g['api_endpoint']) ? $g['api_endpoint'] : null,
+                    'visibility' => 'public',
+                    'visibility_handler' => \League\Flysystem\GoogleCloudStorage\UniformBucketLevelAccessVisibility::class,
+                    'metadata' => ['cacheControl' => 'public,max-age=86400'],
+                    'throw' => false,
+                    'report' => false,
+                ]
+            ));
+            Storage::forgetDisk('gcs');
         }
     }
 

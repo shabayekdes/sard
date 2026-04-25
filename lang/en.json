@@ -51,6 +51,8 @@
   "Client": "Client",
   "Client ID": "Client ID",
   "Client Name": "Client Name",
+  "Enable client login": "Enable client login",
+  "Quick add client": "Quick add client",
   "Client type": "Client type",
   "Clients": "Clients",
   ":model created successfully.": ":model created successfully.",
@@ -165,6 +167,7 @@
   "Decimal Separator": "Decimal Separator",
   "Default Language": "Default Language",
   "Delete": "Delete",
+  "Deleted": "Deleted",
   "Delete comment": "Delete comment",
   "Delete Conversation": "Delete Conversation",
   "Device Type": "Device Type",
@@ -3567,5 +3570,7 @@
   "Please select a case type.": "Please select a case type.",
   "The selected domain is invalid.": "The selected domain is invalid.",
   "validation.domain_invalid": "The selected domain is invalid.",
-  "Domain must start with a letter and contain only lowercase letters, numbers, and hyphens.": "Domain must start with a letter and contain only lowercase letters, numbers, and hyphens."
+  "Domain must start with a letter and contain only lowercase letters, numbers, and hyphens.": "Domain must start with a letter and contain only lowercase letters, numbers, and hyphens.",
+  "Invoice created successfully": "Invoice created successfully",
+  "Failed to create invoice: {{details}}": "Failed to create invoice: {{details}}"
 }

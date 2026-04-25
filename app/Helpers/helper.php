@@ -1112,6 +1112,12 @@ if (! function_exists('defaultSettings')) {
             'WASABI_BUCKET' => '',
             'WASABI_URL' => '',
             'WASABI_ROOT' => '',
+            'GOOGLE_CLOUD_KEY_FILE' => env('GOOGLE_CLOUD_KEY_FILE', ''),
+            'GOOGLE_CLOUD_PROJECT_ID' => env('GOOGLE_CLOUD_PROJECT_ID', ''),
+            'GOOGLE_CLOUD_STORAGE_BUCKET' => env('GOOGLE_CLOUD_STORAGE_BUCKET', ''),
+            'GOOGLE_CLOUD_STORAGE_PATH_PREFIX' => env('GOOGLE_CLOUD_STORAGE_PATH_PREFIX', ''),
+            'GOOGLE_CLOUD_STORAGE_API_URI' => env('GOOGLE_CLOUD_STORAGE_API_URI', ''),
+            'GOOGLE_CLOUD_STORAGE_API_ENDPOINT' => env('GOOGLE_CLOUD_STORAGE_API_ENDPOINT', ''),
 
             // Currency Settings
             'DECIMAL_FORMAT' => '2',

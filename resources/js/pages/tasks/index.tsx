@@ -674,7 +674,7 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
             
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1 border rounded-md p-1">
-                <Button
+                {/* <Button
                   variant={viewMode === 'card' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => {
@@ -690,7 +690,7 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
                   className="h-7 px-2"
                 >
                   <LayoutGrid className="h-4 w-4" />
-                </Button>
+                </Button> */}
                 <Button
                   variant={viewMode === 'table' ? 'default' : 'ghost'}
                   size="sm"
@@ -1293,7 +1293,13 @@ export default function TasksIndex({ tasks, taskTypes, cases, taskStatuses, proj
               name: 'task_status_id',
               label: t('Task Status'),
               type: 'select',
+              required: true,
+              selectAllowEmpty: false,
               placeholder: t('Select Task Status'),
+              defaultValue:
+                taskStatuses?.[0]?.id != null && taskStatuses[0].id !== undefined
+                  ? String(taskStatuses[0].id)
+                  : undefined,
               options: [
                 ...(taskStatuses || []).map((status: any) => ({
                   value: status.id.toString(),

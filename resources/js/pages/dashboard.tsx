@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useTranslation } from 'react-i18next';
+import { resolveClientName } from '@/components/client-table-cell';
 import { Link, router } from '@inertiajs/react';
 import { CurrencyAmount, formatCurrencyAmount } from '@/components/currency-amount';
 import { CrudFormModal } from '@/components/CrudFormModal';
@@ -602,7 +603,14 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
                       <div className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 p-4 hover:bg-red-100 transition-colors">
                         <div>
                           <p className="font-semibold text-sm">{invoice.invoice_number}</p>
-                          <p className="text-xs text-muted-foreground">{invoice.client?.name || t('No client')}</p>
+                          <p className="inline-flex min-w-0 flex-wrap items-center gap-1 text-xs text-muted-foreground" dir="ltr">
+                            <span>{resolveClientName(invoice.client?.name, currentLocale) || t('No client')}</span>
+                            {invoice.client?.deleted_at ? (
+                              <Badge variant="outline" className="h-5 shrink-0 px-1.5 py-0 text-[10px] font-normal">
+                                {t('Deleted')}
+                              </Badge>
+                            ) : null}
+                          </p>
                         </div>
                         <span className="font-bold text-red-600 text-lg">
                           <CurrencyAmount amount={invoice.total_amount} />

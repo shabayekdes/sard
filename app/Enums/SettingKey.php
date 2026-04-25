@@ -53,6 +53,12 @@ enum SettingKey: string
     case WasabiBucket = 'WASABI_BUCKET';
     case WasabiUrl = 'WASABI_URL';
     case WasabiRoot = 'WASABI_ROOT';
+    case GoogleCloudKeyFile = 'GOOGLE_CLOUD_KEY_FILE';
+    case GoogleCloudProjectId = 'GOOGLE_CLOUD_PROJECT_ID';
+    case GoogleCloudStorageBucket = 'GOOGLE_CLOUD_STORAGE_BUCKET';
+    case GoogleCloudStoragePathPrefix = 'GOOGLE_CLOUD_STORAGE_PATH_PREFIX';
+    case GoogleCloudStorageApiUri = 'GOOGLE_CLOUD_STORAGE_API_URI';
+    case GoogleCloudStorageApiEndpoint = 'GOOGLE_CLOUD_STORAGE_API_ENDPOINT';
 
     // Currency
     case DecimalFormat = 'DECIMAL_FORMAT';
@@ -198,6 +204,12 @@ enum SettingKey: string
             'wasabi_bucket' => self::WasabiBucket,
             'wasabi_url' => self::WasabiUrl,
             'wasabi_root' => self::WasabiRoot,
+            'google_cloud_key_file' => self::GoogleCloudKeyFile,
+            'google_cloud_project_id' => self::GoogleCloudProjectId,
+            'google_cloud_storage_bucket' => self::GoogleCloudStorageBucket,
+            'google_cloud_storage_path_prefix' => self::GoogleCloudStoragePathPrefix,
+            'google_cloud_storage_api_uri' => self::GoogleCloudStorageApiUri,
+            'google_cloud_storage_api_endpoint' => self::GoogleCloudStorageApiEndpoint,
             // Cookie & Contact
             'enableLogging' => self::EnableLogging,
             'strictlyNecessaryCookies' => self::StrictlyNecessaryCookies,

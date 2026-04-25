@@ -102,7 +102,9 @@ return [
         'disks' => [
             'local',
             'public',
-            // 's3',
+            's3',
+            'wasabi',
+            // 'gcs': use after aligning filesystems.disks.gcs with a `root` key (see DynamicStorageService); bootstrapper prefixes `root` only.
         ],
 
         /**

@@ -18,49 +18,16 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     const [isRtl, setIsRtl] = useState<boolean>(false);
 
     useEffect(() => {
-        const isDemo = (window as any).page?.props?.globalSettings?.is_demo || false;
-
-        const getStoredPosition = (): LayoutPosition | null => {
-            if (isDemo) {
-                // In demo mode, use cookies
-                const getCookie = (name: string): string | null => {
-                    if (typeof document === 'undefined') return null;
-                    const value = `; ${document.cookie}`;
-                    const parts = value.split(`; ${name}=`);
-                    if (parts.length === 2) {
-                        const cookieValue = parts.pop()?.split(';').shift();
-                        return cookieValue ? decodeURIComponent(cookieValue) : null;
-                    }
-                    return null;
-                };
-                return getCookie('layoutPosition') as LayoutPosition;
-            } else {
-                // In normal mode, get from database via globalSettings
-                const globalSettings = (window as any).page?.props?.globalSettings;
-                return globalSettings?.layoutDirection as LayoutPosition;
-            }
-        };
-
-        // Function to update position and isRtl based on current language
+        // Direction and sidebar side are locale-driven.
         const updatePositionFromLanguage = () => {
             const currentLang = i18n.language || (window as any).initialLocale;
-            const isRtlLang = currentLang && ['ar', 'he'].includes(currentLang);
-            const storedPosition = getStoredPosition();
+            const langBase = String(currentLang || '')
+                .toLowerCase()
+                .split('-')[0];
+            const isRtlLang = Boolean(langBase && ['ar', 'he'].includes(langBase));
 
-            // Update isRtl state directly from language
             setIsRtl(isRtlLang);
-
-            if (isRtlLang) {
-                // For RTL languages, sidebar should be on the right side
-                setPosition('right');
-            } else {
-                // For non-RTL languages, use stored position or default to 'left'
-                if (storedPosition === 'left' || storedPosition === 'right') {
-                    setPosition(storedPosition);
-                } else {
-                    setPosition('left');
-                }
-            }
+            setPosition(isRtlLang ? 'right' : 'left');
         };
 
         // Initial position update
@@ -78,21 +45,17 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         };
     }, []);
 
-    const updatePosition = (val: LayoutPosition) => {
-        setPosition(val);
+    const updatePosition = (_val: LayoutPosition) => {
+        const currentLang = i18n.language || (window as any).initialLocale;
+        const langBase = String(currentLang || '')
+            .toLowerCase()
+            .split('-')[0];
+        const isRtlLang = Boolean(langBase && ['ar', 'he'].includes(langBase));
+        setPosition(isRtlLang ? 'right' : 'left');
     };
 
     const saveLayoutPosition = () => {
-        const isDemo = (window as any).page?.props?.globalSettings?.is_demo || false;
-
-        if (isDemo) {
-            const setCookie = (name: string, value: string, days = 365) => {
-                if (typeof document === 'undefined') return;
-                const maxAge = days * 24 * 60 * 60;
-                document.cookie = `${name}=${encodeURIComponent(value)};path=/;max-age=${maxAge};SameSite=Lax`;
-            };
-            setCookie('layoutPosition', position);
-        }
+        // Kept for API compatibility; layout side is locale-driven and not persisted.
     };
 
     // Calculate effective position based on RTL mode

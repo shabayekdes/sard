@@ -541,6 +541,12 @@ export function GlobalQuickActionModals() {
           name: 'task_status_id',
           label: t('Task Status'),
           type: 'select',
+          required: true,
+          selectAllowEmpty: false,
+          defaultValue:
+            taskData.taskStatuses?.[0]?.id != null && taskData.taskStatuses[0].id !== undefined
+              ? String(taskData.taskStatuses[0].id)
+              : undefined,
           options: taskData.taskStatuses.map((status) => ({
             value: status.id.toString(),
             label: resolveName(status.name),

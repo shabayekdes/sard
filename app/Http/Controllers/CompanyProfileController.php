@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\BusinessType;
 use App\Enums\CompanySize;
+use App\Enums\TenantCity;
 use App\Facades\Settings;
 use App\Models\CompanyProfile;
 use App\Models\Country;
@@ -46,6 +47,7 @@ class CompanyProfileController extends Controller
             'companyProfile' => $companyProfile,
             'officeSizeOptions' => CompanySize::options(),
             'businessTypeOptions' => BusinessType::options(),
+            'tenantCityOptions' => TenantCity::options(),
             'phoneCountries' => $phoneCountries,
             'defaultCountry' => Settings::string('DEFAULT_COUNTRY', 'SA'),
             'registrationDomain' => $registrationDomain,
@@ -76,8 +78,8 @@ class CompanyProfileController extends Controller
             'establishment_date' => 'nullable|date',
             'cr' => 'nullable|string|max:255',
             'tax_number' => 'nullable|string|max:255',
-            'company_size' => ['required', 'in:' . implode(',', CompanySize::values())],
-            'business_type' => ['required', 'string', 'in:' . implode(',', BusinessType::values())],
+            'company_size' => ['required', 'in:'.implode(',', CompanySize::values())],
+            'business_type' => ['required', 'string', 'in:'.implode(',', BusinessType::values())],
             'default_setup' => 'nullable|string|max:255',
 
             'services_offered' => 'nullable|string',
@@ -125,8 +127,8 @@ class CompanyProfileController extends Controller
             'establishment_date' => 'nullable|date',
             'cr' => 'nullable|string|max:255',
             'tax_number' => 'nullable|string|max:255',
-            'company_size' => ['required', 'in:' . implode(',', CompanySize::values())],
-            'business_type' => ['required', 'string', 'in:' . implode(',', BusinessType::values())],
+            'company_size' => ['required', 'in:'.implode(',', CompanySize::values())],
+            'business_type' => ['required', 'string', 'in:'.implode(',', BusinessType::values())],
             'default_setup' => 'nullable|string|max:255',
 
             'services_offered' => 'nullable|string',
@@ -143,9 +145,11 @@ class CompanyProfileController extends Controller
 
         if ($profile) {
             $profile->update($profilePayload);
+
             return redirect()->back()->with('success', 'Advocate profile updated successfully');
         } else {
             CompanyProfile::create($profilePayload);
+
             return redirect()->back()->with('success', 'Advocate profile created successfully');
         }
     }
@@ -200,7 +204,7 @@ class CompanyProfileController extends Controller
                 'max:50',
                 Rule::unique('users', 'phone')->where(fn ($q) => $q->where('tenant_id', createdBy()))->ignore($userId),
             ],
-            'account_city' => 'nullable|string|max:255',
+            'account_city' => ['nullable', 'string', 'in:'.implode(',', TenantCity::values())],
         ];
     }
 
@@ -247,6 +251,7 @@ class CompanyProfileController extends Controller
         if ($profile) {
             try {
                 $profile->delete();
+
                 return redirect()->back()->with('success', 'Company profile deleted successfully');
             } catch (\Exception $e) {
                 return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to delete company profile');
@@ -255,5 +260,4 @@ class CompanyProfileController extends Controller
             return redirect()->back()->with('error', 'Company profile not found.');
         }
     }
-
 }

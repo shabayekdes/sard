@@ -278,7 +278,10 @@ export default function EditInvoice() {
                   <div>
                     <Label htmlFor="client_id">{t('Client')} *</Label>
                    <div className="text-xs text-gray-500 mb-1">
-                      Selected: {formData.client_id} | Current: {currentClient?.name || 'None'}
+                      {t('Selected: {{selected}} | Current: {{current}}', {
+                        selected: formData.client_id || '-',
+                        current: currentClient?.name || t('None')
+                      })}
                     </div>
                     <Select key={`client-${formData.client_id}`} value={formData.client_id} onValueChange={(value) => updateFormData('client_id', value)}>
                       <SelectTrigger>
@@ -302,7 +305,11 @@ export default function EditInvoice() {
                   <div>
                     <Label htmlFor="case_id">{t('Case')}</Label>
                     <div className="text-xs text-gray-500 mb-1">
-                      Selected: {formData.case_id} | Current: {currentCase?.title || 'None'} | Available: {filteredCases.length}
+                      {t('Selected: {{selected}} | Current: {{current}} | Available: {{available}}', {
+                        selected: formData.case_id || '-',
+                        current: currentCase?.title || t('None'),
+                        available: filteredCases.length
+                      })}
                     </div>
                     <Select
                       key={`case-${formData.case_id || NO_CASE_VALUE}`}

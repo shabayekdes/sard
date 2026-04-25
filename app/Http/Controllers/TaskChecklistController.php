@@ -28,6 +28,8 @@ class TaskChecklistController extends Controller
             'created_by' => auth()->id()
         ]);
 
+        $task->refreshProgressFromChecklists();
+
         return back();
     }
 
@@ -56,12 +58,9 @@ class TaskChecklistController extends Controller
             abort(403);
         }
 
+        $task = $taskChecklist->task;
         $taskChecklist->delete();
-
-        // Update parent task progress
-        $taskChecklist->task->update([
-            'progress' => $taskChecklist->task->calculateProgress()
-        ]);
+        $task->refreshProgressFromChecklists();
 
         return back();
     }

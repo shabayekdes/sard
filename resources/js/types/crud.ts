@@ -96,6 +96,8 @@ export interface FormField {
     /** Non-input heading that groups fields (full width; no value submitted). */
     | 'section';
     placeholder?: string;
+    /** When `false`, create mode keeps the first static `options` value if none set, and the select cannot be cleared to empty. Ignored for async `relation` selects. */
+    selectAllowEmpty?: boolean;
     required?: boolean;
     /** Used by CrudFormModal in create mode when initial value is missing (e.g. select sentinels). */
     defaultValue?: string | number | boolean;

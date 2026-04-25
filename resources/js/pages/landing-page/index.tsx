@@ -136,32 +136,9 @@ export default function LandingPage() {
 
 // RTL Support for landing page
   React.useEffect(() => {
-    const isDemo = globalSettings?.is_demo || false;
-    let storedPosition = 'left';
-    if (isDemo) {
-      // In demo mode, use cookies
-      const getCookie = (name: string): string | null => {
-        if (typeof document === 'undefined') return null;
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) {
-          const cookieValue = parts.pop()?.split(';').shift();
-          return cookieValue ? decodeURIComponent(cookieValue) : null;
-        }
-        return null;
-      };
-      const stored = getCookie('layoutPosition');
-      if (stored === 'left' || stored === 'right') {
-        storedPosition = stored;
-      }
-    } else {
-      // In normal mode, get from database via globalSettings
-      const stored = globalSettings?.layoutDirection;
-      if (stored === 'left' || stored === 'right') {
-        storedPosition = stored;
-      }
-    }
-    const dir = storedPosition === 'right' ? 'rtl' : 'ltr';
+    const currentLang = (window as any).initialLocale || document.documentElement.lang || 'en';
+    const langBase = String(currentLang || '').toLowerCase().split('-')[0];
+    const dir = ['ar', 'he'].includes(langBase) ? 'rtl' : 'ltr';
     document.documentElement.dir = dir;
     document.documentElement.setAttribute('dir', dir);
     // Check if it was actually set

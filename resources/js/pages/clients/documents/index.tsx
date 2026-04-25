@@ -10,6 +10,7 @@ import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
+import { ClientTableCell } from '@/components/client-table-cell';
 
 export default function ClientDocuments() {
   const { t, i18n } = useTranslation();
@@ -217,9 +218,7 @@ export default function ClientDocuments() {
     {
       key: 'client',
       label: t('Client'),
-      render: (value: any, row: any) => {
-        return row.client?.name || '-';
-      }
+      render: (_value: any, row: any) => <ClientTableCell client={row.client} locale={currentLocale} />,
     },
     {
       key: 'document_name',
