@@ -66,19 +66,11 @@ export function BrandProvider({ children }: { children: ReactNode }) {
         document.documentElement.classList.toggle('dark', isDark);
         document.body.classList.toggle('dark', isDark);
 
-        // Determine direction: prioritize language code over stored layoutDirection
-        let domDirection: string;
+        // Document text direction follows UI language only. Sidebar placement (layoutDirection
+        // left/right) is independent and must not set html dir — doing so breaks the sidebar
+        // and nav alignment when saving brand settings.
         const currentLang = i18n.language || (window as any).initialLocale;
-        if (currentLang && ['ar', 'he'].includes(currentLang)) {
-            // Language requires RTL - always set to RTL regardless of stored layoutDirection
-            domDirection = 'rtl';
-        } else if (brandSettings.layoutDirection === 'right') {
-            domDirection = 'rtl';
-        } else if (brandSettings.layoutDirection === 'left') {
-            domDirection = 'ltr';
-        } else {
-            domDirection = brandSettings.layoutDirection || 'ltr';
-        }
+        const domDirection = currentLang && ['ar', 'he'].includes(currentLang) ? 'rtl' : 'ltr';
 
         document.documentElement.dir = domDirection;
         document.documentElement.setAttribute('dir', domDirection);

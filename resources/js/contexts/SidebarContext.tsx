@@ -9,6 +9,7 @@ type SidebarContextType = {
   updateVariant: (variant: SidebarSettings['variant']) => void;
   updateCollapsible: (collapsible: SidebarSettings['collapsible']) => void;
   updateStyle: (style: string) => void;
+  saveSidebarSettings: () => void;
 };
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);

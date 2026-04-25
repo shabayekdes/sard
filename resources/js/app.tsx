@@ -81,20 +81,10 @@ function normalizeZiggyUrl(page: { props?: Record<string, unknown> } | undefined
 
 function initializeDirection() {
     const currentLang = i18n.language || (window as any).initialLocale || getCookie('app_language');
-    let domDirection: string;
-    if (currentLang && ['ar', 'he'].includes(currentLang)) {
-        domDirection = 'rtl';
-    } else {
-        let savedDirection: string | null = null;
-        if (isDemoMode()) {
-            savedDirection = getCookie('layoutDirection');
-        } else {
-            const globalSettings = (window as any).page?.props?.globalSettings;
-            if (globalSettings?.layoutDirection) savedDirection = globalSettings.layoutDirection;
-        }
-        const d = savedDirection;
-        domDirection = d === 'right' ? 'rtl' : d === 'left' ? 'ltr' : d || 'ltr';
-    }
+    const langBase = String(currentLang || '')
+        .toLowerCase()
+        .split('-')[0];
+    const domDirection = ['ar', 'he'].includes(langBase) ? 'rtl' : 'ltr';
     document.documentElement.dir = domDirection;
     document.documentElement.setAttribute('dir', domDirection);
 }

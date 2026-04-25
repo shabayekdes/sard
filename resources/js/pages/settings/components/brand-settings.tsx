@@ -5,13 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useBrand } from '@/contexts/BrandContext';
-import { useLayout, type LayoutPosition } from '@/contexts/LayoutContext';
 import { useSidebarSettings } from '@/contexts/SidebarContext';
 import { THEME_COLORS, useAppearance, type Appearance, type ThemeColor } from '@/hooks/use-appearance';
 import { getCookie } from '@/utils/cookies';
 import { getImagePath } from '@/utils/helpers';
 import { router, usePage } from '@inertiajs/react';
-import { Check, FileText, Layout, Moon, Palette, Save, SidebarIcon, Upload } from 'lucide-react';
+import { Check, FileText, Moon, Palette, Save, SidebarIcon, Upload } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -48,8 +47,7 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
     // Theme hooks
     const { updateAppearance, updateThemeColor, updateCustomColor, saveThemeSettings } = useAppearance();
 
-    const { updatePosition, saveLayoutPosition } = useLayout();
-    const { updateVariant, updateStyle, saveSidebarSettings } = useSidebarSettings();
+    const { updateVariant, updateStyle } = useSidebarSettings();
 
     // Load settings when globalSettings change (but not while saving)
     useEffect(() => {
@@ -124,12 +122,6 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
         updateStyle(style);
     };
 
-    // Handle layout direction change
-    const handleLayoutDirectionChange = (direction: LayoutPosition) => {
-        setSettings((prev) => ({ ...prev, layoutDirection: direction }));
-        updatePosition(direction);
-    };
-
     // Handle theme mode change
     const handleThemeModeChange = (mode: Appearance) => {
         setSettings((prev) => ({ ...prev, themeMode: mode }));
@@ -155,7 +147,6 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
             updateCustomColor(settings.customColor);
         }
         updateAppearance(settings.themeMode);
-        updatePosition(settings.layoutDirection);
 
         // Sidebar settings
         updateVariant(settings.sidebarVariant as any);
@@ -163,8 +154,6 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
 
         // Persist to cookies/storage
         saveThemeSettings();
-        saveLayoutPosition();
-        saveSidebarSettings();
 
         // Update brand context with all settings
         updateBrandSettings({
@@ -174,7 +163,6 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
             themeColor: settings.themeColor,
             customColor: settings.customColor,
             themeMode: settings.themeMode,
-            layoutDirection: settings.layoutDirection,
             sidebarVariant: settings.sidebarVariant,
             sidebarStyle: settings.sidebarStyle,
             titleTextEn: settings.titleTextEn,
@@ -527,7 +515,7 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
                                                                 settings.sidebarVariant === variant
                                                                     ? settings.themeColor === 'custom'
                                                                         ? settings.customColor
-                                                                        : null
+                                                                        : undefined
                                                                     : 'transparent',
                                                         }}
                                                         onClick={() => handleSidebarVariantChange(variant)}
@@ -557,7 +545,7 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
                                                                 settings.sidebarStyle === style.id
                                                                     ? settings.themeColor === 'custom'
                                                                         ? settings.customColor
-                                                                        : null
+                                                                        : undefined
                                                                     : 'transparent',
                                                         }}
                                                         onClick={() => handleSidebarStyleChange(style.id)}
@@ -567,55 +555,6 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
                                                     </Button>
                                                 ))}
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Layout Section */}
-                                <div className="space-y-4">
-                                    <div className="flex items-center">
-                                        <Layout className="text-muted-foreground mr-2 h-5 w-5" />
-                                        <h3 className="text-base font-medium">{t('Layout')}</h3>
-                                    </div>
-                                    <Separator className="my-2" />
-
-                                    <div className="space-y-2">
-                                        <Label className="mb-2 block">{t('Layout Direction')}</Label>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            <Button
-                                                type="button"
-                                                variant={settings.layoutDirection === 'left' ? 'default' : 'outline'}
-                                                className="h-10 justify-start"
-                                                style={{
-                                                    backgroundColor:
-                                                        settings.layoutDirection === 'left'
-                                                            ? settings.themeColor === 'custom'
-                                                                ? settings.customColor
-                                                                : null
-                                                            : 'transparent',
-                                                }}
-                                                onClick={() => handleLayoutDirectionChange('left')}
-                                            >
-                                                {t('Left-to-Right')}
-                                                {settings.layoutDirection === 'left' && <Check className="ml-2 h-4 w-4" />}
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant={settings.layoutDirection === 'right' ? 'default' : 'outline'}
-                                                className="h-10 justify-start"
-                                                style={{
-                                                    backgroundColor:
-                                                        settings.layoutDirection === 'right'
-                                                            ? settings.themeColor === 'custom'
-                                                                ? settings.customColor
-                                                                : null
-                                                            : 'transparent',
-                                                }}
-                                                onClick={() => handleLayoutDirectionChange('right')}
-                                            >
-                                                {t('Right-to-Left')}
-                                                {settings.layoutDirection === 'right' && <Check className="ml-2 h-4 w-4" />}
-                                            </Button>
                                         </div>
                                     </div>
                                 </div>
@@ -639,7 +578,7 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
                                                         settings.themeMode === 'light'
                                                             ? settings.themeColor === 'custom'
                                                                 ? settings.customColor
-                                                                : null
+                                                                : undefined
                                                             : 'transparent',
                                                 }}
                                                 onClick={() => handleThemeModeChange('light')}
@@ -656,7 +595,7 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
                                                         settings.themeMode === 'dark'
                                                             ? settings.themeColor === 'custom'
                                                                 ? settings.customColor
-                                                                : null
+                                                                : undefined
                                                             : 'transparent',
                                                 }}
                                                 onClick={() => handleThemeModeChange('dark')}
@@ -673,7 +612,7 @@ export default function BrandSettings({ userSettings }: BrandSettingsProps) {
                                                         settings.themeMode === 'system'
                                                             ? settings.themeColor === 'custom'
                                                                 ? settings.customColor
-                                                                : null
+                                                                : undefined
                                                             : 'transparent',
                                                 }}
                                                 onClick={() => handleThemeModeChange('system')}
