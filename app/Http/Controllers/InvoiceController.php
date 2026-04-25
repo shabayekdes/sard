@@ -2,18 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\NewInvoiceCreated;
-use App\Events\InvoiceSent;
-use App\Models\Invoice;
-use App\Models\InvoiceLineItem;
 use App\Models\Client;
 use App\Models\ClientBillingInfo;
 use App\Models\Currency;
+use App\Models\Invoice;
 use App\Models\PaymentSetting;
-use App\Services\EmailTemplateService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-
 use Inertia\Inertia;
 
 class InvoiceController extends BaseController
@@ -29,9 +24,9 @@ class InvoiceController extends BaseController
 
         if ($request->search) {
             $query->where(function ($q) use ($request) {
-                $q->where('invoice_number', 'like', '%' . $request->search . '%')
+                $q->where('invoice_number', 'like', '%'.$request->search.'%')
                     ->orWhereHas('client', function ($clientQuery) use ($request) {
-                        $clientQuery->where('name', 'like', '%' . $request->search . '%');
+                        $clientQuery->where('name', 'like', '%'.$request->search.'%');
                     });
             });
         }
@@ -45,21 +40,22 @@ class InvoiceController extends BaseController
         }
 
         // Handle sorting
-        if ($request->has('sort_field') && !empty($request->sort_field)) {
+        if ($request->has('sort_field') && ! empty($request->sort_field)) {
             $query->orderBy($request->sort_field, $request->sort_direction ?? 'asc');
         } else {
             $query->latest('id');
         }
 
         $invoices = $query->paginate($request->per_page ?? 10);
-        
+
         // Calculate and append remaining_amount to each invoice
         $invoices->getCollection()->transform(function ($invoice) {
             $totalPaid = $invoice->payments->sum('amount');
             $invoice->remaining_amount = max(0, $invoice->total_amount - $totalPaid);
+
             return $invoice;
         });
-        
+
         $clients = Client::withPermissionCheck()->select('id', 'name')->get();
 
         return Inertia::render('billing/invoices/index', [
@@ -107,7 +103,7 @@ class InvoiceController extends BaseController
             'currencies' => $currencies,
             'timeEntries' => $timeEntries,
             'expenses' => $expenses,
-            'clientBillingInfo' => $clientBillingInfo
+            'clientBillingInfo' => $clientBillingInfo,
         ]);
     }
 
@@ -154,6 +150,15 @@ class InvoiceController extends BaseController
         $invoice->setAttribute('line_items', $this->mapLineItemsToArray($invoice->lineItems));
 
         $clients = Client::select('id', 'name', 'tax_rate')->get();
+        if ($invoice->client_id && ! $clients->contains('id', $invoice->client_id)) {
+            $deletedClient = Client::withTrashed()
+                ->select('id', 'name', 'tax_rate')
+                ->find($invoice->client_id);
+            if ($deletedClient) {
+                $deletedClient->name = (string) $deletedClient->name.' ('.__('Deleted').')';
+                $clients->push($deletedClient);
+            }
+        }
         $cases = \App\Models\CaseModel::with('client:id,name')
             ->select('id', 'case_id', 'title', 'client_id')
             ->get();
@@ -174,14 +179,14 @@ class InvoiceController extends BaseController
             'templates' => $templates,
             'currencies' => $currencies,
             'invoice' => $invoice,
-            'clientBillingInfo' => $clientBillingInfo
+            'clientBillingInfo' => $clientBillingInfo,
         ]);
     }
 
     public function store(Request $request)
     {
         // Only company users can create invoices
-        if (!auth()->user()->hasRole(['company', 'superadmin'])) {
+        if (! auth()->user()->hasRole(['company', 'superadmin'])) {
             return redirect()->back()->with('error', __('Only company users can create invoices.'));
         }
 
@@ -223,7 +228,7 @@ class InvoiceController extends BaseController
             'notes' => $request->notes,
         ]);
 
-        if (!empty($request->line_items)) {
+        if (! empty($request->line_items)) {
             foreach ($request->line_items as $index => $item) {
                 $invoice->lineItems()->create([
                     'type' => $item['type'] ?? 'manual',
@@ -248,14 +253,15 @@ class InvoiceController extends BaseController
 
         $errors = [];
         if ($emailError) {
-            $errors[] = __('Email send failed: ') . $emailError;
+            $errors[] = __('Email send failed: ').$emailError;
         }
         if ($slackError) {
-            $errors[] = __('SMS send failed: ') . $slackError;
+            $errors[] = __('SMS send failed: ').$slackError;
         }
 
-        if (!empty($errors)) {
-            $message = __('Invoice created successfully, but ') . implode(', ', $errors);
+        if (! empty($errors)) {
+            $message = __('Invoice created successfully, but ').implode(', ', $errors);
+
             return redirect()->back()->with('warning', $message);
         }
 
@@ -300,7 +306,7 @@ class InvoiceController extends BaseController
         ]);
 
         $invoice->lineItems()->delete();
-        if (!empty($request->line_items)) {
+        if (! empty($request->line_items)) {
             foreach ($request->line_items as $index => $item) {
                 $invoice->lineItems()->create([
                     'type' => $item['type'] ?? 'manual',
@@ -322,6 +328,7 @@ class InvoiceController extends BaseController
     public function destroy(Invoice $invoice)
     {
         $invoice->delete();
+
         return redirect()->back()->with('success', __(':model deleted successfully', ['model' => __('Invoice')]));
     }
 
@@ -341,14 +348,15 @@ class InvoiceController extends BaseController
 
         $errors = [];
         if ($emailError) {
-            $errors[] = __('Email send failed: ') . $emailError;
+            $errors[] = __('Email send failed: ').$emailError;
         }
         if ($slackError) {
-            $errors[] = __('SMS send failed: ') . $slackError;
+            $errors[] = __('SMS send failed: ').$slackError;
         }
 
-        if (!empty($errors)) {
-            $message = __('Invoice sent successfully, but ') . implode(', ', $errors);
+        if (! empty($errors)) {
+            $message = __('Invoice sent successfully, but ').implode(', ', $errors);
+
             return redirect()->back()->with('warning', $message);
         }
 
@@ -356,8 +364,8 @@ class InvoiceController extends BaseController
     }
 
     /**
-     * @param Invoice $invoice
      * @return \Inertia\Response
+     *
      * @deprecated use invoices/{invoice}/pdf API
      */
     public function generate(Invoice $invoice)
@@ -383,7 +391,7 @@ class InvoiceController extends BaseController
             'companyProfile' => $companyProfile,
             'invoiceItems' => $invoiceItems,
             'clientBillingInfo' => $clientBillingInfo,
-            'currencies' => $currencies
+            'currencies' => $currencies,
         ]);
     }
 
@@ -490,7 +498,7 @@ class InvoiceController extends BaseController
         foreach ($timeEntries as $entry) {
             $invoice->lineItems()->create([
                 'type' => 'time',
-                'description' => $entry->description . ' (' . $entry->billing_display . ')',
+                'description' => $entry->description.' ('.$entry->billing_display.')',
                 'quantity' => $entry->billing_rate_type === 'fixed' ? 1 : $entry->hours,
                 'rate' => $entry->billing_rate_type === 'fixed' ? $entry->total_amount : $entry->billable_rate,
                 'amount' => $entry->total_amount,
@@ -534,7 +542,7 @@ class InvoiceController extends BaseController
     public function getCaseTimeEntries($caseId)
     {
         $case = \App\Models\CaseModel::find($caseId);
-        if (!$case) {
+        if (! $case) {
             return response()->json([]);
         }
 
@@ -549,13 +557,13 @@ class InvoiceController extends BaseController
                 return [
                     'id' => $entry->id,
                     'type' => 'time',
-                    'case_info' => $entry->case ? $entry->case->case_id . ' - ' . $entry->case->title : 'General',
+                    'case_info' => $entry->case ? $entry->case->case_id.' - '.$entry->case->title : 'General',
                     'description' => $entry->description,
                     'quantity' => $entry->hours,
                     'rate' => $entry->billable_rate,
                     'amount' => $entry->hours * $entry->billable_rate,
                     'status' => $entry->status,
-                    'invoice_id' => $entry->invoice_id
+                    'invoice_id' => $entry->invoice_id,
                 ];
             });
 
@@ -574,7 +582,7 @@ class InvoiceController extends BaseController
                     'quantity' => 1,
                     'rate' => $expense->amount,
                     'amount' => $expense->amount,
-                    'expense_date' => $expense->expense_date
+                    'expense_date' => $expense->expense_date,
                 ];
             });
 
@@ -603,11 +611,11 @@ class InvoiceController extends BaseController
                 return [
                     'id' => $entry->id,
                     'type' => $entry->case_id ? 'case' : 'general',
-                    'case_info' => $entry->case ? $entry->case->case_id . ' - ' . $entry->case->title : 'General',
+                    'case_info' => $entry->case ? $entry->case->case_id.' - '.$entry->case->title : 'General',
                     'description' => $entry->description,
                     'quantity' => $entry->hours,
                     'rate' => $entry->billable_rate,
-                    'amount' => $entry->hours * $entry->billable_rate
+                    'amount' => $entry->hours * $entry->billable_rate,
                 ];
             });
 
@@ -628,7 +636,7 @@ class InvoiceController extends BaseController
                     'quantity' => $entry->hours,
                     'rate' => $entry->billable_rate,
                     'amount' => $entry->hours * $entry->billable_rate,
-                    'status' => $entry->status
+                    'status' => $entry->status,
                 ];
             });
 
@@ -642,7 +650,7 @@ class InvoiceController extends BaseController
                     'description' => $expense->description,
                     'quantity' => 1,
                     'rate' => $expense->amount,
-                    'amount' => $expense->amount
+                    'amount' => $expense->amount,
                 ];
             });
 
