@@ -1,6 +1,7 @@
 import { toast } from '@/components/custom-toast';
 import { CrudFormModal } from '@/components/CrudFormModal';
 import { QuickClientModal } from '@/components/quick-client-modal';
+import { GregorianHijriDateField } from '@/components/GregorianHijriDateField';
 import { PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -575,23 +576,23 @@ export default function EditCase() {
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="filing_date">{t('Filling Date')}</Label>
-                            <Input
+                            <GregorianHijriDateField
                                 id="filing_date"
-                                type="date"
                                 value={formData.filing_date ?? ''}
-                                onChange={(e) => updateField('filing_date', e.target.value)}
+                                onChange={(v) => updateField('filing_date', v)}
+                                error={Boolean(normalizedErrors.filing_date)}
+                                helperText={normalizedErrors.filing_date}
                             />
-                            {renderError('filing_date')}
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="expected_completion_date">{t('Expecting Completion')}</Label>
-                            <Input
+                            <GregorianHijriDateField
                                 id="expected_completion_date"
-                                type="date"
                                 value={formData.expected_completion_date ?? ''}
-                                onChange={(e) => updateField('expected_completion_date', e.target.value)}
+                                onChange={(v) => updateField('expected_completion_date', v)}
+                                error={Boolean(normalizedErrors.expected_completion_date)}
+                                helperText={normalizedErrors.expected_completion_date}
                             />
-                            {renderError('expected_completion_date')}
                         </div>
                     </div>
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { GregorianHijriDateField } from '@/components/GregorianHijriDateField';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -292,7 +293,32 @@ export default function CompanyProfiles() {
                 className="text-sm"
               />
             </div>
-            <div className="space-y-2">
+            <div>
+              <Label htmlFor="registration_number" className="text-sm font-medium">
+                {t('Registration Number')}
+              </Label>
+              <Input
+                id="registration_number"
+                value={formData.registration_number}
+                onChange={(e) => handleChange('registration_number', e.target.value)}
+                disabled={!isEditing}
+                placeholder={t('Enter Registry Number')}
+                className="text-sm"
+              />
+            </div>
+            <div>
+              <Label htmlFor="establishment_date" className="text-sm font-medium">
+                {t('Establishment Date')}
+              </Label>
+              <GregorianHijriDateField
+                id="establishment_date"
+                value={formData.establishment_date}
+                onChange={(v) => handleChange('establishment_date', v)}
+                disabled={!isEditing}
+                className="text-sm"
+              />
+            </div>
+            <div>
               <Label htmlFor="business_type" className="text-sm font-medium">
                 {t('Business Type')}
               </Label>
@@ -319,19 +345,6 @@ export default function CompanyProfiles() {
                 onChange={(e) => handleChange('registration_number', e.target.value)}
                 disabled={disabled}
                 placeholder={t('Enter Registry Number')}
-                className="text-sm"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="establishment_date" className="text-sm font-medium">
-                {t('Establishment Date')}
-              </Label>
-              <Input
-                id="establishment_date"
-                type="date"
-                value={formData.establishment_date}
-                onChange={(e) => handleChange('establishment_date', e.target.value)}
-                disabled={disabled}
                 className="text-sm"
               />
             </div>

@@ -1,4 +1,5 @@
 import { toast } from '@/components/custom-toast';
+import { GregorianHijriDateField } from '@/components/GregorianHijriDateField';
 import { PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -442,13 +443,13 @@ export default function ClientForm() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="date_of_birth">{t('Date of Birth')}</Label>
-                                    <Input
+                                    <GregorianHijriDateField
                                         id="date_of_birth"
-                                        type="date"
                                         value={formData.date_of_birth}
-                                        onChange={(e) => updateField('date_of_birth', e.target.value)}
+                                        onChange={(v) => updateField('date_of_birth', v)}
+                                        error={Boolean(normalizedErrors.date_of_birth)}
+                                        helperText={normalizedErrors.date_of_birth}
                                     />
-                                    {renderError('date_of_birth')}
                                 </div>
                             </>
                         )}
@@ -471,13 +472,13 @@ export default function ClientForm() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="cr_issuance_date">{t('CR Issuance Date')}</Label>
-                                    <Input
+                                    <GregorianHijriDateField
                                         id="cr_issuance_date"
-                                        type="date"
                                         value={formData.cr_issuance_date}
-                                        onChange={(e) => updateField('cr_issuance_date', e.target.value)}
+                                        onChange={(v) => updateField('cr_issuance_date', v)}
+                                        error={Boolean(normalizedErrors.cr_issuance_date)}
+                                        helperText={normalizedErrors.cr_issuance_date}
                                     />
-                                    {renderError('cr_issuance_date')}
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="tax_id">{t('Tax ID')}</Label>

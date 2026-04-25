@@ -1,4 +1,5 @@
 import { toast } from '@/components/custom-toast';
+import { GregorianHijriDateField } from '@/components/GregorianHijriDateField';
 import TaskAttachments from '@/components/tasks/TaskAttachments';
 import TaskChecklist from '@/components/tasks/TaskChecklist';
 import TaskComments from '@/components/tasks/TaskComments';
@@ -12,7 +13,6 @@ import { localizedString } from '@/utils/i18n';
 import { taskPriorityTranslationKey } from '@/utils/taskPriority';
 import { normalizeInertiaValidationErrors } from '@/utils/inertiaErrors';
 import { getTaskAssignee, getTaskAssigneeId } from '@/utils/taskTable';
-import { cn } from '@/lib/utils';
 import { router, usePage } from '@inertiajs/react';
 import { CheckSquare, MessageSquare, Paperclip } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -333,37 +333,35 @@ export default function TaskModal({ task, isOpen, onClose, members = [], taskSta
                                 <div>
                                     <label className="text-xs text-gray-500">{t('Start Date')}</label>
                                     {canEditTask ? (
-                                        <Input
-                                            type="date"
+                                        <GregorianHijriDateField
+                                            id="task_start_date"
                                             value={currentTask.start_date?.split('T')[0] || ''}
-                                            onChange={(e) => handleDateChange('start_date', e.target.value)}
-                                            className={cn('mt-1', dateFieldErrors.start_date && 'border-red-500')}
+                                            onChange={(v) => handleDateChange('start_date', v)}
+                                            className="mt-1"
+                                            error={Boolean(dateFieldErrors.start_date)}
+                                            helperText={dateFieldErrors.start_date}
                                         />
                                     ) : (
                                         <div className="mt-1 text-sm text-gray-600">
                                             {currentTask.start_date ? new Date(currentTask.start_date).toLocaleDateString() : t('Not set')}
                                         </div>
                                     )}
-                                    {dateFieldErrors.start_date && (
-                                        <p className="mt-1 text-xs text-red-600">{dateFieldErrors.start_date}</p>
-                                    )}
                                 </div>
                                 <div>
                                     <label className="text-xs text-gray-500">{t('Due Date')}</label>
                                     {canEditTask ? (
-                                        <Input
-                                            type="date"
+                                        <GregorianHijriDateField
+                                            id="task_due_date"
                                             value={currentTask.due_date?.split('T')[0] || ''}
-                                            onChange={(e) => handleDateChange('due_date', e.target.value)}
-                                            className={cn('mt-1', dateFieldErrors.due_date && 'border-red-500')}
+                                            onChange={(v) => handleDateChange('due_date', v)}
+                                            className="mt-1"
+                                            error={Boolean(dateFieldErrors.due_date)}
+                                            helperText={dateFieldErrors.due_date}
                                         />
                                     ) : (
                                         <div className="mt-1 text-sm text-gray-600">
                                             {currentTask.due_date ? new Date(currentTask.due_date).toLocaleDateString() : t('Not set')}
                                         </div>
-                                    )}
-                                    {dateFieldErrors.due_date && (
-                                        <p className="mt-1 text-xs text-red-600">{dateFieldErrors.due_date}</p>
                                     )}
                                 </div>
                             </div>
