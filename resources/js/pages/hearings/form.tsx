@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { CrudFormModal } from '@/components/CrudFormModal';
+import { GregorianHijriDateField } from '@/components/GregorianHijriDateField';
 import MediaPicker from '@/components/MediaPicker';
 import { toast } from '@/components/custom-toast';
 import { hasPermission } from '@/utils/authorization';
@@ -609,14 +610,13 @@ export default function HearingForm() {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div className="min-w-0 space-y-2">
                 <Label required>{t('Date')}</Label>
-                <Input
-                  type="date"
+                <GregorianHijriDateField
+                  id="hearing_date"
                   value={form.hearing_date}
-                  onChange={(e) => update('hearing_date', e.target.value)}
-                  className="h-10 w-full"
-                  aria-invalid={errors.hearing_date ? true : undefined}
+                  onChange={(v) => update('hearing_date', v)}
+                  error={Boolean(errors.hearing_date)}
+                  helperText={errors.hearing_date}
                 />
-                {errors.hearing_date ? <p className="text-sm text-destructive">{errors.hearing_date}</p> : null}
               </div>
               <div className="min-w-0 space-y-2">
                 <Label required>{t('Time')}</Label>

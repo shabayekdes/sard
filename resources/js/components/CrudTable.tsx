@@ -11,11 +11,13 @@ import { capitalize, getStatusIcon, getStatusLabel } from '@/utils/helpers';
 import { Link } from '@inertiajs/react';
 import {
     ArrowUpRight,
+    Calendar,
     ChevronDown,
     ChevronUp,
     ChevronsUpDown,
     Check,
     CheckCircle,
+    Clock,
     Copy,
     CreditCard,
     DollarSign,
@@ -285,8 +287,42 @@ export function CrudTable({
                     </div>
                 );
 
-            case 'date':
-                return value ? <span className="text-sm">{window.appSettings?.formatDateTime(value, false)}</span> : <span>-</span>;
+            case 'date': {
+                if (!value) return <span>-</span>;
+                const dateOnlyLabel =
+                    window.appSettings?.formatDate(value) || new Date(value as string).toLocaleDateString();
+                return (
+                    <div className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        <span>{dateOnlyLabel}</span>
+                    </div>
+                );
+            }
+
+            case 'datetime': {
+                if (!value) return <span>-</span>;
+                const dateLabel =
+                    window.appSettings?.formatDate(value) || new Date(value as string).toLocaleDateString();
+                const timeRaw = col.timeKey ? getNestedValue(row, col.timeKey) : null;
+                const timeLabel =
+                    timeRaw != null && timeRaw !== ''
+                        ? window.appSettings?.formatTime(`2000-01-01T${timeRaw}`) || String(timeRaw)
+                        : null;
+                return (
+                    <div className="flex flex-col">
+                        <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            <span>{dateLabel}</span>
+                        </div>
+                        {timeLabel ? (
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                                <Clock className="h-3 w-3" />
+                                <span>{timeLabel}</span>
+                            </div>
+                        ) : null}
+                    </div>
+                );
+            }
 
             case 'currency':
                 return <span className="text-sm"><CurrencyAmount amount={value ?? 0} /></span>;

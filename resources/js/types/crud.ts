@@ -18,7 +18,7 @@ export interface TableColumn {
     key: string;
     label: string;
     sortable?: boolean;
-    type?: 'text' | 'badge' | 'image' | 'date' | 'currency' | 'boolean' | 'link' | 'custom' | 'switch';
+    type?: 'text' | 'badge' | 'image' | 'date' | 'datetime' | 'currency' | 'boolean' | 'link' | 'custom' | 'switch';
     className?: string;
     linkClassName?: string;
     href?: string | ((row: any) => string);
@@ -27,6 +27,8 @@ export interface TableColumn {
     switchAction?: string;
     /** For type 'switch': permission required to enable the switch (defaults to entityPermissions.edit when present). */
     switchPermission?: string;
+    /** For type 'datetime': row key (dot notation) for a separate time value (e.g. `hearing_time`), shown on the second line. */
+    timeKey?: string;
     render?: (value: any, row: any) => React.ReactNode;
 }
 

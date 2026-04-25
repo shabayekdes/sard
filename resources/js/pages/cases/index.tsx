@@ -239,7 +239,7 @@ export default function Cases() {
       key: 'filing_date',
       label: t('Filing Date'),
       sortable: true,
-      render: (value: string) => value ? new Date(value).toLocaleDateString() : '-'
+      type: 'date' as const,
     },
     {
       key: 'status',
