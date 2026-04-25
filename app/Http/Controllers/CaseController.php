@@ -626,7 +626,26 @@ class CaseController extends BaseController
 
         $clients = Client::where('tenant_id', createdBy())
             ->where('status', 'active')
-            ->get(['id', 'name'])
+            ->get(['id', 'name']);
+
+        if ($case->client_id && ! $clients->contains('id', $case->client_id)) {
+            $currentClient = Client::withTrashed()
+                ->where('tenant_id', createdBy())
+                ->where('id', $case->client_id)
+                ->first();
+            if ($currentClient) {
+                $label = (string) $currentClient->name;
+                if ($currentClient->trashed()) {
+                    $label .= ' ('.__('Deleted').')';
+                } elseif (($currentClient->status ?? '') !== 'active') {
+                    $label .= ' ('.__('Inactive').')';
+                }
+                $currentClient->setAttribute('name', $label);
+                $clients->push($currentClient);
+            }
+        }
+
+        $clients = $clients
             ->prepend([null, __('Select Client')], 'id')
             ->values()
             ->toArray();
@@ -924,7 +943,23 @@ class CaseController extends BaseController
             'case_number' => 'nullable|string|max:255',
             'file_number' => 'nullable|string|max:255',
             'attributes' => 'nullable|in:petitioner,respondent',
-            'client_id' => ['required', Rule::exists('clients', 'id')->where('tenant_id', createdBy())],
+            'client_id' => [
+                'required',
+                function (string $attribute, mixed $value, \Closure $fail) use ($case) {
+                    $client = Client::withTrashed()
+                        ->where('tenant_id', createdBy())
+                        ->where('id', $value)
+                        ->first();
+                    if (! $client) {
+                        $fail(__('The selected client is invalid.'));
+
+                        return;
+                    }
+                    if ($client->trashed() && (int) $value !== (int) $case->client_id) {
+                        $fail(__('The selected client is no longer available. Please choose an active client.'));
+                    }
+                },
+            ],
             'case_type_id' => ['required', Rule::exists('case_types', 'id')->where('tenant_id', createdBy())],
             'case_category_id' => 'nullable|exists:case_categories,id',
             'case_subcategory_id' => 'nullable|exists:case_categories,id',
