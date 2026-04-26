@@ -26,6 +26,7 @@ use App\Models\TaskStatus;
 use App\Models\TaskType;
 use App\Models\User;
 use App\Services\GoogleCalendarService;
+use App\Support\CaseAuthorityType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
@@ -804,6 +805,8 @@ class CaseController extends BaseController
         $caseData['case_type_id'] = $case->case_type_id ? (string) $case->case_type_id : '';
         $caseData['case_status_id'] = $case->case_status_id ? (string) $case->case_status_id : '';
         $caseData['court_id'] = $case->court_id ? (string) $case->court_id : '';
+        $caseData['authority_type'] = $case->authority_type;
+        $caseData['authority_type_details'] = $case->authority_type_details ?? [];
         $caseData['filing_date'] = $case->filing_date ? $case->filing_date->format('Y-m-d') : '';
         $caseData['expected_completion_date'] = $case->expected_completion_date ? $case->expected_completion_date->format('Y-m-d') : '';
         $caseData['estimated_value'] = $case->estimated_value !== null && $case->estimated_value !== '' ? (string) $case->estimated_value : '';
@@ -880,7 +883,18 @@ class CaseController extends BaseController
             'documents.*.document_type_id' => 'required_with:documents|exists:document_types,id',
             'documents.*.confidentiality' => 'required_with:documents|in:public,confidential,privileged',
             'documents.*.file' => 'required_with:documents|string',
+            'authority_type' => ['nullable', 'string', Rule::in(CaseAuthorityType::all())],
+            'authority_type_details' => 'nullable|array',
+            'authority_type_details.entity_name' => 'nullable|string|max:500',
+            'authority_type_details.reconciliation_suit_number' => 'nullable|string|max:255',
+            'authority_type_details.reconciliation_suit_date' => 'nullable|date',
+            'authority_type_details.reconciliation_report_number' => 'nullable|string|max:255',
+            'authority_type_details.reconciliation_report_date' => 'nullable|date',
+            'authority_type_details.amicable_suit_number' => 'nullable|string|max:255',
+            'authority_type_details.amicable_suit_date' => 'nullable|date',
         ]);
+
+        $this->applyAuthorityTypeToValidated($validated, $request);
 
         $validated['tenant_id'] = $tenant_id;
         $validated['status'] = $validated['status'] ?? 'active';
@@ -1010,7 +1024,18 @@ class CaseController extends BaseController
             'documents.*.document_type_id' => 'required_with:documents|exists:document_types,id',
             'documents.*.confidentiality' => 'required_with:documents|in:public,confidential,privileged',
             'documents.*.file' => 'required_with:documents|string',
+            'authority_type' => ['nullable', 'string', Rule::in(CaseAuthorityType::all())],
+            'authority_type_details' => 'nullable|array',
+            'authority_type_details.entity_name' => 'nullable|string|max:500',
+            'authority_type_details.reconciliation_suit_number' => 'nullable|string|max:255',
+            'authority_type_details.reconciliation_suit_date' => 'nullable|date',
+            'authority_type_details.reconciliation_report_number' => 'nullable|string|max:255',
+            'authority_type_details.reconciliation_report_date' => 'nullable|date',
+            'authority_type_details.amicable_suit_number' => 'nullable|string|max:255',
+            'authority_type_details.amicable_suit_date' => 'nullable|date',
         ]);
+
+        $this->applyAuthorityTypeToValidated($validated, $request);
 
         // Extract opposite parties and documents before updating case
         $oppositeParties = $validated['opposite_parties'] ?? [];
@@ -1087,5 +1112,25 @@ class CaseController extends BaseController
         }
 
         return $url;
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    private function applyAuthorityTypeToValidated(array &$validated, Request $request): void
+    {
+        $at = $validated['authority_type'] ?? null;
+        if ($at === '') {
+            $at = null;
+        }
+        $validated['authority_type'] = $at;
+
+        $rawDetails = $request->input('authority_type_details', []);
+        $details = is_array($rawDetails) ? $rawDetails : [];
+        $validated['authority_type_details'] = CaseAuthorityType::filterDetails($at, $details);
+
+        if (CaseAuthorityType::clearsCourtId($at)) {
+            $validated['court_id'] = null;
+        }
     }
 }

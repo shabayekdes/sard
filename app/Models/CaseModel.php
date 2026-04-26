@@ -8,7 +8,7 @@ use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class CaseModel extends BaseModel
 {
-    use BelongsToTenant, HasFactory, AutoApplyPermissionCheck;
+    use AutoApplyPermissionCheck, BelongsToTenant, HasFactory;
 
     protected $table = 'cases';
 
@@ -25,6 +25,8 @@ class CaseModel extends BaseModel
         'case_subcategory_id',
         'case_status_id',
         'court_id',
+        'authority_type',
+        'authority_type_details',
         'priority',
         'filing_date',
         'expected_completion_date',
@@ -33,25 +35,26 @@ class CaseModel extends BaseModel
         'court_details',
         'status',
         'tenant_id',
-        'google_calendar_event_id'
+        'google_calendar_event_id',
     ];
 
     protected $casts = [
         'filing_date' => 'date',
         'expected_completion_date' => 'date',
         'estimated_value' => 'decimal:2',
+        'authority_type_details' => 'array',
     ];
 
     protected static function boot()
     {
         parent::boot();
-        
+
         static::creating(function ($case) {
-            if (!$case->case_id) {
-                $case->case_id = 'CASE' . str_pad(
-                    (self::max('id') ?? 0) + 1, 
-                    6, 
-                    '0', 
+            if (! $case->case_id) {
+                $case->case_id = 'CASE'.str_pad(
+                    (self::max('id') ?? 0) + 1,
+                    6,
+                    '0',
                     STR_PAD_LEFT
                 );
             }
@@ -93,8 +96,6 @@ class CaseModel extends BaseModel
         return $this->belongsTo(Court::class);
     }
 
-
-
     public function invoices()
     {
         return $this->hasMany(Invoice::class, 'case_id');
@@ -104,7 +105,7 @@ class CaseModel extends BaseModel
     {
         return $this->hasMany(TimeEntry::class, 'case_id');
     }
-    
+
     public function teamMembers()
     {
         return $this->hasMany(CaseTeamMember::class, 'case_id');

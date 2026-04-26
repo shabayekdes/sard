@@ -1,3 +1,4 @@
+import { CaseAuthorityFields } from '@/components/cases/CaseAuthorityFields';
 import { toast } from '@/components/custom-toast';
 import { CrudFormModal } from '@/components/CrudFormModal';
 import { QuickClientModal } from '@/components/quick-client-modal';
@@ -13,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import DependentDropdown from '@/components/DependentDropdown';
 import { useLayout } from '@/contexts/LayoutContext';
+import { AUTHORITY_COURT_TYPES, emptyAuthorityTypeDetails, mergeAuthorityTypeDetails, type AuthorityTypeDetails } from '@/lib/case-authority-type';
 import { hasPermission } from '@/utils/authorization';
 import { router, usePage } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
@@ -33,6 +35,8 @@ const defaultFormData = {
     case_status_id: '',
     priority: 'medium',
     court_id: '',
+    authority_type: '',
+    authority_type_details: emptyAuthorityTypeDetails(),
     filing_date: '',
     expected_completion_date: '',
     estimated_value: '',
@@ -103,6 +107,13 @@ export default function EditCase() {
             case_type_id: caseProp?.case_type_id != null ? String(caseProp.case_type_id) : '',
             case_status_id: caseProp?.case_status_id != null ? String(caseProp.case_status_id) : '',
             court_id: caseProp?.court_id != null ? String(caseProp.court_id) : '',
+            authority_type:
+                caseProp?.authority_type != null && caseProp?.authority_type !== ''
+                    ? String(caseProp.authority_type)
+                    : caseProp?.court_id
+                      ? 'courts_general'
+                      : '',
+            authority_type_details: mergeAuthorityTypeDetails(caseProp?.authority_type_details),
             attributes: caseProp?.attributes || 'petitioner',
             priority: caseProp?.priority || 'medium',
             status: caseProp?.status || 'active',
@@ -140,6 +151,31 @@ export default function EditCase() {
         setFieldErrors((prev) => {
             const next = { ...prev };
             delete next[field];
+            return next;
+        });
+    };
+
+    const onAuthorityTypeChange = (v: string) => {
+        setFormData((prev) => {
+            const next = { ...prev, authority_type: v };
+            if (!(AUTHORITY_COURT_TYPES as readonly string[]).includes(v)) {
+                next.court_id = '';
+            }
+            return next;
+        });
+        setFieldErrors((prev) => {
+            const next = { ...prev };
+            delete next.authority_type;
+            delete next.court_id;
+            return next;
+        });
+    };
+
+    const onAuthorityDetailsChange = (d: AuthorityTypeDetails) => {
+        setFormData((prev) => ({ ...prev, authority_type_details: d }));
+        setFieldErrors((prev) => {
+            const next = { ...prev };
+            delete next.authority_type_details;
             return next;
         });
     };
@@ -531,35 +567,6 @@ export default function EditCase() {
                             {renderError('file_number')}
                         </div>
                         <div className="space-y-2">
-                            <Label>{t('Court')}</Label>
-                            <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
-                                <FormSelect
-                                    value={formData.court_id ?? ''}
-                                    onValueChange={(v) => updateField('court_id', v)}
-                                    placeholder={t('Select Court')}
-                                    options={courts ?? []}
-                                    wrapperClassName="min-w-0 w-full space-y-0"
-                                />
-                                {canQuickCreateCourt && (
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="icon"
-                                        className="h-10 w-10 shrink-0 justify-self-center"
-                                        title={t('Add Court')}
-                                        aria-label={t('Add Court')}
-                                        onClick={() => setCourtModalOpen(true)}
-                                    >
-                                        <Plus className="h-4 w-4" />
-                                    </Button>
-                                )}
-                            </div>
-                            {renderError('court_id')}
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                        <div className="space-y-2">
                             <Label htmlFor="estimated_value">{t('Estimated Value')}</Label>
                             <Input
                                 id="estimated_value"
@@ -571,6 +578,9 @@ export default function EditCase() {
                             />
                             {renderError('estimated_value')}
                         </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div className="space-y-2">
                             <Label htmlFor="filing_date">{t('Filling Date')}</Label>
                             <GregorianHijriDateField
@@ -592,6 +602,22 @@ export default function EditCase() {
                             />
                         </div>
                     </div>
+
+                    <CaseAuthorityFields
+                        authorityType={formData.authority_type}
+                        courtId={formData.court_id}
+                        details={formData.authority_type_details}
+                        onAuthorityTypeChange={onAuthorityTypeChange}
+                        onCourtIdChange={(v) => updateField('court_id', v)}
+                        onDetailsChange={onAuthorityDetailsChange}
+                        courts={courts ?? []}
+                        canQuickCreateCourt={canQuickCreateCourt}
+                        onAddCourtClick={() => setCourtModalOpen(true)}
+                        errors={{
+                            authority_type: getFieldError('authority_type') || undefined,
+                            court_id: getFieldError('court_id') || undefined,
+                        }}
+                    />
 
                     <div className="col-span-full my-6 h-px space-y-2 bg-gray-200 dark:bg-gray-800" />
 

@@ -18,6 +18,8 @@ export type ClientTableCellClient = {
   name?: unknown;
   phone?: string | null;
   deleted_at?: string | null;
+  /** b2c = individual (فرد), b2b = business (شركة / tax entity) */
+  business_type?: 'b2c' | 'b2b' | null;
 } | null | undefined;
 
 type ClientTableCellProps = {
@@ -36,6 +38,12 @@ export function ClientTableCell({ client, locale, fallback = '-' }: ClientTableC
 
   const clientName = resolveClientName(client.name, locale) || '-';
   const isClientDeleted = Boolean(client.deleted_at);
+  const businessTypeLabel =
+    client.business_type === 'b2b' || client.business_type === 'b2c'
+      ? client.business_type === 'b2b'
+        ? t('Business')
+        : t('Individual')
+      : null;
 
   const inner = (
     <>
@@ -47,6 +55,11 @@ export function ClientTableCell({ client, locale, fallback = '-' }: ClientTableC
           </Badge>
         )}
       </span>
+      {businessTypeLabel ? (
+        <span className="text-start text-sm text-gray-500 dark:text-gray-400" dir="auto">
+          {businessTypeLabel}
+        </span>
+      ) : null}
       {client.phone ? (
         <span
           dir="ltr"

@@ -199,24 +199,51 @@ export default function Cases() {
 
   const columns = [
     {
-      key: 'case_id',
-      label: t('Case ID'),
-      sortable: true
-    },
-    {
       key: 'title',
-      label: t('Title'),
+      label: t('Case'),
       sortable: true,
-      render: (value: any, row: any) => {
+      render: (_value: any, row: any) => {
         const title = row.title || '-';
         const caseNumber = row.case_number ? ` - ${row.case_number}` : '';
-        return `${title}${caseNumber}`;
-      }
+        const idLine = row.case_id ? String(row.case_id) : null;
+        return (
+          <div className="min-w-0">
+            {idLine ? (
+              <div className="text-xs font-mono text-muted-foreground tabular-nums">{idLine}</div>
+            ) : null}
+            <div className="break-words font-medium text-foreground">
+              {title}
+              {caseNumber}
+            </div>
+          </div>
+        );
+      },
     },
     {
       key: 'client',
       label: t('Client'),
       render: (_value: any, row: any) => <ClientTableCell client={row.client} locale={currentLocale} />,
+    },
+    {
+      key: 'case_type_id',
+      label: t('Case Type'),
+      sortable: true,
+      render: (_value: any, row: any) => (
+        <span className="text-foreground">
+          {resolveTranslatable(row.case_type?.name, currentLocale) || '-'}
+        </span>
+      ),
+    },
+    {
+      key: 'authority_type',
+      label: t('Entity type'),
+      render: (_value: any, row: any) => (
+        <span className="text-foreground break-words">
+          {row.authority_type
+            ? t(`authority_type_label_${row.authority_type}`)
+            : '—'}
+        </span>
+      ),
     },
     {
       key: 'case_status',
