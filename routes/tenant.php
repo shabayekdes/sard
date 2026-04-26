@@ -761,6 +761,17 @@ Route::middleware([
                 Route::get('api/tasks/calendar', [\App\Http\Controllers\TaskController::class, 'getCalendarTasks'])->middleware('permission:task_view_any')->name('api.tasks.calendar');
 
                 Route::get('api/tasks/case-users/{case}', [Controllers\TaskController::class, 'getCaseUsers'])->name('api.tasks.case-users');
+
+                Route::post('tasks/{task}/attachments', [Controllers\TaskAttachmentController::class, 'store'])
+                    ->middleware('permission:edit-tasks')
+                    ->name('task-attachments.store');
+                Route::get('task-attachments/{taskAttachmentId}/download', [Controllers\TaskAttachmentController::class, 'download'])
+                    ->middleware('permission:view-tasks')
+                    ->name('task-attachments.download');
+                Route::delete('task-attachments/{taskAttachmentId}', [Controllers\TaskAttachmentController::class, 'destroy'])
+                    ->middleware('permission:edit-tasks')
+                    ->name('task-attachments.destroy');
+
                 Route::get('api/clients/{client}/cases', [Controllers\InvoiceController::class, 'getClientCases'])->name('api.clients.cases');
                 Route::get('api/cases/{case}/time-entries', [Controllers\InvoiceController::class, 'getCaseTimeEntries'])->name('api.cases.time-entries');
                 Route::get('api/clients/{client}/time-entries', [Controllers\InvoiceController::class, 'getClientTimeEntries'])->name('api.clients.time-entries');

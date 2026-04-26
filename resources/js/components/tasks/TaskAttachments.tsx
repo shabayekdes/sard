@@ -1,61 +1,62 @@
 import React, { useState } from 'react';
-import { createPortal } from 'react-dom';
 import { router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Paperclip, Download, MoreHorizontal, Trash2, File, Image, FileText, Eye } from 'lucide-react';
-import { Task, TaskAttachment, MediaItem } from '@/types';
+import { Download, MoreHorizontal, Trash2, File, Image, FileText } from 'lucide-react';
+import { Task, TaskAttachmentItem } from '@/types';
 import MediaPicker from '@/components/MediaPicker';
 import { CrudDeleteModal } from '@/components/CrudDeleteModal';
-
-interface TaskAttachment {
-    id: number;
-    task_id: number;
-    media_item_id: number;
-    uploaded_by: number;
-    created_at: string;
-    updated_at: string;
-    media_item?: {
-        id: number;
-        name: string;
-        url: string;
-        thumb_url: string;
-        mime_type: string;
-    };
-}
+import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     task: Task;
-    attachments: TaskAttachment[];
-    availableMedia?: MediaItem[];
+    attachments: TaskAttachmentItem[];
     onUpdate?: () => void;
 }
 
-export default function TaskAttachments({ task, attachments, availableMedia = [], onUpdate }: Props) {
+export default function TaskAttachments({ task, attachments, onUpdate }: Props) {
+    const { t } = useTranslation();
     const [selectedMedia, setSelectedMedia] = useState('');
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [attachmentToDelete, setAttachmentToDelete] = useState<TaskAttachment | null>(null);
+    const [attachmentToDelete, setAttachmentToDelete] = useState<TaskAttachmentItem | null>(null);
 
-    const handleMediaSelect = (url: string, mediaIds?: number[]) => {
+    const handleMediaSelect = (url: string) => {
         setSelectedMedia(url);
-        
-        if (mediaIds && mediaIds.length > 0) {
-            router.post(route('task-attachments.store', task.id), {
-                media_item_ids: mediaIds
-            }, {
+        const parts = url
+            .split(',')
+            .map((u) => u.trim())
+            .filter(Boolean);
+        if (parts.length === 0) {
+            return;
+        }
+        router.post(
+            route('task-attachments.store', task.id),
+            { files: parts },
+            {
+                preserveScroll: true,
                 onSuccess: () => {
                     onUpdate?.();
                     setSelectedMedia('');
-                }
-            });
-        }
+                },
+                onError: (errors) => {
+                    const msg =
+                        typeof errors === 'string'
+                            ? errors
+                            : Object.values(errors as Record<string, string>)
+                                  .filter(Boolean)
+                                  .join(', ');
+                    toast.error(msg || t("Failed to add files"));
+                },
+            },
+        );
     };
 
     const handleDownload = (attachmentId: number) => {
         window.open(route('task-attachments.download', attachmentId), '_blank');
     };
 
-    const handleDelete = (attachment: TaskAttachment) => {
+    const handleDelete = (attachment: TaskAttachmentItem) => {
         setAttachmentToDelete(attachment);
         setIsDeleteModalOpen(true);
     };
@@ -73,12 +74,6 @@ export default function TaskAttachments({ task, attachments, availableMedia = []
                     setAttachmentToDelete(null);
                 }
             });
-        }
-    };
-
-    const handlePreview = (mediaItem: MediaItem) => {
-        if (mediaItem.mime_type?.startsWith('image/')) {
-            window.open(mediaItem.url, '_blank');
         }
     };
 
@@ -104,7 +99,7 @@ export default function TaskAttachments({ task, attachments, availableMedia = []
                                     {isImage && attachment.media_item?.thumb_url ? (
                                         <img
                                             src={attachment.media_item.thumb_url}
-                                            alt={attachment.media_item?.name || 'Attachment'}
+                                            alt={attachment.media_item?.name || t('Attachment')}
                                             className="w-full h-full object-cover cursor-pointer"
                                             onClick={() => window.open(attachment.media_item?.url || attachment.media_item.thumb_url, '_blank')}
                                             onError={(e) => {
@@ -129,15 +124,15 @@ export default function TaskAttachments({ task, attachments, availableMedia = []
                                         <DropdownMenuContent align="end" className="z-[9999]">
                                             <DropdownMenuItem onClick={() => handleDownload(attachment.id)}>
                                                 <Download className="h-4 w-4 mr-2" />
-                                                Download
+                                                {t('Download')}
                                             </DropdownMenuItem>
 
-                                            <DropdownMenuItem 
+                                            <DropdownMenuItem
                                                 onClick={() => handleDelete(attachment)}
                                                 className="text-red-600"
                                             >
                                                 <Trash2 className="h-4 w-4 mr-2" />
-                                                Remove
+                                                {t('Remove')}
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
@@ -153,11 +148,12 @@ export default function TaskAttachments({ task, attachments, availableMedia = []
             {/* Media Picker with Portal for Modal */}
             <div>
                 <MediaPicker
-                    label="Add Media"
+                    label={t('Add Media')}
                     value={selectedMedia}
                     onChange={handleMediaSelect}
-                    placeholder="Select media..."
+                    placeholder={t('Select media...')}
                     showPreview={true}
+                    multiple
                 />
             </div>
 
@@ -169,8 +165,8 @@ export default function TaskAttachments({ task, attachments, availableMedia = []
                     setAttachmentToDelete(null);
                 }}
                 onConfirm={handleDeleteConfirm}
-                itemName={attachmentToDelete?.media_item?.name || 'attachment'}
-                entityName="attachment"
+                itemName={attachmentToDelete?.name || attachmentToDelete?.media_item?.name || t('Attachment')}
+                entityName="Attachment"
             />
         </div>
     );

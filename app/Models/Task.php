@@ -109,6 +109,10 @@ class Task extends BaseModel
         return $this->hasMany(TaskComment::class)->latest();
     }
 
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(TaskAttachment::class)->orderByDesc('id');
+    }
 
     public function calculateProgress(): int
     {

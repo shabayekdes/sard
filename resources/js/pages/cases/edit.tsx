@@ -266,11 +266,8 @@ export default function EditCase() {
         uniqueClients.forEach((c) => {
             rows.push([c.id, c.name]);
         });
-        if (auth?.user && !uniqueClients.some((c) => String(c.id) === String(auth.user?.id))) {
-            rows.push([auth.user.id, `${auth.user.name} (Me)`]);
-        }
         return rows;
-    }, [uniqueClients, auth, t]);
+    }, [uniqueClients, t]);
 
     const categorySubcategoryTypeFields = useMemo(
         () => [
