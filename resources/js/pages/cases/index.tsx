@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { ClientTableCell } from '@/components/client-table-cell';
+import { Card, CardContent } from '@/components/ui/card';
 
 function resolveTranslatable(val: unknown, locale: string): string {
   if (val == null) return '';
@@ -23,7 +24,20 @@ function resolveTranslatable(val: unknown, locale: string): string {
 
 export default function Cases() {
   const { t, i18n } = useTranslation();
-  const { auth, cases, caseTypes, caseCategories, caseStatuses, clients, courts, countries, googleCalendarEnabled, planLimits, filters: pageFilters = {} } = usePage().props as any;
+  const {
+    auth,
+    cases,
+    caseTypes,
+    caseCategories,
+    caseStatuses,
+    clients,
+    courts,
+    countries,
+    googleCalendarEnabled,
+    planLimits,
+    caseIndexStats = { total: 0, active: 0, hearings_this_week: 0, struck_off: 0 },
+    filters: pageFilters = {},
+  } = usePage().props as any;
   const permissions = auth?.permissions || [];
   const currentLocale = i18n.language || 'en';
 
@@ -277,6 +291,37 @@ export default function Cases() {
 
   return (
     <PageTemplate title={t('Case Management')} url="/cases" actions={pageActions} breadcrumbs={breadcrumbs} noPadding>
+      <Card className="mb-4 border-slate-200 transition-shadow hover:shadow-md dark:border-gray-800">
+        <CardContent className="p-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div className="text-center">
+              <div className="text-xl font-bold text-blue-600">
+                {(caseIndexStats.total ?? 0).toLocaleString()}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">{t('Total cases')}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-xl font-bold text-emerald-600">
+                {(caseIndexStats.active ?? 0).toLocaleString()}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">{t('Active cases')}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-xl font-bold text-violet-600">
+                {(caseIndexStats.hearings_this_week ?? 0).toLocaleString()}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">{t('Hearings this week')}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-xl font-bold text-red-600">
+                {(caseIndexStats.struck_off ?? 0).toLocaleString()}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">{t('Struck off cases')}</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="mb-4 rounded-lg bg-white">
         <SearchAndFilterBar
           searchTerm={searchTerm}

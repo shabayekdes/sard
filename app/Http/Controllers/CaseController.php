@@ -27,6 +27,7 @@ use App\Models\TaskType;
 use App\Models\User;
 use App\Services\GoogleCalendarService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
@@ -167,6 +168,32 @@ class CaseController extends BaseController
             }
         }
 
+        $nowRiyadh = Carbon::now('Asia/Riyadh');
+        $dayOfWeek = $nowRiyadh->dayOfWeek;
+        $weekStart = $nowRiyadh->copy()->subDays($dayOfWeek)->startOfDay();
+        $weekEnd = $weekStart->copy()->addDays(6);
+
+        $caseIndexStats = [
+            'total' => CaseModel::withPermissionCheck()->count(),
+            'active' => CaseModel::withPermissionCheck()
+                ->where('status', 'active')
+                ->whereHas('caseStatus', function ($q) {
+                    $q->where('is_closed', false);
+                })
+                ->count(),
+            'hearings_this_week' => Hearing::withPermissionCheck()
+                ->whereBetween('hearing_date', [$weekStart->toDateString(), $weekEnd->toDateString()])
+                ->count(),
+            'struck_off' => CaseModel::withPermissionCheck()
+                ->whereHas('caseStatus', function ($q) {
+                    $q->where(function ($q2) {
+                        $q2->where('name->en', 'Dismissed (Struck Off)')
+                            ->orWhere('name->ar', 'مشطوبة');
+                    });
+                })
+                ->count(),
+        ];
+
         return Inertia::render('cases/index', [
             'cases' => $cases,
             'caseTypes' => $caseTypes,
@@ -177,6 +204,7 @@ class CaseController extends BaseController
             'countries' => $countries,
             'googleCalendarEnabled' => $googleCalendarEnabled,
             'planLimits' => $planLimits,
+            'caseIndexStats' => $caseIndexStats,
             'filters' => $request->all(['search', 'case_type_id', 'case_status_id', 'priority', 'status', 'court_id', 'sort_field', 'sort_direction', 'per_page']),
         ]);
     }
