@@ -490,6 +490,9 @@ Route::middleware([
                 Route::put('hearings/{hearing}/attachments', [Controllers\HearingController::class, 'updateAttachments'])
                     ->middleware('permission:edit-hearings')
                     ->name('hearings.attachments.update');
+                Route::post('hearings/{hearing}/send-client-summary', [Controllers\HearingController::class, 'sendClientSummary'])
+                    ->middleware('permission:edit-hearings')
+                    ->name('hearings.send-client-summary');
                 Route::delete('hearings/{hearing}', [Controllers\HearingController::class, 'destroy'])->middleware('permission:delete-hearings')->name('hearings.destroy');
                 Route::post('hearings/{hearing}/team-members', [Controllers\HearingController::class, 'attachTeamMember'])
                     ->middleware('permission:edit-hearings')

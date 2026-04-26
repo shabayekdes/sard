@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { PageTemplate } from '@/components/page-template';
-import { FileSpreadsheet, FileText, Pencil, Plus, Trash2, Users } from 'lucide-react';
+import { FileSpreadsheet, FileText, Mail, Pencil, Plus, Trash2, Users } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { toast } from '@/components/custom-toast';
 import { HearingAssignMemberModal } from '@/pages/hearings/HearingAssignMemberModal';
 import { HearingAttachmentsSection, type HearingAttachmentRow } from '@/pages/hearings/HearingAttachmentsSection';
 import { HearingMinutesModal } from '@/pages/hearings/HearingMinutesModal';
+import { HearingSendClientSummaryModal } from '@/pages/hearings/HearingSendClientSummaryModal';
 
 type HearingShowProps = {
   hearing: any;
@@ -88,6 +89,7 @@ export default function HearingShow() {
   const getInitials = useInitials();
   const [isMinutesModalOpen, setIsMinutesModalOpen] = useState(false);
   const [isAssignMemberModalOpen, setIsAssignMemberModalOpen] = useState(false);
+  const [isSendClientModalOpen, setIsSendClientModalOpen] = useState(false);
 
   const getTranslated = (value: unknown): string => {
     if (value == null) return '—';
@@ -244,6 +246,12 @@ export default function HearingShow() {
           route('hearings.edit', hearing.id),
           returnToCaseId ? { from_case: 1, case_id: returnToCaseId } : {},
         ),
+    });
+    pageActions.push({
+      label: t('Send to client'),
+      icon: <Mail className="h-4 w-4 ltr:mr-2 rtl:ml-2" />,
+      variant: 'outline' as const,
+      onClick: () => setIsSendClientModalOpen(true),
     });
   }
 
@@ -533,6 +541,19 @@ export default function HearingShow() {
                 }
               : null
           }
+        />
+
+        <HearingSendClientSummaryModal
+          open={isSendClientModalOpen}
+          onOpenChange={setIsSendClientModalOpen}
+          hearing={hearing ? { id: hearing.id, title: hearing.title, hearing_date: hearing.hearing_date, case: hearing.case } : null}
+          onAfterSend={() => {
+            router.get(
+              route('hearings.show', hearing.id),
+              returnToCaseId ? { case_id: returnToCaseId } : {},
+              { preserveScroll: true, replace: true },
+            );
+          }}
         />
       </div>
     </PageTemplate>

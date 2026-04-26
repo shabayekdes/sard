@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enum\EmailTemplateName;
 use App\Facades\Settings;
 use App\Models\CaseModel;
 use App\Models\CaseTeamMember;
@@ -13,7 +14,9 @@ use App\Models\User;
 use App\Models\Setting;
 use App\Models\CaseTimeline;
 use App\Models\EventType;
+use App\Services\EmailTemplateService;
 use App\Services\GoogleCalendarService;
+use App\Support\IslamicCalendar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -147,7 +150,7 @@ class HearingController extends BaseController
     {
         $hearing = Hearing::withPermissionCheck()
             ->with([
-                'case.client:id,name',
+                'case.client:id,name,email,user_id',
                 'court.courtType',
                 'court.circleType',
                 'hearingType',
@@ -181,6 +184,131 @@ class HearingController extends BaseController
             'reminderMinutes' => $reminderMinutes,
             'returnToCaseId' => $returnToCaseId,
         ]);
+    }
+
+    public function sendClientSummary(Request $request, $id)
+    {
+        $hearing = Hearing::withPermissionCheck()
+            ->with(['case.client', 'court'])
+            ->where('id', $id)
+            ->first();
+
+        if (! $hearing) {
+            return redirect()->route('hearings.index')->with('error', __(':model not found.', ['model' => __('Hearing')]));
+        }
+
+        $validated = $request->validate([
+            'client_email' => ['required', 'string', 'email', 'max:255'],
+            'summary_html' => ['nullable', 'string', 'max:50000'],
+        ]);
+
+        $case = $hearing->case;
+        if (! $case) {
+            return redirect()->back()->withErrors(['client_email' => __('Hearing has no case.')]);
+        }
+
+        $client = $case->client;
+        if (! $client) {
+            return redirect()->back()->withErrors(['client_email' => __('No client')]);
+        }
+
+        $template = \App\Models\EmailTemplate::where('type', EmailTemplateName::HEARING_CLIENT_SUMMARY)->first();
+        if (! $template) {
+            return redirect()->back()->withErrors([
+                'client_email' => __('Email template is not configured for this action. Run database seeders or add the HEARING_CLIENT_SUMMARY template.'),
+            ]);
+        }
+
+        $summaryHtml = $this->sanitizeClientSummaryHtml($validated['summary_html'] ?? '');
+        $userLanguage = auth()->user()->lang ?? 'en';
+
+        $hearingDate = $hearing->hearing_date instanceof Carbon
+            ? $hearing->hearing_date
+            : Carbon::parse((string) $hearing->hearing_date);
+
+        $hijriYmd = IslamicCalendar::hijriYmdFromGregorian($hearingDate);
+        $hijriDisplay = IslamicCalendar::hijriLongArabic($hearingDate);
+        if ($hijriDisplay === '') {
+            $hijriDisplay = $hijriYmd;
+        }
+
+        $gregorianDisplay = $hearingDate->copy()->locale($userLanguage === 'ar' ? 'ar' : 'en')->translatedFormat('l j F Y');
+
+        $timeStr = '';
+        if ($hearing->hearing_time && $hearing->hearing_date) {
+            $timePart = $hearing->hearing_time instanceof Carbon
+                ? $hearing->hearing_time->format('H:i:s')
+                : Carbon::parse((string) $hearing->hearing_time)->format('H:i:s');
+            $timeStr = Carbon::parse($hearing->hearing_date->format('Y-m-d').' '.$timePart)
+                ->locale($userLanguage === 'ar' ? 'ar' : 'en')
+                ->translatedFormat('g:i a');
+        }
+
+        $courtName = $hearing->court?->name ?? '';
+        $caseTitle = $case->title ?: ($case->case_id ?? '');
+        $lawyerName = auth()->user()->name ?? '';
+        $tenant = function_exists('tenant') ? tenant() : null;
+        $officeName = '';
+        if ($tenant) {
+            $officeName = (string) ($tenant->company_name ?? $tenant->name ?? '');
+        }
+
+        $portalActive = (bool) $client->user_id;
+        $portalUrl = route('cases.show', ['case' => $case->id], absolute: true);
+        if ($portalActive) {
+            $ctaLabel = $userLanguage === 'ar' ? 'عرض التفاصيل' : 'View details';
+            $portalCtaBlock = $userLanguage === 'ar'
+                ? '<div dir="rtl" style="text-align:center;margin-top:28px;"><a href="'.e($portalUrl).'" style="display:inline-block;background-color:#059669;color:#ffffff !important;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">'.e($ctaLabel).'</a></div>'
+                : '<div style="text-align:center;margin-top:28px;"><a href="'.e($portalUrl).'" style="display:inline-block;background-color:#059669;color:#ffffff !important;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">'.e($ctaLabel).'</a></div>';
+        } else {
+            $portalCtaBlock = '';
+        }
+
+        $variables = [
+            '{client_name}' => $client->name ?? '',
+            '{hearing_title}' => $hearing->title ?? '',
+            '{hearing_date_hijri}' => $userLanguage === 'ar' ? $hijriDisplay : ($hijriYmd !== '' ? $hijriYmd.' (Umm al-Qura)' : ''),
+            '{hearing_date_gregorian}' => $gregorianDisplay,
+            '{hearing_time}' => $timeStr,
+            '{court_name}' => $courtName,
+            '{case_title}' => $caseTitle,
+            '{hearing_summary_html}' => $summaryHtml !== '' ? $summaryHtml : '<p>—</p>',
+            '{lawyer_name}' => $lawyerName,
+            '{office_name}' => $officeName,
+            '{portal_cta_block}' => $portalCtaBlock,
+            '{app_name}' => config('app.name', 'Sard'),
+        ];
+
+        $emailService = new EmailTemplateService;
+        $sent = $emailService->sendTemplateEmailWithLanguage(
+            EmailTemplateName::HEARING_CLIENT_SUMMARY,
+            $variables,
+            $validated['client_email'],
+            (string) ($client->name ?? ''),
+            $userLanguage
+        );
+
+        if (! $sent) {
+            return redirect()->back()->withErrors([
+                'client_email' => __('Could not send email. Please check your mail settings.'),
+            ]);
+        }
+
+        return redirect()->back()->with('success', __('Hearing details were sent to the client successfully.'));
+    }
+
+    /**
+     * Allow basic rich text from the TipTap editor for the client email body.
+     */
+    private function sanitizeClientSummaryHtml(?string $html): string
+    {
+        if ($html === null || $html === '') {
+            return '';
+        }
+
+        $allowed = '<p><br><br/><strong><b><em><i><u><ul><ol><li><a><span><h1><h2><h3><blockquote>';
+
+        return strip_tags($html, $allowed);
     }
 
     public function edit(Request $request, $id)

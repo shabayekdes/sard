@@ -1,5 +1,6 @@
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
+import Underline from '@tiptap/extension-underline'
 import TextStyle from '@tiptap/extension-text-style'
 import Color from '@tiptap/extension-color'
 import TextAlign from '@tiptap/extension-text-align'
@@ -9,7 +10,7 @@ import { Separator } from './separator'
 import { 
   Bold, 
   Italic, 
-  Underline, 
+  Underline as UnderlineIcon, 
   Strikethrough, 
   AlignLeft, 
   AlignCenter, 
@@ -53,6 +54,7 @@ const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>(({
   const editor = useEditor({
     extensions: [
       StarterKit,
+      Underline,
       TextStyle,
       Color,
       TextAlign.configure({
@@ -128,6 +130,15 @@ const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>(({
             className={editor.isActive('italic') ? 'bg-muted' : ''}
           >
             <Italic className="h-4 w-4" />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().toggleUnderline().run()}
+            className={editor.isActive('underline') ? 'bg-muted' : ''}
+          >
+            <UnderlineIcon className="h-4 w-4" />
           </Button>
           
           <Button

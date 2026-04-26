@@ -78,6 +78,44 @@ class EmailTemplateSeeder extends Seeder
                 'user_id' => 1,
             ],
             [
+                'type' => EmailTemplateName::HEARING_CLIENT_SUMMARY,
+                'name' => ['ar' => 'إرسال تفاصيل الجلسة للعميل', 'en' => 'Hearing summary to client'],
+                'from' => ['ar' => 'سرد', 'en' => 'Sard'],
+                'subject' => [
+                    'ar' => 'تحديث بشأن جلسة — {hearing_title}',
+                    'en' => 'Hearing update — {hearing_title}',
+                ],
+                'content' => [
+                    'ar' => '<div dir="rtl" style="text-align:right;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.8;color:#111827;">'
+                        .'<p>مرحبًا {client_name}،</p>'
+                        .'<p>نود إعلامك بتفاصيل الجلسة المتعلقة بقضيتك.</p>'
+                        .'<p><strong>عنوان الجلسة:</strong> {hearing_title}<br>'
+                        .'<strong>تاريخ الجلسة:</strong> {hearing_date_hijri} — {hearing_date_gregorian}<br>'
+                        .'<strong>الوقت:</strong> {hearing_time}<br>'
+                        .'<strong>المحكمة:</strong> {court_name}<br>'
+                        .'<strong>القضية:</strong> {case_title}</p>'
+                        .'<div style="margin-top:16px;">{hearing_summary_html}</div>'
+                        .'<p style="margin-top:20px;">في حال وجود أي استفسار، لا تتردد في التواصل معنا.</p>'
+                        .'<p>مع تحيات،<br>{lawyer_name}<br>{office_name}</p>'
+                        .'{portal_cta_block}'
+                        .'</div>',
+                    'en' => '<div dir="ltr" style="text-align:left;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#111827;">'
+                        .'<p>Hello {client_name},</p>'
+                        .'<p>We would like to share the hearing details related to your case.</p>'
+                        .'<p><strong>Hearing title:</strong> {hearing_title}<br>'
+                        .'<strong>Hearing date:</strong> {hearing_date_hijri} — {hearing_date_gregorian}<br>'
+                        .'<strong>Time:</strong> {hearing_time}<br>'
+                        .'<strong>Court:</strong> {court_name}<br>'
+                        .'<strong>Case:</strong> {case_title}</p>'
+                        .'<div style="margin-top:16px;">{hearing_summary_html}</div>'
+                        .'<p style="margin-top:20px;">If you have any questions, please contact us.</p>'
+                        .'<p>Kind regards,<br>{lawyer_name}<br>{office_name}</p>'
+                        .'{portal_cta_block}'
+                        .'</div>',
+                ],
+                'user_id' => 1,
+            ],
+            [
                 'type' => EmailTemplateName::JUDGE_CREATED,
                 'name' => ['ar' => 'تم إنشاء ملف تعريف القاضي', 'en' => 'Judge Profile Created'],
                 'from' => ['ar' => 'Laravel', 'en' => 'Sard'],

@@ -118,6 +118,21 @@ class EmailTemplateController extends Controller
                 '{client_name}' => 'Client Name',
                 '{app_name}' => 'App Name'
             ];
+        } elseif ($templateType === EmailTemplateName::HEARING_CLIENT_SUMMARY->value) {
+            $variables = [
+                '{client_name}' => 'Client Name',
+                '{hearing_title}' => 'Hearing Title',
+                '{hearing_date_hijri}' => 'Hijri Date',
+                '{hearing_date_gregorian}' => 'Gregorian Date',
+                '{hearing_time}' => 'Time',
+                '{court_name}' => 'Court Name',
+                '{case_title}' => 'Case Title',
+                '{hearing_summary_html}' => 'Summary (HTML)',
+                '{lawyer_name}' => 'Lawyer Name',
+                '{office_name}' => 'Office Name',
+                '{portal_cta_block}' => 'Client portal button (HTML)',
+                '{app_name}' => 'App Name',
+            ];
         } elseif ($templateType === EmailTemplateName::COURT_CREATED->value) {
             $variables = [
                 '{user_name}' => 'User Name',
