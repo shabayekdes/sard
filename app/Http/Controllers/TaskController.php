@@ -20,7 +20,7 @@ class TaskController extends BaseController
     public function index(Request $request)
     {
         $query = Task::withPermissionCheck()
-            ->with(['taskType', 'taskStatus', 'assignedUser', 'case', 'creator']);
+            ->with(['taskType', 'taskStatus', 'assignedUser', 'case', 'creator', 'attachments']);
 
         // Handle search
         if ($request->has('search') && !empty($request->search)) {
@@ -286,17 +286,8 @@ class TaskController extends BaseController
             'comments.user',
             'checklists.assignedTo',
             'checklists.creator',
-            // 'attachments.mediaItem'
+            'attachments',
         ]);
-
-        // Ensure MediaItem appended attributes are loaded
-        // $task->attachments->load('mediaItem');
-        // $task->attachments->each(function ($attachment) {
-        //     if ($attachment->mediaItem) {
-        //         // Force load the media to ensure appended attributes work
-        //         $attachment->mediaItem->getFirstMedia('images');
-        //     }
-        // });
 
         $currentUser = auth()->user();
 

@@ -3,10 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Filter, Grid, List, SortAsc, SortDesc } from 'lucide-react';
-import { TaskAttachment } from '@/types';
+import { TaskAttachmentItem } from '@/types';
 
 interface Props {
-    attachments: TaskAttachment[];
+    attachments: TaskAttachmentItem[];
     onFilter: (filters: FileFilters) => void;
     viewMode: 'grid' | 'list';
     onViewModeChange: (mode: 'grid' | 'list') => void;

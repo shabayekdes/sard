@@ -221,7 +221,6 @@ export default function TaskModal({ task, isOpen, onClose, members = [], taskSta
                                 <TaskAttachments
                                     task={currentTask}
                                     attachments={currentTask.attachments || []}
-                                    availableMedia={[]}
                                     onUpdate={refreshTask}
                                 />
                             </TabsContent>

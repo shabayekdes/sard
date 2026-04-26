@@ -7,6 +7,24 @@ export interface TaskStatusOption {
     color?: string;
 }
 
+/** File linked to a task (media library path, same contract as client documents). */
+export interface TaskAttachmentItem {
+    id: number;
+    task_id: number;
+    name?: string;
+    file_path?: string;
+    uploaded_by?: number;
+    created_at?: string;
+    updated_at?: string;
+    media_item?: {
+        id: number;
+        name: string;
+        url: string;
+        thumb_url: string;
+        mime_type: string;
+    };
+}
+
 export interface Task {
     id: number;
     title: string;
@@ -22,6 +40,7 @@ export interface Task {
     /** Planned start (datetime). */
     start_date?: string | null;
     due_date?: string | null;
+    attachments?: TaskAttachmentItem[];
     [key: string]: unknown;
 }
 
