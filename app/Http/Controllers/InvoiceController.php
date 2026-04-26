@@ -281,7 +281,7 @@ class InvoiceController extends BaseController
             'subtotal' => 'nullable|numeric|min:0',
             'tax_amount' => 'nullable|numeric|min:0',
             'invoice_date' => 'required|date',
-            'due_date' => 'required|date|after:invoice_date',
+            'due_date' => 'required|date|after_or_equal:invoice_date',
             'notes' => 'nullable|string|max:1000',
             'line_items' => 'nullable|array',
             'line_items.*.description' => 'required|string',
