@@ -66,6 +66,12 @@ class TeamMemberRoleSeeder extends Seeder
             'create-case-notes',
             'edit-case-notes',
 
+            // Case Judgments
+            'manage-case-judgments',
+            'view-case-judgments',
+            'create-case-judgments',
+            'edit-case-judgments',
+
             // Case Timelines
             'manage-case-timelines',
             'view-case-timelines',

@@ -18,15 +18,17 @@ import { normalizeInertiaValidationErrors } from '@/utils/inertiaErrors';
 import { useInitials } from '@/hooks/use-initials';
 import { router, usePage } from '@inertiajs/react';
 import type { Task } from '@/types';
-import { AlertTriangle, ArrowLeft, Clock, FileText, Pencil, Plus, Search, Users, CheckSquare, Calendar } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Bell, Clock, FileText, Gavel, Pencil, Plus, Search, Users, CheckSquare, Calendar } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AUTHORITY_COURT_TYPES, mergeAuthorityTypeDetails } from '@/lib/case-authority-type';
+import { AppealReminderDurationField } from '@/components/AppealReminderDurationField';
 import GoogleCalendarModal from '@/components/GoogleCalendarModal';
 import TaskModal from '@/pages/tasks/TaskModal';
+import type { FormField } from '@/types/crud';
 
 /** Same sentinels/transform as tasks/index CrudFormModal (Radix Select disallows empty string values). */
 const TASK_FORM_NO_CASE = '__no_case__';
@@ -91,6 +93,7 @@ export default function CaseShow() {
         users,
         caseDocuments,
         caseNotes,
+        caseJudgments,
         documentTypes,
         eventTypes,
         roles,
@@ -474,6 +477,7 @@ export default function CaseShow() {
         if (activeTab === 'team') route_name = 'cases.case-team-members.destroy';
         if (activeTab === 'documents') route_name = 'advocate.case-documents.destroy';
         if (activeTab === 'notes') route_name = 'advocate.case-notes.destroy';
+        if (activeTab === 'judgments') route_name = 'advocate.case-judgments.destroy';
         if (activeTab === 'tasks') route_name = 'tasks.destroy';
 
         router.delete(route(route_name, currentItem.id), {
@@ -514,6 +518,83 @@ export default function CaseShow() {
                 onError: (errors) => {
                     toast.dismiss();
                     toast.error(`Failed to update note: ${Object.values(errors).join(', ')}`);
+                },
+            });
+        }
+    };
+
+    const judgmentStatusLabel = (status: string) => {
+        const map: Record<string, string> = {
+            pending_issuance: t('Judgment status pending issuance'),
+            issued: t('Judgment status issued'),
+            appealed: t('Judgment status appealed'),
+            final: t('Judgment status final'),
+            executed: t('Judgment status executed'),
+        };
+        return map[status] || status;
+    };
+
+    const judgmentReminderDurationLabel = (row: {
+        appeal_reminder_duration?: string;
+        appeal_reminder_custom_days?: number | null;
+    }) => {
+        const d = row.appeal_reminder_duration;
+        if (d === 'one_day_before') return t('Judgment reminder 1 day before');
+        if (d === 'three_days_before') return t('Judgment reminder 3 days before');
+        if (d === 'one_week_before') return t('Judgment reminder 1 week before');
+        if (d === 'custom' && row.appeal_reminder_custom_days != null && row.appeal_reminder_custom_days > 0) {
+            return t('Judgment reminder N days before', { count: row.appeal_reminder_custom_days });
+        }
+        if (d === 'custom') return t('Judgment reminder custom manual');
+        return '—';
+    };
+
+    const handleJudgmentAction = (action: string, item?: any) => {
+        setCurrentItem(item || null);
+        switch (action) {
+            case 'create':
+                setFormMode('create');
+                setIsFormModalOpen(true);
+                break;
+            case 'view':
+                setFormMode('view');
+                setIsFormModalOpen(true);
+                break;
+            case 'edit':
+                setFormMode('edit');
+                setIsFormModalOpen(true);
+                break;
+            case 'delete':
+                setIsDeleteModalOpen(true);
+                break;
+        }
+    };
+
+    const handleJudgmentSubmit = (formData: Record<string, unknown>) => {
+        const data = { ...formData, case_id: caseData.id };
+
+        if (formMode === 'create') {
+            router.post(route('advocate.case-judgments.store'), data, {
+                onSuccess: () => {
+                    setIsFormModalOpen(false);
+                    toast.dismiss();
+                    toast.success(t('Judgment record created'));
+                },
+                onError: () => {
+                    toast.dismiss();
+                    toast.error(t('Failed to save judgment'));
+                },
+            });
+        } else if (formMode === 'edit') {
+            router.put(route('advocate.case-judgments.update', currentItem.id), data, {
+                onSuccess: () => {
+                    setIsFormModalOpen(false);
+                    toast.dismiss();
+                    toast.success(t('Judgment record updated'));
+                },
+                onError: () => {
+                    toast.dismiss();
+                    toast.error(t('Failed to save judgment'));
                 },
             });
         }
@@ -1159,7 +1240,7 @@ export default function CaseShow() {
             <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow dark:border-gray-700 dark:bg-gray-900">
                 <div className="border-b border-gray-200 dark:border-gray-700">
                     <nav className="flex overflow-x-auto">
-                        {/* Tab order (Arabic UI): بيانات القضية / جلسات / المهام / المستندات / المكلفون / ملاحظات → الخط الزمني / البحوث القانونية */}
+                        {/* Tab order: Case / Sessions / Tasks / Documents / Team / Notes / Judgments / Timeline / Legal research */}
                         <button
                             onClick={() => {
                                 setActiveTab('details');
@@ -1257,6 +1338,23 @@ export default function CaseShow() {
                                 <div className="flex items-center space-x-2">
                                     <FileText className="h-4 w-4" />
                                     <span>{t('Notes')}</span>
+                                </div>
+                            </button>
+                        )}
+                        {hasPermission(permissions, 'view-case-judgments') && (
+                            <button
+                                onClick={() => {
+                                    setActiveTab('judgments');
+                                    router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
+                                }}
+                                className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'judgments'
+                                    ? 'border-primary text-primary dark:text-primary'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                                    }`}
+                            >
+                                <div className="flex items-center space-x-2">
+                                    <Gavel className="h-4 w-4" />
+                                    <span>{t('Judgments')}</span>
                                 </div>
                             </button>
                         )}
@@ -2202,6 +2300,94 @@ export default function CaseShow() {
                                     edit: 'edit-case-notes',
                                     delete: 'delete-case-notes',
                                 }}
+                            />
+                        </div>
+                    )}
+
+                    {activeTab === 'judgments' && (
+                        <div>
+                            <div className="mb-6 flex items-center justify-between">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('Case Judgments')}</h3>
+                                {hasPermission(permissions, 'create-case-judgments') && (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleJudgmentAction('create')}
+                                        className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90"
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                        {t('Add Judgment')}
+                                    </button>
+                                )}
+                            </div>
+
+                            <CrudTable
+                                columns={[
+                                    { key: 'judgment_number', label: t('Judgment number'), sortable: true },
+                                    { key: 'judgment_date', label: t('Judgment date'), sortable: true, type: 'date' },
+                                    {
+                                        key: 'status',
+                                        label: t('Judgment status'),
+                                        render: (value: string) => (
+                                            <span className="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-800 dark:bg-slate-800 dark:text-slate-100">
+                                                {judgmentStatusLabel(value)}
+                                            </span>
+                                        ),
+                                    },
+                                    {
+                                        key: 'appeal_deadline_date',
+                                        label: t('Appeal deadline date'),
+                                        type: 'date',
+                                    },
+                                    {
+                                        key: 'appeal_reminder_duration',
+                                        label: t('Appeal reminder when label'),
+                                        render: (
+                                            _: unknown,
+                                            row: {
+                                                appeal_reminder_enabled?: boolean;
+                                                appeal_reminder_duration?: string;
+                                                appeal_reminder_custom_days?: number | null;
+                                            },
+                                        ) => (row.appeal_reminder_enabled ? judgmentReminderDurationLabel(row) : '—'),
+                                    },
+                                    {
+                                        key: 'appeal_reminder_enabled',
+                                        label: t('Enable appeal deadline reminder'),
+                                        render: (value: boolean) => (
+                                            <span className="inline-flex items-center gap-1 text-sm text-gray-700 dark:text-gray-200">
+                                                {value ? <Bell className="h-4 w-4 text-amber-500" /> : null}
+                                                {value ? t('Yes') : t('No')}
+                                            </span>
+                                        ),
+                                    },
+                                ]}
+                                actions={[
+                                    { label: t('View'), icon: 'Eye', action: 'view', className: 'text-primary' },
+                                    { label: t('Edit'), icon: 'Edit', action: 'edit', className: 'text-amber-500' },
+                                    { label: t('Delete'), icon: 'Trash2', action: 'delete', className: 'text-red-500' },
+                                ]}
+                                data={caseJudgments?.data || []}
+                                from={caseJudgments?.from || 1}
+                                onAction={handleJudgmentAction}
+                                sortField={undefined}
+                                sortDirection={undefined}
+                                onSort={undefined}
+                                permissions={permissions}
+                                entityPermissions={{
+                                    view: 'view-case-judgments',
+                                    create: 'create-case-judgments',
+                                    edit: 'edit-case-judgments',
+                                    delete: 'delete-case-judgments',
+                                }}
+                            />
+
+                            <Pagination
+                                from={caseJudgments?.from || 0}
+                                to={caseJudgments?.to || 0}
+                                total={caseJudgments?.total || 0}
+                                links={caseJudgments?.links}
+                                entityName={t('Judgments')}
+                                onPageChange={(url) => router.get(url)}
                             />
                         </div>
                     )}
@@ -3358,6 +3544,123 @@ export default function CaseShow() {
                 />
             )}
 
+            {/* Case Judgment form */}
+            {activeTab === 'judgments' && (
+                <CrudFormModal
+                    isOpen={isFormModalOpen}
+                    onClose={() => setIsFormModalOpen(false)}
+                    onSubmit={handleJudgmentSubmit}
+                    formConfig={{
+                        fields: [
+                            { name: 'judgment_number', label: t('Judgment number'), type: 'text', required: true },
+                            { name: 'judgment_date', label: t('Judgment date'), type: 'date', required: true },
+                            { name: 'receipt_date', label: t('Judgment receipt date'), type: 'date' },
+                            { name: 'appeal_deadline_date', label: t('Appeal deadline date'), type: 'date' },
+                            {
+                                name: 'appeal_reminder_enabled',
+                                label: t('Enable appeal deadline reminder'),
+                                type: 'switch',
+                                defaultValue: false,
+                            },
+                            {
+                                name: 'appeal_reminder_duration',
+                                label: '',
+                                type: 'custom',
+                                required: true,
+                                defaultValue: 'one_day_before',
+                                conditional: (mode, formData) => Boolean(formData.appeal_reminder_enabled),
+                                render: (field: FormField, formData: Record<string, unknown>, handleChange: (name: string, value: unknown) => void) => (
+                                    <AppealReminderDurationField
+                                        value={(formData.appeal_reminder_duration as string) || 'one_day_before'}
+                                        onChange={(v) => handleChange('appeal_reminder_duration', v)}
+                                        disabled={formMode === 'view'}
+                                    />
+                                ),
+                            },
+                            {
+                                name: 'appeal_reminder_custom_days',
+                                label: t('Appeal reminder custom days label'),
+                                type: 'number',
+                                min: 1,
+                                max: 366,
+                                step: 1,
+                                required: true,
+                                placeholder: t('Appeal reminder custom days placeholder'),
+                                conditional: (mode, formData) =>
+                                    Boolean(formData.appeal_reminder_enabled) && formData.appeal_reminder_duration === 'custom',
+                            },
+                            {
+                                name: 'status',
+                                label: t('Judgment status'),
+                                type: 'select',
+                                required: true,
+                                selectAllowEmpty: false,
+                                defaultValue: 'pending_issuance',
+                                options: [
+                                    { value: 'pending_issuance', label: t('Judgment status pending issuance') },
+                                    { value: 'issued', label: t('Judgment status issued') },
+                                    { value: 'appealed', label: t('Judgment status appealed') },
+                                    { value: 'final', label: t('Judgment status final') },
+                                    { value: 'executed', label: t('Judgment status executed') },
+                                ],
+                            },
+                            {
+                                name: 'attachments',
+                                label: t('Upload judgment files'),
+                                type: 'media-picker',
+                                multiple: true,
+                                placeholder: t('Upload judgment files'),
+                            },
+                            {
+                                name: 'grounds',
+                                label: t('Grounds'),
+                                type: 'textarea',
+                                placeholder: t('Placeholders grounds'),
+                            },
+                            {
+                                name: 'summary',
+                                label: t('Judgment summary'),
+                                type: 'textarea',
+                                placeholder: t('Placeholders judgment summary'),
+                            },
+                        ],
+                        modalSize: 'xl',
+                    }}
+                    initialData={
+                        currentItem
+                            ? {
+                                  ...currentItem,
+                                  attachments: Array.isArray((currentItem as { attachment_paths?: string[] }).attachment_paths)
+                                      ? (currentItem as { attachment_paths: string[] }).attachment_paths.filter(Boolean).join(',')
+                                      : typeof (currentItem as { attachment_paths?: unknown }).attachment_paths === 'string'
+                                        ? ((currentItem as { attachment_paths: string }).attachment_paths as string)
+                                        : '',
+                                  appeal_reminder_enabled: Boolean((currentItem as { appeal_reminder_enabled?: boolean }).appeal_reminder_enabled),
+                                  appeal_reminder_duration:
+                                      (currentItem as { appeal_reminder_duration?: string }).appeal_reminder_duration || 'one_day_before',
+                                  appeal_reminder_custom_days:
+                                      (currentItem as { appeal_reminder_custom_days?: number | null }).appeal_reminder_custom_days != null
+                                          ? (currentItem as { appeal_reminder_custom_days: number }).appeal_reminder_custom_days
+                                          : '',
+                              }
+                            : {
+                                  status: 'pending_issuance',
+                                  appeal_reminder_enabled: false,
+                                  appeal_reminder_duration: 'one_day_before',
+                                  appeal_reminder_custom_days: '',
+                              }
+                    }
+                    title={
+                        formMode === 'create'
+                            ? t('Add Judgment')
+                            : formMode === 'edit'
+                              ? t('Edit Judgment')
+                              : t('View Judgment')
+                    }
+                    mode={formMode}
+                />
+            )}
+
             {/* Task Form Modal (same fields/flow as tasks/index) */}
             {activeTab === 'tasks' && (
                 <CrudFormModal
@@ -3515,9 +3818,17 @@ export default function CaseShow() {
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={handleDeleteConfirm}
-                itemName={currentItem?.title || currentItem?.user?.name || currentItem?.document_name || ''}
+                itemName={currentItem?.title || currentItem?.user?.name || currentItem?.document_name || currentItem?.judgment_number || ''}
                 entityName={
-                    activeTab === 'timelines' ? 'Timeline Event' : activeTab === 'team' ? 'Team Member' : activeTab === 'tasks' ? 'task' : 'Document'
+                    activeTab === 'timelines'
+                        ? 'Timeline Event'
+                        : activeTab === 'team'
+                          ? 'Team Member'
+                          : activeTab === 'tasks'
+                            ? 'task'
+                            : activeTab === 'judgments'
+                              ? 'Judgment'
+                              : 'Document'
                 }
             />
 

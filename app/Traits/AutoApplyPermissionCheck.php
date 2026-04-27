@@ -152,6 +152,11 @@ trait AutoApplyPermissionCheck
                     $q->where('user_id', $user->id);
                 });
 
+            case 'App\Models\CaseJudgment':
+                return $query->whereHas('case.teamMembers', function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                });
+
             case 'App\Models\CaseNote':
                 $companyId = $user->tenant_id;
                 $teamMemberIds = \App\Models\User::where('tenant_id', $companyId)->where('type', 'team_member')->pluck('id')->toArray();
@@ -309,6 +314,11 @@ trait AutoApplyPermissionCheck
                     });
                 
             case 'App\Models\CaseTimeline':
+                return $query->whereHas('case', function ($q) use ($client) {
+                    $q->where('client_id', $client->id);
+                });
+
+            case 'App\Models\CaseJudgment':
                 return $query->whereHas('case', function ($q) use ($client) {
                     $q->where('client_id', $client->id);
                 });

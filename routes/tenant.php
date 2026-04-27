@@ -383,6 +383,13 @@ Route::middleware([
                 Route::delete('advocate/case-notes/{note}', [Controllers\CaseNoteController::class, 'destroy'])->middleware('permission:delete-case-notes')->name('advocate.case-notes.destroy');
             });
 
+            // Case Judgment routes (case detail / CRUD)
+            Route::middleware('permission:manage-case-judgments')->group(function () {
+                Route::post('advocate/case-judgments', [Controllers\CaseJudgmentController::class, 'store'])->middleware('permission:create-case-judgments')->name('advocate.case-judgments.store');
+                Route::put('advocate/case-judgments/{judgment}', [Controllers\CaseJudgmentController::class, 'update'])->middleware('permission:edit-case-judgments')->name('advocate.case-judgments.update');
+                Route::delete('advocate/case-judgments/{judgment}', [Controllers\CaseJudgmentController::class, 'destroy'])->middleware('permission:delete-case-judgments')->name('advocate.case-judgments.destroy');
+            });
+
             // Document routes
             Route::middleware('permission:manage-documents')->group(function () {
                 Route::get('document-management/documents', [Controllers\DocumentController::class, 'index'])->name('document-management.documents.index');

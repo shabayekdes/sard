@@ -231,6 +231,15 @@ class RoleSeeder extends Seeder
             'edit-case-notes',
             'delete-case-notes',
 
+            // Case Judgment permissions
+            'manage-case-judgments',
+            'manage-any-case-judgments',
+            'manage-own-case-judgments',
+            'view-case-judgments',
+            'create-case-judgments',
+            'edit-case-judgments',
+            'delete-case-judgments',
+
             // Case Management permissions
             'manage-cases',
             'manage-any-cases',

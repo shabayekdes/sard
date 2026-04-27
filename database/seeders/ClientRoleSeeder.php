@@ -51,6 +51,10 @@ class ClientRoleSeeder extends Seeder
             'manage-case-notes',
             'view-case-notes',
 
+            // Case Judgments
+            'manage-case-judgments',
+            'view-case-judgments',
+
             // Case Timelines
             'manage-case-timelines',
             'view-case-timelines',

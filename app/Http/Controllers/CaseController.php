@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Facades\Settings;
 use App\Models\CaseCategory;
 use App\Models\CaseDocument;
+use App\Models\CaseJudgment;
 use App\Models\CaseModel;
 use App\Models\CaseStatus;
 use App\Models\CaseTeamMember;
@@ -336,6 +337,12 @@ class CaseController extends BaseController
             ->orderBy('created_at', 'desc');
         $caseNotes = $caseNotesQuery->paginate(10, ['*'], 'notes_page');
 
+        $caseJudgments = CaseJudgment::withPermissionCheck()
+            ->where('case_id', $case->id)
+            ->orderBy('judgment_date', 'desc')
+            ->orderBy('id', 'desc')
+            ->paginate($request->case_judgment_per_page ?? 10, ['*'], 'case_judgment_page');
+
         // Get research projects for this case with their notes and citations
         $researchProjects = ResearchProject::withPermissionCheck()
             ->with(['researchType', 'notes', 'citations.source'])
@@ -474,6 +481,7 @@ class CaseController extends BaseController
             'teamMembers' => $teamMembers,
             'caseDocuments' => $caseDocuments,
             'caseNotes' => $caseNotes,
+            'caseJudgments' => $caseJudgments,
             'researchProjects' => $researchProjects,
             'tasks' => $tasks,
             'users' => $users,
@@ -499,6 +507,7 @@ class CaseController extends BaseController
                 'task_sort_field', 'task_sort_direction', 'task_per_page',
                 'hearing_search', 'hearing_status', 'hearing_court_id', 'hearing_court_type_id',
                 'hearing_circle_type_id', 'hearing_sort_field', 'hearing_sort_direction', 'hearing_per_page',
+                'case_judgment_per_page',
             ]),
         ]);
     }

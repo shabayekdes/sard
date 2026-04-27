@@ -38,6 +38,7 @@ class CreateTeamMemberRole extends Command
             'manage-cases', 'view-cases', 'create-cases', 'edit-cases', 'toggle-status-cases',
             'manage-case-documents', 'view-case-documents', 'create-case-documents', 'edit-case-documents', 'download-case-documents',
             'manage-case-notes', 'view-case-notes', 'create-case-notes', 'edit-case-notes',
+            'manage-case-judgments', 'view-case-judgments', 'create-case-judgments', 'edit-case-judgments',
             'manage-case-timelines', 'view-case-timelines', 'create-case-timelines', 'edit-case-timelines',
             'manage-clients', 'view-clients', 'create-clients', 'edit-clients',
 

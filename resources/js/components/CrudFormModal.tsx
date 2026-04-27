@@ -1042,12 +1042,14 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                                 width: '100%',
                                             }}
                                         >
-                                            <Label htmlFor={field.name} className="text-sm font-medium block text-start">
-                                                {field.label}{' '}
-                                                {field.required && !(field.type === 'file' && mode === 'edit') && (
-                                                    <span className="text-red-500">*</span>
-                                                )}
-                                            </Label>
+                                            {field.label ? (
+                                                <Label htmlFor={field.name} className="text-sm font-medium block text-start">
+                                                    {field.label}{' '}
+                                                    {field.required && !(field.type === 'file' && mode === 'edit') && (
+                                                        <span className="text-red-500">*</span>
+                                                    )}
+                                                </Label>
+                                            ) : null}
                                             {renderField(field)}
                                             {errors[field.name] && <p className="text-xs text-red-500">{errors[field.name]}</p>}
                                         </div>
@@ -1081,12 +1083,14 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                                 flexGrow: field.width ? 0 : 1,
                                             }}
                                         >
-                                            <Label htmlFor={field.name} className="text-sm font-medium block text-start">
-                                                {field.label}{' '}
-                                                {field.required && !(field.type === 'file' && mode === 'edit') && (
-                                                    <span className="text-red-500">*</span>
-                                                )}
-                                            </Label>
+                                            {field.label ? (
+                                                <Label htmlFor={field.name} className="text-sm font-medium block text-start">
+                                                    {field.label}{' '}
+                                                    {field.required && !(field.type === 'file' && mode === 'edit') && (
+                                                        <span className="text-red-500">*</span>
+                                                    )}
+                                                </Label>
+                                            ) : null}
                                             {renderField(field)}
                                             {errors[field.name] && <p className="text-xs text-red-500">{errors[field.name]}</p>}
                                         </div>
@@ -1119,12 +1123,14 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                                 className="space-y-2 text-start"
                                                 style={{ width: field.width || '100%' }}
                                             >
-                                                <Label htmlFor={field.name} className="text-sm font-medium block text-start">
-                                                    {field.label}{' '}
-                                                    {field.required && !(field.type === 'file' && mode === 'edit') && (
-                                                        <span className="text-red-500">*</span>
-                                                    )}
-                                                </Label>
+                                                {field.label ? (
+                                                    <Label htmlFor={field.name} className="text-sm font-medium block text-start">
+                                                        {field.label}{' '}
+                                                        {field.required && !(field.type === 'file' && mode === 'edit') && (
+                                                            <span className="text-red-500">*</span>
+                                                        )}
+                                                    </Label>
+                                                ) : null}
                                                 {renderField(field)}
                                                 {errors[field.name] && <p className="text-xs text-red-500">{errors[field.name]}</p>}
                                             </div>

@@ -280,6 +280,21 @@ class PermissionSeeder extends Seeder
 
             ['name' => 'delete-case-notes', 'module' => 'case_notes', 'label' => ['en' => 'Delete Case Notes', 'ar' => 'حذف مذكرات القضايا']],
 
+            // Case Judgments
+            ['name' => 'manage-case-judgments', 'module' => 'case_judgments', 'label' => ['en' => 'Manage Case Judgments', 'ar' => 'إدارة أحكام القضية']],
+
+            ['name' => 'manage-any-case-judgments', 'module' => 'case_judgments', 'label' => ['en' => 'Manage All Case Judgments', 'ar' => 'إدارة جميع أحكام القضايا']],
+
+            ['name' => 'manage-own-case-judgments', 'module' => 'case_judgments', 'label' => ['en' => 'Manage Own Case Judgments', 'ar' => 'إدارة أحكام القضايا الخاصة']],
+
+            ['name' => 'view-case-judgments', 'module' => 'case_judgments', 'label' => ['en' => 'View Case Judgments', 'ar' => 'عرض أحكام القضية']],
+
+            ['name' => 'create-case-judgments', 'module' => 'case_judgments', 'label' => ['en' => 'Create Case Judgments', 'ar' => 'إنشاء سجلات أحكام']],
+
+            ['name' => 'edit-case-judgments', 'module' => 'case_judgments', 'label' => ['en' => 'Edit Case Judgments', 'ar' => 'تعديل أحكام القضية']],
+
+            ['name' => 'delete-case-judgments', 'module' => 'case_judgments', 'label' => ['en' => 'Delete Case Judgments', 'ar' => 'حذف أحكام القضية']],
+
             // Case Management
             ['name' => 'manage-cases', 'module' => 'cases', 'label' => ['en' => 'Manage Cases', 'ar' => 'إدارة القضايا']],
 
