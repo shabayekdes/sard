@@ -24,6 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { AUTHORITY_COURT_TYPES, mergeAuthorityTypeDetails } from '@/lib/case-authority-type';
 import GoogleCalendarModal from '@/components/GoogleCalendarModal';
 import TaskModal from '@/pages/tasks/TaskModal';
 
@@ -126,6 +127,20 @@ export default function CaseShow() {
         if (name && typeof name === 'object') return name[currentLocale] || name.en || name.ar || '-';
         return '-';
     };
+
+    const authorityTypeKey = caseData.authority_type || '';
+    const authorityDetails = mergeAuthorityTypeDetails(caseData.authority_type_details);
+    const isCourtAuthority = (AUTHORITY_COURT_TYPES as readonly string[]).includes(authorityTypeKey);
+    const entityNameAuthorityTypes = ['committee', 'prosecution', 'police', 'prisons', 'other'] as const;
+    const courtOrEntityDisplay = isCourtAuthority
+        ? caseData.court?.name || '-'
+        : entityNameAuthorityTypes.includes(authorityTypeKey as (typeof entityNameAuthorityTypes)[number])
+          ? authorityDetails.entity_name || '-'
+          : '-';
+    const formatDetailDate = (v: string | undefined) =>
+        v
+            ? (typeof window !== 'undefined' && (window as any).appSettings?.formatDate?.(v)) || String(v).slice(0, 10)
+            : '-';
 
     const [activeTab, setActiveTab] = useState('details');
     const [selectedProject, setSelectedProject] = useState<any>(null);
@@ -1144,6 +1159,7 @@ export default function CaseShow() {
             <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow dark:border-gray-700 dark:bg-gray-900">
                 <div className="border-b border-gray-200 dark:border-gray-700">
                     <nav className="flex overflow-x-auto">
+                        {/* Tab order (Arabic UI): بيانات القضية / جلسات / المهام / المستندات / المكلفون / ملاحظات → الخط الزمني / البحوث القانونية */}
                         <button
                             onClick={() => {
                                 setActiveTab('details');
@@ -1159,71 +1175,20 @@ export default function CaseShow() {
                                 <span>{t('Case Details')}</span>
                             </div>
                         </button>
-                        {hasPermission(permissions, 'view-case-timelines') && (
+                        {hasPermission(permissions, 'view-hearings') && (
                             <button
                                 onClick={() => {
-                                    setActiveTab('timelines');
+                                    setActiveTab('hearings');
                                     router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
-                                className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'timelines'
+                                className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'hearings'
                                     ? 'border-primary text-primary dark:text-primary'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                                     }`}
                             >
                                 <div className="flex items-center space-x-2">
-                                    <Clock className="h-4 w-4" />
-                                    <span>{t('Timeline')}</span>
-                                </div>
-                            </button>
-                        )}
-                        {hasPermission(permissions, 'view-case-team-members') && (
-                            <button
-                                onClick={() => {
-                                    setActiveTab('team');
-                                    router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
-                                }}
-                                className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'team'
-                                    ? 'border-primary text-primary dark:text-primary'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                                    }`}
-                            >
-                                <div className="flex items-center space-x-2">
-                                    <Users className="h-4 w-4" />
-                                    <span>{t('Team Members')}</span>
-                                </div>
-                            </button>
-                        )}
-                        {hasPermission(permissions, 'view-case-documents') && (
-                            <button
-                                onClick={() => {
-                                    setActiveTab('documents');
-                                    router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
-                                }}
-                                className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'documents'
-                                    ? 'border-primary text-primary dark:text-primary'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                                    }`}
-                            >
-                                <div className="flex items-center space-x-2">
-                                    <FileText className="h-4 w-4" />
-                                    <span>{t('Documents')}</span>
-                                </div>
-                            </button>
-                        )}
-                        {hasPermission(permissions, 'view-case-notes') && (
-                            <button
-                                onClick={() => {
-                                    setActiveTab('notes');
-                                    router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
-                                }}
-                                className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'notes'
-                                    ? 'border-primary text-primary dark:text-primary'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                                    }`}
-                            >
-                                <div className="flex items-center space-x-2">
-                                    <FileText className="h-4 w-4" />
-                                    <span>{t('Notes')}</span>
+                                    <Calendar className="h-4 w-4" />
+                                    <span>{t('Sessions')}</span>
                                 </div>
                             </button>
                         )}
@@ -1244,20 +1209,71 @@ export default function CaseShow() {
                                 </div>
                             </button>
                         )}
-                        {hasPermission(permissions, 'view-hearings') && (
+                        {hasPermission(permissions, 'view-case-documents') && (
                             <button
                                 onClick={() => {
-                                    setActiveTab('hearings');
+                                    setActiveTab('documents');
                                     router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
-                                className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'hearings'
+                                className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'documents'
                                     ? 'border-primary text-primary dark:text-primary'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                                     }`}
                             >
                                 <div className="flex items-center space-x-2">
-                                    <Calendar className="h-4 w-4" />
-                                    <span>{t('Sessions')}</span>
+                                    <FileText className="h-4 w-4" />
+                                    <span>{t('Documents')}</span>
+                                </div>
+                            </button>
+                        )}
+                        {hasPermission(permissions, 'view-case-team-members') && (
+                            <button
+                                onClick={() => {
+                                    setActiveTab('team');
+                                    router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
+                                }}
+                                className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'team'
+                                    ? 'border-primary text-primary dark:text-primary'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                                    }`}
+                            >
+                                <div className="flex items-center space-x-2">
+                                    <Users className="h-4 w-4" />
+                                    <span>{t('Team Members')}</span>
+                                </div>
+                            </button>
+                        )}
+                        {hasPermission(permissions, 'view-case-notes') && (
+                            <button
+                                onClick={() => {
+                                    setActiveTab('notes');
+                                    router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
+                                }}
+                                className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'notes'
+                                    ? 'border-primary text-primary dark:text-primary'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                                    }`}
+                            >
+                                <div className="flex items-center space-x-2">
+                                    <FileText className="h-4 w-4" />
+                                    <span>{t('Notes')}</span>
+                                </div>
+                            </button>
+                        )}
+                        {hasPermission(permissions, 'view-case-timelines') && (
+                            <button
+                                onClick={() => {
+                                    setActiveTab('timelines');
+                                    router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
+                                }}
+                                className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'timelines'
+                                    ? 'border-primary text-primary dark:text-primary'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                                    }`}
+                            >
+                                <div className="flex items-center space-x-2">
+                                    <Clock className="h-4 w-4" />
+                                    <span>{t('Timeline')}</span>
                                 </div>
                             </button>
                         )}
@@ -1379,6 +1395,104 @@ export default function CaseShow() {
                                 </div>
                             </div>
 
+                            <div>
+                                <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">{t('Entity and court')}</h3>
+                                <div className="grid grid-cols-1 gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800 md:grid-cols-3">
+                                    <div>
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Entity type')}:</span>
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                            {authorityTypeKey ? t(`authority_type_label_${authorityTypeKey}`) : '-'}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                            {t('Court or entity name')}:
+                                        </span>
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-white">{courtOrEntityDisplay}</p>
+                                    </div>
+                                    <div>
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                            {t('Circle Number')}:
+                                        </span>
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                            {isCourtAuthority && caseData.court?.circleType
+                                                ? getTranslatedValue(
+                                                      (caseData.court.circleType as { name?: unknown }).name ?? caseData.court.circleType,
+                                                  )
+                                                : '-'}
+                                        </p>
+                                    </div>
+
+                                    {authorityTypeKey === 'reconciliation' && (
+                                        <div className="md:col-span-3 space-y-3 border-t border-gray-200 pt-4 dark:border-gray-600">
+                                            <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+                                                {t('Reconciliation fields')}
+                                            </h4>
+                                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                                                <div>
+                                                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                        {t('Reconciliation claim number')}:
+                                                    </span>
+                                                    <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                                        {authorityDetails.reconciliation_suit_number || '-'}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                        {t('Reconciliation claim date')}:
+                                                    </span>
+                                                    <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                                        {formatDetailDate(authorityDetails.reconciliation_suit_date)}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                        {t('Reconciliation report number')}:
+                                                    </span>
+                                                    <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                                        {authorityDetails.reconciliation_report_number || '-'}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                        {t('Reconciliation report date')}:
+                                                    </span>
+                                                    <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                                        {formatDetailDate(authorityDetails.reconciliation_report_date)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {authorityTypeKey === 'amicable_settlement' && (
+                                        <div className="md:col-span-3 space-y-3 border-t border-gray-200 pt-4 dark:border-gray-600">
+                                            <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+                                                {t('Friendly settlement fields')}
+                                            </h4>
+                                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                                <div>
+                                                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                        {t('Claim number')}:
+                                                    </span>
+                                                    <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                                        {authorityDetails.amicable_suit_number || '-'}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                        {t('Claim date')}:
+                                                    </span>
+                                                    <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                                        {formatDetailDate(authorityDetails.amicable_suit_date)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
                             {/* Client Details - role from case attributes (petitioner | respondent) */}
                             <div>
                                 <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
@@ -1416,9 +1530,11 @@ export default function CaseShow() {
                             {(() => {
                                 const oppositeIsPetitioner = caseData.attributes === 'respondent';
                                 const oppositeRoleLabel = oppositeIsPetitioner ? t('Petitioner') : t('Respondent');
-                                const lawyerKey = oppositeIsPetitioner ? "Petitioner's Lawyer" : "Respondent's Lawyer";
-                                const nameKey = oppositeIsPetitioner ? "Petitioner's Name" : "Respondent's Name";
-                                const nationalityKey = oppositeIsPetitioner ? "Petitioner's Nationality" : "Respondent's Nationality";
+                                const formatPartyDate = (v: string | undefined | null) =>
+                                    v
+                                        ? (typeof window !== 'undefined' && (window as any).appSettings?.formatDate?.(String(v))) ||
+                                          String(v).slice(0, 10)
+                                        : '-';
                                 return (
                             <div>
                                 <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
@@ -1430,14 +1546,14 @@ export default function CaseShow() {
                                             <thead>
                                                 <tr className="border-b border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-700">
                                                     <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">#</th>
-                                                    <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t('Business Type')}</th>
-                                                    <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t(lawyerKey)}</th>
-                                                    <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t(nameKey)}</th>
-                                                    <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t(nationalityKey)}</th>
-                                                    <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t('ID Number')}</th>
-                                                    <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t('Date of Birth')}</th>
+                                                    <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t('Full Name')}</th>
                                                     <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t('Phone Number')}</th>
+                                                    <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t('Business Type')}</th>
                                                     <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t('Email')}</th>
+                                                    <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t('Nationality')}</th>
+                                                    <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t('ID National')}</th>
+                                                    <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t('Lawyer Name')}</th>
+                                                    <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t('Date of Birth')}</th>
                                                     <th className="min-w-[12rem] px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t('Address')}</th>
                                                 </tr>
                                             </thead>
@@ -1445,20 +1561,20 @@ export default function CaseShow() {
                                                 {caseData.opposite_parties.map((party: any, index: number) => (
                                                     <tr key={party.id || index} className="border-b border-gray-200 last:border-b-0 dark:border-gray-700">
                                                         <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">{index + 1}</td>
+                                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">{party.name || '-'}</td>
+                                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">{party.phone || '-'}</td>
                                                         <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">
                                                             {party.business_type === 'b2b' ? t('Business') : t('Individual')}
                                                         </td>
-                                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">{party.lawyer_name || '-'}</td>
-                                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">{party.name || '-'}</td>
+                                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">{party.email || '-'}</td>
                                                         <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">
                                                             {party.nationality ? getTranslatedValue(party.nationality.name || party.nationality) : '-'}
                                                         </td>
                                                         <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">{party.id_number || '-'}</td>
+                                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">{party.lawyer_name || '-'}</td>
                                                         <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">
-                                                            {party.date_of_birth ? String(party.date_of_birth).slice(0, 10) : '-'}
+                                                            {formatPartyDate(party.date_of_birth)}
                                                         </td>
-                                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">{party.phone || '-'}</td>
-                                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">{party.email || '-'}</td>
                                                         <td className="max-w-xs break-words px-4 py-3 text-sm text-gray-900 dark:text-white">{party.address || '-'}</td>
                                                     </tr>
                                                 ))}

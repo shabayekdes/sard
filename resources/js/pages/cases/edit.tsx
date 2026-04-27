@@ -3,11 +3,11 @@ import { CaseAuthorityFields } from '@/components/cases/CaseAuthorityFields';
 import { CasePleadingFields } from '@/components/cases/CasePleadingFields';
 import { CaseDocumentsDropzone } from '@/components/cases/CaseDocumentsDropzone';
 import { htmlPlainTextLength } from '@/lib/htmlPlainTextLength';
-import { cn } from '@/lib/utils';
 import { toast } from '@/components/custom-toast';
-import { CrudFormModal } from '@/components/CrudFormModal';
-import { QuickClientModal } from '@/components/quick-client-modal';
 import { GregorianHijriDateField } from '@/components/GregorianHijriDateField';
+import { CrudFormModal } from '@/components/CrudFormModal';
+import DependentDropdown from '@/components/DependentDropdown';
+import { QuickClientModal } from '@/components/quick-client-modal';
 import { PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,9 +17,9 @@ import { Repeater, type RepeaterField } from '@/components/ui/repeater';
 import { Select as FormSelect } from '@/components/forms/select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import DependentDropdown from '@/components/DependentDropdown';
 import { useLayout } from '@/contexts/LayoutContext';
 import { AUTHORITY_COURT_TYPES, emptyAuthorityTypeDetails, mergeAuthorityTypeDetails, type AuthorityTypeDetails } from '@/lib/case-authority-type';
+import { cn } from '@/lib/utils';
 import { hasPermission } from '@/utils/authorization';
 import { router, usePage } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
@@ -60,7 +60,6 @@ export default function EditCase() {
         auth,
         case: caseProp,
         clients,
-        caseTypes,
         caseCategories,
         caseStatuses,
         courts,
@@ -71,12 +70,12 @@ export default function EditCase() {
         phoneCountries = [],
         defaultCountry = '',
         errors = {},
-        base_url,
     } = usePage().props as any;
     const permissions = auth?.permissions || [];
     const canQuickCreateCourt = hasPermission(permissions, 'create-courts');
     const canQuickCreateClient = hasPermission(permissions, 'create-clients');
     const { isRtl } = useLayout();
+    const selectDir = isRtl ? 'rtl' : 'ltr';
     const currentLocale = i18n.language || 'en';
     const caseId = caseProp?.id;
 
@@ -88,6 +87,7 @@ export default function EditCase() {
                 }, 0);
             }
         };
+
         window.addEventListener('languageChanged', handleLanguageChange);
         i18n.on('languageChanged', handleLanguageChange);
         return () => {
@@ -97,9 +97,7 @@ export default function EditCase() {
     }, [i18n, caseId]);
 
     const [formData, setFormData] = useState(() => {
-        const oppositeParties = caseProp?.opposite_parties?.length
-            ? caseProp.opposite_parties
-            : [];
+        const oppositeParties = caseProp?.opposite_parties?.length ? caseProp.opposite_parties : [];
         return {
             ...defaultFormData,
             ...caseProp,
@@ -108,7 +106,8 @@ export default function EditCase() {
             case_number: caseProp?.case_number != null ? String(caseProp.case_number) : '',
             file_number: caseProp?.file_number != null ? String(caseProp.file_number) : '',
             filing_date: caseProp?.filing_date != null ? String(caseProp.filing_date).slice(0, 10) : '',
-            expected_completion_date: caseProp?.expected_completion_date != null ? String(caseProp.expected_completion_date).slice(0, 10) : '',
+            expected_completion_date:
+                caseProp?.expected_completion_date != null ? String(caseProp.expected_completion_date).slice(0, 10) : '',
             estimated_value: caseProp?.estimated_value != null ? String(caseProp.estimated_value) : '',
             description: caseProp?.description != null ? String(caseProp.description) : '',
             case_subject: caseProp?.case_subject != null ? String(caseProp.case_subject) : '',
@@ -137,14 +136,16 @@ export default function EditCase() {
     });
 
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-    const [step, setStep] = useState<1 | 2>(1);
     const [courtModalOpen, setCourtModalOpen] = useState(false);
     const [clientModalOpen, setClientModalOpen] = useState(false);
     const normalizedErrors = useMemo(() => {
         const next: Record<string, string> = {};
         Object.entries(errors || {}).forEach(([key, value]) => {
-            if (Array.isArray(value)) next[key] = value[0] || '';
-            else if (value) next[key] = value as string;
+            if (Array.isArray(value)) {
+                next[key] = value[0] || '';
+            } else if (value) {
+                next[key] = value as string;
+            }
         });
         return next;
     }, [errors]);
@@ -288,39 +289,6 @@ export default function EditCase() {
         });
     };
 
-    const toIdAndName = (item: any): { id: string | number; name: string } | null => {
-        if (!item) return null;
-        if (Array.isArray(item)) {
-            const id = item[0];
-            if (id == null || id === '') return null;
-            return { id, name: item[1] ?? '' };
-        }
-        const id = item.id;
-        if (id == null) return null;
-        return { id, name: item.name ?? '' };
-    };
-
-    const uniqueClients = useMemo(() => {
-        const seen = new Set<string>();
-        return (clients || [])
-            .map(toIdAndName)
-            .filter((c): c is { id: string | number; name: string } => {
-                if (!c) return false;
-                const id = String(c.id);
-                if (seen.has(id)) return false;
-                seen.add(id);
-                return true;
-            });
-    }, [clients]);
-
-    const clientSelectOptions = useMemo(() => {
-        const rows: ([string | number | null, string] | [null, string])[] = [[null, t('Select Client')]];
-        uniqueClients.forEach((c) => {
-            rows.push([c.id, c.name]);
-        });
-        return rows;
-    }, [uniqueClients, t]);
-
     const categorySubcategoryTypeFields = useMemo(
         () => [
             {
@@ -365,31 +333,15 @@ export default function EditCase() {
         return nextFieldErrors;
     };
 
-    const goToStep2 = () => {
-        const nextFieldErrors = validateStep1();
-        if (Object.keys(nextFieldErrors).length > 0) {
-            setFieldErrors(nextFieldErrors);
-            return;
-        }
-        setFieldErrors({});
-        setStep(2);
-        if (typeof window !== 'undefined') {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    };
-
     const handleFormSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (step !== 2) {
-            return;
-        }
+
         const nextFieldErrors = validateStep1();
         if (htmlPlainTextLength(formData.case_subject || '') > 8000) {
             nextFieldErrors.case_subject = t('The case subject may not exceed 8000 characters of text.');
         }
         if (Object.keys(nextFieldErrors).length > 0) {
             setFieldErrors(nextFieldErrors);
-            setStep(1);
             if (typeof window !== 'undefined') {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
@@ -400,6 +352,7 @@ export default function EditCase() {
         const filteredDocuments = (formData.documents || []).filter(
             (doc: any) => doc?.document_name && doc?.document_type_id && doc?.confidentiality && doc?.file,
         );
+
         const payload = {
             ...formData,
             case_category_id: formData.case_category_id === '' ? null : formData.case_category_id,
@@ -411,13 +364,21 @@ export default function EditCase() {
             onSuccess: (page) => {
                 toast.dismiss();
                 const flash = (page as any)?.props?.flash;
-                if (flash?.success) toast.success(flash.success);
-                else if (flash?.error) toast.error(flash.error);
+                if (flash?.success) {
+                    toast.success(flash.success);
+                } else if (flash?.error) {
+                    toast.error(flash.error);
+                }
             },
             onError: (formErrors) => {
                 toast.dismiss();
-                if (typeof formErrors === 'string') toast.error(formErrors);
-                else if (Object.values(formErrors).length > 0) toast.error(t('Failed to update {{model}}: {{errors}}', { model: t('Case'), errors: Object.values(formErrors).join(', ') }));
+                if (typeof formErrors === 'string') {
+                    toast.error(formErrors);
+                } else if (Object.values(formErrors).length > 0) {
+                    toast.error(
+                        t('Failed to update {{model}}: {{errors}}', { model: t('Case'), errors: Object.values(formErrors).join(', ') }),
+                    );
+                }
             },
         });
     };
@@ -430,61 +391,12 @@ export default function EditCase() {
         { title: t('Edit Case') },
     ];
 
-    const renderError = (field: string) =>
-        normalizedErrors[field] ? <p className="text-xs text-red-500">{normalizedErrors[field]}</p> : null;
-    const oppositePartyErrorKey = Object.keys(normalizedErrors).find((k) => k.startsWith('opposite_parties'));
+    const renderError = (field: string) => (normalizedErrors[field] ? <p className="text-xs text-red-500">{normalizedErrors[field]}</p> : null);
 
-    const documentTypeOptions = (documentTypes || []).map((type: any) => ({
-        value: type.id.toString(),
-        label: resolveTranslatableName(type),
-    }));
-
-    const documentListError = Object.keys(normalizedErrors).some((k) => k.startsWith('documents'))
-        ? normalizedErrors['documents.0.document_name'] ||
-          normalizedErrors['documents.0.file'] ||
-          normalizedErrors['documents.0.document_type_id'] ||
-          normalizedErrors['documents.0.confidentiality'] ||
-          t('Please fill all required document fields.')
-        : undefined;
+    const oppositePartyErrorKey = Object.keys(normalizedErrors).find((key) => key.startsWith('opposite_parties'));
 
     const oppositePartyFields: RepeaterField[] = [
-        {
-            name: 'business_type',
-            label: t('Business Type'),
-            type: 'custom',
-            defaultValue: 'b2c',
-            render: ({ value, onChange, itemIndex }) => (
-                <RadioGroup
-                    value={value || 'b2c'}
-                    onValueChange={onChange}
-                    className={cn('flex flex-wrap gap-6', isRtl ? 'justify-end' : '')}
-                >
-                    <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
-                        <RadioGroupItem value="b2b" id={`opp_party_edit_b2b_${itemIndex}`} />
-                        <Label htmlFor={`opp_party_edit_b2b_${itemIndex}`} className="whitespace-nowrap font-normal">
-                            {t('Business')}
-                        </Label>
-                    </div>
-                    <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
-                        <RadioGroupItem value="b2c" id={`opp_party_edit_b2c_${itemIndex}`} />
-                        <Label htmlFor={`opp_party_edit_b2c_${itemIndex}`} className="whitespace-nowrap font-normal">
-                            {t('Individual')}
-                        </Label>
-                    </div>
-                </RadioGroup>
-            ),
-        },
-        { name: 'name', label: t('Full Name'), type: 'text' },
-        {
-            name: 'nationality_id',
-            label: t('Nationality'),
-            type: 'select',
-            options: countries || [],
-            placeholder: (countries || []).length > 0 ? t('Select Nationality') : t('No nationalities available'),
-        },
-        { name: 'id_number', label: t('ID National'), type: 'text' },
-        { name: 'lawyer_name', label: t('Lawyer Name'), type: 'text', stackedColSpan: 4 },
-        { name: 'date_of_birth', label: t('Date of Birth'), type: 'date', stackedColSpan: 8 },
+        { name: 'name', label: t('Full Name'), type: 'text', required: true },
         {
             name: 'phone',
             label: t('Phone Number'),
@@ -499,7 +411,47 @@ export default function EditCase() {
                 />
             ),
         },
+        {
+            name: 'business_type',
+            label: t('Business Type'),
+            type: 'custom',
+            defaultValue: 'b2c',
+            render: ({ value, onChange, itemIndex }) => (
+                <RadioGroup
+                    value={value || 'b2c'}
+                    onValueChange={onChange}
+                    className={cn(
+                        'flex flex-wrap gap-6',
+                        isRtl ? 'justify-end' : '',
+                    )}
+                >
+                    <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
+                        <RadioGroupItem value="b2b" id={`opp_party_b2b_${itemIndex}`} />
+                        <Label htmlFor={`opp_party_b2b_${itemIndex}`} className="whitespace-nowrap font-normal">
+                            {t('Business')}
+                        </Label>
+                    </div>
+                    <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
+                        <RadioGroupItem value="b2c" id={`opp_party_b2c_${itemIndex}`} />
+                        <Label htmlFor={`opp_party_b2c_${itemIndex}`} className="whitespace-nowrap font-normal">
+                            {t('Individual')}
+                        </Label>
+                    </div>
+                </RadioGroup>
+            ),
+        },
         { name: 'email', label: t('Email'), type: 'email' },
+
+        {
+            name: 'nationality_id',
+            label: t('Nationality'),
+            type: 'select',
+            options: countries || [],
+            placeholder: (countries || []).length > 0 ? t('Select Nationality') : t('No nationalities available'),
+        },
+        { name: 'id_number', label: t('ID National'), type: 'text' },
+        { name: 'lawyer_name', label: t('Lawyer Name'), type: 'text', stackedColSpan: 4 },
+        { name: 'date_of_birth', label: t('Date of Birth'), type: 'date', stackedColSpan: 8 },
         {
             name: 'address',
             label: t('Address'),
@@ -508,22 +460,22 @@ export default function EditCase() {
         },
     ];
 
+    const documentTypeOptions = (documentTypes || []).map((type: any) => ({
+        value: type.id.toString(),
+        label: resolveTranslatableName(type),
+    }));
+
+    const documentListError = Object.keys(normalizedErrors).some((k) => k.startsWith('documents'))
+        ? normalizedErrors['documents.0.document_name'] ||
+          normalizedErrors['documents.0.file'] ||
+          normalizedErrors['documents.0.document_type_id'] ||
+          normalizedErrors['documents.0.confidentiality'] ||
+          t('Please fill all required document fields.')
+        : undefined;
+
     return (
         <PageTemplate title={t('Edit Case')} url="/cases" breadcrumbs={breadcrumbs} noPadding>
             <form onSubmit={handleFormSubmit} noValidate>
-                <div className="mb-4 px-1">
-                    <p className="text-sm text-muted-foreground">
-                        {step === 1 ? t('Step 1: Case details') : t('Step 2: Pleadings and documents')}
-                    </p>
-                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-                        <div
-                            className={cn('h-full bg-primary transition-all duration-300', step === 1 ? 'w-1/2' : 'w-full')}
-                        />
-                    </div>
-                </div>
-
-                {step === 1 && (
-                <>
                 <div className="mb-6 rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div className="space-y-2">
@@ -533,7 +485,7 @@ export default function EditCase() {
                                     value={formData.client_id ?? ''}
                                     onValueChange={(v) => updateField('client_id', v)}
                                     placeholder={t('Select Client')}
-                                    options={clientSelectOptions}
+                                    options={clients || []}
                                     wrapperClassName="min-w-0 w-full space-y-0"
                                 />
                                 {canQuickCreateClient && (
@@ -555,8 +507,10 @@ export default function EditCase() {
                             ) : null}
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="title">{t('Case Title')}</Label>
-                            <Input id="title" value={formData.title ?? ''} onChange={(e) => updateField('title', e.target.value)} required />
+                            <Label htmlFor="title" required>
+                                {t('Case Title')}
+                            </Label>
+                            <Input id="title" value={formData.title} onChange={(e) => updateField('title', e.target.value)} required />
                             {renderError('title')}
                         </div>
                         <div className="space-y-2">
@@ -591,17 +545,17 @@ export default function EditCase() {
                                 value={formData.case_status_id ?? ''}
                                 onValueChange={(v) => updateField('case_status_id', v)}
                                 placeholder={t('Select Status')}
-                                options={caseStatuses ?? []}
+                                options={caseStatuses || []}
                                 error={getFieldError('case_status_id')}
                             />
                         </div>
                         <div className="space-y-2">
                             <Label>{t('Priority')}</Label>
                             <Select value={formData.priority} onValueChange={(value) => updateField('priority', value)}>
-                                <SelectTrigger>
+                                <SelectTrigger dir={selectDir}>
                                     <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent dir={selectDir}>
                                     <SelectItem value="low">{t('Low')}</SelectItem>
                                     <SelectItem value="medium">{t('Medium')}</SelectItem>
                                     <SelectItem value="high">{t('High')}</SelectItem>
@@ -644,15 +598,15 @@ export default function EditCase() {
                         />
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3 mb-5">
                         <div className="space-y-2">
                             <Label htmlFor="case_number">{t('Case Number')}</Label>
-                            <Input id="case_number" value={formData.case_number ?? ''} onChange={(e) => updateField('case_number', e.target.value)} />
+                            <Input id="case_number" value={formData.case_number} onChange={(e) => updateField('case_number', e.target.value)} />
                             {renderError('case_number')}
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="file_number">{t('File Number')}</Label>
-                            <Input id="file_number" value={formData.file_number ?? ''} onChange={(e) => updateField('file_number', e.target.value)} />
+                            <Input id="file_number" value={formData.file_number} onChange={(e) => updateField('file_number', e.target.value)} />
                             {renderError('file_number')}
                         </div>
                         <div className="space-y-2">
@@ -662,19 +616,19 @@ export default function EditCase() {
                                 type="number"
                                 min="0"
                                 step="0.01"
-                                value={formData.estimated_value ?? ''}
+                                value={formData.estimated_value}
                                 onChange={(e) => updateField('estimated_value', e.target.value)}
                             />
                             {renderError('estimated_value')}
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 mb-5">
                         <div className="space-y-2">
                             <Label htmlFor="filing_date">{t('Filling Date')}</Label>
                             <GregorianHijriDateField
                                 id="filing_date"
-                                value={formData.filing_date ?? ''}
+                                value={formData.filing_date}
                                 onChange={(v) => updateField('filing_date', v)}
                                 error={Boolean(normalizedErrors.filing_date)}
                                 helperText={normalizedErrors.filing_date}
@@ -684,7 +638,7 @@ export default function EditCase() {
                             <Label htmlFor="expected_completion_date">{t('Expecting Completion')}</Label>
                             <GregorianHijriDateField
                                 id="expected_completion_date"
-                                value={formData.expected_completion_date ?? ''}
+                                value={formData.expected_completion_date}
                                 onChange={(v) => updateField('expected_completion_date', v)}
                                 error={Boolean(normalizedErrors.expected_completion_date)}
                                 helperText={normalizedErrors.expected_completion_date}
@@ -699,7 +653,7 @@ export default function EditCase() {
                         onAuthorityTypeChange={onAuthorityTypeChange}
                         onCourtIdChange={(v) => updateField('court_id', v)}
                         onDetailsChange={onAuthorityDetailsChange}
-                        courts={courts ?? []}
+                        courts={courts || []}
                         canQuickCreateCourt={canQuickCreateCourt}
                         onAddCourtClick={() => setCourtModalOpen(true)}
                         errors={{
@@ -712,7 +666,7 @@ export default function EditCase() {
 
                     <div className="space-y-2">
                         <Label htmlFor="description">{t('Description')}</Label>
-                        <Textarea id="description" value={formData.description ?? ''} onChange={(e) => updateField('description', e.target.value)} />
+                        <Textarea id="description" value={formData.description} onChange={(e) => updateField('description', e.target.value)} />
                         {renderError('description')}
                     </div>
                 </div>
@@ -728,7 +682,7 @@ export default function EditCase() {
                             fields={oppositePartyFields}
                             value={formData.opposite_parties}
                             onChange={(value) => updateField('opposite_parties', value)}
-                            minItems={0}
+                            minItems={1}
                             maxItems={-1}
                             layout="stacked"
                             stackedGridClassName="grid grid-cols-1 gap-4 md:grid-cols-12"
@@ -738,24 +692,19 @@ export default function EditCase() {
                             showItemNumbers
                             className="space-y-3"
                         />
-                        {oppositePartyErrorKey && (
-                            <p className="text-xs text-red-500">{normalizedErrors[oppositePartyErrorKey]}</p>
-                        )}
+                        {oppositePartyErrorKey && <p className="text-xs text-red-500">{normalizedErrors[oppositePartyErrorKey]}</p>}
                     </div>
                 </div>
-                </>
-                )}
 
-                {step === 2 && (
                 <div className="mt-6 space-y-6">
                     <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
                         <h2 className="mb-4 text-lg font-semibold">{t('Pleadings')}</h2>
                         <CasePleadingFields
-                            caseSubject={formData.case_subject ?? ''}
-                            plaintiffRequests={formData.plaintiff_requests ?? ''}
-                            plaintiffEvidence={formData.plaintiff_evidence ?? ''}
-                            defendantRequests={formData.defendant_requests ?? ''}
-                            defendantEvidence={formData.defendant_evidence ?? ''}
+                            caseSubject={formData.case_subject}
+                            plaintiffRequests={formData.plaintiff_requests}
+                            plaintiffEvidence={formData.plaintiff_evidence}
+                            defendantRequests={formData.defendant_requests}
+                            defendantEvidence={formData.defendant_evidence}
                             onFieldChange={(field, value) => updateField(field, value)}
                             caseSubjectError={getFieldError('case_subject')}
                             t={t}
@@ -773,7 +722,6 @@ export default function EditCase() {
                         </div>
                     </div>
                 </div>
-                )}
 
                 {canQuickCreateClient && (
                     <QuickClientModal
@@ -799,29 +747,10 @@ export default function EditCase() {
 
                 <div className="sticky bottom-0 -mx-6 mt-6 border-t border-slate-200 bg-white px-6 py-4">
                     <div className="flex justify-end gap-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => {
-                                if (step === 2) {
-                                    setStep(1);
-                                    if (typeof window !== 'undefined') {
-                                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                                    }
-                                } else {
-                                    router.get(route('cases.show', caseId));
-                                }
-                            }}
-                        >
-                            {step === 1 ? t('Cancel') : t('Back')}
+                        <Button type="button" variant="outline" onClick={() => router.get(route('cases.index'))}>
+                            {t('Cancel')}
                         </Button>
-                        {step === 1 ? (
-                            <Button type="button" onClick={goToStep2}>
-                                {t('Next')}
-                            </Button>
-                        ) : (
-                            <Button type="submit">{t('Save')}</Button>
-                        )}
+                        <Button type="submit">{t('Save')}</Button>
                     </div>
                 </div>
             </form>
