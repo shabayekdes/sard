@@ -1,4 +1,7 @@
 import { CaseAuthorityFields } from '@/components/cases/CaseAuthorityFields';
+import { CasePleadingFields } from '@/components/cases/CasePleadingFields';
+import { CaseDocumentsDropzone } from '@/components/cases/CaseDocumentsDropzone';
+import { htmlPlainTextLength } from '@/lib/htmlPlainTextLength';
 import { toast } from '@/components/custom-toast';
 import { GregorianHijriDateField } from '@/components/GregorianHijriDateField';
 import { CrudFormModal } from '@/components/CrudFormModal';
@@ -20,6 +23,7 @@ import { router, usePage } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 
 export default function CreateCase() {
     const { t, i18n } = useTranslation();
@@ -83,9 +87,15 @@ export default function CreateCase() {
         expected_completion_date: '',
         estimated_value: '',
         description: '',
+        case_subject: '',
+        plaintiff_requests: '',
+        plaintiff_evidence: '',
+        defendant_requests: '',
+        defendant_evidence: '',
         status: 'active',
         documents: [],
     }));
+    const [step, setStep] = useState<1 | 2>(1);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
     const [courtModalOpen, setCourtModalOpen] = useState(false);
     const [clientModalOpen, setClientModalOpen] = useState(false);
@@ -264,17 +274,7 @@ export default function CreateCase() {
         });
     };
 
-    const handleFormSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!canCreate) {
-            toast.error(
-                t('Case limit exceeded. Your plan allows maximum {{max}} cases. Please upgrade your plan.', {
-                    max: planLimits?.max_cases,
-                }),
-            );
-            return;
-        }
-
+    const validateStep1 = () => {
         const nextFieldErrors: Record<string, string> = {};
         if (!formData.client_id || formData.client_id === '') {
             nextFieldErrors.client_id = t('Please select a client.');
@@ -291,8 +291,46 @@ export default function CreateCase() {
         if (!formData.case_type_id || formData.case_type_id === '') {
             nextFieldErrors.case_type_id = t('Please select a case type.');
         }
+        return nextFieldErrors;
+    };
+
+    const goToStep2 = () => {
+        const nextFieldErrors = validateStep1();
         if (Object.keys(nextFieldErrors).length > 0) {
             setFieldErrors(nextFieldErrors);
+            return;
+        }
+        setFieldErrors({});
+        setStep(2);
+        if (typeof window !== 'undefined') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    const handleFormSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (step !== 2) {
+            return;
+        }
+        if (!canCreate) {
+            toast.error(
+                t('Case limit exceeded. Your plan allows maximum {{max}} cases. Please upgrade your plan.', {
+                    max: planLimits?.max_cases,
+                }),
+            );
+            return;
+        }
+
+        const nextFieldErrors = validateStep1();
+        if (htmlPlainTextLength(formData.case_subject || '') > 8000) {
+            nextFieldErrors.case_subject = t('The case subject may not exceed 8000 characters of text.');
+        }
+        if (Object.keys(nextFieldErrors).length > 0) {
+            setFieldErrors(nextFieldErrors);
+            setStep(1);
+            if (typeof window !== 'undefined') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
             return;
         }
         setFieldErrors({});
@@ -358,34 +396,31 @@ export default function CreateCase() {
         value: type.id.toString(),
         label: resolveTranslatableName(type),
     }));
-    const caseDocumentFields: RepeaterField[] = [
-        { name: 'document_name', label: t('Document Name'), type: 'text', required: true },
-        {
-            name: 'document_type_id',
-            label: t('Document Type'),
-            type: 'select',
-            required: true,
-            options: documentTypeOptions,
-            placeholder: t('Select Document Type'),
-        },
-        {
-            name: 'confidentiality',
-            label: t('Confidentiality Level'),
-            type: 'select',
-            required: true,
-            options: [
-                { value: 'public', label: t('Public') },
-                { value: 'confidential', label: t('Confidential') },
-                { value: 'privileged', label: t('Privileged') },
-            ],
-            placeholder: t('Select {{label}}', { label: t('Confidentiality Level') }),
-        },
-        { name: 'file', label: t('Upload New Document'), type: 'media-picker', required: true },
-    ];
+
+    const documentListError = Object.keys(normalizedErrors).some((k) => k.startsWith('documents'))
+        ? normalizedErrors['documents.0.document_name'] ||
+          normalizedErrors['documents.0.file'] ||
+          normalizedErrors['documents.0.document_type_id'] ||
+          normalizedErrors['documents.0.confidentiality'] ||
+          t('Please fill all required document fields.')
+        : undefined;
 
     return (
         <PageTemplate title={t('Add New Case')} url="/cases" breadcrumbs={breadcrumbs} noPadding>
-            <form onSubmit={handleFormSubmit}>
+            <form onSubmit={handleFormSubmit} noValidate>
+                <div className="mb-4 px-1">
+                    <p className="text-sm text-muted-foreground">
+                        {step === 1 ? t('Step 1: Case details') : t('Step 2: Pleadings and documents')}
+                    </p>
+                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                        <div
+                            className={cn('h-full bg-primary transition-all duration-300', step === 1 ? 'w-1/2' : 'w-full')}
+                        />
+                    </div>
+                </div>
+
+                {step === 1 && (
+                <>
                 <div className="mb-6 rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div className="space-y-2">
@@ -599,33 +634,37 @@ export default function CreateCase() {
                         {oppositePartyErrorKey && <p className="text-xs text-red-500">{normalizedErrors[oppositePartyErrorKey]}</p>}
                     </div>
                 </div>
+                </>
+                )}
 
-                <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
-                    <h2 className="text-lg font-semibold">{t('Case Documents')}</h2>
-                    <div className="mt-4 space-y-4 rounded-lg border border-slate-200 bg-slate-50/50 p-4">
-                        <Repeater
-                            fields={caseDocumentFields}
-                            value={formData.documents}
-                            onChange={(value) => updateField('documents', value)}
-                            minItems={0}
-                            maxItems={-1}
-                            addButtonText={t('Add New Document')}
-                            removeButtonText={t('Remove')}
-                            showItemNumbers={false}
-                            className="space-y-3"
-                            itemClassName="bg-white border-slate-200"
+                {step === 2 && (
+                <div className="mt-6 space-y-6">
+                    <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
+                        <h2 className="mb-4 text-lg font-semibold">{t('Pleadings')}</h2>
+                        <CasePleadingFields
+                            caseSubject={formData.case_subject}
+                            plaintiffRequests={formData.plaintiff_requests}
+                            plaintiffEvidence={formData.plaintiff_evidence}
+                            defendantRequests={formData.defendant_requests}
+                            defendantEvidence={formData.defendant_evidence}
+                            onFieldChange={(field, value) => updateField(field, value)}
+                            caseSubjectError={getFieldError('case_subject')}
+                            t={t}
                         />
-                        {Object.keys(normalizedErrors).some((k) => k.startsWith('documents')) && (
-                            <p className="text-xs text-red-500">
-                                {normalizedErrors['documents.0.document_name'] ||
-                                    normalizedErrors['documents.0.file'] ||
-                                    normalizedErrors['documents.0.document_type_id'] ||
-                                    normalizedErrors['documents.0.confidentiality'] ||
-                                    t('Please fill all required document fields.')}
-                            </p>
-                        )}
+                    </div>
+                    <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
+                        <h2 className="mb-4 text-lg font-semibold">{t('Case Documents')}</h2>
+                        <div className="mt-4 space-y-4 rounded-lg border border-slate-200 bg-slate-50/50 p-4">
+                            <CaseDocumentsDropzone
+                                documents={formData.documents}
+                                onChange={(value) => updateField('documents', value)}
+                                documentTypeOptions={documentTypeOptions}
+                                serverDocumentError={documentListError}
+                            />
+                        </div>
                     </div>
                 </div>
+                )}
 
                 {canQuickCreateClient && (
                     <QuickClientModal
@@ -651,12 +690,31 @@ export default function CreateCase() {
 
                 <div className="sticky bottom-0 -mx-6 mt-6 border-t border-slate-200 bg-white px-6 py-4">
                     <div className="flex justify-end gap-2">
-                        <Button type="button" variant="outline" onClick={() => router.get(route('cases.index'))}>
-                            {t('Cancel')}
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                                if (step === 2) {
+                                    setStep(1);
+                                    if (typeof window !== 'undefined') {
+                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                    }
+                                } else {
+                                    router.get(route('cases.index'));
+                                }
+                            }}
+                        >
+                            {step === 1 ? t('Cancel') : t('Back')}
                         </Button>
-                        <Button type="submit" disabled={!canCreate}>
-                            {t('Save')}
-                        </Button>
+                        {step === 1 ? (
+                            <Button type="button" onClick={goToStep2}>
+                                {t('Next')}
+                            </Button>
+                        ) : (
+                            <Button type="submit" disabled={!canCreate}>
+                                {t('Save')}
+                            </Button>
+                        )}
                     </div>
                 </div>
             </form>

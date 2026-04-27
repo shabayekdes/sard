@@ -853,7 +853,7 @@ class CaseController extends BaseController
             }
         }
 
-        $validated = $request->validate([
+        $validated = $request->validate(array_merge([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'case_id' => 'nullable|string|max:255',
@@ -892,7 +892,7 @@ class CaseController extends BaseController
             'authority_type_details.reconciliation_report_date' => 'nullable|date',
             'authority_type_details.amicable_suit_number' => 'nullable|string|max:255',
             'authority_type_details.amicable_suit_date' => 'nullable|date',
-        ]);
+        ], $this->casePleadingFormValidationRules()));
 
         $this->applyAuthorityTypeToValidated($validated, $request);
 
@@ -978,7 +978,7 @@ class CaseController extends BaseController
     public function update(Request $request, CaseModel $case)
     {
         $this->authorize('update', $case);
-        $validated = $request->validate([
+        $validated = $request->validate(array_merge([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'case_id' => 'nullable|string|max:255',
@@ -1033,7 +1033,7 @@ class CaseController extends BaseController
             'authority_type_details.reconciliation_report_date' => 'nullable|date',
             'authority_type_details.amicable_suit_number' => 'nullable|string|max:255',
             'authority_type_details.amicable_suit_date' => 'nullable|date',
-        ]);
+        ], $this->casePleadingFormValidationRules()));
 
         $this->applyAuthorityTypeToValidated($validated, $request);
 
@@ -1112,6 +1112,31 @@ class CaseController extends BaseController
         }
 
         return $url;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function casePleadingFormValidationRules(): array
+    {
+        return [
+            'case_subject' => [
+                'nullable',
+                'string',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if ($value === null || $value === '') {
+                        return;
+                    }
+                    if (strlen(trim(strip_tags((string) $value))) > 8000) {
+                        $fail(__('The case subject may not exceed 8000 characters of text.'));
+                    }
+                },
+            ],
+            'plaintiff_requests' => 'nullable|string|max:60000',
+            'plaintiff_evidence' => 'nullable|string|max:60000',
+            'defendant_requests' => 'nullable|string|max:60000',
+            'defendant_evidence' => 'nullable|string|max:60000',
+        ];
     }
 
     /**

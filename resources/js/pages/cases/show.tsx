@@ -5,6 +5,7 @@ import { CrudFormModal } from '@/components/CrudFormModal';
 import { CrudTable } from '@/components/CrudTable';
 import { toast } from '@/components/custom-toast';
 import { PageTemplate } from '@/components/page-template';
+import { useLayout } from '@/contexts/LayoutContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/pagination';
@@ -20,12 +21,40 @@ import type { Task } from '@/types';
 import { AlertTriangle, ArrowLeft, Clock, FileText, Pencil, Plus, Search, Users, CheckSquare, Calendar } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import GoogleCalendarModal from '@/components/GoogleCalendarModal';
 import TaskModal from '@/pages/tasks/TaskModal';
 
 /** Same sentinels/transform as tasks/index CrudFormModal (Radix Select disallows empty string values). */
 const TASK_FORM_NO_CASE = '__no_case__';
 const TASK_FORM_UNASSIGNED = '__unassigned__';
+
+function PleadingCollapsible({ title, html }: { title: string; html: string }) {
+    const { isRtl } = useLayout();
+    return (
+        <div className="md:col-span-3">
+            <Collapsible className="rounded-lg border border-gray-200 dark:border-gray-700">
+                <CollapsibleTrigger
+                    className={cn(
+                        'group flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200',
+                        isRtl && 'text-right',
+                    )}
+                >
+                    <span>{title}</span>
+                    <ChevronDown className="h-4 w-4 shrink-0 transition-transform group-data-[state=open]:rotate-180" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="border-t border-gray-200 px-3 pb-3 pt-2 dark:border-gray-600">
+                    <div
+                        className="prose prose-sm dark:prose-invert max-w-none text-gray-900 dark:text-white"
+                        dangerouslySetInnerHTML={{ __html: html }}
+                    />
+                </CollapsibleContent>
+            </Collapsible>
+        </div>
+    );
+}
 
 function transformTaskCrudFormData(data: Record<string, unknown>): Record<string, unknown> {
     const caseId = data.case_id;
@@ -1324,6 +1353,29 @@ export default function CaseShow() {
                                         <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('Description')}:</span>
                                         <p className="mt-1 text-sm text-gray-900 dark:text-white whitespace-pre-wrap">{caseData.description || '-'}</p>
                                     </div>
+                                    {caseData.case_subject ? (
+                                        <div className="md:col-span-3">
+                                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                {t('Case subject (subject matter of the claim)')}:
+                                            </span>
+                                            <div
+                                                className="prose prose-sm dark:prose-invert mt-1 max-w-none text-gray-900"
+                                                dangerouslySetInnerHTML={{ __html: caseData.case_subject }}
+                                            />
+                                        </div>
+                                    ) : null}
+                                    {caseData.plaintiff_requests ? (
+                                        <PleadingCollapsible title={t("Plaintiff's requests")} html={caseData.plaintiff_requests} />
+                                    ) : null}
+                                    {caseData.plaintiff_evidence ? (
+                                        <PleadingCollapsible title={t("Plaintiff's evidence")} html={caseData.plaintiff_evidence} />
+                                    ) : null}
+                                    {caseData.defendant_requests ? (
+                                        <PleadingCollapsible title={t("Defendant's requests")} html={caseData.defendant_requests} />
+                                    ) : null}
+                                    {caseData.defendant_evidence ? (
+                                        <PleadingCollapsible title={t("Defendant's evidence")} html={caseData.defendant_evidence} />
+                                    ) : null}
                                 </div>
                             </div>
 

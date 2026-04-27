@@ -1,7 +1,8 @@
-import { forwardRef, useRef, useImperativeHandle } from 'react'
+import { forwardRef, useRef, useImperativeHandle, useMemo } from 'react'
 import { RichTextEditor, RichTextEditorRef } from './rich-text-editor'
 import { Label } from './label'
 import { cn } from '@/lib/utils'
+import { htmlPlainTextLength } from '@/lib/htmlPlainTextLength'
 
 interface RichTextFieldProps {
   label?: string
@@ -13,6 +14,8 @@ interface RichTextFieldProps {
   error?: string
   required?: boolean
   disabled?: boolean
+  /** When set, shows plain-text length (tags stripped) vs this max below the field. */
+  maxPlainTextLength?: number
 }
 
 export interface RichTextFieldRef {
@@ -30,9 +33,11 @@ const RichTextField = forwardRef<RichTextFieldRef, RichTextFieldProps>(({
   className,
   error,
   required,
-  disabled = false
+  disabled = false,
+  maxPlainTextLength
 }, ref) => {
   const editorRef = useRef<RichTextEditorRef>(null)
+  const plainLen = useMemo(() => htmlPlainTextLength(value || ''), [value])
 
   useImperativeHandle(ref, () => ({
     getContent: () => editorRef.current?.getContent() || '',
@@ -61,6 +66,16 @@ const RichTextField = forwardRef<RichTextFieldRef, RichTextFieldProps>(({
         )}
       />
       
+      {maxPlainTextLength != null && (
+        <p
+          className={cn(
+            'text-xs text-muted-foreground',
+            plainLen > maxPlainTextLength && 'text-destructive font-medium'
+          )}
+        >
+          {plainLen} / {maxPlainTextLength}
+        </p>
+      )}
       {error && (
         <p className="text-sm text-destructive">{error}</p>
       )}
