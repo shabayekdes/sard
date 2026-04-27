@@ -3,16 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Facades\Settings;
+use App\Models\CaseCategory;
 use App\Models\CaseModel;
 use App\Models\CaseStatus;
-use App\Models\CaseCategory;
 use App\Models\CaseType;
 use App\Models\Client;
 use App\Models\ClientType;
 use App\Models\Country;
 use App\Models\Court;
 use App\Models\HearingType;
-use App\Models\Setting;
 use App\Models\TaskStatus;
 use App\Models\TaskType;
 use App\Models\User;
@@ -58,7 +57,7 @@ class QuickActionController extends Controller
             ->map(function ($country) {
                 $nationalityLabel = $country->nationality_name;
                 $countryName = $country->name;
-                $label = !empty($nationalityLabel) ? $nationalityLabel : $countryName;
+                $label = ! empty($nationalityLabel) ? $nationalityLabel : $countryName;
 
                 return [
                     'value' => $country->id,
@@ -66,13 +65,25 @@ class QuickActionController extends Controller
                 ];
             })
             ->filter(function ($country) {
-                return !empty($country['label']);
+                return ! empty($country['label']);
             })
             ->values();
 
         $googleCalendarEnabled = Settings::boolean('GOOGLE_CALENDAR_ENABLED');
 
         $currentUser = auth()->user();
+
+        $phoneCountries = Country::where('status', 'active')
+            ->whereNotNull('country_code')
+            ->get(['id', 'name', 'country_code'])
+            ->map(function ($country) {
+                return [
+                    'value' => $country->id,
+                    'label' => $country->name,
+                    'code' => $country->country_code,
+                ];
+            })
+            ->values();
 
         return response()->json([
             'caseTypes' => $caseTypes,
@@ -81,6 +92,8 @@ class QuickActionController extends Controller
             'clients' => $clients,
             'courts' => $courts,
             'countries' => $countries,
+            'phoneCountries' => $phoneCountries,
+            'defaultCountry' => Settings::string('DEFAULT_COUNTRY', 'SA'),
             'googleCalendarEnabled' => $googleCalendarEnabled,
             'currentUser' => $currentUser ? [
                 'id' => $currentUser->id,

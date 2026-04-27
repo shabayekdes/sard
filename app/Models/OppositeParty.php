@@ -9,13 +9,23 @@ use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 class OppositeParty extends Model
 {
     use BelongsToTenant;
+
     protected $fillable = [
         'case_id',
         'name',
         'id_number',
         'nationality_id',
         'lawyer_name',
+        'business_type',
+        'date_of_birth',
+        'phone',
+        'email',
+        'address',
         'tenant_id',
+    ];
+
+    protected $casts = [
+        'date_of_birth' => 'date',
     ];
 
     public function case(): BelongsTo

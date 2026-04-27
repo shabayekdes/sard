@@ -1,3 +1,4 @@
+import { OppositePartyPhoneCell } from '@/components/cases/OppositePartyPhoneCell';
 import { CaseAuthorityFields } from '@/components/cases/CaseAuthorityFields';
 import { CasePleadingFields } from '@/components/cases/CasePleadingFields';
 import { CaseDocumentsDropzone } from '@/components/cases/CaseDocumentsDropzone';
@@ -447,7 +448,32 @@ export default function EditCase() {
         : undefined;
 
     const oppositePartyFields: RepeaterField[] = [
-        { name: 'lawyer_name', label: t('Lawyer Name'), type: 'text' },
+        {
+            name: 'business_type',
+            label: t('Business Type'),
+            type: 'custom',
+            defaultValue: 'b2c',
+            render: ({ value, onChange, itemIndex }) => (
+                <RadioGroup
+                    value={value || 'b2c'}
+                    onValueChange={onChange}
+                    className={cn('flex flex-wrap gap-6', isRtl ? 'justify-end' : '')}
+                >
+                    <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
+                        <RadioGroupItem value="b2b" id={`opp_party_edit_b2b_${itemIndex}`} />
+                        <Label htmlFor={`opp_party_edit_b2b_${itemIndex}`} className="whitespace-nowrap font-normal">
+                            {t('Business')}
+                        </Label>
+                    </div>
+                    <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
+                        <RadioGroupItem value="b2c" id={`opp_party_edit_b2c_${itemIndex}`} />
+                        <Label htmlFor={`opp_party_edit_b2c_${itemIndex}`} className="whitespace-nowrap font-normal">
+                            {t('Individual')}
+                        </Label>
+                    </div>
+                </RadioGroup>
+            ),
+        },
         { name: 'name', label: t('Full Name'), type: 'text' },
         {
             name: 'nationality_id',
@@ -457,6 +483,29 @@ export default function EditCase() {
             placeholder: (countries || []).length > 0 ? t('Select Nationality') : t('No nationalities available'),
         },
         { name: 'id_number', label: t('ID National'), type: 'text' },
+        { name: 'lawyer_name', label: t('Lawyer Name'), type: 'text', stackedColSpan: 4 },
+        { name: 'date_of_birth', label: t('Date of Birth'), type: 'date', stackedColSpan: 8 },
+        {
+            name: 'phone',
+            label: t('Phone Number'),
+            type: 'custom',
+            render: ({ value, onChange, itemIndex }) => (
+                <OppositePartyPhoneCell
+                    value={value}
+                    onChange={onChange}
+                    itemIndex={itemIndex}
+                    phoneCountries={phoneCountries}
+                    defaultCountry={defaultCountry}
+                />
+            ),
+        },
+        { name: 'email', label: t('Email'), type: 'email' },
+        {
+            name: 'address',
+            label: t('Address'),
+            type: 'textarea',
+            stackedColSpan: 12,
+        },
     ];
 
     return (
@@ -669,7 +718,11 @@ export default function EditCase() {
                 </div>
 
                 <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
-                    <h2 className="text-lg font-semibold">{t('Opposite Party')}</h2>
+                    <h2 className="text-lg font-semibold">
+                        {t('Opposite Party')}
+                        {' — '}
+                        {formData.attributes === 'respondent' ? t('Respondent') : t('Petitioner')}
+                    </h2>
                     <div className="mt-4 space-y-4 rounded-lg border border-slate-200 bg-slate-50/50 p-4">
                         <Repeater
                             fields={oppositePartyFields}
@@ -677,11 +730,13 @@ export default function EditCase() {
                             onChange={(value) => updateField('opposite_parties', value)}
                             minItems={0}
                             maxItems={-1}
+                            layout="stacked"
+                            stackedGridClassName="grid grid-cols-1 gap-4 md:grid-cols-12"
+                            stackedFieldDefaultColSpan={4}
                             addButtonText={t('Add Opposite Party')}
                             removeButtonText={t('Remove')}
-                            showItemNumbers={false}
+                            showItemNumbers
                             className="space-y-3"
-                            itemClassName="bg-white border-slate-200"
                         />
                         {oppositePartyErrorKey && (
                             <p className="text-xs text-red-500">{normalizedErrors[oppositePartyErrorKey]}</p>

@@ -1,3 +1,4 @@
+import { OppositePartyPhoneCell } from '@/components/cases/OppositePartyPhoneCell';
 import { CaseAuthorityFields } from '@/components/cases/CaseAuthorityFields';
 import { CasePleadingFields } from '@/components/cases/CasePleadingFields';
 import { CaseDocumentsDropzone } from '@/components/cases/CaseDocumentsDropzone';
@@ -18,13 +19,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useLayout } from '@/contexts/LayoutContext';
 import { AUTHORITY_COURT_TYPES, emptyAuthorityTypeDetails, type AuthorityTypeDetails } from '@/lib/case-authority-type';
+import { cn } from '@/lib/utils';
 import { hasPermission } from '@/utils/authorization';
 import { router, usePage } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { cn } from '@/lib/utils';
-
 export default function CreateCase() {
     const { t, i18n } = useTranslation();
     const {
@@ -95,7 +95,6 @@ export default function CreateCase() {
         status: 'active',
         documents: [],
     }));
-    const [step, setStep] = useState<1 | 2>(1);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
     const [courtModalOpen, setCourtModalOpen] = useState(false);
     const [clientModalOpen, setClientModalOpen] = useState(false);
@@ -294,24 +293,8 @@ export default function CreateCase() {
         return nextFieldErrors;
     };
 
-    const goToStep2 = () => {
-        const nextFieldErrors = validateStep1();
-        if (Object.keys(nextFieldErrors).length > 0) {
-            setFieldErrors(nextFieldErrors);
-            return;
-        }
-        setFieldErrors({});
-        setStep(2);
-        if (typeof window !== 'undefined') {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    };
-
     const handleFormSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (step !== 2) {
-            return;
-        }
         if (!canCreate) {
             toast.error(
                 t('Case limit exceeded. Your plan allows maximum {{max}} cases. Please upgrade your plan.', {
@@ -327,7 +310,6 @@ export default function CreateCase() {
         }
         if (Object.keys(nextFieldErrors).length > 0) {
             setFieldErrors(nextFieldErrors);
-            setStep(1);
             if (typeof window !== 'undefined') {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
@@ -379,9 +361,53 @@ export default function CreateCase() {
     const oppositePartyErrorKey = Object.keys(normalizedErrors).find((key) => key.startsWith('opposite_parties'));
 
     const oppositePartyFields: RepeaterField[] = [
-        { name: 'lawyer_name', label: t('Lawyer Name'), type: 'text' },
-
         { name: 'name', label: t('Full Name'), type: 'text', required: true },
+        {
+            name: 'phone',
+            label: t('Phone Number'),
+            type: 'custom',
+            render: ({ value, onChange, itemIndex }) => (
+                <OppositePartyPhoneCell
+                    value={value}
+                    onChange={onChange}
+                    itemIndex={itemIndex}
+                    phoneCountries={phoneCountries}
+                    defaultCountry={defaultCountry}
+                />
+            ),
+        },
+        {
+            name: 'business_type',
+            label: t('Business Type'),
+            type: 'custom',
+            defaultValue: 'b2c',
+            render: ({ value, onChange, itemIndex }) => (
+                <RadioGroup
+                    value={value || 'b2c'}
+                    onValueChange={onChange}
+                    className={cn(
+                        'flex flex-wrap gap-6',
+                        isRtl ? 'justify-end' : '',
+                    )}
+                >
+                    <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
+                        <RadioGroupItem value="b2b" id={`opp_party_b2b_${itemIndex}`} />
+                        <Label htmlFor={`opp_party_b2b_${itemIndex}`} className="whitespace-nowrap font-normal">
+                            {t('Business')}
+                        </Label>
+                    </div>
+                    <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
+                        <RadioGroupItem value="b2c" id={`opp_party_b2c_${itemIndex}`} />
+                        <Label htmlFor={`opp_party_b2c_${itemIndex}`} className="whitespace-nowrap font-normal">
+                            {t('Individual')}
+                        </Label>
+                    </div>
+                </RadioGroup>
+            ),
+        },
+        { name: 'email', label: t('Email'), type: 'email' },
+
+
         {
             name: 'nationality_id',
             label: t('Nationality'),
@@ -390,6 +416,14 @@ export default function CreateCase() {
             placeholder: (countries || []).length > 0 ? t('Select Nationality') : t('No nationalities available'),
         },
         { name: 'id_number', label: t('ID National'), type: 'text' },
+        { name: 'lawyer_name', label: t('Lawyer Name'), type: 'text', stackedColSpan: 4 },
+        { name: 'date_of_birth', label: t('Date of Birth'), type: 'date', stackedColSpan: 8 },
+        {
+            name: 'address',
+            label: t('Address'),
+            type: 'textarea',
+            stackedColSpan: 12,
+        },
     ];
 
     const documentTypeOptions = (documentTypes || []).map((type: any) => ({
@@ -408,19 +442,6 @@ export default function CreateCase() {
     return (
         <PageTemplate title={t('Add New Case')} url="/cases" breadcrumbs={breadcrumbs} noPadding>
             <form onSubmit={handleFormSubmit} noValidate>
-                <div className="mb-4 px-1">
-                    <p className="text-sm text-muted-foreground">
-                        {step === 1 ? t('Step 1: Case details') : t('Step 2: Pleadings and documents')}
-                    </p>
-                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-                        <div
-                            className={cn('h-full bg-primary transition-all duration-300', step === 1 ? 'w-1/2' : 'w-full')}
-                        />
-                    </div>
-                </div>
-
-                {step === 1 && (
-                <>
                 <div className="mb-6 rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div className="space-y-2">
@@ -617,7 +638,11 @@ export default function CreateCase() {
                 </div>
 
                 <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
-                    <h2 className="text-lg font-semibold">{t('Opposite Party')}</h2>
+                    <h2 className="text-lg font-semibold">
+                        {t('Opposite Party')}
+                        {' — '}
+                        {formData.attributes === 'respondent' ? t('Respondent') : t('Petitioner')}
+                    </h2>
                     <div className="mt-4 space-y-4 rounded-lg border border-slate-200 bg-slate-50/50 p-4">
                         <Repeater
                             fields={oppositePartyFields}
@@ -625,19 +650,18 @@ export default function CreateCase() {
                             onChange={(value) => updateField('opposite_parties', value)}
                             minItems={1}
                             maxItems={-1}
+                            layout="stacked"
+                            stackedGridClassName="grid grid-cols-1 gap-4 md:grid-cols-12"
+                            stackedFieldDefaultColSpan={4}
                             addButtonText={t('Add Opposite Party')}
                             removeButtonText={t('Remove')}
-                            showItemNumbers={false}
+                            showItemNumbers
                             className="space-y-3"
-                            itemClassName="bg-white border-slate-200"
                         />
                         {oppositePartyErrorKey && <p className="text-xs text-red-500">{normalizedErrors[oppositePartyErrorKey]}</p>}
                     </div>
                 </div>
-                </>
-                )}
 
-                {step === 2 && (
                 <div className="mt-6 space-y-6">
                     <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
                         <h2 className="mb-4 text-lg font-semibold">{t('Pleadings')}</h2>
@@ -664,7 +688,6 @@ export default function CreateCase() {
                         </div>
                     </div>
                 </div>
-                )}
 
                 {canQuickCreateClient && (
                     <QuickClientModal
@@ -690,31 +713,12 @@ export default function CreateCase() {
 
                 <div className="sticky bottom-0 -mx-6 mt-6 border-t border-slate-200 bg-white px-6 py-4">
                     <div className="flex justify-end gap-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => {
-                                if (step === 2) {
-                                    setStep(1);
-                                    if (typeof window !== 'undefined') {
-                                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                                    }
-                                } else {
-                                    router.get(route('cases.index'));
-                                }
-                            }}
-                        >
-                            {step === 1 ? t('Cancel') : t('Back')}
+                        <Button type="button" variant="outline" onClick={() => router.get(route('cases.index'))}>
+                            {t('Cancel')}
                         </Button>
-                        {step === 1 ? (
-                            <Button type="button" onClick={goToStep2}>
-                                {t('Next')}
-                            </Button>
-                        ) : (
-                            <Button type="submit" disabled={!canCreate}>
-                                {t('Save')}
-                            </Button>
-                        )}
+                        <Button type="submit" disabled={!canCreate}>
+                            {t('Save')}
+                        </Button>
                     </div>
                 </div>
             </form>

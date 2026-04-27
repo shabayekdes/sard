@@ -5,7 +5,12 @@ import { router } from '@inertiajs/react';
 import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { PhoneInput, defaultCountries } from 'react-international-phone';
+import { OppositePartyPhoneCell } from '@/components/cases/OppositePartyPhoneCell';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Repeater, RepeaterField } from '@/components/ui/repeater';
+import { useLayout } from '@/contexts/LayoutContext';
+import { cn } from '@/lib/utils';
 
 type ModalKey = 'cases' | 'clients' | 'tasks';
 
@@ -16,6 +21,8 @@ interface CaseFormData {
   clients: Array<{ id: number; name: string }>;
   courts: Array<{ id: number; name: string }>;
   countries: Array<{ value: number; label: string }>;
+  phoneCountries?: Array<{ value: number; label: string; code?: string }>;
+  defaultCountry?: string;
   googleCalendarEnabled?: boolean;
   currentUser?: { id: number; name: string };
 }
@@ -39,6 +46,7 @@ interface TaskFormData {
 
 export function GlobalQuickActionModals() {
   const { t, i18n } = useTranslation();
+  const { isRtl } = useLayout();
   const currentLocale = i18n.language || 'en';
   const axios = useAxios();
 
@@ -173,6 +181,32 @@ export function GlobalQuickActionModals() {
           type: 'custom',
           render: (_field: any, formData: any, onChange: (name: string, value: any) => void) => {
             const repeaterFields: RepeaterField[] = [
+                {
+                    name: 'business_type',
+                    label: t('Business Type'),
+                    type: 'custom',
+                    defaultValue: 'b2c',
+                    render: ({ value, onChange: onCellChange, itemIndex }) => (
+                        <RadioGroup
+                            value={value || 'b2c'}
+                            onValueChange={onCellChange}
+                            className={cn('flex flex-wrap gap-6', isRtl ? 'justify-end' : '')}
+                        >
+                            <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
+                                <RadioGroupItem value="b2b" id={`qa_opp_b2b_${itemIndex}`} />
+                                <Label htmlFor={`qa_opp_b2b_${itemIndex}`} className="whitespace-nowrap font-normal">
+                                    {t('Business')}
+                                </Label>
+                            </div>
+                            <div className={isRtl ? 'flex flex-row-reverse items-center gap-2' : 'flex items-center gap-2'}>
+                                <RadioGroupItem value="b2c" id={`qa_opp_b2c_${itemIndex}`} />
+                                <Label htmlFor={`qa_opp_b2c_${itemIndex}`} className="whitespace-nowrap font-normal">
+                                    {t('Individual')}
+                                </Label>
+                            </div>
+                        </RadioGroup>
+                    ),
+                },
                 { name: 'name', label: t('Name'), type: 'text', required: true },
                 { name: 'id_number', label: t('ID National'), type: 'text' },
                 {
@@ -182,7 +216,29 @@ export function GlobalQuickActionModals() {
                     options: caseData.countries || [],
                     placeholder: (caseData.countries || []).length > 0 ? t('Select Nationality') : t('No nationalities available'),
                 },
-                { name: 'lawyer_name', label: t('Lawyer Name'), type: 'text' },
+                { name: 'lawyer_name', label: t('Lawyer Name'), type: 'text', stackedColSpan: 4 },
+                { name: 'date_of_birth', label: t('Date of Birth'), type: 'date', stackedColSpan: 8 },
+                {
+                    name: 'phone',
+                    label: t('Phone Number'),
+                    type: 'custom',
+                    render: ({ value, onChange: onCellChange, itemIndex }) => (
+                        <OppositePartyPhoneCell
+                            value={value}
+                            onChange={onCellChange}
+                            itemIndex={itemIndex}
+                            phoneCountries={caseData.phoneCountries}
+                            defaultCountry={caseData.defaultCountry}
+                        />
+                    ),
+                },
+                { name: 'email', label: t('Email'), type: 'email' },
+                {
+                    name: 'address',
+                    label: t('Address'),
+                    type: 'textarea',
+                    stackedColSpan: 12,
+                },
             ];
 
             return (
@@ -192,8 +248,12 @@ export function GlobalQuickActionModals() {
                 onChange={(value) => onChange('opposite_parties', value)}
                 minItems={1}
                 maxItems={-1}
+                layout="stacked"
+                stackedGridClassName="grid grid-cols-1 gap-4 md:grid-cols-12"
+                stackedFieldDefaultColSpan={4}
                 addButtonText={t('Add Opposite Party')}
                 removeButtonText={t('Remove')}
+                showItemNumbers
               />
             );
           },
@@ -283,7 +343,7 @@ export function GlobalQuickActionModals() {
       ],
       modalSize: 'xl',
     };
-  }, [caseData, t, currentLocale]);
+  }, [caseData, t, currentLocale, isRtl]);
 
   const clientFormConfig = useMemo(() => {
     if (!clientData) return null;

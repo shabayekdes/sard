@@ -797,6 +797,11 @@ class CaseController extends BaseController
                 'id_number' => $party->id_number ?? '',
                 'nationality_id' => $party->nationality_id ? (string) $party->nationality_id : '',
                 'lawyer_name' => $party->lawyer_name ?? '',
+                'business_type' => $party->business_type ?? 'b2c',
+                'date_of_birth' => $party->date_of_birth ? $party->date_of_birth->format('Y-m-d') : '',
+                'phone' => $party->phone ?? '',
+                'email' => $party->email ?? '',
+                'address' => $party->address ?? '',
             ];
         })->toArray();
         $caseData['case_category_id'] = $case->case_category_id ? (string) $case->case_category_id : '';
@@ -878,6 +883,11 @@ class CaseController extends BaseController
             'opposite_parties.*.id_number' => 'nullable|string|max:255',
             'opposite_parties.*.nationality_id' => 'nullable|exists:countries,id',
             'opposite_parties.*.lawyer_name' => 'nullable|string|max:255',
+            'opposite_parties.*.business_type' => 'nullable|string|in:b2c,b2b',
+            'opposite_parties.*.date_of_birth' => 'nullable|date',
+            'opposite_parties.*.phone' => 'nullable|string|max:255',
+            'opposite_parties.*.email' => 'nullable|email|max:255',
+            'opposite_parties.*.address' => 'nullable|string',
             'documents' => 'nullable|array',
             'documents.*.document_name' => 'required_with:documents|string|max:255',
             'documents.*.document_type_id' => 'required_with:documents|exists:document_types,id',
@@ -915,6 +925,11 @@ class CaseController extends BaseController
                     'id_number' => $party['id_number'] ?? null,
                     'nationality_id' => $party['nationality_id'] ?? null,
                     'lawyer_name' => $party['lawyer_name'] ?? null,
+                    'business_type' => $party['business_type'] ?? 'b2c',
+                    'date_of_birth' => $party['date_of_birth'] ?? null,
+                    'phone' => $party['phone'] ?? null,
+                    'email' => $party['email'] ?? null,
+                    'address' => $party['address'] ?? null,
                     'tenant_id' => createdBy(),
                 ]);
             }
@@ -1019,6 +1034,11 @@ class CaseController extends BaseController
             'opposite_parties.*.id_number' => 'nullable|string|max:255',
             'opposite_parties.*.nationality_id' => 'nullable|exists:countries,id',
             'opposite_parties.*.lawyer_name' => 'nullable|string|max:255',
+            'opposite_parties.*.business_type' => 'nullable|string|in:b2c,b2b',
+            'opposite_parties.*.date_of_birth' => 'nullable|date',
+            'opposite_parties.*.phone' => 'nullable|string|max:255',
+            'opposite_parties.*.email' => 'nullable|email|max:255',
+            'opposite_parties.*.address' => 'nullable|string',
             'documents' => 'nullable|array',
             'documents.*.document_name' => 'required_with:documents|string|max:255',
             'documents.*.document_type_id' => 'required_with:documents|exists:document_types,id',
@@ -1054,6 +1074,11 @@ class CaseController extends BaseController
                     'id_number' => $party['id_number'] ?? null,
                     'nationality_id' => $party['nationality_id'] ?? null,
                     'lawyer_name' => $party['lawyer_name'] ?? null,
+                    'business_type' => $party['business_type'] ?? 'b2c',
+                    'date_of_birth' => $party['date_of_birth'] ?? null,
+                    'phone' => $party['phone'] ?? null,
+                    'email' => $party['email'] ?? null,
+                    'address' => $party['address'] ?? null,
                     'tenant_id' => createdBy(),
                 ]);
             }

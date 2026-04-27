@@ -1426,26 +1426,40 @@ export default function CaseShow() {
                                 </h3>
                                 <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
                                     {caseData.opposite_parties && caseData.opposite_parties.length > 0 ? (
-                                        <table className="w-full min-w-full table-fixed border-collapse bg-gray-50 dark:bg-gray-800">
+                                        <table className="min-w-max w-full border-collapse bg-gray-50 dark:bg-gray-800">
                                             <thead>
                                                 <tr className="border-b border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-700">
-                                                    <th className="px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">#</th>
-                                                    <th className="px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t(lawyerKey)}</th>
-                                                    <th className="px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t(nameKey)}</th>
-                                                    <th className="px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t(nationalityKey)}</th>
-                                                    <th className="px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t('ID Number')}</th>
+                                                    <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">#</th>
+                                                    <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t('Business Type')}</th>
+                                                    <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t(lawyerKey)}</th>
+                                                    <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t(nameKey)}</th>
+                                                    <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t(nationalityKey)}</th>
+                                                    <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t('ID Number')}</th>
+                                                    <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t('Date of Birth')}</th>
+                                                    <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t('Phone Number')}</th>
+                                                    <th className="whitespace-nowrap px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t('Email')}</th>
+                                                    <th className="min-w-[12rem] px-4 py-3 text-start text-sm font-medium text-gray-600 dark:text-gray-300">{t('Address')}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {caseData.opposite_parties.map((party: any, index: number) => (
                                                     <tr key={party.id || index} className="border-b border-gray-200 last:border-b-0 dark:border-gray-700">
-                                                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{index + 1}</td>
-                                                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{party.lawyer_name || '-'}</td>
-                                                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{party.name || '-'}</td>
-                                                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">{index + 1}</td>
+                                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                                            {party.business_type === 'b2b' ? t('Business') : t('Individual')}
+                                                        </td>
+                                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">{party.lawyer_name || '-'}</td>
+                                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">{party.name || '-'}</td>
+                                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">
                                                             {party.nationality ? getTranslatedValue(party.nationality.name || party.nationality) : '-'}
                                                         </td>
-                                                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{party.id_number || '-'}</td>
+                                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">{party.id_number || '-'}</td>
+                                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                                            {party.date_of_birth ? String(party.date_of_birth).slice(0, 10) : '-'}
+                                                        </td>
+                                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">{party.phone || '-'}</td>
+                                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-white">{party.email || '-'}</td>
+                                                        <td className="max-w-xs break-words px-4 py-3 text-sm text-gray-900 dark:text-white">{party.address || '-'}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>

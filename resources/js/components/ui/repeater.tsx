@@ -13,6 +13,27 @@ import { useLayout } from '@/contexts/LayoutContext';
 import { GregorianHijriDateField } from '@/components/GregorianHijriDateField';
 import { toDatetimeLocalInputValue } from '@/utils/datetimeLocal';
 
+/** Tailwind `md:col-span-*` for stacked grid (12-column row); values must be literal for JIT. */
+const STACKED_MD_COL_SPAN: Record<number, string> = {
+    1: 'md:col-span-1',
+    2: 'md:col-span-2',
+    3: 'md:col-span-3',
+    4: 'md:col-span-4',
+    5: 'md:col-span-5',
+    6: 'md:col-span-6',
+    7: 'md:col-span-7',
+    8: 'md:col-span-8',
+    9: 'md:col-span-9',
+    10: 'md:col-span-10',
+    11: 'md:col-span-11',
+    12: 'md:col-span-12',
+};
+
+function stackedColSpanClass(span: number | undefined): string | undefined {
+    if (span == null || span < 1 || span > 12) return undefined;
+    return STACKED_MD_COL_SPAN[span];
+}
+
 export type RepeaterCustomRenderArgs = {
   value: any;
   onChange: (value: any) => void;
@@ -49,7 +70,16 @@ export interface RepeaterField {
   disabled?: boolean;
   /** When type is `custom`, render the cell content (presets, composed inputs, etc.). */
   render?: (args: RepeaterCustomRenderArgs) => React.ReactNode;
+  /** Extra grid cell classes when `layout="stacked"` (e.g. `min-h-[5rem]`). */
+  stackedCellClassName?: string;
+  /**
+   * When `layout="stacked"` and the grid uses 12 columns (`md:grid-cols-12`), how many columns this field spans from `md` up (1–12).
+   * If omitted, `stackedFieldDefaultColSpan` on `Repeater` is used when set.
+   */
+  stackedColSpan?: number;
 }
+
+export type RepeaterLayout = 'table' | 'stacked';
 
 export interface RepeaterProps {
   fields: RepeaterField[];
@@ -65,6 +95,18 @@ export interface RepeaterProps {
   allowReorder?: boolean;
   emptyMessage?: string;
   getFieldError?: (itemIndex: number, fieldName: string) => string | undefined;
+  /**
+   * `table` — horizontal table (default, best for few narrow columns).
+   * `stacked` — one card per row with a responsive field grid and a label above each control (better for many/wide fields).
+   */
+  layout?: RepeaterLayout;
+  /** Tailwind grid classes for the field grid when `layout="stacked"` (default: 1 → 2 → 3 → 4 columns by breakpoint). */
+  stackedGridClassName?: string;
+  /**
+   * When `layout="stacked"`, default `md:col-span-*` (1–12) for fields that do not set `stackedColSpan`.
+   * Use with e.g. `stackedGridClassName="… md:grid-cols-12"`.
+   */
+  stackedFieldDefaultColSpan?: number;
 }
 
 export function Repeater({
@@ -80,7 +122,10 @@ export function Repeater({
   showItemNumbers = true,
   allowReorder = false,
   emptyMessage = 'No items added yet.',
-  getFieldError
+  getFieldError,
+  layout = 'table',
+  stackedGridClassName = 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4',
+  stackedFieldDefaultColSpan,
 }: RepeaterProps) {
   const { t } = useTranslation();
   const { isRtl } = useLayout();
@@ -354,7 +399,77 @@ export function Repeater({
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+          {layout === 'stacked' ? (
+            <>
+              {items.map((item, index) => (
+                <div
+                  key={index}
+                  className={cn(
+                    'rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/50',
+                    itemClassName,
+                  )}
+                >
+                  {/* dir=ltr so remove stays physically left and # on the right under page RTL */}
+                  <div dir="ltr" className="mb-4 flex w-full flex-wrap items-center justify-between gap-2">
+                    {items.length > minItems ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeItem(index)}
+                        className="inline-flex gap-2 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-gray-600 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
+                      >
+                        <Trash2 className="h-4 w-4 shrink-0" />
+                        {removeButtonText}
+                      </Button>
+                    ) : (
+                      <span />
+                    )}
+                    {showItemNumbers ? (
+                      <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">#{index + 1}</span>
+                    ) : (
+                      <span />
+                    )}
+                  </div>
+                  <div className={cn(stackedGridClassName)}>
+                    {fields.map((field) => {
+                      const fieldId = `${field.name}_${index}`;
+                      const colSpan = field.stackedColSpan ?? stackedFieldDefaultColSpan;
+                      return (
+                        <div
+                          key={field.name}
+                          dir={isRtl ? 'rtl' : 'ltr'}
+                          className={cn(
+                            'min-w-0 space-y-1.5',
+                            stackedColSpanClass(colSpan),
+                            field.stackedCellClassName,
+                          )}
+                        >
+                          <Label
+                            htmlFor={fieldId}
+                            className={cn(
+                              'block text-xs font-medium text-gray-600 dark:text-gray-300',
+                              isRtl && 'text-right',
+                            )}
+                          >
+                            {field.label}
+                            {field.required ? <span className="text-red-500 dark:text-red-400"> *</span> : null}
+                          </Label>
+                          {renderField(
+                            field,
+                            item[field.name],
+                            (v) => updateItem(index, field.name, v),
+                            index,
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : (
+            <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-800">
                 <tr>
@@ -415,6 +530,7 @@ export function Repeater({
               </tbody>
             </table>
           </div>
+          )}
           {(maxItems === -1 || items.length < maxItems) && (
             <div className="flex items-center justify-between">
               <Button
