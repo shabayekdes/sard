@@ -1,9 +1,14 @@
 import { usePage } from '@inertiajs/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { CheckCircle, FileText, Calendar, DollarSign } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { resolveClientName } from '@/components/client-table-cell';
 
 export default function PaymentComplete() {
   const { invoice } = usePage().props as any;
+  const { t, i18n } = useTranslation();
+  const currentLocale = i18n.language || 'en';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50">
@@ -32,7 +37,14 @@ export default function PaymentComplete() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">Client</p>
-                    <p className="text-lg font-semibold text-gray-900">{invoice.client?.name}</p>
+                    <p className="inline-flex min-w-0 flex-row flex-wrap items-center gap-1.5 text-lg font-semibold text-gray-900" dir="ltr">
+                      <span>{resolveClientName(invoice.client?.name, currentLocale) || '-'}</span>
+                      {invoice.client?.deleted_at ? (
+                        <Badge variant="outline" className="shrink-0 font-normal text-muted-foreground" dir="auto">
+                          {t('Deleted')}
+                        </Badge>
+                      ) : null}
+                    </p>
                   </div>
                 </div>
                 

@@ -69,7 +69,7 @@ class Invoice extends BaseModel
 
     public function client(): BelongsTo
     {
-        return $this->belongsTo(Client::class);
+        return $this->belongsTo(Client::class)->withTrashed();
     }
 
     public function case(): BelongsTo

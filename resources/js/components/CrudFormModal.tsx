@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import DependentDropdown from './DependentDropdown';
 import { log } from 'node:console';
 import { useLayout } from '@/contexts/LayoutContext';
+import { toDatetimeLocalInputValue } from '@/utils/datetimeLocal';
 
 /** Resolve API value (string or translatable { en, ar }) to a string so it is never rendered as object (React error #31). */
 function resolveDisplayValue(value: unknown, locale?: string): string {
@@ -113,6 +114,23 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
             }
         });
 
+        // Non-clearable selects (static options only): ensure a value in create mode
+        if (mode === 'create') {
+            formConfig.fields.forEach((field) => {
+                if (field.type !== 'select' || field.selectAllowEmpty !== false || field.relation) {
+                    return;
+                }
+                const options = field.options || [];
+                if (options.length === 0) {
+                    return;
+                }
+                const v = cleanData[field.name];
+                if (v === undefined || v === null || v === '') {
+                    cleanData[field.name] = String(options[0].value);
+                }
+            });
+        }
+
         setFormData(cleanData || {});
         setErrors({});
 
@@ -187,6 +205,10 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
         // Basic validation
         const newErrors: Record<string, string> = {};
         formConfig.fields.forEach((field) => {
+            if (field.type === 'section') {
+                return;
+            }
+
             // For file fields in edit mode, they're never required
             if (field.type === 'file' && mode === 'edit') {
                 return;
@@ -245,11 +267,18 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
 
         // Process multi-select fields before submission
         formConfig.fields.forEach((field) => {
+            if (field.type === 'section') {
+                delete cleanData[field.name];
+                return;
+            }
             if (field.type === 'multi-select' && cleanData[field.name]) {
                 // Ensure it's an array of strings
                 if (!Array.isArray(cleanData[field.name])) {
                     cleanData[field.name] = [cleanData[field.name].toString()];
                 }
+            }
+            if (field.type === 'datetime-local' && (cleanData[field.name] === '' || cleanData[field.name] === undefined)) {
+                cleanData[field.name] = null;
             }
         });
 
@@ -264,6 +293,10 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
     const renderField = (field: FormField) => {
         // Check if field should be conditionally rendered
         if (field.conditional && !field.conditional(mode, formData)) {
+            return null;
+        }
+
+        if (field.type === 'section') {
             return null;
         }
 
@@ -486,6 +519,21 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                     />
                 );
 
+            case 'datetime-local':
+                return (
+                    <Input
+                        id={field.name}
+                        name={field.name}
+                        type="datetime-local"
+                        placeholder={field.placeholder}
+                        value={toDatetimeLocalInputValue(formData[field.name])}
+                        onChange={(e) => handleChange(field.name, e.target.value)}
+                        required={field.required}
+                        className={errors[field.name] ? 'border-red-500' : 'text-start'}
+                        disabled={mode === 'view' || field.disabled}
+                    />
+                );
+
             case 'number':
                 return (
                     <Input
@@ -566,11 +614,14 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                             actualValue = idxMatch[1];
                         }
                     }
+                    if (field.selectAllowEmpty === false && (actualValue === '' || actualValue == null)) {
+                        return;
+                    }
                     handleChange(field.name, actualValue);
                 };
 
                 return (
-                    <Select value={currentValue} onValueChange={handleSelectChange} disabled={mode === 'view' || field.disabled}>
+                    <Select value={currentValue} onValueChange={handleSelectChange} disabled={mode === 'view' || field.disabled} required={field.required}>
                         <SelectTrigger className={errors[field.name] ? 'border-red-500' : 'text-start'}>
                             <SelectValue placeholder={field.placeholder || t('Select {{label}}', { label: field.label })}>
                                 {displayText || field.placeholder || t('Select {{label}}', { label: field.label })}
@@ -960,6 +1011,19 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                     if (field.conditional && !field.conditional(mode, formData)) {
                                         return null;
                                     }
+                                    if (field.type === 'section') {
+                                        return (
+                                            <div
+                                                key={field.name}
+                                                className="w-full border-t border-border pt-4 mt-2 first:mt-0 first:border-t-0 first:pt-0"
+                                                style={{ gridColumn: '1 / -1', width: '100%' }}
+                                            >
+                                                <h3 className="text-sm font-semibold tracking-tight text-foreground">
+                                                    {field.label}
+                                                </h3>
+                                            </div>
+                                        );
+                                    }
                                     return (
                                         <div
                                             key={field.name}
@@ -986,6 +1050,18 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                 {formConfig.fields.map((field) => {
                                     if (field.conditional && !field.conditional(mode, formData)) {
                                         return null;
+                                    }
+                                    if (field.type === 'section') {
+                                        return (
+                                            <div
+                                                key={field.name}
+                                                className="w-full border-t border-border pt-4 mt-2 first:mt-0 first:border-t-0 first:pt-0"
+                                            >
+                                                <h3 className="text-sm font-semibold tracking-tight text-foreground">
+                                                    {field.label}
+                                                </h3>
+                                            </div>
+                                        );
                                     }
                                     return (
                                         <div
@@ -1015,6 +1091,18 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                     {fields.map((field) => {
                                         if (field.conditional && !field.conditional(mode, formData)) {
                                             return null;
+                                        }
+                                        if (field.type === 'section') {
+                                            return (
+                                                <div
+                                                    key={field.name}
+                                                    className="w-full border-t border-border pt-4 mt-2 first:mt-0 first:border-t-0 first:pt-0"
+                                                >
+                                                    <h3 className="text-sm font-semibold tracking-tight text-foreground">
+                                                        {field.label}
+                                                    </h3>
+                                                </div>
+                                            );
                                         }
                                         return (
                                             <div

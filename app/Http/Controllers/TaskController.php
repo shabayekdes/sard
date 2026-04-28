@@ -3,16 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Events\NewTaskCreated;
-use App\Facades\Settings;
+use App\Enums\TaskPriority;
 use App\Models\Task;
 use App\Models\TaskType;
 use App\Models\TaskStatus;
 use App\Models\User;
 use App\Models\CaseModel;
-use App\Models\Setting;
 use App\Services\GoogleCalendarService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Carbon;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class TaskController extends BaseController
@@ -20,7 +20,7 @@ class TaskController extends BaseController
     public function index(Request $request)
     {
         $query = Task::withPermissionCheck()
-            ->with(['taskType', 'taskStatus', 'assignedUser', 'case', 'creator']);
+            ->with(['taskType', 'taskStatus', 'assignedUser', 'case', 'creator', 'attachments']);
 
         // Handle search
         if ($request->has('search') && !empty($request->search)) {
@@ -36,9 +36,9 @@ class TaskController extends BaseController
             $query->where('task_type_id', $request->task_type_id);
         }
 
-        // Handle status filter
-        if ($request->has('status') && !empty($request->status) && $request->status !== 'all') {
-            $query->where('status', $request->status);
+        // Handle task status filter (custom TaskStatus records)
+        if ($request->has('task_status_id') && !empty($request->task_status_id) && $request->task_status_id !== 'all') {
+            $query->where('task_status_id', $request->task_status_id);
         }
 
         // Handle priority filter
@@ -79,16 +79,14 @@ class TaskController extends BaseController
             ->where('status', 'active')
             ->get(['id', 'name']);
 
-        $googleCalendarEnabled = Settings::boolean('GOOGLE_CALENDAR_ENABLED');
-
         return Inertia::render('tasks/index', [
             'tasks' => $tasks,
             'taskTypes' => $taskTypes,
+            'projects' => [],
             'users' => $users,
             'cases' => $cases,
             'taskStatuses' => $taskStatuses,
-            'googleCalendarEnabled' => $googleCalendarEnabled,
-            'filters' => $request->all(['search', 'task_type_id', 'status', 'priority', 'assigned_to', 'sort_field', 'sort_direction', 'per_page']),
+            'filters' => $request->all(['search', 'task_type_id', 'priority', 'assigned_to', 'task_status_id', 'view', 'sort_field', 'sort_direction', 'per_page']),
         ]);
     }
 
@@ -97,20 +95,18 @@ class TaskController extends BaseController
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'priority' => 'required|in:critical,high,medium,low',
-            'status' => 'nullable|in:not_started,in_progress,completed,on_hold',
+            'priority' => ['required', Rule::enum(TaskPriority::class)],
             'due_date' => 'nullable|date',
+            'start_date' => 'nullable|date',
             'estimated_duration' => 'nullable|integer|min:1',
             'case_id' => 'nullable|exists:cases,id',
             'assigned_to' => 'nullable|exists:users,id',
             'task_type_id' => 'nullable|exists:task_types,id',
             'task_status_id' => 'nullable|exists:task_statuses,id',
             'notes' => 'nullable|string',
-            'sync_with_google_calendar' => 'nullable|boolean',
         ]);
 
         $validated['tenant_id'] = createdBy();
-        $validated['status'] = $validated['status'] ?? 'not_started';
 
         // Validate that related records belong to the current user's company
         if (!empty($validated['case_id'])) {
@@ -152,16 +148,20 @@ class TaskController extends BaseController
             }
         }
 
+        if ($redirect = $this->redirectIfStartDateAfterDueDate($validated['start_date'] ?? null, $validated['due_date'] ?? null)) {
+            return $redirect;
+        }
+
         $task = Task::create($validated);
 
         // Handle Google Calendar sync
-        if ($task && $request->sync_with_google_calendar) {
-            $calendarService = new GoogleCalendarService();
-            $eventId = $calendarService->createEvent($task, createdBy(), 'task');
-            if ($eventId) {
-                $task->update(['google_calendar_event_id' => $eventId]);
-            }
-        }
+        // if ($task && $request->sync_with_google_calendar) {
+        //     $calendarService = new GoogleCalendarService();
+        //     $eventId = $calendarService->createEvent($task, createdBy(), 'task');
+        //     if ($eventId) {
+        //         $task->update(['google_calendar_event_id' => $eventId]);
+        //     }
+        // }
 
         // Trigger notifications
         event(new \App\Events\NewTaskCreated($task, $request->all()));
@@ -195,16 +195,15 @@ class TaskController extends BaseController
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'priority' => 'required|in:critical,high,medium,low',
-            'status' => 'required|in:not_started,in_progress,completed,on_hold',
+            'priority' => ['required', Rule::enum(TaskPriority::class)],
             'due_date' => 'nullable|date',
+            'start_date' => 'nullable|date',
             'estimated_duration' => 'nullable|integer|min:1',
             'case_id' => 'nullable|exists:cases,id',
             'assigned_to' => 'nullable|exists:users,id',
             'task_type_id' => 'nullable|exists:task_types,id',
             'task_status_id' => 'nullable|exists:task_statuses,id',
             'notes' => 'nullable|string',
-            'sync_with_google_calendar' => 'nullable|boolean',
         ]);
 
         // Validate that related records belong to the current user's company
@@ -247,35 +246,79 @@ class TaskController extends BaseController
             }
         }
 
+        $effectiveStart = array_key_exists('start_date', $validated) ? $validated['start_date'] : $task->start_date;
+        $effectiveDue = array_key_exists('due_date', $validated) ? $validated['due_date'] : $task->due_date;
+        if ($redirect = $this->redirectIfStartDateAfterDueDate($effectiveStart, $effectiveDue)) {
+            return $redirect;
+        }
+
         $task->update($validated);
 
         // Handle Google Calendar sync
-        if ($request->sync_with_google_calendar && !$task->google_calendar_event_id) {
-            $calendarService = new GoogleCalendarService();
-            $eventId = $calendarService->createEvent($task, createdBy(), 'task');
-            if ($eventId) {
-                $task->update(['google_calendar_event_id' => $eventId]);
-            }
-        } elseif ($request->sync_with_google_calendar && $task->google_calendar_event_id) {
-            $calendarService = new GoogleCalendarService();
-            $calendarService->updateEvent($task->google_calendar_event_id, $task, createdBy(), 'task');
-        } elseif (!$request->sync_with_google_calendar && $task->google_calendar_event_id) {
-            $calendarService = new GoogleCalendarService();
-            $calendarService->deleteEvent($task->google_calendar_event_id, createdBy());
-            $task->update(['google_calendar_event_id' => null]);
-        }
+        // if ($request->sync_with_google_calendar && !$task->google_calendar_event_id) {
+        //     $calendarService = new GoogleCalendarService();
+        //     $eventId = $calendarService->createEvent($task, createdBy(), 'task');
+        //     if ($eventId) {
+        //         $task->update(['google_calendar_event_id' => $eventId]);
+        //     }
+        // } elseif ($request->sync_with_google_calendar && $task->google_calendar_event_id) {
+        //     $calendarService = new GoogleCalendarService();
+        //     $calendarService->updateEvent($task->google_calendar_event_id, $task, createdBy(), 'task');
+        // } elseif (!$request->sync_with_google_calendar && $task->google_calendar_event_id) {
+        //     $calendarService = new GoogleCalendarService();
+        //     $calendarService->deleteEvent($task->google_calendar_event_id, createdBy());
+        //     $task->update(['google_calendar_event_id' => null]);
+        // }
 
         return redirect()->back()->with('success', __(':model updated successfully', ['model' => __('Task')]));
     }
 
-    public function show($taskId)
-    {
-        $task = Task::withPermissionCheck()->with(['taskType', 'taskStatus', 'assignedUser', 'case', 'creator'])
-            ->where('id', $taskId)
-            ->first();
 
-        return Inertia::render('tasks/show', [
+    public function show(Task $task)
+    {
+        // $this->authorizePermission('task_view');
+
+        $task->load([
+            'case',
+            'taskStatus',
+            'assignedUser',
+            'creator',
+            'comments.user',
+            'checklists.assignedTo',
+            'checklists.creator',
+            'attachments',
+        ]);
+
+        $currentUser = auth()->user();
+
+        // Add permission flags to comments
+        $task->comments?->each(function ($comment) use ($currentUser) {
+            $comment->can_update = $comment->canBeUpdatedBy($currentUser);
+            $comment->can_delete = $comment->canBeDeletedBy($currentUser);
+        });
+
+        // Add permission flags to checklists
+        $task->checklists?->each(function ($checklist) use ($currentUser) {
+            $checklist->can_update = true;//$checklist->canBeUpdatedBy($currentUser);
+            $checklist->can_delete = true;//$checklist->canBeDeletedBy($currentUser);
+        });
+
+        // $allMembers = User::all();
+
+        // Get project members only (no clients)
+        // $projectMembers = $task->project->members->filter(function ($member) {
+        //     return $member->user && $member->user->type !== 'client';
+        // })->pluck('user');
+
+        $taskStatuses = TaskStatus::where('tenant_id', $task->tenant_id)
+            ->where('status', 'active')
+            ->orderBy('id')
+            ->get();
+
+        return response()->json([
             'task' => $task,
+            'members' => [], //$projectMembers->isNotEmpty() ? $projectMembers : $allMembers,
+            'taskStatuses' => $taskStatuses,
         ]);
     }
 
@@ -299,23 +342,6 @@ class TaskController extends BaseController
         }
     }
 
-    public function toggleStatus($taskId)
-    {
-        $task = Task::where('id', $taskId)
-            ->where('tenant_id', createdBy())
-            ->first();
-
-        try {
-            $newStatus = $task->status === 'completed' ? 'not_started' : 'completed';
-            $task->status = $newStatus;
-            $task->save();
-
-            return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Task')]));
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', __('Failed to update :model status', ['model' => __('Task')]));
-        }
-    }
-
     public function getCaseUsers($caseId)
     {
         $case = CaseModel::where('id', $caseId)
@@ -335,5 +361,96 @@ class TaskController extends BaseController
         });
 
         return response()->json($users);
+    }
+
+
+    public function duplicate(Task $task)
+    {
+        $this->authorizePermission('task_duplicate');
+
+        if ((string) $task->tenant_id !== (string) createdBy()) {
+            abort(403);
+        }
+
+        $newTask = $task->replicate();
+        $newTask->title = $task->title . ' (Copy)';
+        $newTask->start_date = null;
+        $newTask->end_date = null;
+        $newTask->progress = 0;
+        $newTask->created_by = auth()->id();
+        $newTask->save();
+
+        // Copy checklists
+        foreach ($task->checklists as $checklist) {
+            $newChecklist = $checklist->replicate();
+            $newChecklist->task_id = $newTask->id;
+            $newChecklist->is_completed = false;
+            $newChecklist->created_by = auth()->id();
+            $newChecklist->save();
+        }
+
+        return back()->with('success', __('Task duplicated successfully!'));
+    }
+
+    public function updateTaskStatus(Request $request, Task $task)
+    {
+        if ((string) $task->tenant_id !== (string) createdBy()) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'task_status_id' => 'required|exists:task_statuses,id',
+        ]);
+
+        $taskStatus = TaskStatus::where('id', $validated['task_status_id'])
+            ->where('tenant_id', createdBy())
+            ->first();
+
+        if (!$taskStatus) {
+            return redirect()->back()->with('error', __('Invalid selection. Please try again.'));
+        }
+
+        $task->update(['task_status_id' => $taskStatus->id]);
+
+        return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Task')]));
+    }
+
+    /**
+     * Get tasks for calendar view (including Google Calendar tasks)
+     */
+    public function getCalendarTasks(Request $request)
+    {
+        $calendarView = $request->get('calendar_view', 'local'); // 'local' or 'google'
+
+        $tasks = Task::withPermissionCheck()
+            ->with(['case', 'taskStatus', 'assignedUser'])
+            ->when($calendarView === 'google', function ($query) {
+                $query->whereNotNull('google_calendar_event_id');
+            })
+            ->get();
+
+        return response()->json([
+            'tasks' => $tasks,
+            'calendar_view' => $calendarView
+        ]);
+    }
+
+    /**
+     * @param  mixed  $startDate
+     * @param  mixed  $dueDate
+     */
+    private function redirectIfStartDateAfterDueDate($startDate, $dueDate): ?\Illuminate\Http\RedirectResponse
+    {
+        if ($startDate === null || $startDate === '' || $dueDate === null || $dueDate === '') {
+            return null;
+        }
+
+        if (Carbon::parse($startDate)->gt(Carbon::parse($dueDate))) {
+            return redirect()->back()
+                ->withErrors(['start_date' => __('The start date must not be after the due date.')])
+                ->withInput();
+        }
+
+        return null;
     }
 }

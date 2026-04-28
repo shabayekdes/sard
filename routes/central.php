@@ -15,6 +15,8 @@ foreach (config('tenancy.central_domains') as $domain) {
             Route::post('register', [Controllers\Auth\RegisteredUserController::class, 'store']);
         });
 
+        Route::get('auth/google/callback', [Controllers\GoogleCalendarController::class, 'callback'])->name('google.callback');
+
         Route::middleware([
             'auth',
             'verified',

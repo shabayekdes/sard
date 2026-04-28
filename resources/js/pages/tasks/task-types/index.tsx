@@ -254,7 +254,7 @@ export default function TaskTypes() {
     {
       key: 'default_duration',
       label: t('Default Duration'),
-      render: (value: number) => value ? `${value} ${t('minutes')}` : '-'
+      render: (value: number) => (value ? `${value} ${t('hours')}` : '-')
     },
     {
       key: 'status',
@@ -373,7 +373,7 @@ export default function TaskTypes() {
                       { name: 'description.en', label: t('Description (English)'), type: 'textarea' },
                       { name: 'description.ar', label: t('Description (Arabic)'), type: 'textarea' },
                       { name: 'color', label: t('Color'), type: 'color', required: true, defaultValue: '#3B82F6' },
-                      { name: 'default_duration', label: t('Default Duration (minutes)'), type: 'number' },
+                      { name: 'default_duration', label: t('Default Duration (hours)'), type: 'number' },
                       {
                           name: 'status',
                           label: t('Status'),

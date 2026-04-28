@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
 import { Plus, Calendar, Clock } from 'lucide-react';
@@ -10,13 +10,19 @@ import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
+import { Button } from '@/components/ui/button';
+import { Select as FormSelect } from '@/components/forms/select';
 import { capitalize } from '@/utils/helpers';
+import type { FormField } from '@/types/crud';
 
 export default function Hearings() {
   const { t, i18n } = useTranslation();
   const { auth, hearings, cases, courts, courtTypes, circleTypes, hearingTypes, googleCalendarEnabled, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
   const currentLocale = i18n.language || 'en';
+  const canQuickCreateCourt = hasPermission(permissions, 'create-courts');
+  const [courtModalOpen, setCourtModalOpen] = useState(false);
+  const courtFieldHandleChangeRef = useRef<((name: string, value: unknown) => void) | null>(null);
 
   // Helper function to get translated value from JSON object
   const getTranslatedValue = (value: any): string => {
@@ -40,6 +46,114 @@ export default function Hearings() {
   const [currentItem, setCurrentItem] = useState<any>(null);
   const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  const courtSelectOptions = useMemo(() => {
+    const rows: Array<{ id: number | string; name: string } | [string | null, string]> = [
+      ['', t('No court')],
+      ...(courts || []).map((c: any) => {
+        const courtName = c.name || '';
+        const courtType = c.court_type ? getTranslatedValue(c.court_type.name) : '';
+        const circleType = c.circle_type ? getTranslatedValue(c.circle_type.name) : '';
+        const parts = [courtName];
+        if (courtType) parts.push(courtType);
+        if (circleType) parts.push(circleType);
+        return { id: c.id, name: parts.join(' + ') };
+      }),
+    ];
+    return rows;
+  }, [courts, currentLocale, t]);
+
+  const quickCourtFormConfig = useMemo(() => {
+    const typeOptions = (courtTypes || []).map((type: any) => {
+      let displayName = type.name;
+      if (typeof type.name === 'object' && type.name !== null) {
+        displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+      } else if (type.name_translations && typeof type.name_translations === 'object') {
+        displayName =
+          type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
+      }
+      return { value: type.id.toString(), label: displayName };
+    });
+    const circleOptions = (circleTypes || []).map((type: any) => {
+      let displayName = type.name;
+      if (typeof type.name === 'object' && type.name !== null) {
+        displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+      } else if (type.name_translations && typeof type.name_translations === 'object') {
+        displayName =
+          type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
+      }
+      return { value: type.id.toString(), label: displayName };
+    });
+    return {
+      fields: [
+        { name: 'name', label: t('Court Name'), type: 'text' as const, required: true },
+        {
+          name: 'court_type_id',
+          label: t('Court Type'),
+          type: 'select' as const,
+          required: true,
+          options: typeOptions,
+        },
+        {
+          name: 'circle_type_id',
+          label: t('Circle Type'),
+          type: 'select' as const,
+          required: true,
+          options: circleOptions,
+        },
+        { name: 'address', label: t('Address'), type: 'textarea' as const },
+        { name: 'notes', label: t('Notes'), type: 'textarea' as const },
+        {
+          name: 'status',
+          label: t('Status'),
+          type: 'select' as const,
+          options: [
+            { value: 'active', label: t('Active') },
+            { value: 'inactive', label: t('Inactive') },
+          ],
+          defaultValue: 'active',
+        },
+      ],
+      modalSize: 'xl' as const,
+    };
+  }, [courtTypes, circleTypes, currentLocale, t]);
+
+  const handleQuickCourtSubmit = (courtForm: Record<string, unknown>) => {
+    router.post(route('courts.store'), courtForm as Record<string, string | number | boolean | null>, {
+      preserveState: true,
+      preserveScroll: true,
+      onSuccess: (page) => {
+        setCourtModalOpen(false);
+        toast.dismiss();
+        const flash = (page as any)?.props?.flash;
+        if (flash?.created_court_id != null) {
+          courtFieldHandleChangeRef.current?.('court_id', String(flash.created_court_id));
+        }
+        if (flash?.success) {
+          toast.success(flash.success);
+        }
+        if (flash?.warning) {
+          toast.message(flash.warning);
+        }
+        if (flash?.error) {
+          toast.error(flash.error);
+        }
+      },
+      onError: (formErrors) => {
+        toast.dismiss();
+        if (typeof formErrors === 'string') {
+          toast.error(formErrors);
+        } else if (Object.values(formErrors).length > 0) {
+          toast.error(
+            t('Failed to create {{model}}: {{errors}}', {
+              model: t('Court'),
+              errors: Object.values(formErrors).join(', '),
+            }),
+          );
+        }
+      },
+    });
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,9 +210,18 @@ export default function Hearings() {
     setIsFormModalOpen(true);
   };
 
+  const normalizeHearingForm = (fd: Record<string, unknown>) => {
+    const data = { ...fd };
+    if (data.court_id === '' || data.court_id === 'none') {
+      data.court_id = null;
+    }
+    return data;
+  };
+
   const handleFormSubmit = (formData: any) => {
+    const payload = normalizeHearingForm(formData);
     if (formMode === 'create') {
-      router.post(route('hearings.store'), formData, {
+      router.post(route('hearings.store'), payload, {
         preserveState: true,
         preserveScroll: true,
         onSuccess: (page) => {
@@ -116,7 +239,7 @@ export default function Hearings() {
         }
       });
     } else if (formMode === 'edit') {
-      router.put(route('hearings.update', currentItem.id), formData, {
+      router.put(route('hearings.update', currentItem.id), payload, {
         preserveState: true,
         preserveScroll: true,
         onSuccess: (page) => {
@@ -428,22 +551,42 @@ export default function Hearings() {
                       {
                           name: 'court_id',
                           label: t('Court'),
-                          type: 'select',
-                          required: true,
-                          options: courts
-                              ? courts.map((c: any) => {
-                                    const courtName = c.name || '';
-                                    const courtType = c.court_type ? getTranslatedValue(c.court_type.name) : '';
-                                    const circleType = c.circle_type ? getTranslatedValue(c.circle_type.name) : '';
-                                    const parts = [courtName];
-                                    if (courtType) parts.push(courtType);
-                                    if (circleType) parts.push(circleType);
-                                    return {
-                                        value: c.id.toString(),
-                                        label: parts.join(' + '),
-                                    };
-                                })
-                              : [],
+                          type: 'custom',
+                          render: (
+                              _field: FormField,
+                              formData: Record<string, unknown>,
+                              handleChange: (name: string, value: unknown) => void,
+                          ) => {
+                              courtFieldHandleChangeRef.current = handleChange;
+                              const courtId =
+                                  formData.court_id != null && formData.court_id !== ''
+                                      ? String(formData.court_id)
+                                      : '';
+                              return (
+                                  <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+                                      <FormSelect
+                                          value={courtId}
+                                          onValueChange={(v) => handleChange('court_id', v)}
+                                          placeholder={t('Select Court')}
+                                          options={courtSelectOptions}
+                                          wrapperClassName="min-w-0 w-full space-y-0"
+                                      />
+                                      {canQuickCreateCourt && (
+                                          <Button
+                                              type="button"
+                                              variant="outline"
+                                              size="icon"
+                                              className="h-10 w-10 shrink-0"
+                                              title={t('Add Court')}
+                                              aria-label={t('Add Court')}
+                                              onClick={() => setCourtModalOpen(true)}
+                                          >
+                                              <Plus className="h-4 w-4" />
+                                          </Button>
+                                      )}
+                                  </div>
+                              );
+                          },
                       },
                       {
                           name: 'circle_number',
@@ -479,25 +622,36 @@ export default function Hearings() {
                           defaultValue: 'scheduled',
                       },
                       { name: 'notes', label: t('Notes'), type: 'textarea' },
-                      ...(formMode === 'edit' ? [{ name: 'outcome', label: t('Outcome'), type: 'textarea' }] : []),
-                  ].concat(
-                      googleCalendarEnabled && formMode === 'create'
+                      ...(formMode === 'edit' ? [{ name: 'outcome', label: t('Outcome'), type: 'textarea' as const }] : []),
+                      ...(googleCalendarEnabled && formMode === 'create'
                           ? [
                                 {
                                     name: 'sync_with_google_calendar',
                                     label: t('Synchronize in Google Calendar'),
-                                    type: 'switch',
-                                    defaultValue: false,
+                                    type: 'switch' as const,
+                                    defaultValue: false as boolean,
                                 },
                             ]
-                          : [],
-                  ),
+                          : []),
+                  ] as FormField[],
                   modalSize: 'xl',
               }}
               initialData={currentItem}
               title={formMode === 'create' ? t('Schedule New Session') : t('Edit Session')}
               mode={formMode}
           />
+
+          {canQuickCreateCourt && (
+              <CrudFormModal
+                  isOpen={courtModalOpen}
+                  onClose={() => setCourtModalOpen(false)}
+                  onSubmit={handleQuickCourtSubmit}
+                  formConfig={{ ...quickCourtFormConfig, columns: 2 }}
+                  initialData={{}}
+                  title={t('Add New Court')}
+                  mode="create"
+              />
+          )}
 
           <CrudFormModal
               isOpen={isViewModalOpen}

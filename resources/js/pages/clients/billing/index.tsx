@@ -10,9 +10,11 @@ import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
+import { ClientTableCell } from '@/components/client-table-cell';
 
 export default function ClientBilling() {
   const { t, i18n } = useTranslation();
+  const currentLocale = i18n.language || 'en';
   const { auth, billingInfo, clients, currencies, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
 
@@ -207,9 +209,7 @@ export default function ClientBilling() {
     {
       key: 'client',
       label: t('Client'),
-      render: (value: any, row: any) => {
-        return row.client?.name || '-';
-      }
+      render: (_value: any, row: any) => <ClientTableCell client={row.client} locale={currentLocale} />,
     },
     {
       key: 'billing_contact_name',

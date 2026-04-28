@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class Client extends BaseModel
 {
-    use BelongsToTenant, HasFactory;
+    use BelongsToTenant, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'client_id',
@@ -55,11 +56,37 @@ class Client extends BaseModel
         static::creating(function ($client) {
             if (!$client->client_id) {
                 $client->client_id = 'CL' . str_pad(
-                    (Client::max('id') ?? 0) + 1,
+                    ((int) (static::withTrashed()->max('id') ?? 0)) + 1,
                     6,
                     '0',
                     STR_PAD_LEFT
                 );
+            }
+        });
+
+        static::deleting(function (Client $client) {
+            if ($client->isForceDeleting()) {
+                return;
+            }
+
+            if (!$client->user_id) {
+                return;
+            }
+
+            $user = User::find($client->user_id);
+            if ($user && $user->type === 'client' && !$user->trashed()) {
+                $user->delete();
+            }
+        });
+
+        static::forceDeleted(function (Client $client) {
+            if (!$client->user_id) {
+                return;
+            }
+
+            $user = User::withTrashed()->find($client->user_id);
+            if ($user && $user->type === 'client') {
+                $user->forceDelete();
             }
         });
     }

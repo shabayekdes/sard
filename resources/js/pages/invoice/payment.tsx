@@ -44,9 +44,11 @@ import { ToyyibPayPaymentModal } from '@/components/payment-modals/toyyibpay-pay
 import { YooKassaPaymentModal } from '@/components/payment-modals/yookassa-payment-modal';
 import { SkrillPaymentModal } from '@/components/payment-modals/skrill-payment-modal';
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { resolveClientName } from '@/components/client-table-cell';
 
 export default function InvoicePayment() {
     const { t, i18n } = useTranslation();
+    const currentLocale = i18n.language || 'en';
     const { invoice, enabledGateways, remainingAmount, clientBillingInfo, currencies, paypalClientId, flutterwavePublicKey, tapPublicKey, paystackPublicKey, bankDetail, flash, company, companyProfile, companyLogo, favicon, appName } = usePage().props as any;
     const [selectedGateway, setSelectedGateway] = useState<string | null>(null);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -191,6 +193,31 @@ export default function InvoicePayment() {
         const tax = round2(taxAmount * ratio);
         return { subtotalWithoutTax, tax, total: amt };
     };
+
+    const termsText = (() => {
+        const billingInfo = clientBillingInfo?.[invoice.client_id];
+        if (!billingInfo) return '';
+
+        const custom =
+            typeof billingInfo.custom_payment_terms === 'string' ? billingInfo.custom_payment_terms.trim() : '';
+        if (custom) return custom;
+
+        if (!billingInfo.payment_terms) return '';
+        if (billingInfo.payment_terms === 'custom') return '';
+
+        const termsMap: Record<string, string> = {
+            net_15: t('Net 15 days'),
+            net_30: t('Net 30 days'),
+            net_45: t('Net 45 days'),
+            net_60: t('Net 60 days'),
+            due_on_receipt: t('Due on receipt'),
+        };
+        const mapped = termsMap[billingInfo.payment_terms];
+        if (mapped) return mapped;
+        return typeof billingInfo.payment_terms === 'string' ? billingInfo.payment_terms : '';
+    })();
+
+    const notesText = typeof invoice?.notes === 'string' ? invoice.notes.trim() : '';
 
     const isOverdue = new Date(invoice.due_date) < new Date();
 
@@ -482,7 +509,16 @@ export default function InvoicePayment() {
                                             <User className="h-5 w-5 text-gray-500" />
                                             <p className="text-sm font-medium text-gray-500">{t('Bill To')}</p>
                                         </div>
-                                        <p className="mt-2 text-lg font-bold text-gray-900">{invoice.client?.name || '-'}</p>
+                                        <p className="mt-2 inline-flex min-w-0 flex-row flex-wrap items-center gap-1.5 text-lg font-bold text-gray-900" dir="ltr">
+                                            <span className="min-w-0 text-start">
+                                                {resolveClientName(invoice.client?.name, currentLocale) || '-'}
+                                            </span>
+                                            {invoice.client?.deleted_at ? (
+                                                <Badge variant="outline" className="shrink-0 font-normal text-muted-foreground" dir="auto">
+                                                    {t('Deleted')}
+                                                </Badge>
+                                            ) : null}
+                                        </p>
                                         <dl className="mt-4 space-y-2 text-sm">
                                             <div className="flex flex-wrap gap-x-2">
                                                 <dt className="font-semibold text-gray-700">{t('Address')}:</dt>
@@ -490,7 +526,9 @@ export default function InvoicePayment() {
                                             </div>
                                             <div className="flex flex-wrap gap-x-2">
                                                 <dt className="font-semibold text-gray-700">{t('Phone')}:</dt>
-                                                <dd className="text-gray-600">{invoice.client?.phone || '-'}</dd>
+                                                <dd className="text-gray-600" dir="ltr">
+                                                    <span className="inline-block tabular-nums">{invoice.client?.phone || '-'}</span>
+                                                </dd>
                                             </div>
                                             <div className="flex flex-wrap gap-x-2">
                                                 <dt className="font-semibold text-gray-700">{t('Email')}:</dt>
@@ -595,43 +633,39 @@ export default function InvoicePayment() {
                                 </CardContent>
                             </Card>
 
-                            {/* Additional Information */}
-                            <Card className="border-0 shadow-sm">
-                                <CardContent className="p-6">
-                                    <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                                        <div>
-                                            <h4 className="mb-2 text-sm font-semibold text-gray-700">{t('Notes')}</h4>
-                                            <p className="text-sm text-gray-600">
-                                                {invoice.notes || t('Thank you for your business. Please remit payment by due date.')}
-                                            </p>
+                            {typeof bankDetail === 'string' && bankDetail.trim() ? (
+                                <Card className="overflow-hidden rounded-xl border border-[#F1F1F4] bg-white shadow-sm">
+                                    <CardContent className="p-6">
+                                        <div className="flex items-center gap-2">
+                                            <Banknote className="h-5 w-5 text-gray-500" />
+                                            <p className="text-sm font-medium text-gray-500">{t('Bank Details')}</p>
                                         </div>
-                                        <div>
-                                            <h4 className="mb-2 text-sm font-semibold text-gray-700">{t('Terms')}</h4>
-                                            <p className="text-sm text-gray-600">
-                                                {(() => {
-                                                    const billingInfo = clientBillingInfo?.[invoice.client_id];
-                                                    if (billingInfo?.custom_payment_terms) {
-                                                        return billingInfo.custom_payment_terms;
-                                                    }
-                                                    if (billingInfo?.payment_terms) {
-                                                        const termsMap: Record<string, string> = {
-                                                            net_15: t('Net 15 days'),
-                                                            net_30: t('Net 30 days'),
-                                                            net_45: t('Net 45 days'),
-                                                            net_60: t('Net 60 days'),
-                                                            due_on_receipt: t('Due on receipt'),
-                                                            custom: billingInfo.custom_payment_terms || t('Custom terms'),
-                                                        };
-                                                        const termText = termsMap[billingInfo.payment_terms] || billingInfo.payment_terms;
-                                                        return `${termText}. ${t('Late payment fee of 1.5% per month applies.')}`;
-                                                    }
-                                                    return t('Net 30 days. Late payment fee of 1.5% per month applies.');
-                                                })()}
-                                            </p>
+                                        <p className="mt-3 whitespace-pre-wrap text-sm text-gray-600">{bankDetail}</p>
+                                    </CardContent>
+                                </Card>
+                            ) : null}
+
+                            {/* Terms & Notes — same rules as billing/invoices/show */}
+                            {(termsText || notesText) && (
+                                <Card className="border-0 shadow-sm">
+                                    <CardContent className="p-6">
+                                        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                                            {termsText ? (
+                                                <div>
+                                                    <h4 className="mb-2 text-sm font-semibold text-gray-700">{t('Terms')}</h4>
+                                                    <p className="text-sm text-gray-600">{termsText}</p>
+                                                </div>
+                                            ) : null}
+                                            {notesText ? (
+                                                <div>
+                                                    <h4 className="mb-2 text-sm font-semibold text-gray-700">{t('Notes')}</h4>
+                                                    <p className="text-sm text-gray-600">{invoice.notes}</p>
+                                                </div>
+                                            ) : null}
                                         </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                    </CardContent>
+                                </Card>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -653,7 +687,9 @@ export default function InvoicePayment() {
                                     </span>
                                     <span className="font-bold text-primary"><CurrencyAmount amount={totalAmount} /></span>
                                 </div>
-                                <div className="mt-1 text-xs text-primary/80">{invoice.client?.name}</div>
+                                <div className="mt-1 text-xs text-primary/80" dir="ltr">
+                                    {resolveClientName(invoice.client?.name, currentLocale) || '-'}
+                                </div>
                                 <div className="mt-1 text-xs text-primary/80">
                                     {t('Remaining')}: <CurrencyAmount amount={remainingAmountRounded} />
                                 </div>

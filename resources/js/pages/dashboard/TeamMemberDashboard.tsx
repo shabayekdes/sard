@@ -14,7 +14,7 @@ interface Task {
     title: string;
     priority: string;
     due_date: string;
-    status: string;
+    task_status_id?: number | null;
 }
 
 interface Case {

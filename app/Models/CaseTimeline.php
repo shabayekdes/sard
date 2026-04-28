@@ -16,6 +16,8 @@ class CaseTimeline extends BaseModel
         'title',
         'description',
         'event_date',
+        'event_time',
+        'duration_minutes',
         'is_completed',
         'status',
         'tenant_id',
@@ -25,6 +27,7 @@ class CaseTimeline extends BaseModel
 
     protected $casts = [
         'event_date' => 'datetime',
+        'duration_minutes' => 'integer',
         'is_completed' => 'boolean',
     ];
 

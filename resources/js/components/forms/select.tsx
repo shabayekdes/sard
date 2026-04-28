@@ -153,6 +153,8 @@ export interface SelectProps {
   contentClassName?: string
   /** When set, shows invalid state (red border, error message below). */
   error?: string
+  /** Merged onto the outer wrapper (e.g. `w-full min-w-0` beside sibling buttons in a grid row). */
+  wrapperClassName?: string
 }
 
 /**
@@ -172,6 +174,7 @@ export function Select({
   triggerClassName,
   contentClassName,
   error,
+  wrapperClassName,
 }: SelectProps) {
   const dir = (typeof document !== 'undefined' && document.documentElement.getAttribute('dir') === 'rtl')
     ? 'rtl'
@@ -182,7 +185,7 @@ export function Select({
   const optionsArray = Array.isArray(options) ? options : Object.entries(options).map(([id, name]) => (id === '' ? [null, name] as [null, string] : [id, name]))
 
   return (
-    <div className="space-y-2">
+    <div className={cn('space-y-2', wrapperClassName)}>
       {label != null && (
         <Label required={required} className={cn(error && 'text-destructive')}>{label}</Label>
       )}

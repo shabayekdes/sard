@@ -312,16 +312,6 @@ export function GlobalQuickActionModals() {
           ],
           defaultValue: 'active',
         },
-        ...(caseData.googleCalendarEnabled
-          ? [
-            {
-              name: 'sync_with_google_calendar',
-              label: t('Synchronize in Google Calendar'),
-              type: 'switch',
-              defaultValue: false,
-            },
-          ]
-          : []),
       ],
       modalSize: 'xl',
     };
@@ -551,19 +541,6 @@ export function GlobalQuickActionModals() {
           ],
           defaultValue: 'medium',
         },
-        {
-          name: 'status',
-          label: t('Status'),
-          type: 'select',
-          required: true,
-          options: [
-            { value: 'not_started', label: t('Not Started') },
-            { value: 'in_progress', label: t('In Progress') },
-            { value: 'completed', label: t('Completed') },
-            { value: 'on_hold', label: t('On Hold') },
-          ],
-          defaultValue: 'not_started',
-        },
         { name: 'due_date', label: t('Due Date'), type: 'date' },
         {
           name: 'case_id',
@@ -596,22 +573,18 @@ export function GlobalQuickActionModals() {
           name: 'task_status_id',
           label: t('Task Status'),
           type: 'select',
+          required: true,
+          selectAllowEmpty: false,
+          defaultValue:
+            taskData.taskStatuses?.[0]?.id != null && taskData.taskStatuses[0].id !== undefined
+              ? String(taskData.taskStatuses[0].id)
+              : undefined,
           options: taskData.taskStatuses.map((status) => ({
             value: status.id.toString(),
             label: resolveName(status.name),
           })),
         },
         { name: 'notes', label: t('Notes'), type: 'textarea' },
-        ...(taskData.googleCalendarEnabled
-          ? [
-            {
-              name: 'sync_with_google_calendar',
-              label: t('Synchronize in Google Calendar'),
-              type: 'switch',
-              defaultValue: false,
-            },
-          ]
-          : []),
       ],
       modalSize: 'xl',
     };

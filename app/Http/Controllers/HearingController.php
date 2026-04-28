@@ -104,12 +104,12 @@ class HearingController extends BaseController
     {
         $validated = $request->validate([
             'case_id' => 'required|exists:cases,id,tenant_id,' . createdBy(),
-            'court_id' => 'required|exists:courts,id,tenant_id,' . createdBy(),
+            'court_id' => 'nullable|exists:courts,id,tenant_id,' . createdBy(),
             'circle_number' => 'nullable|string|max:255',
             'hearing_type_id' => 'required|exists:hearing_types,id,tenant_id,' . createdBy(),
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'hearing_date' => 'required|date|after_or_equal:today',
+            'hearing_date' => 'required|date',
             'hearing_time' => 'required|date_format:H:i',
             'duration_minutes' => 'nullable|integer|min:15|max:480',
             'url' => 'nullable|url|max:500',
@@ -175,12 +175,12 @@ class HearingController extends BaseController
 
         $validated = $request->validate([
             'case_id' => 'required|exists:cases,id,tenant_id,' . createdBy(),
-            'court_id' => 'required|exists:courts,id,tenant_id,' . createdBy(),
+            'court_id' => 'nullable|exists:courts,id,tenant_id,' . createdBy(),
             'circle_number' => 'nullable|string|max:255',
             'hearing_type_id' => 'required|exists:hearing_types,id,tenant_id,' . createdBy(),
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'hearing_date' => 'required|date|after_or_equal:today',
+            'hearing_date' => 'required|date',
             'hearing_time' => 'required|date_format:H:i',
             'duration_minutes' => 'nullable|integer|min:15|max:480',
             'url' => 'nullable|url|max:500',

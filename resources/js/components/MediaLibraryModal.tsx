@@ -217,8 +217,11 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-h-[85vh] max-w-5xl overflow-hidden" dir={isRtl ? 'rtl' : 'ltr'}>
-                <DialogHeader className="pb-4">
+            <DialogContent
+                className="flex max-h-[85vh] min-h-0 max-w-5xl flex-col overflow-hidden"
+                dir={isRtl ? 'rtl' : 'ltr'}
+            >
+                <DialogHeader className="shrink-0 pb-4">
                     <DialogTitle className="flex items-center justify-center gap-2">
                         <ImageIcon className="h-5 w-5" />
                         {t('Media Library')}
@@ -230,7 +233,7 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="relative space-y-4">
+                <div className="relative flex min-h-0 flex-1 flex-col gap-4">
                     {/* Upload loading overlay */}
                     {uploading && (
                         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-lg bg-background/80 backdrop-blur-sm">
@@ -240,7 +243,7 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
                     )}
 
                     {/* Header: Search, Upload, and Stats in one row */}
-                    <div className={`flex flex-wrap items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                    <div className={`flex shrink-0 flex-wrap items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
                         <div className="relative min-w-0 flex-1">
                             <Search
                                 className={`text-muted-foreground absolute top-1/2 h-4 w-4 -translate-y-1/2 transform ${isRtl ? 'right-3 left-auto' : 'left-3'}`}
@@ -277,8 +280,8 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
                         )}
                     </div>
 
-                    {/* Media Grid */}
-                    <div className="bg-muted/10 flex flex-col rounded-lg border">
+                    {/* Media Grid — scrolls so pagination/footer stay in view on short viewports */}
+                    <div className="bg-muted/10 flex min-h-0 flex-1 flex-col overflow-y-auto rounded-lg border">
                         {loading ? (
                             <div className="flex flex-1 items-center justify-center">
                                 <div className="text-center">
@@ -423,15 +426,17 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
 
                     {/* Pagination */}
                     {totalPages > 1 && (
-                        <div className={`flex items-center justify-between border-t pt-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
-                            <div className="text-muted-foreground text-sm">
+                        <div
+                            className={`flex shrink-0 flex-col gap-3 border-t pt-3 sm:flex-row sm:items-center sm:justify-between ${isRtl ? 'sm:flex-row-reverse' : ''}`}
+                        >
+                            <div className="text-muted-foreground text-center text-sm sm:text-start">
                                 {t('Showing {{start}} to {{end}} of {{total}} files', {
                                     start: startIndex + 1,
                                     end: Math.min(startIndex + itemsPerPage, filteredMedia.length),
                                     total: filteredMedia.length,
                                 })}
                             </div>
-                            <div className={`flex gap-1 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                            <div className={`flex flex-wrap justify-center gap-1 sm:justify-end ${isRtl ? 'sm:flex-row-reverse' : ''}`}>
                                 <Button
                                     variant="outline"
                                     size="sm"
@@ -477,7 +482,7 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
                     )}
 
                     {/* Actions */}
-                    <div className={`flex items-center justify-between border-t pt-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                    <div className={`flex shrink-0 items-center justify-between border-t pt-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
                         <Button variant="outline" onClick={onClose}>
                             {t('Cancel')}
                         </Button>

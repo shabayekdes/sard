@@ -26,6 +26,10 @@ class TeamMemberRoleSeeder extends Seeder
             'view-calendar',
             'manage-own-calendar',
 
+            // Integrations
+            'view-integrations',
+            'manage-google-calendar-integration',
+
             // Tasks
             'manage-tasks',
             'view-tasks',

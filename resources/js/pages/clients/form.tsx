@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Repeater, type RepeaterField } from '@/components/ui/repeater';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useLayout } from '@/contexts/LayoutContext';
 import { router, usePage } from '@inertiajs/react';
@@ -13,9 +14,19 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PhoneInput, defaultCountries } from 'react-international-phone';
 
-export default function CreateClient() {
+function mapDocumentsFromClient(documents: any[] | undefined) {
+    return (documents || []).map((doc: any) => ({
+        document_name: doc.document_name || '',
+        document_type_id: doc.document_type_id ? String(doc.document_type_id) : '',
+        file: doc.file || doc.file_path || '',
+    }));
+}
+
+export default function ClientForm() {
     const { t, i18n } = useTranslation();
     const {
+        client,
+        has_portal_user: hasPortalUserProp = false,
         clientTypes,
         countries,
         documentTypes,
@@ -26,12 +37,18 @@ export default function CreateClient() {
         errors = {},
     } = usePage().props as any;
     const currentLocale = i18n.language || 'en';
+    const isEdit = Boolean(client?.id);
+    const clientId = client?.id;
     const canCreate = !planLimits || planLimits.can_create;
     const { isRtl } = useLayout();
 
     useEffect(() => {
         const handleLanguageChange = () => {
-            router.get(route('clients.create'), {}, { preserveState: true, preserveScroll: true });
+            if (isEdit && clientId) {
+                router.get(route('clients.edit', clientId), {}, { preserveState: true, preserveScroll: true });
+            } else {
+                router.get(route('clients.create'), {}, { preserveState: true, preserveScroll: true });
+            }
         };
 
         window.addEventListener('languageChanged', handleLanguageChange);
@@ -40,7 +57,7 @@ export default function CreateClient() {
             window.removeEventListener('languageChanged', handleLanguageChange);
             i18n.off('languageChanged', handleLanguageChange);
         };
-    }, [i18n]);
+    }, [isEdit, clientId, i18n]);
 
     const phoneCountriesByCode = new Map((phoneCountries || []).map((country: any) => [String(country.code).toLowerCase(), country]));
     const phoneCountryCodes = (phoneCountries || []).map((country: any) => String(country.code || '').toLowerCase()).filter((code: string) => code);
@@ -52,28 +69,56 @@ export default function CreateClient() {
     const countriesByCode = new Map((countries || []).map((country: any) => [String(country.code || '').toLowerCase(), country]));
     const defaultNationality = countriesByCode.get(String(defaultCountry).toLowerCase()) || (countries || [])[0];
 
-    const [formData, setFormData] = useState(() => ({
-        name: '',
-        country_id: defaultPhoneCountry?.value ? String(defaultPhoneCountry.value) : '',
-        phone: '',
-        email: '',
-        password: '',
-        client_type_id: '',
-        business_type: 'b2c',
-        nationality_id: defaultNationality?.value ? String(defaultNationality.value) : '',
-        id_number: '',
-        gender: 'male',
-        date_of_birth: '',
-        unified_number: '',
-        cr_number: '',
-        cr_issuance_date: '',
-        tax_id: '',
-        address: '',
-        tax_rate: defaultTaxRate ? Number(defaultTaxRate) : 0,
-        notes: '',
-        documents: [],
-        status: 'active',
-    }));
+    const [formData, setFormData] = useState(() => {
+        if (isEdit) {
+            return {
+                name: client?.name || '',
+                country_id: client?.country_id ? String(client.country_id) : defaultPhoneCountry?.value ? String(defaultPhoneCountry.value) : '',
+                phone: client?.phone || '',
+                email: client?.email || '',
+                client_type_id: client?.client_type_id ? String(client.client_type_id) : '',
+                business_type: client?.business_type || 'b2c',
+                nationality_id: client?.nationality_id ? String(client.nationality_id) : defaultNationality?.value ? String(defaultNationality.value) : '',
+                id_number: client?.id_number || '',
+                gender: client?.gender || '',
+                date_of_birth: client?.date_of_birth || '',
+                unified_number: client?.unified_number || '',
+                cr_number: client?.cr_number || '',
+                cr_issuance_date: client?.cr_issuance_date || '',
+                tax_id: client?.tax_id || '',
+                address: client?.address || '',
+                tax_rate: client?.tax_rate ?? (defaultTaxRate ? Number(defaultTaxRate) : 0),
+                notes: client?.notes || '',
+                status: client?.status || 'active',
+                documents: mapDocumentsFromClient(client?.documents),
+                password: '',
+                client_login_enabled: Boolean(hasPortalUserProp),
+            };
+        }
+        return {
+            name: '',
+            country_id: defaultPhoneCountry?.value ? String(defaultPhoneCountry.value) : '',
+            phone: '',
+            email: '',
+            password: '',
+            client_login_enabled: false,
+            client_type_id: '',
+            business_type: 'b2c',
+            nationality_id: defaultNationality?.value ? String(defaultNationality.value) : '',
+            id_number: '',
+            gender: 'male',
+            date_of_birth: '',
+            unified_number: '',
+            cr_number: '',
+            cr_issuance_date: '',
+            tax_id: '',
+            address: '',
+            tax_rate: defaultTaxRate ? Number(defaultTaxRate) : 0,
+            notes: '',
+            documents: [],
+            status: 'active',
+        };
+    });
 
     const normalizedErrors = useMemo(() => {
         const next: Record<string, string> = {};
@@ -93,6 +138,47 @@ export default function CreateClient() {
 
     const handleFormSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        const filteredDocuments = (formData.documents || []).filter((document: any) => {
+            return document?.document_name || document?.document_type_id || document?.file;
+        });
+
+        if (isEdit) {
+            if (!clientId) {
+                toast.error(t('Client not found'));
+                return;
+            }
+            const editBody: Record<string, unknown> = { ...formData, documents: filteredDocuments };
+            if (!formData.client_login_enabled) {
+                delete editBody.password;
+            } else if (hasPortalUserProp) {
+                delete editBody.password;
+            } else if (String(editBody.password ?? '').trim() === '') {
+                delete editBody.password;
+            }
+            toast.loading(t('Updating client...'));
+            router.put(route('clients.update', clientId), editBody as Parameters<typeof router.put>[1], {
+                onSuccess: (page) => {
+                    toast.dismiss();
+                    const flash = (page as any)?.props?.flash;
+                    if (flash?.success) {
+                        toast.success(flash.success);
+                    } else if (flash?.error) {
+                        toast.error(flash.error);
+                    }
+                },
+                onError: (formErrors) => {
+                    toast.dismiss();
+                    if (typeof formErrors === 'string') {
+                        toast.error(formErrors);
+                    } else if (Object.values(formErrors).length > 0) {
+                        toast.error(t('Failed to update {{model}}: {{errors}}', { model: t('Client'), errors: Object.values(formErrors).join(', ') }));
+                    }
+                },
+            });
+            return;
+        }
+
         if (!canCreate) {
             toast.error(
                 t('Client limit exceeded. Your plan allows maximum {{max}} clients. Please upgrade your plan.', {
@@ -102,16 +188,12 @@ export default function CreateClient() {
             return;
         }
 
-        const filteredDocuments = (formData.documents || []).filter((document: any) => {
-            return document?.document_name || document?.document_type_id || document?.file;
-        });
+        const createBody: Record<string, unknown> = { ...formData, documents: filteredDocuments };
+        if (!formData.client_login_enabled) {
+            delete createBody.password;
+        }
 
-        const payload = {
-            ...formData,
-            documents: filteredDocuments,
-        };
-
-        router.post(route('clients.store'), payload, {
+        router.post(route('clients.store'), createBody as Parameters<typeof router.post>[1], {
             onSuccess: (page) => {
                 toast.dismiss();
                 const flash = (page as any)?.props?.flash;
@@ -136,10 +218,13 @@ export default function CreateClient() {
         { title: t('Dashboard'), href: route('dashboard') },
         { title: t('Client Management'), href: route('clients.index') },
         { title: t('Clients'), href: route('clients.index') },
-        { title: t('Add Client') },
+        { title: isEdit ? client?.name || t('Edit Client') : t('Add Client') },
     ];
 
+    const pageTitle = isEdit ? t('Edit Client') : t('Add New Client');
+
     const renderError = (field: string) => (normalizedErrors[field] ? <p className="text-xs text-red-500">{normalizedErrors[field]}</p> : null);
+
     const documentTypeOptions = (documentTypes || []).map((type: any) => {
         let displayName = type.name;
         if (typeof type.name === 'object' && type.name !== null) {
@@ -168,7 +253,7 @@ export default function CreateClient() {
     ];
 
     return (
-        <PageTemplate title={t('Add New Client')} url="/clients" breadcrumbs={breadcrumbs} noPadding>
+        <PageTemplate title={pageTitle} url="/clients" breadcrumbs={breadcrumbs} noPadding>
             <form onSubmit={handleFormSubmit}>
                 <div className="mb-6 rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -254,25 +339,60 @@ export default function CreateClient() {
                             </div>
                             {renderError('phone')}
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="email" required>
-                                {t('Email')}
-                            </Label>
-                            <Input id="email" type="email" value={formData.email} onChange={(e) => updateField('email', e.target.value)} required />
-                            {renderError('email')}
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="password" required>
-                                {t('Password')}
-                            </Label>
-                            <Input
-                                id="password"
-                                type="password"
-                                value={formData.password}
-                                onChange={(e) => updateField('password', e.target.value)}
-                                required
-                            />
-                            {renderError('password')}
+
+                        <div className="grid grid-cols-1 gap-4 md:col-span-3 md:grid-cols-3 md:items-end">
+                            <div className="space-y-2">
+                                <Label htmlFor="client_login_enabled">{t('Enable client login')}</Label>
+                                <div className="flex h-10 items-center">
+                                    <Switch
+                                        id="client_login_enabled"
+                                        checked={formData.client_login_enabled}
+                                        onCheckedChange={(checked) => {
+                                            updateField('client_login_enabled', checked);
+                                            if (!checked) {
+                                                updateField('password', '');
+                                            }
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="email" required={formData.client_login_enabled}>
+                                    {formData.client_login_enabled ? t('Email') : `${t('Email')} (${t('Optional')})`}
+                                </Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    autoComplete="email"
+                                    value={formData.email}
+                                    onChange={(e) => updateField('email', e.target.value)}
+                                    required={formData.client_login_enabled}
+                                />
+                                {renderError('email')}
+                            </div>
+                            <div className="space-y-2">
+                                {formData.client_login_enabled && (!isEdit || !hasPortalUserProp) ? (
+                                    <>
+                                        <Label htmlFor="password" required>
+                                            {t('Password')}
+                                        </Label>
+                                        <Input
+                                            id="password"
+                                            type="password"
+                                            autoComplete="new-password"
+                                            value={formData.password}
+                                            onChange={(e) => updateField('password', e.target.value)}
+                                            required
+                                        />
+                                        {renderError('password')}
+                                    </>
+                                ) : (
+                                    <div className="space-y-2" aria-hidden>
+                                        <div className="h-5" />
+                                        <div className="h-10" />
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {formData.business_type === 'b2c' && (
@@ -429,7 +549,7 @@ export default function CreateClient() {
                         <Button type="button" variant="outline" onClick={() => router.get(route('clients.index'))}>
                             {t('Cancel')}
                         </Button>
-                        <Button type="submit" disabled={!canCreate}>
+                        <Button type="submit" disabled={!isEdit && !canCreate}>
                             {t('Save')}
                         </Button>
                     </div>

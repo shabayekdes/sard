@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Facades\Settings;
 use App\Models\CompanyProfile;
 use App\Models\Invoice;
+use App\Models\PaymentSetting;
 use Illuminate\Support\Carbon;
 use Salla\ZATCA\GenerateQrCode;
 use Salla\ZATCA\Tags\InvoiceDate;
@@ -88,6 +89,11 @@ class InvoicePdfService
 
         $terms = $this->buildTermsText($billingInfo);
 
+        $bankDetailRaw = PaymentSetting::where('tenant_id', $invoice->tenant_id)
+            ->where('key', 'bank_detail')
+            ->value('value');
+        $bankDetail = is_string($bankDetailRaw) && trim($bankDetailRaw) !== '' ? $bankDetailRaw : null;
+
         return [
             'type' => $type,
             'invoice' => $invoice,
@@ -123,6 +129,7 @@ class InvoicePdfService
             ],
             'qr_code' => $qrCode,
             'terms' => $terms,
+            'bank_detail' => $bankDetail,
         ];
     }
 
@@ -183,8 +190,12 @@ class InvoicePdfService
 
     private function buildLogoDataUri(?string $logoPath): ?string
     {
-        if (!$logoPath || str_starts_with($logoPath, 'http://') || str_starts_with($logoPath, 'https://')) {
+        if (!$logoPath) {
             return null;
+        }
+
+        if (str_starts_with($logoPath, 'http://') || str_starts_with($logoPath, 'https://')) {
+            return $logoPath;
         }
 
         $relativePath = ltrim($logoPath, '/');

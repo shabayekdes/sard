@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Plan;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;
 use Stancl\Tenancy\Database\Concerns\HasDomains;
 use Stancl\Tenancy\Database\Concerns\HasScopedValidationRules;
@@ -92,5 +93,15 @@ class Tenant extends BaseTenant
     public function plan()
     {
         return $this->belongsTo(Plan::class);
+    }
+
+    /**
+     * Primary company (owner) user for this tenant.
+     */
+    public function companyUser(): HasOne
+    {
+        return $this->hasOne(User::class, 'tenant_id', 'id')
+            ->where('type', 'company')
+            ->orderBy('id');
     }
 }

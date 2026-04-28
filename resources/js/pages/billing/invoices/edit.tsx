@@ -11,6 +11,8 @@ import { CurrencyAmount } from '@/components/currency-amount';
 import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 
+const NO_CASE_VALUE = '__none__';
+
 export default function EditInvoice() {
   const { t } = useTranslation();
   const { clients, cases, invoice, clientBillingInfo, currencies } = usePage().props as any;
@@ -215,13 +217,9 @@ export default function EditInvoice() {
       return;
     }
     
-    if (!formData.case_id) {
-      toast.error('Please select a case');
-      return;
-    }
-
     const submitData = {
       ...formData,
+      case_id: formData.case_id ? formData.case_id : null,
       subtotal: calculateSubtotal(),
       tax_amount: calculateTaxAmount(),
       total_amount: calculateTotal()
@@ -280,7 +278,10 @@ export default function EditInvoice() {
                   <div>
                     <Label htmlFor="client_id">{t('Client')} *</Label>
                    <div className="text-xs text-gray-500 mb-1">
-                      Selected: {formData.client_id} | Current: {currentClient?.name || 'None'}
+                      {t('Selected: {{selected}} | Current: {{current}}', {
+                        selected: formData.client_id || '-',
+                        current: currentClient?.name || t('None')
+                      })}
                     </div>
                     <Select key={`client-${formData.client_id}`} value={formData.client_id} onValueChange={(value) => updateFormData('client_id', value)}>
                       <SelectTrigger>
@@ -302,15 +303,26 @@ export default function EditInvoice() {
                   </div>
                   
                   <div>
-                    <Label htmlFor="case_id">{t('Case')} *</Label>
+                    <Label htmlFor="case_id">{t('Case')}</Label>
                     <div className="text-xs text-gray-500 mb-1">
-                      Selected: {formData.case_id} | Current: {currentCase?.title || 'None'} | Available: {filteredCases.length}
+                      {t('Selected: {{selected}} | Current: {{current}} | Available: {{available}}', {
+                        selected: formData.case_id || '-',
+                        current: currentCase?.title || t('None'),
+                        available: filteredCases.length
+                      })}
                     </div>
-                    <Select key={`case-${formData.case_id}`} value={formData.case_id} onValueChange={(value) => updateFormData('case_id', value)}>
+                    <Select
+                      key={`case-${formData.case_id || NO_CASE_VALUE}`}
+                      value={formData.case_id ? formData.case_id : NO_CASE_VALUE}
+                      onValueChange={(value) =>
+                        updateFormData('case_id', value === NO_CASE_VALUE ? '' : value)
+                      }
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder={currentCase?.title || t('Select Case')} />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value={NO_CASE_VALUE}>{t('No case')}</SelectItem>
                         {filteredCases.length > 0 ? (
                           filteredCases.map(caseItem => (
                             <SelectItem key={caseItem.id} value={caseItem.id.toString()}>

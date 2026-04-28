@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enum\EmailTemplateName;
 use App\Facades\Settings;
 use App\Models\CaseTimeline;
 use App\Models\CaseModel;
@@ -65,6 +66,8 @@ class CaseTimelineController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'event_date' => 'required|date',
+            'event_time' => 'required|date_format:H:i',
+            'duration_minutes' => 'nullable|integer|min:15|max:480',
             'is_completed' => 'nullable|boolean',
             'status' => 'nullable|in:active,inactive',
             'sync_with_google_calendar' => 'nullable|boolean',
@@ -73,6 +76,7 @@ class CaseTimelineController extends Controller
         $validated['tenant_id'] = createdBy();
         $validated['status'] = $validated['status'] ?? 'active';
         $validated['is_completed'] = $validated['is_completed'] ?? false;
+        $validated['duration_minutes'] = (int) ($validated['duration_minutes'] ?? 60);
 
         $case = CaseModel::withPermissionCheck()->with('client')->where('id', $validated['case_id'])->first();
         if (!$case) {
@@ -125,12 +129,15 @@ class CaseTimelineController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'event_date' => 'required|date',
+            'event_time' => 'required|date_format:H:i',
+            'duration_minutes' => 'nullable|integer|min:15|max:480',
             'is_completed' => 'nullable|boolean',
             'status' => 'nullable|in:active,inactive',
             'sync_with_google_calendar' => 'nullable|boolean',
         ]);
 
         $validated['is_completed'] = $validated['is_completed'] ?? false;
+        $validated['duration_minutes'] = (int) ($validated['duration_minutes'] ?? $timeline->duration_minutes ?? 60);
 
         $case = CaseModel::withPermissionCheck()->where('id', $validated['case_id'])->first();
         if (!$case) {
@@ -195,7 +202,7 @@ class CaseTimelineController extends Controller
     private function sendMeetingLinkNotification($case, $timeline, $meetingLink)
     {
         try {
-            if (isEmailTemplateEnabled('Timeline Meeting Link', createdBy())) {
+            if (isEmailTemplateEnabled(EmailTemplateName::TIMELINE_MEETING_CREATED, createdBy())) {
                 $emailService = new EmailTemplateService();
                 $client = $case->client;
 
@@ -222,7 +229,7 @@ class CaseTimelineController extends Controller
                 $userLanguage = auth()->user()->lang ?? 'en';
 
                 $emailService->sendTemplateEmailWithLanguage(
-                    'Timeline Meeting Link',
+                    EmailTemplateName::TIMELINE_MEETING_CREATED,
                     $variables,
                     (string) $client->email,
                     (string) $client->name,

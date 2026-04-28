@@ -2,28 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\NewCaseCreated;
 use App\Facades\Settings;
-use App\Models\CaseModel;
-use App\Models\CaseType;
 use App\Models\CaseCategory;
-use App\Models\CaseStatus;
-use App\Models\Client;
-use App\Models\Court;
-use App\Models\Hearing;
-use App\Models\OppositeParty;
-use App\Models\Country;
-use App\Models\CaseTimeline;
-use App\Models\CaseTeamMember;
 use App\Models\CaseDocument;
+use App\Models\CaseModel;
+use App\Models\CaseStatus;
+use App\Models\CaseTeamMember;
+use App\Models\CaseTimeline;
+use App\Models\CaseType;
+use App\Models\CircleType;
+use App\Models\Client;
+use App\Models\Country;
+use App\Models\Court;
+use App\Models\CourtType;
 use App\Models\DocumentType;
 use App\Models\EventType;
+use App\Models\Hearing;
+use App\Models\OppositeParty;
 use App\Models\ResearchProject;
-use App\Models\Task;
-use App\Models\TaskType;
-use App\Models\TaskStatus;
-use App\Models\User;
 use App\Models\Setting;
+use App\Models\Task;
+use App\Models\TaskStatus;
+use App\Models\TaskType;
+use App\Models\User;
 use App\Services\GoogleCalendarService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -31,6 +32,26 @@ use Inertia\Inertia;
 
 class CaseController extends BaseController
 {
+    private function caseFormQuickClientProps(): array
+    {
+        $phoneCountries = Country::where('status', 'active')
+            ->whereNotNull('country_code')
+            ->get(['id', 'name', 'country_code'])
+            ->map(function ($country) {
+                return [
+                    'value' => $country->id,
+                    'label' => $country->name,
+                    'code' => $country->country_code,
+                ];
+            })
+            ->values();
+
+        return [
+            'phoneCountries' => $phoneCountries,
+            'defaultCountry' => Settings::string('DEFAULT_COUNTRY', 'SA'),
+        ];
+    }
+
     public function index(Request $request)
     {
         $query = CaseModel::withPermissionCheck()
@@ -45,27 +66,27 @@ class CaseController extends BaseController
             });
         }
 
-        if ($request->has('case_type_id') && !empty($request->case_type_id) && $request->case_type_id !== 'all') {
+        if ($request->has('case_type_id') && ! empty($request->case_type_id) && $request->case_type_id !== 'all') {
             $query->where('case_type_id', $request->case_type_id);
         }
 
-        if ($request->has('case_status_id') && !empty($request->case_status_id) && $request->case_status_id !== 'all') {
+        if ($request->has('case_status_id') && ! empty($request->case_status_id) && $request->case_status_id !== 'all') {
             $query->where('case_status_id', $request->case_status_id);
         }
 
-        if ($request->has('priority') && !empty($request->priority) && $request->priority !== 'all') {
+        if ($request->has('priority') && ! empty($request->priority) && $request->priority !== 'all') {
             $query->where('priority', $request->priority);
         }
 
-        if ($request->has('status') && !empty($request->status) && $request->status !== 'all') {
+        if ($request->has('status') && ! empty($request->status) && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
 
-        if ($request->has('court_id') && !empty($request->court_id) && $request->court_id !== 'all') {
+        if ($request->has('court_id') && ! empty($request->court_id) && $request->court_id !== 'all') {
             $query->where('court_id', $request->court_id);
         }
 
-        if ($request->has('sort_field') && !empty($request->sort_field)) {
+        if ($request->has('sort_field') && ! empty($request->sort_field)) {
             $query->orderBy($request->sort_field, $request->sort_direction ?? 'asc');
         } else {
             $query->latest('id');
@@ -89,7 +110,7 @@ class CaseController extends BaseController
         $caseStatuses = CaseStatus::where('tenant_id', createdBy())->where('status', 'active')->get(['id', 'name']);
         $clients = Client::where('tenant_id', createdBy())->where('status', 'active')->get(['id', 'name']);
         $courts = Court::where('tenant_id', createdBy())->where('status', 'active')->get(['id', 'name']);
-        
+
         // Get countries for nationality dropdown - ordered by nationality_name
         $locale = app()->getLocale();
         $countries = Country::where('status', 'active')
@@ -100,10 +121,10 @@ class CaseController extends BaseController
                 // Spatie automatically returns translated value as string
                 $nationalityLabel = $country->nationality_name;
                 $countryName = $country->name;
-                
+
                 // Use nationality_name if available, otherwise fallback to name
-                $label = !empty($nationalityLabel) ? $nationalityLabel : $countryName;
-                
+                $label = ! empty($nationalityLabel) ? $nationalityLabel : $countryName;
+
                 return [
                     'value' => $country->id,
                     'label' => $label,
@@ -111,13 +132,13 @@ class CaseController extends BaseController
             })
             ->filter(function ($country) {
                 // Filter out countries with empty labels
-                return !empty($country['label']);
+                return ! empty($country['label']);
             })
             ->values()
             ->toArray();
 
         // TODO: Enable when ready integration with Google Calendar is done
-        $googleCalendarEnabled = false; //Setting::where('tenant_id', createdBy())->where('key', 'googleCalendarEnabled')->value('value') == '1';
+        $googleCalendarEnabled = false; // Setting::where('tenant_id', createdBy())->where('key', 'googleCalendarEnabled')->value('value') == '1';
 
         // Get plan limits for cases (same pattern as UserController)
         $authUser = auth()->user();
@@ -129,10 +150,9 @@ class CaseController extends BaseController
             $planLimits = [
                 'current_cases' => $currentCases,
                 'max_cases' => $maxCases,
-                'can_create' => $isUnlimited ? true : $currentCases < $maxCases
+                'can_create' => $isUnlimited ? true : $currentCases < $maxCases,
             ];
-        }
-        elseif ($authUser->type !== 'superadmin' && $authUser->tenant_id) {
+        } elseif ($authUser->type !== 'superadmin' && $authUser->tenant_id) {
             $companyUser = User::where('tenant_id', $authUser->tenant_id)->where('type', 'company')->first();
             if ($companyUser && $companyUser->type === 'company' && $companyUser->plan) {
 
@@ -142,7 +162,7 @@ class CaseController extends BaseController
                 $planLimits = [
                     'current_cases' => $currentCases,
                     'max_cases' => $maxCases,
-                    'can_create' => $isUnlimited ? true : $currentCases < $maxCases
+                    'can_create' => $isUnlimited ? true : $currentCases < $maxCases,
                 ];
             }
         }
@@ -172,7 +192,7 @@ class CaseController extends BaseController
             'caseStatus',
             'court.courtType',
             'court.circleType',
-            'oppositeParties.nationality'
+            'oppositeParties.nationality',
         ]);
 
         // Timeline query with filters
@@ -180,10 +200,10 @@ class CaseController extends BaseController
             ->with('eventType')
             ->where('case_id', $case->id);
 
-        if ($request->has('timeline_search') && !empty($request->timeline_search)) {
+        if ($request->has('timeline_search') && ! empty($request->timeline_search)) {
             $timelineQuery->where(function ($q) use ($request) {
-                $q->where('title', 'like', '%' . $request->timeline_search . '%')
-                    ->orWhere('description', 'like', '%' . $request->timeline_search . '%');
+                $q->where('title', 'like', '%'.$request->timeline_search.'%')
+                    ->orWhere('description', 'like', '%'.$request->timeline_search.'%');
             });
         }
 
@@ -199,7 +219,7 @@ class CaseController extends BaseController
             $timelineQuery->where('is_completed', $request->timeline_completed === '1');
         }
 
-        if ($request->has('timeline_sort_field') && !empty($request->timeline_sort_field)) {
+        if ($request->has('timeline_sort_field') && ! empty($request->timeline_sort_field)) {
             $timelineQuery->orderBy($request->timeline_sort_field, $request->timeline_sort_direction ?? 'asc');
         } else {
             $timelineQuery->orderBy('event_date', 'desc');
@@ -212,9 +232,9 @@ class CaseController extends BaseController
             ->where('case_id', $case->id)
             ->where('tenant_id', createdBy());
 
-        if ($request->has('team_search') && !empty($request->team_search)) {
+        if ($request->has('team_search') && ! empty($request->team_search)) {
             $teamQuery->whereHas('user', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->team_search . '%');
+                $q->where('name', 'like', '%'.$request->team_search.'%');
             });
         }
 
@@ -226,7 +246,7 @@ class CaseController extends BaseController
             $teamQuery->where('status', $request->team_status);
         }
 
-        if ($request->has('team_sort_field') && !empty($request->team_sort_field)) {
+        if ($request->has('team_sort_field') && ! empty($request->team_sort_field)) {
             $teamQuery->orderBy($request->team_sort_field, $request->team_sort_direction ?? 'asc');
         } else {
             $teamQuery->orderBy('assigned_date', 'desc');
@@ -237,10 +257,10 @@ class CaseController extends BaseController
         // Case documents query with filters
         $documentsQuery = CaseDocument::withPermissionCheck()->where('case_id', $case->id);
 
-        if ($request->has('doc_search') && !empty($request->doc_search)) {
+        if ($request->has('doc_search') && ! empty($request->doc_search)) {
             $documentsQuery->where(function ($q) use ($request) {
-                $q->where('document_name', 'like', '%' . $request->doc_search . '%')
-                    ->orWhere('description', 'like', '%' . $request->doc_search . '%');
+                $q->where('document_name', 'like', '%'.$request->doc_search.'%')
+                    ->orWhere('description', 'like', '%'.$request->doc_search.'%');
             });
         }
 
@@ -256,7 +276,7 @@ class CaseController extends BaseController
             $documentsQuery->where('status', $request->doc_status);
         }
 
-        if ($request->has('doc_sort_field') && !empty($request->doc_sort_field)) {
+        if ($request->has('doc_sort_field') && ! empty($request->doc_sort_field)) {
             $documentsQuery->orderBy($request->doc_sort_field, $request->doc_sort_direction ?? 'asc');
         } else {
             $documentsQuery->orderBy('created_at', 'desc');
@@ -266,7 +286,7 @@ class CaseController extends BaseController
 
         $users = User::withPermissionCheck()
             ->where('status', 'active')
-            ->whereDoesntHave('roles', function($q) {
+            ->whereDoesntHave('roles', function ($q) {
                 $q->where('name', 'client');
             })
             ->get(['id', 'name', 'email']);
@@ -283,7 +303,7 @@ class CaseController extends BaseController
         // Get case notes for this case
         $caseNotesQuery = \App\Models\CaseNote::withPermissionCheck()
             ->with('creator')
-            ->whereJsonContains('case_ids', (string)$case->id)
+            ->whereJsonContains('case_ids', (string) $case->id)
             ->orderBy('created_at', 'desc');
         $caseNotes = $caseNotesQuery->paginate(10, ['*'], 'notes_page');
 
@@ -299,11 +319,11 @@ class CaseController extends BaseController
             ->with(['taskType', 'taskStatus', 'assignedUser'])
             ->where('case_id', $case->id);
 
-        if ($request->has('task_search') && !empty($request->task_search)) {
+        if ($request->has('task_search') && ! empty($request->task_search)) {
             $tasksQuery->where(function ($q) use ($request) {
-                $q->where('title', 'like', '%' . $request->task_search . '%')
-                    ->orWhere('description', 'like', '%' . $request->task_search . '%')
-                    ->orWhere('task_id', 'like', '%' . $request->task_search . '%');
+                $q->where('title', 'like', '%'.$request->task_search.'%')
+                    ->orWhere('description', 'like', '%'.$request->task_search.'%')
+                    ->orWhere('task_id', 'like', '%'.$request->task_search.'%');
             });
         }
 
@@ -312,7 +332,7 @@ class CaseController extends BaseController
         }
 
         if ($request->has('task_status') && $request->task_status !== 'all') {
-            $tasksQuery->where('status', $request->task_status);
+            $tasksQuery->where('task_status_id', $request->task_status);
         }
 
         if ($request->has('task_priority') && $request->task_priority !== 'all') {
@@ -323,7 +343,7 @@ class CaseController extends BaseController
             $tasksQuery->where('assigned_to', $request->task_assigned_to);
         }
 
-        if ($request->has('task_sort_field') && !empty($request->task_sort_field)) {
+        if ($request->has('task_sort_field') && ! empty($request->task_sort_field)) {
             $tasksQuery->orderBy($request->task_sort_field, $request->task_sort_direction ?? 'asc');
         } else {
             $tasksQuery->orderBy('due_date', 'asc');
@@ -341,13 +361,16 @@ class CaseController extends BaseController
 
         $googleCalendarEnabled = Settings::boolean('GOOGLE_CALENDAR_ENABLED');
 
+        $casesForTaskForm = CaseModel::where('tenant_id', createdBy())
+            ->get(['id', 'case_id', 'title']);
+
         // Get latest hearing (done or upcoming) for this case
         // Prioritize upcoming hearings, then show the most recent completed one
         $latestHearing = Hearing::withPermissionCheck()
             ->with([
                 'court.courtType',
                 'court.circleType',
-                'hearingType'
+                'hearingType',
             ])
             ->where('case_id', $case->id)
             ->orderByRaw('CASE WHEN hearing_date >= CURDATE() THEN 0 ELSE 1 END')
@@ -360,39 +383,39 @@ class CaseController extends BaseController
             ->with([
                 'court.courtType',
                 'court.circleType',
-                'hearingType'
+                'hearingType',
             ])
             ->where('case_id', $case->id);
 
-        if ($request->has('hearing_search') && !empty($request->hearing_search)) {
+        if ($request->has('hearing_search') && ! empty($request->hearing_search)) {
             $hearingsQuery->where(function ($q) use ($request) {
-                $q->where('title', 'like', '%' . $request->hearing_search . '%')
-                    ->orWhere('hearing_id', 'like', '%' . $request->hearing_search . '%')
-                    ->orWhere('description', 'like', '%' . $request->hearing_search . '%');
+                $q->where('title', 'like', '%'.$request->hearing_search.'%')
+                    ->orWhere('hearing_id', 'like', '%'.$request->hearing_search.'%')
+                    ->orWhere('description', 'like', '%'.$request->hearing_search.'%');
             });
         }
 
-        if ($request->has('hearing_status') && !empty($request->hearing_status) && $request->hearing_status !== 'all') {
+        if ($request->has('hearing_status') && ! empty($request->hearing_status) && $request->hearing_status !== 'all') {
             $hearingsQuery->where('status', $request->hearing_status);
         }
 
-        if ($request->has('hearing_court_id') && !empty($request->hearing_court_id) && $request->hearing_court_id !== 'all') {
+        if ($request->has('hearing_court_id') && ! empty($request->hearing_court_id) && $request->hearing_court_id !== 'all') {
             $hearingsQuery->where('court_id', $request->hearing_court_id);
         }
 
-        if ($request->has('hearing_court_type_id') && !empty($request->hearing_court_type_id) && $request->hearing_court_type_id !== 'all') {
-            $hearingsQuery->whereHas('court', function($q) use ($request) {
+        if ($request->has('hearing_court_type_id') && ! empty($request->hearing_court_type_id) && $request->hearing_court_type_id !== 'all') {
+            $hearingsQuery->whereHas('court', function ($q) use ($request) {
                 $q->where('court_type_id', $request->hearing_court_type_id);
             });
         }
 
-        if ($request->has('hearing_circle_type_id') && !empty($request->hearing_circle_type_id) && $request->hearing_circle_type_id !== 'all') {
-            $hearingsQuery->whereHas('court', function($q) use ($request) {
+        if ($request->has('hearing_circle_type_id') && ! empty($request->hearing_circle_type_id) && $request->hearing_circle_type_id !== 'all') {
+            $hearingsQuery->whereHas('court', function ($q) use ($request) {
                 $q->where('circle_type_id', $request->hearing_circle_type_id);
             });
         }
 
-        if ($request->has('hearing_sort_field') && !empty($request->hearing_sort_field)) {
+        if ($request->has('hearing_sort_field') && ! empty($request->hearing_sort_field)) {
             $hearingsQuery->orderBy($request->hearing_sort_field, $request->hearing_sort_direction ?? 'asc');
         } else {
             $hearingsQuery->orderBy('hearing_date', 'desc')->orderBy('hearing_time', 'desc');
@@ -430,6 +453,7 @@ class CaseController extends BaseController
             'roles' => $roles,
             'taskTypes' => $taskTypes,
             'taskStatuses' => $taskStatuses,
+            'cases' => $casesForTaskForm,
             'courts' => $courts,
             'courtTypes' => $courtTypes,
             'circleTypes' => $circleTypes,
@@ -445,7 +469,7 @@ class CaseController extends BaseController
                 'task_search', 'task_type_id', 'task_status', 'task_priority', 'task_assigned_to',
                 'task_sort_field', 'task_sort_direction', 'task_per_page',
                 'hearing_search', 'hearing_status', 'hearing_court_id', 'hearing_court_type_id',
-                'hearing_circle_type_id', 'hearing_sort_field', 'hearing_sort_direction', 'hearing_per_page'
+                'hearing_circle_type_id', 'hearing_sort_field', 'hearing_sort_direction', 'hearing_per_page',
             ]),
         ]);
     }
@@ -507,7 +531,7 @@ class CaseController extends BaseController
                 $nationalityLabel = $country->nationality_name;
                 $countryName = $country->name;
 
-                $label = !empty($nationalityLabel) ? $nationalityLabel : $countryName;
+                $label = ! empty($nationalityLabel) ? $nationalityLabel : $countryName;
 
                 return [
                     'value' => $country->id,
@@ -515,7 +539,7 @@ class CaseController extends BaseController
                 ];
             })
             ->filter(function ($country) {
-                return !empty($country['label']);
+                return ! empty($country['label']);
             })
             ->values()
             ->toArray();
@@ -531,6 +555,28 @@ class CaseController extends BaseController
             ];
         });
 
+        $courtTypes = CourtType::where('tenant_id', createdBy())
+            ->where('status', 'active')
+            ->get(['id', 'name'])
+            ->map(function ($courtType) {
+                return [
+                    'id' => $courtType->id,
+                    'name' => $courtType->name,
+                    'name_translations' => $courtType->getTranslations('name'),
+                ];
+            });
+
+        $circleTypes = CircleType::where('tenant_id', createdBy())
+            ->where('status', 'active')
+            ->get(['id', 'name'])
+            ->map(function ($circleType) {
+                return [
+                    'id' => $circleType->id,
+                    'name' => $circleType->name,
+                    'name_translations' => $circleType->getTranslations('name'),
+                ];
+            });
+
         $googleCalendarEnabled = Settings::boolean('GOOGLE_CALENDAR_ENABLED');
 
         $authUser = auth()->user();
@@ -542,10 +588,9 @@ class CaseController extends BaseController
             $planLimits = [
                 'current_cases' => $currentCases,
                 'max_cases' => $maxCases,
-                'can_create' => $isUnlimited ? true : $currentCases < $maxCases
+                'can_create' => $isUnlimited ? true : $currentCases < $maxCases,
             ];
-        }
-        elseif ($authUser->type !== 'superadmin' && $authUser->tenant_id) {
+        } elseif ($authUser->type !== 'superadmin' && $authUser->tenant_id) {
             $companyUser = User::where('tenant_id', $authUser->tenant_id)->where('type', 'company')->first();
             if ($companyUser && $companyUser->type === 'company' && $companyUser->plan) {
                 $currentCases = CaseModel::where('tenant_id', $companyUser->tenant_id)->count();
@@ -554,22 +599,24 @@ class CaseController extends BaseController
                 $planLimits = [
                     'current_cases' => $currentCases,
                     'max_cases' => $maxCases,
-                    'can_create' => $isUnlimited ? true : $currentCases < $maxCases
+                    'can_create' => $isUnlimited ? true : $currentCases < $maxCases,
                 ];
             }
         }
 
-        return Inertia::render('cases/create', [
+        return Inertia::render('cases/create', array_merge([
             'clients' => $clients,
             'caseTypes' => $caseTypes,
             'caseCategories' => $caseCategories,
             'caseStatuses' => $caseStatuses,
             'courts' => $courts,
+            'courtTypes' => $courtTypes,
+            'circleTypes' => $circleTypes,
             'countries' => $countries,
             'documentTypes' => $documentTypes,
             'googleCalendarEnabled' => $googleCalendarEnabled,
             'planLimits' => $planLimits,
-        ]);
+        ], $this->caseFormQuickClientProps()));
     }
 
     public function edit(CaseModel $case)
@@ -579,7 +626,26 @@ class CaseController extends BaseController
 
         $clients = Client::where('tenant_id', createdBy())
             ->where('status', 'active')
-            ->get(['id', 'name'])
+            ->get(['id', 'name']);
+
+        if ($case->client_id && ! $clients->contains('id', $case->client_id)) {
+            $currentClient = Client::withTrashed()
+                ->where('tenant_id', createdBy())
+                ->where('id', $case->client_id)
+                ->first();
+            if ($currentClient) {
+                $label = (string) $currentClient->name;
+                if ($currentClient->trashed()) {
+                    $label .= ' ('.__('Deleted').')';
+                } elseif (($currentClient->status ?? '') !== 'active') {
+                    $label .= ' ('.__('Inactive').')';
+                }
+                $currentClient->setAttribute('name', $label);
+                $clients->push($currentClient);
+            }
+        }
+
+        $clients = $clients
             ->prepend([null, __('Select Client')], 'id')
             ->values()
             ->toArray();
@@ -631,14 +697,15 @@ class CaseController extends BaseController
             ->map(function ($country) {
                 $nationalityLabel = $country->nationality_name;
                 $countryName = $country->name;
-                $label = !empty($nationalityLabel) ? $nationalityLabel : $countryName;
+                $label = ! empty($nationalityLabel) ? $nationalityLabel : $countryName;
+
                 return [
                     'value' => $country->id,
                     'label' => $label,
                 ];
             })
             ->filter(function ($country) {
-                return !empty($country['label']);
+                return ! empty($country['label']);
             })
             ->values()
             ->toArray();
@@ -658,13 +725,36 @@ class CaseController extends BaseController
             ];
         });
 
+        $courtTypes = CourtType::where('tenant_id', createdBy())
+            ->where('status', 'active')
+            ->get(['id', 'name'])
+            ->map(function ($courtType) {
+                return [
+                    'id' => $courtType->id,
+                    'name' => $courtType->name,
+                    'name_translations' => $courtType->getTranslations('name'),
+                ];
+            });
+
+        $circleTypes = CircleType::where('tenant_id', createdBy())
+            ->where('status', 'active')
+            ->get(['id', 'name'])
+            ->map(function ($circleType) {
+                return [
+                    'id' => $circleType->id,
+                    'name' => $circleType->name,
+                    'name_translations' => $circleType->getTranslations('name'),
+                ];
+            });
+
         $caseData = $case->toArray();
         $caseDocuments = CaseDocument::where('case_id', $case->id)->get();
         $caseData['documents'] = $caseDocuments->map(function ($doc) {
             $fileUrl = $doc->file_path ? (\Illuminate\Support\Facades\Storage::url($doc->file_path) ?? $doc->file_path) : '';
-            if ($fileUrl && !str_starts_with($fileUrl, 'http')) {
+            if ($fileUrl && ! str_starts_with($fileUrl, 'http')) {
                 $fileUrl = url($fileUrl);
             }
+
             return [
                 'document_name' => $doc->document_name,
                 'document_type_id' => (string) $doc->document_type_id,
@@ -690,17 +780,19 @@ class CaseController extends BaseController
         $caseData['expected_completion_date'] = $case->expected_completion_date ? $case->expected_completion_date->format('Y-m-d') : '';
         $caseData['estimated_value'] = $case->estimated_value !== null && $case->estimated_value !== '' ? (string) $case->estimated_value : '';
 
-        return Inertia::render('cases/edit', [
+        return Inertia::render('cases/edit', array_merge([
             'case' => $caseData,
             'clients' => $clients,
             'caseTypes' => $caseTypes,
             'caseCategories' => $caseCategories,
             'caseStatuses' => $caseStatuses,
             'courts' => $courts,
+            'courtTypes' => $courtTypes,
+            'circleTypes' => $circleTypes,
             'countries' => $countries,
             'documentTypes' => $documentTypes,
             'googleCalendarEnabled' => $googleCalendarEnabled,
-        ]);
+        ], $this->caseFormQuickClientProps()));
     }
 
     public function store(Request $request)
@@ -714,18 +806,17 @@ class CaseController extends BaseController
             $maxCases = $authUser->plan->max_cases;
             $isUnlimited = $authUser->plan->isUnlimitedLimit($maxCases);
 
-            if (!$isUnlimited && $currentCases >= $maxCases) {
+            if (! $isUnlimited && $currentCases >= $maxCases) {
                 return redirect()->back()->with('error', __('Case limit exceeded. Your plan allows maximum :max cases. Please upgrade your plan.', ['max' => $maxCases]));
             }
-        }
-        elseif ($authUser->type !== 'superadmin' && $authUser->tenant_id) {
+        } elseif ($authUser->type !== 'superadmin' && $authUser->tenant_id) {
             $companyUser = User::where('tenant_id', $authUser->tenant_id)->where('type', 'company')->first();
             if ($companyUser && $companyUser->type === 'company' && $companyUser->plan) {
                 $currentCases = CaseModel::where('tenant_id', $companyUser->tenant_id)->count();
                 $maxCases = $companyUser->plan->max_cases;
                 $isUnlimited = $companyUser->plan->isUnlimitedLimit($maxCases);
 
-                if (!$isUnlimited && $currentCases >= $maxCases) {
+                if (! $isUnlimited && $currentCases >= $maxCases) {
                     return redirect()->back()->with('error', __('Case limit exceeded. Your company plan allows maximum :max cases. Please contact your administrator.', ['max' => $maxCases]));
                 }
             }
@@ -751,7 +842,6 @@ class CaseController extends BaseController
             'opposing_party' => 'nullable|string',
             'court_details' => 'nullable|string',
             'status' => 'nullable|in:active,inactive',
-            'sync_with_google_calendar' => 'nullable|boolean',
             'opposite_parties' => 'nullable|array',
             'opposite_parties.*.name' => 'required|string|max:255',
             'opposite_parties.*.id_number' => 'nullable|string|max:255',
@@ -775,7 +865,7 @@ class CaseController extends BaseController
         $case = CaseModel::create($validated);
 
         // Create opposite parties
-        if (!empty($oppositeParties)) {
+        if (! empty($oppositeParties)) {
             foreach ($oppositeParties as $party) {
                 OppositeParty::create([
                     'case_id' => $case->id,
@@ -789,7 +879,7 @@ class CaseController extends BaseController
         }
 
         // Create case documents
-        if (!empty($documents)) {
+        if (! empty($documents)) {
             foreach ($documents as $doc) {
                 $filePath = $this->convertToRelativePath($doc['file'] ?? '');
                 if ($filePath) {
@@ -807,13 +897,13 @@ class CaseController extends BaseController
         }
 
         // Handle Google Calendar sync
-        if ($case && $request->sync_with_google_calendar) {
-            $calendarService = new GoogleCalendarService();
-            $eventId = $calendarService->createEvent($case, createdBy(), 'case');
-            if ($eventId) {
-                $case->update(['google_calendar_event_id' => $eventId]);
-            }
-        }
+        // if ($case && $request->sync_with_google_calendar) {
+        //     $calendarService = new GoogleCalendarService();
+        //     $eventId = $calendarService->createEvent($case, createdBy(), 'case');
+        //     if ($eventId) {
+        //         $case->update(['google_calendar_event_id' => $eventId]);
+        //     }
+        // }
 
         // Trigger notifications
         event(new \App\Events\NewCaseCreated($case, $request->all()));
@@ -825,17 +915,18 @@ class CaseController extends BaseController
 
         $errors = [];
         if ($emailError) {
-            $errors[] = __('Email send failed: ') . $emailError;
+            $errors[] = __('Email send failed: ').$emailError;
         }
         if ($slackError) {
-            $errors[] = __('Slack send failed: ') . $slackError;
+            $errors[] = __('Slack send failed: ').$slackError;
         }
         if ($twilioError) {
-            $errors[] = __('SMS send failed: ') . $twilioError;
+            $errors[] = __('SMS send failed: ').$twilioError;
         }
 
-        if (!empty($errors)) {
-            $message = __('Case created successfully, but ') . implode(', ', $errors);
+        if (! empty($errors)) {
+            $message = __('Case created successfully, but ').implode(', ', $errors);
+
             return redirect()->route('cases.index')->with('warning', $message);
         }
 
@@ -852,7 +943,23 @@ class CaseController extends BaseController
             'case_number' => 'nullable|string|max:255',
             'file_number' => 'nullable|string|max:255',
             'attributes' => 'nullable|in:petitioner,respondent',
-            'client_id' => ['required', Rule::exists('clients', 'id')->where('tenant_id', createdBy())],
+            'client_id' => [
+                'required',
+                function (string $attribute, mixed $value, \Closure $fail) use ($case) {
+                    $client = Client::withTrashed()
+                        ->where('tenant_id', createdBy())
+                        ->where('id', $value)
+                        ->first();
+                    if (! $client) {
+                        $fail(__('The selected client is invalid.'));
+
+                        return;
+                    }
+                    if ($client->trashed() && (int) $value !== (int) $case->client_id) {
+                        $fail(__('The selected client is no longer available. Please choose an active client.'));
+                    }
+                },
+            ],
             'case_type_id' => ['required', Rule::exists('case_types', 'id')->where('tenant_id', createdBy())],
             'case_category_id' => 'nullable|exists:case_categories,id',
             'case_subcategory_id' => 'nullable|exists:case_categories,id',
@@ -886,7 +993,7 @@ class CaseController extends BaseController
 
         // Delete existing opposite parties and create new ones
         OppositeParty::where('case_id', $case->id)->delete();
-        if (!empty($oppositeParties)) {
+        if (! empty($oppositeParties)) {
             foreach ($oppositeParties as $party) {
                 OppositeParty::create([
                     'case_id' => $case->id,
@@ -901,7 +1008,7 @@ class CaseController extends BaseController
 
         // Replace case documents: delete existing, create from form
         CaseDocument::where('case_id', $case->id)->delete();
-        if (!empty($documents)) {
+        if (! empty($documents)) {
             foreach ($documents as $doc) {
                 $filePath = $this->convertToRelativePath($doc['file'] ?? '');
                 if ($filePath) {
@@ -940,16 +1047,17 @@ class CaseController extends BaseController
 
     private function convertToRelativePath(string $url): string
     {
-        if (!$url) {
+        if (! $url) {
             return $url;
         }
-        if (!str_starts_with($url, 'http')) {
+        if (! str_starts_with($url, 'http')) {
             return $url;
         }
         $storageIndex = strpos($url, '/storage/');
         if ($storageIndex !== false) {
             return substr($url, $storageIndex);
         }
+
         return $url;
     }
 }

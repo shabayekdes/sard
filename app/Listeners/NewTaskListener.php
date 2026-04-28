@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Enums\TaskPriority;
 use App\Enum\EmailTemplateName;
 use App\Events\NewTaskCreated;
 use App\Services\EmailTemplateService;
@@ -43,7 +44,11 @@ class NewTaskListener
                 '{user_name}' => $creator && $creator->name ? $creator->name : 'System Administrator',
                 '{assigned_to}' => $assignedUser->name ?? 'Assigned User',
                 '{title}' => $task->title ?? 'Task Title',
-                '{priority}' => ucfirst($task->priority ?? 'medium'),
+                '{priority}' => ucfirst(
+                    $task->priority instanceof TaskPriority
+                        ? $task->priority->value
+                        : ($task->priority ?? 'medium')
+                ),
                 '{due_date}' => $task->due_date ? $task->due_date->format('F j, Y') : 'Not specified',
                 '{case}' => $case ? $case->title : 'General Task',
                 '{task_type}' => $taskType ? $taskType->name : 'General',

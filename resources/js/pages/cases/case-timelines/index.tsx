@@ -234,6 +234,11 @@ export default function CaseTimelines() {
       render: (value: string) => new Date(value).toLocaleDateString()
     },
     {
+      key: 'event_time',
+      label: t('Event Time'),
+      render: (value: string) => (value ? (window.appSettings?.formatTime(`2000-01-01T${value}`) || value) : '-')
+    },
+    {
       key: 'is_completed',
       label: t('Completed'),
       render: (value: boolean) => (
@@ -426,6 +431,7 @@ console.log({cases})
                       { name: 'title', label: t('Title'), type: 'text', required: true },
                       { name: 'description', label: t('Description'), type: 'textarea' },
                       { name: 'event_date', label: t('Event Date'), type: 'date', required: true },
+                      { name: 'event_time', label: t('Event Time'), type: 'time', required: true },
                       { name: 'is_completed', label: t('Completed'), type: 'checkbox' },
                       {
                           name: 'status',
@@ -456,6 +462,7 @@ console.log({cases})
                       ? {
                             ...currentItem,
                             case_id: currentItem.case_id?.toString(),
+                            event_time: currentItem.event_time ? currentItem.event_time.slice(0, 5) : '',
                         }
                       : null
               }

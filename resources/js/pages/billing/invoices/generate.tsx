@@ -2,9 +2,12 @@ import { usePage, router } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 
 import { CurrencyAmount } from '@/components/currency-amount';
+import { Badge } from '@/components/ui/badge';
+import { resolveClientName } from '@/components/client-table-cell';
 
 export default function InvoiceGenerate() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const currentLocale = i18n.language || 'en';
     const { invoice, companyProfile, timeEntries, invoiceItems, clientBillingInfo, currencies } = usePage().props as any;
 
     const handlePayment = () => {
@@ -53,9 +56,20 @@ export default function InvoiceGenerate() {
                         <div>
                             <h3 className="text-lg font-semibold text-gray-900 mb-3">{t('Bill To')}:</h3>
                             <div className="text-gray-700">
-                                <p className="font-semibold">{invoice.client?.name || ''}</p>
+                                <p className="inline-flex min-w-0 flex-row flex-wrap items-center gap-1.5 font-semibold" dir="ltr">
+                                    <span>{resolveClientName(invoice.client?.name, currentLocale) || ''}</span>
+                                    {invoice.client?.deleted_at ? (
+                                        <Badge variant="outline" className="shrink-0 font-normal text-muted-foreground" dir="auto">
+                                            {t('Deleted')}
+                                        </Badge>
+                                    ) : null}
+                                </p>
                                 {invoice.client?.address && <p>{invoice.client.address}</p>}
-                                {invoice.client?.phone && <p>Phone: {invoice.client.phone}</p>}
+                                {invoice.client?.phone && (
+                                    <p dir="ltr">
+                                        Phone: <span className="tabular-nums">{invoice.client.phone}</span>
+                                    </p>
+                                )}
                                 {invoice.client?.email && <p>Email: {invoice.client.email}</p>}
                             </div>
                         </div>

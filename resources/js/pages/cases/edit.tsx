@@ -1,4 +1,6 @@
 import { toast } from '@/components/custom-toast';
+import { CrudFormModal } from '@/components/CrudFormModal';
+import { QuickClientModal } from '@/components/quick-client-modal';
 import { PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import DependentDropdown from '@/components/DependentDropdown';
 import { useLayout } from '@/contexts/LayoutContext';
+import { hasPermission } from '@/utils/authorization';
 import { router, usePage } from '@inertiajs/react';
+import { Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -33,13 +37,30 @@ const defaultFormData = {
     estimated_value: '',
     description: '',
     status: 'active',
-    sync_with_google_calendar: false,
 };
 
 export default function EditCase() {
     const { t, i18n } = useTranslation();
-    const { auth, case: caseProp, clients, caseTypes, caseCategories, caseStatuses, courts, countries, documentTypes, errors = {}, base_url } =
-        usePage().props as any;
+    const {
+        auth,
+        case: caseProp,
+        clients,
+        caseTypes,
+        caseCategories,
+        caseStatuses,
+        courts,
+        courtTypes,
+        circleTypes,
+        countries,
+        documentTypes,
+        phoneCountries = [],
+        defaultCountry = '',
+        errors = {},
+        base_url,
+    } = usePage().props as any;
+    const permissions = auth?.permissions || [];
+    const canQuickCreateCourt = hasPermission(permissions, 'create-courts');
+    const canQuickCreateClient = hasPermission(permissions, 'create-clients');
     const { isRtl } = useLayout();
     const currentLocale = i18n.language || 'en';
     const caseId = caseProp?.id;
@@ -89,6 +110,8 @@ export default function EditCase() {
     });
 
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+    const [courtModalOpen, setCourtModalOpen] = useState(false);
+    const [clientModalOpen, setClientModalOpen] = useState(false);
     const normalizedErrors = useMemo(() => {
         const next: Record<string, string> = {};
         Object.entries(errors || {}).forEach(([key, value]) => {
@@ -120,6 +143,98 @@ export default function EditCase() {
         });
     };
 
+    const quickCourtFormConfig = useMemo(() => {
+        const typeOptions = (courtTypes || []).map((type: any) => {
+            let displayName = type.name;
+            if (typeof type.name === 'object' && type.name !== null) {
+                displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+            } else if (type.name_translations && typeof type.name_translations === 'object') {
+                displayName =
+                    type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
+            }
+            return { value: type.id.toString(), label: displayName };
+        });
+        const circleOptions = (circleTypes || []).map((type: any) => {
+            let displayName = type.name;
+            if (typeof type.name === 'object' && type.name !== null) {
+                displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
+            } else if (type.name_translations && typeof type.name_translations === 'object') {
+                displayName =
+                    type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
+            }
+            return { value: type.id.toString(), label: displayName };
+        });
+        return {
+            fields: [
+                { name: 'name', label: t('Court Name'), type: 'text', required: true },
+                {
+                    name: 'court_type_id',
+                    label: t('Court Type'),
+                    type: 'select',
+                    required: true,
+                    options: typeOptions,
+                },
+                {
+                    name: 'circle_type_id',
+                    label: t('Circle Type'),
+                    type: 'select',
+                    required: true,
+                    options: circleOptions,
+                },
+                { name: 'address', label: t('Address'), type: 'textarea' },
+                { name: 'notes', label: t('Notes'), type: 'textarea' },
+                {
+                    name: 'status',
+                    label: t('Status'),
+                    type: 'select',
+                    options: [
+                        { value: 'active', label: t('Active') },
+                        { value: 'inactive', label: t('Inactive') },
+                    ],
+                    defaultValue: 'active',
+                },
+            ],
+            modalSize: 'xl' as const,
+        };
+    }, [courtTypes, circleTypes, currentLocale, t]);
+
+    const handleQuickCourtSubmit = (courtForm: Record<string, unknown>) => {
+        router.post(route('courts.store'), courtForm, {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: (page) => {
+                setCourtModalOpen(false);
+                toast.dismiss();
+                const flash = (page as any)?.props?.flash;
+                if (flash?.created_court_id != null) {
+                    updateField('court_id', String(flash.created_court_id));
+                }
+                if (flash?.success) {
+                    toast.success(flash.success);
+                }
+                if (flash?.warning) {
+                    toast.message(flash.warning);
+                }
+                if (flash?.error) {
+                    toast.error(flash.error);
+                }
+            },
+            onError: (formErrors) => {
+                toast.dismiss();
+                if (typeof formErrors === 'string') {
+                    toast.error(formErrors);
+                } else if (Object.values(formErrors).length > 0) {
+                    toast.error(
+                        t('Failed to create {{model}}: {{errors}}', {
+                            model: t('Court'),
+                            errors: Object.values(formErrors).join(', '),
+                        }),
+                    );
+                }
+            },
+        });
+    };
+
     const toIdAndName = (item: any): { id: string | number; name: string } | null => {
         if (!item) return null;
         if (Array.isArray(item)) {
@@ -145,13 +260,13 @@ export default function EditCase() {
             });
     }, [clients]);
 
-    const clientDropdownFields = useMemo(() => {
-        const options = uniqueClients.map((c: any) => ({ value: String(c.id), label: c.name }));
-        if (auth?.user && !uniqueClients.some((c: any) => String(c.id) === String(auth.user?.id))) {
-            options.push({ value: auth.user.id.toString(), label: `${auth.user.name} (Me)` });
-        }
-        return [{ name: 'client_id', label: t('Client'), required: true, options }];
-    }, [uniqueClients, auth, t]);
+    const clientSelectOptions = useMemo(() => {
+        const rows: ([string | number | null, string] | [null, string])[] = [[null, t('Select Client')]];
+        uniqueClients.forEach((c) => {
+            rows.push([c.id, c.name]);
+        });
+        return rows;
+    }, [uniqueClients, t]);
 
     const categorySubcategoryTypeFields = useMemo(
         () => [
@@ -286,12 +401,32 @@ export default function EditCase() {
                 <div className="mb-6 rounded-lg border border-slate-200 bg-white p-6 dark:border-gray-800">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div className="space-y-2">
-                            <DependentDropdown
-                                fields={clientDropdownFields}
-                                values={{ client_id: formData.client_id ?? '' }}
-                                onChange={(fieldName, value) => updateField(fieldName, value)}
-                                errors={{ client_id: getFieldError('client_id') }}
-                            />
+                            <Label required>{t('Client')}</Label>
+                            <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+                                <FormSelect
+                                    value={formData.client_id ?? ''}
+                                    onValueChange={(v) => updateField('client_id', v)}
+                                    placeholder={t('Select Client')}
+                                    options={clientSelectOptions}
+                                    wrapperClassName="min-w-0 w-full space-y-0"
+                                />
+                                {canQuickCreateClient && (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-10 w-10 shrink-0 justify-self-center"
+                                        title={t('Quick add client')}
+                                        aria-label={t('Quick add client')}
+                                        onClick={() => setClientModalOpen(true)}
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                    </Button>
+                                )}
+                            </div>
+                            {getFieldError('client_id') ? (
+                                <p className="text-sm text-destructive mt-1">{getFieldError('client_id')}</p>
+                            ) : null}
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="title">{t('Case Title')}</Label>
@@ -395,13 +530,29 @@ export default function EditCase() {
                             {renderError('file_number')}
                         </div>
                         <div className="space-y-2">
-                            <FormSelect
-                                label={t('Court')}
-                                value={formData.court_id ?? ''}
-                                onValueChange={(v) => updateField('court_id', v)}
-                                placeholder={t('Select Court')}
-                                options={courts ?? []}
-                            />
+                            <Label>{t('Court')}</Label>
+                            <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+                                <FormSelect
+                                    value={formData.court_id ?? ''}
+                                    onValueChange={(v) => updateField('court_id', v)}
+                                    placeholder={t('Select Court')}
+                                    options={courts ?? []}
+                                    wrapperClassName="min-w-0 w-full space-y-0"
+                                />
+                                {canQuickCreateCourt && (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-10 w-10 shrink-0 justify-self-center"
+                                        title={t('Add Court')}
+                                        aria-label={t('Add Court')}
+                                        onClick={() => setCourtModalOpen(true)}
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                    </Button>
+                                )}
+                            </div>
                             {renderError('court_id')}
                         </div>
                     </div>
@@ -497,6 +648,28 @@ export default function EditCase() {
                         )}
                     </div>
                 </div>
+
+                {canQuickCreateClient && (
+                    <QuickClientModal
+                        open={clientModalOpen}
+                        onOpenChange={setClientModalOpen}
+                        phoneCountries={phoneCountries}
+                        defaultCountry={defaultCountry}
+                        onCreated={(clientId) => updateField('client_id', clientId)}
+                    />
+                )}
+
+                {canQuickCreateCourt && (
+                    <CrudFormModal
+                        isOpen={courtModalOpen}
+                        onClose={() => setCourtModalOpen(false)}
+                        onSubmit={handleQuickCourtSubmit}
+                        formConfig={{ ...quickCourtFormConfig, columns: 2 }}
+                        initialData={{}}
+                        title={t('Add New Court')}
+                        mode="create"
+                    />
+                )}
 
                 <div className="sticky bottom-0 -mx-6 mt-6 border-t border-slate-200 bg-white px-6 py-4">
                     <div className="flex justify-end gap-2">

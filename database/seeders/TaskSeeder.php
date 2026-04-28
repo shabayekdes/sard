@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\TaskPriority;
 use App\Models\Task;
 use App\Models\TaskType;
 use App\Models\TaskStatus;
@@ -34,43 +35,43 @@ class TaskSeeder extends Seeder
                 // Create 2-3 tasks per company
                 $taskCount = rand(8, 10);
                 $taskTitles = [
-                    'Research case precedents for client matter',
-                    'Draft motion for summary judgment',
-                    'Client consultation meeting',
-                    'Review contract amendments',
-                    'File discovery motions',
-                    'Prepare court filing documents',
-                    'Conduct legal analysis',
-                    'Schedule deposition hearing'
+                    'البحث عن السوابق القضائية في قضية العميل',
+                    'صياغة طلب الحكم الملخص',
+                    'اجتماع استشارة مع العميل',
+                    'مراجعة تعديلات العقد',
+                    'تقديم طلبات التقصي',
+                    'إعداد مستندات التقديم للمحكمة',
+                    'إجراء تحليل قانوني',
+                    'جدولة جلسة الإفادة',
                 ];
-                
+
                 $descriptions = [
-                    'Conduct comprehensive legal research on similar cases and precedents',
-                    'Prepare and draft motion based on research findings',
-                    'Schedule and conduct client meeting to discuss case strategy',
-                    'Review and analyze proposed amendments from opposing counsel',
-                    'Prepare and file discovery motions with the court',
-                    'Prepare necessary court filing documents and submissions',
-                    'Conduct detailed legal analysis for case preparation',
-                    'Schedule and coordinate deposition hearing with all parties'
+                    'إجراء بحث قانوني شامل في القضايا المشابهة والسوابق القضائية',
+                    'إعداد وصياغة الطلب استناداً إلى نتائج البحث',
+                    'جدولة وعقد اجتماع مع العميل لمناقشة استراتيجية القضية',
+                    'مراجعة وتحليل التعديلات المقترحة من محامي الطرف المقابل',
+                    'إعداد وتقديم طلبات التقصي أمام المحكمة',
+                    'إعداد مستندات التقديم والمرافعات اللازمة للمحكمة',
+                    'إجراء تحليل قانوني تفصيلي لإعداد القضية',
+                    'جدولة وتنسيق جلسة الإفادة مع جميع الأطراف',
                 ];
                 
-                $priorities = ['low', 'medium', 'high', 'critical'];
-                $statuses = ['not_started', 'in_progress', 'completed', 'on_hold'];
+                $priorities = TaskPriority::cases();
                 
                 for ($i = 1; $i <= $taskCount; $i++) {
                     $dueDate = rand(1, 10) > 5 ? now()->addDays(rand(1, 30)) : now()->subDays(rand(1, 15));
+                    $startDate = $dueDate->copy()->subDays(rand(0, 20));
                     $taskType = $taskTypes->random();
                     $taskStatus = $taskStatuses->random();
                     
                     $taskData = [
                         'task_id' => null, // Auto-generated
                         'title' => $taskTitles[($companyUser->id + $i - 1) % count($taskTitles)],
-                        'description' => $descriptions[($companyUser->id + $i - 1) % count($descriptions)] . ' for ' . $companyUser->name . '.',
-                        'priority' => $priorities[rand(0, count($priorities) - 1)],
-                        'status' => $statuses[rand(0, count($statuses) - 1)],
+                        'description' => $descriptions[($companyUser->id + $i - 1) % count($descriptions)] . ' — ' . $companyUser->name . '.',
+                        'priority' => $priorities[rand(0, count($priorities) - 1)]->value,
+                        'start_date' => $startDate,
                         'due_date' => $dueDate,
-                        'estimated_duration' => $taskType->default_duration ?? rand(60, 300),
+                        'estimated_duration' => $taskType->default_duration ?? rand(1, 8),
                         'case_id' => $cases->count() > 0 ? $cases->random()->id : null,
                         'assigned_to' => $users->count() > 0 ? $users->random()->id : null,
                         'task_type_id' => $taskType->id,

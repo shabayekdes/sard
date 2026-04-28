@@ -152,10 +152,12 @@ class CourtController extends Controller
 
         if (!empty($errors)) {
             $message = __('Court created successfully, but ') . implode(', ', $errors);
-            return redirect()->back()->with('warning', $message);
+            return redirect()->back()->with('warning', $message)->with('created_court_id', $court->id);
         }
 
-        return redirect()->back()->with('success', __(':model created successfully.', ['model' => __('Court')]));
+        return redirect()->back()
+            ->with('success', __(':model created successfully.', ['model' => __('Court')]))
+            ->with('created_court_id', $court->id);
     }
 
     public function update(Request $request, $courtId)

@@ -10,9 +10,11 @@ import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
+import { ClientTableCell } from '@/components/client-table-cell';
 
 export default function FeeStructures() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLocale = i18n.language || 'en';
   const { auth, feeStructures, clients, feeTypes, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
 
@@ -212,7 +214,9 @@ export default function FeeStructures() {
     {
       key: 'client',
       label: t('Client'),
-      render: (value: any) => value?.name || t('All Clients')
+      render: (_value: any, row: any) => (
+        <ClientTableCell client={row.client} locale={currentLocale} fallback={t('All Clients')} />
+      ),
     },
     {
       key: 'feeType',

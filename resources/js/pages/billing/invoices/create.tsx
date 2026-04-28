@@ -12,6 +12,8 @@ import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { CurrencyAmount } from '@/components/currency-amount';
 
+const NO_CASE_VALUE = '__none__';
+
 export default function CreateInvoice() {
   const { t } = useTranslation();
   const { clients, cases, timeEntries, clientBillingInfo, currencies } = usePage().props as any;
@@ -262,12 +264,7 @@ export default function CreateInvoice() {
     setFormErrors({});
 
     if (!formData.client_id) {
-      toast.error('Please select a client');
-      return;
-    }
-
-    if (!formData.case_id) {
-      toast.error('Please select a case');
+      toast.error(t('Please select a client.'));
       return;
     }
 
@@ -282,18 +279,18 @@ export default function CreateInvoice() {
 
     const submitData = {
       ...formData,
+      case_id: formData.case_id ? formData.case_id : null,
       currency_id: currency_id,
       subtotal: calculateSubtotal(),
       tax_amount: calculateTaxAmount(),
       total_amount: calculateTotal()
     };
 
-    toast.loading('Creating invoice...');
 
     router.post(route('billing.invoices.store'), submitData, {
       onSuccess: () => {
         toast.dismiss();
-        toast.success('Invoice created successfully');
+        toast.success(t('Invoice created successfully'));
         router.get(route('billing.invoices.index'));
       },
       onError: (errors) => {
@@ -301,7 +298,7 @@ export default function CreateInvoice() {
         const normalizedErrors = normalizeErrors(errors);
         setFormErrors(normalizedErrors);
         const errorMessages = Object.values(normalizedErrors).filter(Boolean).join(', ');
-        toast.error(`Failed to create invoice: ${errorMessages}`);
+        toast.error(t('Failed to create invoice: {{details}}', { details: errorMessages }));
       }
     });
   };
@@ -372,12 +369,18 @@ export default function CreateInvoice() {
                   </div>
 
                   <div>
-                    <Label htmlFor="case_id">{t('Case')} *</Label>
-                    <Select value={formData.case_id} onValueChange={(value) => updateFormData('case_id', value)}>
+                    <Label htmlFor="case_id">{t('Case')}</Label>
+                    <Select
+                      value={formData.case_id ? formData.case_id : NO_CASE_VALUE}
+                      onValueChange={(value) =>
+                        updateFormData('case_id', value === NO_CASE_VALUE ? '' : value)
+                      }
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder={t('Select Case')} />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value={NO_CASE_VALUE}>{t('No case')}</SelectItem>
                         {filteredCases.length > 0 ? (
                           filteredCases.map(caseItem => (
                             <SelectItem key={caseItem.id} value={caseItem.id.toString()}>
@@ -474,7 +477,7 @@ export default function CreateInvoice() {
                 </div>
 
                 <div>
-                  <Label htmlFor="tax_rate">{t('Tax Rate')} (%)</Label>
+                  <Label htmlFor="tax_rate">{t('Tax Rate (%)')}</Label>
                   <Input
                     type="number"
                     value={formData.tax_rate}

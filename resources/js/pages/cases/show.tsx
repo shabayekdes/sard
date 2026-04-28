@@ -4,18 +4,51 @@ import { CrudFormModal } from '@/components/CrudFormModal';
 import { CrudTable } from '@/components/CrudTable';
 import { toast } from '@/components/custom-toast';
 import { PageTemplate } from '@/components/page-template';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { hasPermission } from '@/utils/authorization';
+import { localizedString } from '@/utils/i18n';
+import { taskPriorityTranslationKey } from '@/utils/taskPriority';
+import { getTaskAssignee, getTaskAssigneeId, getTaskPriorityBadgeClassName, isTaskOverdue } from '@/utils/taskTable';
+import { normalizeInertiaValidationErrors } from '@/utils/inertiaErrors';
+import { useInitials } from '@/hooks/use-initials';
 import { router, usePage } from '@inertiajs/react';
-import { ArrowLeft, Clock, FileText, Pencil, Plus, Search, Users, CheckSquare, Calendar } from 'lucide-react';
+import type { Task } from '@/types';
+import { AlertTriangle, ArrowLeft, Clock, FileText, Pencil, Plus, Search, Users, CheckSquare, Calendar } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GoogleCalendarModal from '@/components/GoogleCalendarModal';
+import TaskModal from '@/pages/tasks/TaskModal';
+
+/** Same sentinels/transform as tasks/index CrudFormModal (Radix Select disallows empty string values). */
+const TASK_FORM_NO_CASE = '__no_case__';
+const TASK_FORM_UNASSIGNED = '__unassigned__';
+
+function transformTaskCrudFormData(data: Record<string, unknown>): Record<string, unknown> {
+    const caseId = data.case_id;
+    const assignedTo = data.assigned_to;
+    return {
+        ...data,
+        case_id: caseId === TASK_FORM_NO_CASE || caseId === '' || caseId == null ? '' : caseId,
+        assigned_to:
+            assignedTo === TASK_FORM_UNASSIGNED || assignedTo === '' || assignedTo == null ? '' : assignedTo,
+    };
+}
+
+function normalizeTaskFormPriority(p: unknown): string {
+    if (p == null || p === '') return 'medium';
+    if (typeof p === 'string') return p.toLowerCase();
+    if (typeof p === 'object' && p !== null && 'value' in p) {
+        return String((p as { value: string }).value).toLowerCase();
+    }
+    return 'medium';
+}
 
 export default function CaseShow() {
     const { t, i18n } = useTranslation();
+    const getInitials = useInitials();
     const currentLocale = i18n.language || 'en';
     const {
         auth,
@@ -39,9 +72,12 @@ export default function CaseShow() {
         circleTypes,
         hearingTypes,
         googleCalendarEnabled,
+        cases: casesForTasks = [],
         filters = {},
     } = usePage().props as any;
     const permissions = auth?.permissions || [];
+    const userWorkspaceRole =
+        Array.isArray(auth?.roles) && auth.roles.includes('client') ? 'client' : undefined;
 
     // Helper function to extract translated value from translatable objects
     const getTranslatedValue = (value: any): string => {
@@ -54,13 +90,20 @@ export default function CaseShow() {
         return '-';
     };
 
+    const resolveTaskTypeName = (type: any) => {
+        if (!type) return '-';
+        const name = type.name ?? type.name_translations;
+        if (typeof name === 'string') return name;
+        if (name && typeof name === 'object') return name[currentLocale] || name.en || name.ar || '-';
+        return '-';
+    };
+
     const [activeTab, setActiveTab] = useState('details');
     const [selectedProject, setSelectedProject] = useState<any>(null);
     const [projectSubTab, setProjectSubTab] = useState('details');
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [isViewTeamModalOpen, setIsViewTeamModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
     const [currentItem, setCurrentItem] = useState<any>(null);
     const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
     const [selectedCitation, setSelectedCitation] = useState<any>(null);
@@ -69,7 +112,9 @@ export default function CaseShow() {
     const [isNoteViewModalOpen, setIsNoteViewModalOpen] = useState(false);
     const [isDocumentViewModalOpen, setIsDocumentViewModalOpen] = useState(false);
     const [isTaskViewModalOpen, setIsTaskViewModalOpen] = useState(false);
+    const [selectedViewTask, setSelectedViewTask] = useState<Task | null>(null);
     const [isGoogleCalendarModalOpen, setIsGoogleCalendarModalOpen] = useState(false);
+    const [taskFormErrors, setTaskFormErrors] = useState<Record<string, string>>({});
 
     // Timeline filters
     const [timelineSearch, setTimelineSearch] = useState(filters.timeline_search || '');
@@ -544,98 +589,130 @@ export default function CaseShow() {
 
     // Task handlers
     const handleTaskAction = (action: string, item?: any) => {
-        setCurrentItem(item || null);
         switch (action) {
             case 'create':
+                setCurrentItem(null);
                 setFormMode('create');
+                setTaskFormErrors({});
                 setIsFormModalOpen(true);
                 break;
-            case 'edit':
-                setFormMode('edit');
-                setIsFormModalOpen(true);
+            case 'edit': {
+                const editTaskId = item?.id;
+                if (editTaskId == null) break;
+                void (async () => {
+                    try {
+                        const response = await fetch(route('tasks.show', editTaskId));
+                        const data = await response.json();
+                        setCurrentItem(data.task);
+                        setFormMode('edit');
+                        setTaskFormErrors({});
+                        setIsFormModalOpen(true);
+                    } catch (error) {
+                        console.error('Failed to load task:', error);
+                    }
+                })();
                 break;
-            case 'view':
-                setIsTaskViewModalOpen(true);
+            }
+            case 'view': {
+                const taskId = item?.id;
+                if (taskId == null) break;
+                void (async () => {
+                    try {
+                        const response = await fetch(route('tasks.show', taskId));
+                        const data = await response.json();
+                        setSelectedViewTask(data.task);
+                        setIsTaskViewModalOpen(true);
+                    } catch (error) {
+                        console.error('Failed to load task:', error);
+                    }
+                })();
                 break;
+            }
             case 'delete':
+                setCurrentItem(item || null);
                 setIsDeleteModalOpen(true);
-                break;
-            case 'toggle-status':
-                setIsStatusModalOpen(true);
                 break;
         }
     };
 
-    const handleTaskStatusChange = (formData: any) => {
-        router.put(route('tasks.update', currentItem.id), {
-            ...currentItem,
-            status: formData.status,
-            task_type_id: currentItem.task_type_id || currentItem.taskType?.id,
-            assigned_to: currentItem.assigned_to || currentItem.assignedUser?.id,
-            case_id: currentItem.case_id || currentItem.case?.id,
-            task_status_id: currentItem.task_status_id || currentItem.taskStatus?.id
-        }, {
-            onSuccess: () => {
-                setIsStatusModalOpen(false);
-                toast.dismiss();
-                toast.success(t('Task status updated'));
-            },
-            onError: (errors) => {
-                toast.dismiss();
-                toast.error(`Failed to update task status: ${Object.values(errors).join(', ')}`);
-            }
-        });
-    };
-
-    const handleTaskSubmit = (formData: any) => {
-        const data = { ...formData, case_id: caseData.id };
-
+    const handleTaskFormSubmit = (formData: any) => {
         if (formMode === 'create') {
-            router.post(route('tasks.store'), data, {
-                onSuccess: () => {
+            router.post(route('tasks.store'), formData, {
+                onSuccess: (page) => {
+                    setTaskFormErrors({});
                     setIsFormModalOpen(false);
                     toast.dismiss();
-                    toast.success(t('Task created'));
+                    const flash = (page.props as { flash?: { success?: string; error?: string } }).flash;
+                    if (flash?.success) {
+                        toast.success(flash.success);
+                    } else if (flash?.error) {
+                        toast.error(flash.error);
+                    }
                 },
                 onError: (errors) => {
                     toast.dismiss();
-                    toast.error(`Failed to create task: ${Object.values(errors).join(', ')}`);
+                    const normalized = normalizeInertiaValidationErrors(errors);
+                    if (Object.keys(normalized).length > 0) {
+                        setTaskFormErrors(normalized);
+                    } else if (typeof errors === 'string') {
+                        toast.error(errors);
+                    }
                 },
             });
-        } else if (formMode === 'edit') {
-            router.put(route('tasks.update', currentItem.id), data, {
-                onSuccess: () => {
+        } else if (formMode === 'edit' && currentItem?.id) {
+            router.put(route('tasks.update', currentItem.id), formData, {
+                onSuccess: (page) => {
+                    setTaskFormErrors({});
                     setIsFormModalOpen(false);
                     toast.dismiss();
-                    toast.success(t('Task updated'));
+                    const flash = (page.props as { flash?: { success?: string; error?: string } }).flash;
+                    if (flash?.success) {
+                        toast.success(flash.success);
+                    } else if (flash?.error) {
+                        toast.error(flash.error);
+                    }
                 },
                 onError: (errors) => {
                     toast.dismiss();
-                    toast.error(`Failed to update task: ${Object.values(errors).join(', ')}`);
+                    const normalized = normalizeInertiaValidationErrors(errors);
+                    if (Object.keys(normalized).length > 0) {
+                        setTaskFormErrors(normalized);
+                    } else if (typeof errors === 'string') {
+                        toast.error(errors);
+                    }
                 },
             });
         }
     };
 
     // Task filter functions
+    const buildCaseTasksQuery = (overrides: Record<string, string | number | undefined> = {}) => {
+        const params: Record<string, string | number | undefined> = {
+            task_search: taskSearch || undefined,
+            task_type_id: taskTypeId !== 'all' ? taskTypeId : undefined,
+            task_status: taskStatus !== 'all' ? taskStatus : undefined,
+            task_priority: taskPriority !== 'all' ? taskPriority : undefined,
+            task_assigned_to: taskAssignedTo !== 'all' ? taskAssignedTo : undefined,
+            task_per_page: filters.task_per_page ?? 10,
+        };
+        if (filters.task_sort_field) {
+            params.task_sort_field = filters.task_sort_field;
+            params.task_sort_direction = filters.task_sort_direction ?? 'asc';
+        }
+        Object.assign(params, overrides);
+        return params;
+    };
+
     const handleTaskSearch = (e: React.FormEvent) => {
         e.preventDefault();
         applyTaskFilters();
     };
 
     const applyTaskFilters = () => {
-        router.get(
-            route('cases.show', caseData.id),
-            {
-                task_search: taskSearch || undefined,
-                task_type_id: taskTypeId !== 'all' ? taskTypeId : undefined,
-                task_status: taskStatus !== 'all' ? taskStatus : undefined,
-                task_priority: taskPriority !== 'all' ? taskPriority : undefined,
-                task_assigned_to: taskAssignedTo !== 'all' ? taskAssignedTo : undefined,
-                task_per_page: filters.task_per_page,
-            },
-            { preserveState: true, preserveScroll: true },
-        );
+        router.get(route('cases.show', caseData.id), buildCaseTasksQuery({ task_page: 1 }), {
+            preserveState: true,
+            preserveScroll: true,
+        });
     };
 
     // Hearing handlers
@@ -750,19 +827,15 @@ export default function CaseShow() {
     };
 
     const handleTaskSort = (field: string) => {
-        const direction = filters.task_sort_field === field && filters.task_sort_direction === 'asc' ? 'desc' : 'asc';
+        const direction =
+            filters.task_sort_field === field && filters.task_sort_direction === 'asc' ? 'desc' : 'asc';
         router.get(
             route('cases.show', caseData.id),
-            {
-                task_search: taskSearch || undefined,
-                task_type_id: taskTypeId !== 'all' ? taskTypeId : undefined,
-                task_status: taskStatus !== 'all' ? taskStatus : undefined,
-                task_priority: taskPriority !== 'all' ? taskPriority : undefined,
-                task_assigned_to: taskAssignedTo !== 'all' ? taskAssignedTo : undefined,
+            buildCaseTasksQuery({
+                task_page: 1,
                 task_sort_field: field,
                 task_sort_direction: direction,
-                task_per_page: filters.task_per_page,
-            },
+            }),
             { preserveState: true, preserveScroll: true },
         );
     };
@@ -836,6 +909,11 @@ export default function CaseShow() {
             label: t('Event Date'),
             sortable: true,
             render: (value: string) => window.appSettings?.formatDate(value) || new Date(value).toLocaleDateString(),
+        },
+        {
+            key: 'event_time',
+            label: t('Event Time'),
+            render: (value: string) => (value ? (window.appSettings?.formatTime(`2000-01-01T${value}`) || value) : '-'),
         },
         {
             key: 'is_completed',
@@ -1995,13 +2073,10 @@ export default function CaseShow() {
                             <div className="mb-6 flex items-center justify-between">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('Tasks')}</h3>
                                 {hasPermission(permissions, 'create-tasks') && (
-                                    <button
-                                        onClick={() => handleTaskAction('create')}
-                                        className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90"
-                                    >
-                                        <Plus className="h-4 w-4" />
+                                    <Button type="button" onClick={() => handleTaskAction('create')}>
+                                        <Plus className="mr-2 h-4 w-4" />
                                         {t('Add Task')}
-                                    </button>
+                                    </Button>
                                 )}
                             </div>
 
@@ -2027,16 +2102,16 @@ export default function CaseShow() {
                                         },
                                         {
                                             name: 'task_status',
-                                            label: t('Status'),
+                                            label: t('Task Status'),
                                             type: 'select',
                                             value: taskStatus,
                                             onChange: setTaskStatus,
                                             options: [
-                                                { value: 'all', label: t('All Statuses') },
-                                                { value: 'not_started', label: t('Not Started') },
-                                                { value: 'in_progress', label: t('In Progress') },
-                                                { value: 'completed', label: t('Completed') },
-                                                { value: 'on_hold', label: t('On Hold') },
+                                                { value: 'all', label: t('All') },
+                                                ...(taskStatuses?.map((status: any) => ({
+                                                    value: status.id.toString(),
+                                                    label: getTranslatedValue(status.name),
+                                                })) || []),
                                             ],
                                         },
                                         {
@@ -2095,14 +2170,19 @@ export default function CaseShow() {
                                     onApplyFilters={applyTaskFilters}
                                     currentPerPage={filters.task_per_page?.toString() || '10'}
                                     onPerPageChange={(value) => {
-                                        router.get(route('cases.show', caseData.id), {
-                                            ...filters,
-                                            task_per_page: parseInt(value),
-                                        });
+                                        router.get(
+                                            route('cases.show', caseData.id),
+                                            buildCaseTasksQuery({
+                                                task_page: 1,
+                                                task_per_page: parseInt(value, 10),
+                                            }),
+                                            { preserveState: true, preserveScroll: true },
+                                        );
                                     }}
                                 />
                             </div>
 
+                            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-gray-800">
                             <CrudTable
                                 columns={[
                                     {
@@ -2112,72 +2192,118 @@ export default function CaseShow() {
                                     },
                                     {
                                         key: 'title',
-                                        label: t('Title'),
+                                        label: t('Task'),
                                         sortable: true,
-                                    },
-                                    {
-                                        key: 'task_type',
-                                        label: t('Type'),
-                                        render: (value: any) => (
-                                            <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
-                                                {getTranslatedValue(value?.name) || '-'}
-                                            </span>
+                                        render: (_: unknown, row: Task) => (
+                                            <div>
+                                                <button
+                                                    type="button"
+                                                    className="cursor-pointer text-left text-sm font-medium text-gray-900 transition-colors hover:text-blue-600 dark:text-gray-100 dark:hover:text-blue-400"
+                                                    onClick={() => handleTaskAction('view', row)}
+                                                >
+                                                    {row.title}
+                                                </button>
+                                                {row.description ? (
+                                                    <div className="max-w-xs truncate text-sm text-gray-500 dark:text-gray-400">
+                                                        {row.description}
+                                                    </div>
+                                                ) : null}
+                                            </div>
                                         ),
                                     },
                                     {
                                         key: 'priority',
                                         label: t('Priority'),
-                                        render: (value: string) => {
-                                            const colors = {
-                                                critical: 'bg-red-50 text-red-700',
-                                                high: 'bg-orange-50 text-orange-700',
-                                                medium: 'bg-yellow-50 text-yellow-700',
-                                                low: 'bg-green-50 text-green-700',
-                                            };
+                                        sortable: true,
+                                        render: (value: string) => (
+                                            <Badge className={getTaskPriorityBadgeClassName(value)} variant="outline">
+                                                {t(taskPriorityTranslationKey(value))}
+                                            </Badge>
+                                        ),
+                                    },
+                                    {
+                                        key: 'task_status_id',
+                                        label: t('Task Status'),
+                                        render: (_: unknown, row: Task) => {
+                                            const ts = row.task_status ?? (row as any).taskStatus;
+                                            if (!ts) return <span>-</span>;
                                             return (
-                                                <span
-                                                    className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${colors[value as keyof typeof colors] || colors.medium
-                                                        }`}
+                                                <Badge
+                                                    variant="outline"
+                                                    style={{
+                                                        backgroundColor: (ts.color ?? '#ccc') + '20',
+                                                        borderColor: ts.color ?? '#ccc',
+                                                    }}
                                                 >
-                                                    {t(value?.charAt(0).toUpperCase() + value?.slice(1))}
-                                                </span>
+                                                    {localizedString(ts.name, i18n.language)}
+                                                </Badge>
                                             );
                                         },
                                     },
                                     {
-                                        key: 'status',
-                                        label: t('Status'),
-                                        render: (value: string) => {
-                                            const colors = {
-                                                not_started: 'bg-gray-50 text-gray-700',
-                                                in_progress: 'bg-blue-50 text-blue-700',
-                                                completed: 'bg-green-50 text-green-700',
-                                                on_hold: 'bg-yellow-50 text-yellow-700',
-                                            };
+                                        key: 'assigned_to',
+                                        label: t('Assignee'),
+                                        render: (_: unknown, row: Task) => {
+                                            const assignee = getTaskAssignee(row);
+                                            if (!assignee) {
+                                                return <span className="text-sm text-gray-400">{t('Unassigned')}</span>;
+                                            }
                                             return (
-                                                <span
-                                                    className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${colors[value as keyof typeof colors] || colors.not_started
-                                                        }`}
-                                                >
-                                                    {t(value?.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase()))}
-                                                </span>
+                                                <div className="flex items-center">
+                                                    <div className="mx-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-white">
+                                                        {getInitials(assignee.name) || '?'}
+                                                    </div>
+                                                    <span className="text-sm">{assignee.name}</span>
+                                                </div>
                                             );
                                         },
                                     },
                                     {
-                                        key: 'assignedUser',
-                                        label: t('Assigned To'),
-                                        render: (value: any, row: any) =>
-                                            value?.name ||
-                                            row?.assigned_user?.name ||
-                                            users?.find((u: any) => u.id.toString() === row?.assigned_to?.toString())?.name ||
-                                            '-',
+                                        key: 'progress',
+                                        label: t('Progress'),
+                                        render: (_: unknown, row: Task) => (
+                                            <div className="flex items-center">
+                                                <div className="mr-2 h-2 w-16 rounded-full bg-gray-200 dark:bg-gray-700">
+                                                    <div
+                                                        className="h-2 rounded-full bg-green-600"
+                                                        style={{ width: `${row.progress ?? 0}%` }}
+                                                    />
+                                                </div>
+                                                <span className="text-sm text-gray-900 dark:text-gray-100">
+                                                    {row.progress ?? 0}%
+                                                </span>
+                                            </div>
+                                        ),
                                     },
                                     {
                                         key: 'due_date',
                                         label: t('Due Date'),
                                         sortable: true,
-                                        type: 'date',
+                                        render: (_: unknown, row: Task) => {
+                                            const due = row.due_date ?? null;
+                                            return (
+                                                <div className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100">
+                                                    {due && isTaskOverdue(due) && (
+                                                        <Badge variant="destructive" className="text-xs">
+                                                            <AlertTriangle className="mr-1 h-3 w-3" />
+                                                            {t('Overdue')}
+                                                        </Badge>
+                                                    )}
+                                                    <span>
+                                                        {due ? new Date(due).toLocaleDateString() : t('No due date')}
+                                                    </span>
+                                                </div>
+                                            );
+                                        },
+                                    },
+                                    {
+                                        key: 'task_type_id',
+                                        label: t('Task Type'),
+                                        render: (_: unknown, row: Task) => {
+                                            const typeName = (row as Task & { task_type?: { name?: string | Record<string, string> } | null; taskType?: { name?: string | Record<string, string> } | null }).task_type?.name
+                                                ?? (row as Task & { taskType?: { name?: string | Record<string, string> } | null }).taskType?.name;
+                                            return <span className="text-sm">{localizedString(typeName, i18n.language) || '-'}</span>;
+                                        },
                                     },
                                 ]}
                                 actions={[
@@ -2185,37 +2311,41 @@ export default function CaseShow() {
                                         label: t('View'),
                                         icon: 'Eye',
                                         action: 'view',
-                                        className: 'text-primary',
+                                        className: 'text-blue-500',
+                                        requiredPermission: 'view-tasks',
                                     },
                                     {
                                         label: t('Edit'),
                                         icon: 'Edit',
                                         action: 'edit',
                                         className: 'text-amber-500',
-                                    },
-                                    {
-                                        label: t('Change Status'),
-                                        icon: 'CheckCircle',
-                                        action: 'toggle-status',
-                                        className: 'text-green-500',
+                                        requiredPermission: 'edit-tasks',
+                                        condition: () => userWorkspaceRole !== 'client',
                                     },
                                     {
                                         label: t('Delete'),
                                         icon: 'Trash2',
                                         action: 'delete',
                                         className: 'text-red-500',
+                                        requiredPermission: 'delete-tasks',
+                                        condition: () => userWorkspaceRole !== 'client',
                                     },
                                 ]}
                                 data={tasks?.data || []}
                                 from={tasks?.from || 1}
                                 onAction={handleTaskAction}
                                 sortField={filters.task_sort_field}
-                                sortDirection={filters.task_sort_direction}
+                                sortDirection={
+                                    filters.task_sort_direction === 'desc'
+                                        ? 'desc'
+                                        : filters.task_sort_direction === 'asc'
+                                          ? 'asc'
+                                          : undefined
+                                }
                                 onSort={handleTaskSort}
                                 permissions={permissions}
                                 entityPermissions={{
                                     view: 'view-tasks',
-                                    create: 'create-tasks',
                                     edit: 'edit-tasks',
                                     delete: 'delete-tasks',
                                 }}
@@ -2228,7 +2358,20 @@ export default function CaseShow() {
                                 links={tasks?.links}
                                 entityName={t('tasks')}
                                 onPageChange={(url) => router.get(url)}
+                                perPage={String(tasks?.per_page ?? filters.task_per_page ?? 10)}
+                                perPageOptions={[20, 50, 100]}
+                                onPerPageChange={(value) => {
+                                    router.get(
+                                        route('cases.show', caseData.id),
+                                        buildCaseTasksQuery({
+                                            task_page: 1,
+                                            task_per_page: parseInt(value, 10),
+                                        }),
+                                        { preserveState: true, preserveScroll: true },
+                                    );
+                                }}
                             />
+                            </div>
                         </div>
                     )}
 
@@ -2762,6 +2905,8 @@ export default function CaseShow() {
                                     : [],
                             },
                             { name: 'event_date', label: t('Event Date'), type: 'date', required: true },
+                            { name: 'event_time', label: t('Event Time'), type: 'time', required: true },
+                            { name: 'duration_minutes', label: t('Duration (minutes)'), type: 'number', defaultValue: 60 },
                             { name: 'is_completed', label: t('Completed'), type: 'checkbox' },
                             {
                                 name: 'status',
@@ -2793,7 +2938,10 @@ export default function CaseShow() {
                         ),
                         modalSize: 'lg',
                     }}
-                    initialData={currentItem}
+                    initialData={{
+                        ...currentItem,
+                        event_time: currentItem?.event_time ? currentItem.event_time.slice(0, 5) : '',
+                    }}
                     title={
                         formMode === 'create' ? t('Add Timeline Event') : formMode === 'edit' ? t('Edit Timeline Event') : t('View Timeline Event')
                     }
@@ -2850,18 +2998,7 @@ export default function CaseShow() {
                                 ],
                                 defaultValue: 'active',
                             },
-                        ].concat(
-                            googleCalendarEnabled && formMode === 'create'
-                                ? [
-                                    {
-                                        name: 'sync_with_google_calendar',
-                                        label: t('Synchronize in Google Calendar'),
-                                        type: 'switch',
-                                        defaultValue: false,
-                                    },
-                                ]
-                                : [],
-                        ),
+                        ],
                         modalSize: 'lg',
                     }}
                     initialData={currentItem}
@@ -3088,163 +3225,156 @@ export default function CaseShow() {
                 />
             )}
 
-            {/* Task Form Modal */}
+            {/* Task Form Modal (same fields/flow as tasks/index) */}
             {activeTab === 'tasks' && (
                 <CrudFormModal
                     isOpen={isFormModalOpen}
-                    onClose={() => setIsFormModalOpen(false)}
-                    onSubmit={handleTaskSubmit}
+                    onClose={() => {
+                        setTaskFormErrors({});
+                        setIsFormModalOpen(false);
+                    }}
+                    onSubmit={handleTaskFormSubmit}
+                    externalErrors={taskFormErrors}
                     formConfig={{
                         fields: [
+                            { name: '_section_task_details', label: t('Task form section task details'), type: 'section' },
                             { name: 'title', label: t('Title'), type: 'text', required: true },
+                            {
+                                name: 'assigned_to',
+                                label: t('Assignee'),
+                                type: 'select',
+                                placeholder: t('Select assignee'),
+                                defaultValue: TASK_FORM_UNASSIGNED,
+                                options: [
+                                    { value: TASK_FORM_UNASSIGNED, label: t('Unassigned') },
+                                    ...(users || []).map((u: { id: number; name: string }) => ({
+                                        value: String(u.id),
+                                        label: u.name,
+                                    })),
+                                ],
+                            },
                             { name: 'description', label: t('Description'), type: 'textarea' },
+                            { name: '_section_classification', label: t('Task form section classification'), type: 'section' },
+                            {
+                                name: 'task_status_id',
+                                label: t('Task Status'),
+                                type: 'select',
+                                required: true,
+                                selectAllowEmpty: false,
+                                placeholder: t('Select Task Status'),
+                                defaultValue:
+                                    taskStatuses?.[0]?.id != null && taskStatuses[0].id !== undefined
+                                        ? String(taskStatuses[0].id)
+                                        : undefined,
+                                options: [
+                                    ...(taskStatuses || []).map((status: any) => ({
+                                        value: status.id.toString(),
+                                        label: status.name,
+                                    })),
+                                ],
+                            },
                             {
                                 name: 'priority',
                                 label: t('Priority'),
                                 type: 'select',
                                 required: true,
                                 options: [
-                                    { value: 'critical', label: t('Critical') },
-                                    { value: 'high', label: t('High') },
-                                    { value: 'medium', label: t('Medium') },
-                                    { value: 'low', label: t('Low') },
+                                    { value: 'critical', label: t(taskPriorityTranslationKey('critical')) },
+                                    { value: 'high', label: t(taskPriorityTranslationKey('high')) },
+                                    { value: 'medium', label: t(taskPriorityTranslationKey('medium')) },
+                                    { value: 'low', label: t(taskPriorityTranslationKey('low')) },
                                 ],
                                 defaultValue: 'medium',
-                            },
-                            { name: 'due_date', label: t('Due Date'), type: 'date' },
-                            { name: 'estimated_duration', label: t('Estimated Duration (hours)'), type: 'number' },
-                            {
-                                name: 'assigned_to',
-                                label: t('Assigned To'),
-                                type: 'select',
-                                options: [
-                                    { value: auth.user.id.toString(), label: `${auth.user.name} (Me)` },
-                                    ...(users?.map((user: any) => ({
-                                        value: user.id.toString(),
-                                        label: user.name,
-                                    })) || []),
-                                ],
                             },
                             {
                                 name: 'task_type_id',
                                 label: t('Task Type'),
                                 type: 'select',
+                                placeholder: t('Select Task Type'),
                                 options: [
-                                    ...(taskTypes?.map((type: any) => ({
+                                    ...(taskTypes || []).map((type: any) => ({
                                         value: type.id.toString(),
-                                        label: getTranslatedValue(type.name),
-                                    })) || []),
+                                        label: resolveTaskTypeName(type),
+                                    })),
                                 ],
                             },
+                            { name: '_section_schedule', label: t('Task form section schedule'), type: 'section' },
+                            { name: 'start_date', label: t('Start Date'), type: 'date' },
+                            { name: 'due_date', label: t('Due Date'), type: 'date' },
                             {
-                                name: 'task_status_id',
-                                label: t('Task Status'),
+                                name: 'estimated_duration',
+                                label: t('Estimated Duration (hours)'),
+                                type: 'number',
+                                step: 1,
+                                min: 0,
+                            },
+                            { name: '_section_case', label: t('Task form section case'), type: 'section' },
+                            {
+                                name: 'case_id',
+                                label: t('Case'),
                                 type: 'select',
+                                placeholder: t('Select Case'),
+                                defaultValue: TASK_FORM_NO_CASE,
                                 options: [
-                                    ...(taskStatuses?.map((status: any) => ({
-                                        value: status.id.toString(),
-                                        label: getTranslatedValue(status.name),
-                                    })) || []),
+                                    { value: TASK_FORM_NO_CASE, label: t('No case') },
+                                    ...(casesForTasks || []).map((c: { id: number; title?: string; case_id?: string }) => ({
+                                        value: String(c.id),
+                                        label: c.title || c.case_id || `Case ${c.id}`,
+                                    })),
                                 ],
                             },
-                            { name: 'notes', label: t('Notes'), type: 'textarea' },
-                        ].concat(
-                            googleCalendarEnabled
-                                ? [
-                                    {
-                                        name: 'sync_with_google_calendar',
-                                        label: t('Synchronize in Google Calendar'),
-                                        type: 'switch',
-                                        defaultValue: false,
-                                    },
-                                ]
-                                : [],
-                        ),
-                        modalSize: 'lg',
+                        ],
+                        modalSize: 'xl',
+                        transformData: transformTaskCrudFormData,
                     }}
-                    initialData={currentItem}
-                    title={formMode === 'create' ? t('Add Task') : formMode === 'edit' ? t('Edit Task') : t('View Task')}
+                    initialData={
+                        currentItem
+                            ? {
+                                  ...currentItem,
+                                  priority: normalizeTaskFormPriority(currentItem.priority),
+                                  case_id: (() => {
+                                      const row = currentItem as Task & {
+                                          case_id?: number | null;
+                                          case?: { id?: number } | null;
+                                      };
+                                      const id = row.case?.id ?? row.case_id ?? null;
+                                      return id != null ? String(id) : TASK_FORM_NO_CASE;
+                                  })(),
+                                  assigned_to: (() => {
+                                      const id = getTaskAssigneeId(currentItem);
+                                      return id != null ? String(id) : TASK_FORM_UNASSIGNED;
+                                  })(),
+                                  task_type_id:
+                                      currentItem.task_type_id != null
+                                          ? String(currentItem.task_type_id)
+                                          : currentItem.task_type?.id != null
+                                            ? String(currentItem.task_type.id)
+                                            : '',
+                                  task_status_id:
+                                      currentItem.task_status_id != null
+                                          ? String(currentItem.task_status_id)
+                                          : currentItem.task_status?.id != null
+                                            ? String(currentItem.task_status.id)
+                                            : '',
+                              }
+                            : { case_id: String(caseData.id) }
+                    }
+                    title={formMode === 'create' ? t('Add New Task') : t('Edit Task')}
                     mode={formMode}
                 />
             )}
 
-            {/* Task View Modal */}
-            {activeTab === 'tasks' && (
-                <CrudFormModal
+            {/* Task detail modal (same as tasks/index) */}
+            {activeTab === 'tasks' && selectedViewTask && (
+                <TaskModal
+                    task={selectedViewTask}
                     isOpen={isTaskViewModalOpen}
-                    onClose={() => setIsTaskViewModalOpen(false)}
-                    onSubmit={() => { }}
-                    formConfig={{
-                        fields: [
-                            { name: 'task_id', label: t('Task ID'), type: 'text' },
-                            { name: 'title', label: t('Title'), type: 'text' },
-                            { name: 'description', label: t('Description'), type: 'textarea' },
-                            { name: 'priority', label: t('Priority'), type: 'text' },
-                            { name: 'status', label: t('Status'), type: 'text' },
-                            { name: 'due_date', label: t('Due Date'), type: 'text' },
-                            { name: 'estimated_duration', label: t('Estimated Duration'), type: 'text' },
-                            { name: 'assigned_to_name', label: t('Assigned To'), type: 'text' },
-                            { name: 'task_type_name', label: t('Task Type'), type: 'text' },
-                            { name: 'task_status_name', label: t('Task Status'), type: 'text' },
-                            { name: 'notes', label: t('Notes'), type: 'textarea' },
-                            { name: 'created_at', label: t('Created At'), type: 'text' },
-                            { name: 'updated_at', label: t('Updated At'), type: 'text' },
-                        ],
-                        modalSize: 'lg',
+                    onClose={() => {
+                        setIsTaskViewModalOpen(false);
+                        setSelectedViewTask(null);
                     }}
-                    initialData={{
-                        ...currentItem,
-                        priority: currentItem?.priority ? t(currentItem.priority.charAt(0).toUpperCase() + currentItem.priority.slice(1)) : '-',
-                        status: currentItem?.status ? t(currentItem.status.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase())) : '-',
-                        due_date: currentItem?.due_date
-                            ? window.appSettings?.formatDate(currentItem.due_date) || new Date(currentItem.due_date).toLocaleDateString()
-                            : '-',
-                        estimated_duration: currentItem?.estimated_duration ? `${currentItem.estimated_duration} hours` : '-',
-                        assigned_to_name:
-                            currentItem?.assignedUser?.name ||
-                            currentItem?.assigned_user?.name ||
-                            users?.find((u: any) => u.id.toString() === currentItem?.assigned_to?.toString())?.name ||
-                            '-',
-                        task_type_name: getTranslatedValue(currentItem?.taskType?.name ?? currentItem?.task_type?.name) || '-',
-                        task_status_name: getTranslatedValue(currentItem?.taskStatus?.name ?? currentItem?.task_status?.name) || '-',
-                        created_at: currentItem?.created_at
-                            ? window.appSettings?.formatDate(currentItem.created_at) || new Date(currentItem.created_at).toLocaleDateString()
-                            : '-',
-                        updated_at: currentItem?.updated_at
-                            ? window.appSettings?.formatDate(currentItem.updated_at) || new Date(currentItem.updated_at).toLocaleDateString()
-                            : '-',
-                    }}
-                    title={t('View Task')}
-                    mode="view"
-                />
-            )}
-
-            {/* Task Status Change Modal */}
-            {activeTab === 'tasks' && (
-                <CrudFormModal
-                    isOpen={isStatusModalOpen}
-                    onClose={() => setIsStatusModalOpen(false)}
-                    onSubmit={handleTaskStatusChange}
-                    formConfig={{
-                        fields: [
-                            {
-                                name: 'status',
-                                label: t('Status'),
-                                type: 'select',
-                                required: true,
-                                options: [
-                                    { value: 'not_started', label: t('Not Started') },
-                                    { value: 'in_progress', label: t('In Progress') },
-                                    { value: 'completed', label: t('Completed') },
-                                    { value: 'on_hold', label: t('On Hold') },
-                                ],
-                            },
-                        ],
-                        modalSize: 'sm',
-                    }}
-                    initialData={currentItem ? { status: currentItem.status } : null}
-                    title={t('Change Task Status')}
-                    mode="edit"
+                    members={users}
+                    taskStatuses={taskStatuses}
                 />
             )}
 

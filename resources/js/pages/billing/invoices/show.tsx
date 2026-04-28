@@ -7,12 +7,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { CurrencyAmount } from '@/components/currency-amount';
 import { hasPermission } from '@/utils/authorization';
 import { router, usePage } from '@inertiajs/react';
-import { ArrowLeft, DollarSign, Download, Edit, FileText, Link, MoreVerticalIcon, Send, User } from 'lucide-react';
+import { ArrowLeft, Banknote, DollarSign, Download, Edit, FileText, Link, MoreVerticalIcon, Send, User } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Badge } from '@/components/ui/badge';
+import { resolveClientName } from '@/components/client-table-cell';
 
 export default function ShowInvoice() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const currentLocale = i18n.language || 'en';
     const {
         invoice,
         auth,
@@ -21,6 +24,7 @@ export default function ShowInvoice() {
         companyProfile,
         amountPaid: amountPaidProp,
         remainingAmount: remainingAmountProp,
+        bankDetail,
     } = usePage().props as any;
     const permissions = auth?.permissions || [];
     const isClient = auth?.user?.type === 'client';
@@ -197,21 +201,27 @@ export default function ShowInvoice() {
 
     const termsText = (() => {
         const billingInfo = clientBillingInfo?.[invoice.client_id];
-        if (billingInfo?.custom_payment_terms) return billingInfo.custom_payment_terms;
-        if (billingInfo?.payment_terms) {
-            const termsMap: Record<string, string> = {
-                net_15: t('Net 15 days'),
-                net_30: t('Net 30 days'),
-                net_45: t('Net 45 days'),
-                net_60: t('Net 60 days'),
-                due_on_receipt: t('Due on receipt'),
-                custom: billingInfo.custom_payment_terms || t('Custom terms'),
-            };
-            const termText = termsMap[billingInfo.payment_terms] ?? billingInfo.payment_terms;
-            return `${termText}. ${t('Late payment fee of 1.5% per month applies.')}`;
-        }
-        return t('Net 30 days. Late payment fee of 1.5% per month applies.');
+        if (!billingInfo) return '';
+
+        const custom = typeof billingInfo.custom_payment_terms === 'string' ? billingInfo.custom_payment_terms.trim() : '';
+        if (custom) return custom;
+
+        if (!billingInfo.payment_terms) return '';
+        if (billingInfo.payment_terms === 'custom') return '';
+
+        const termsMap: Record<string, string> = {
+            net_15: t('Net 15 days'),
+            net_30: t('Net 30 days'),
+            net_45: t('Net 45 days'),
+            net_60: t('Net 60 days'),
+            due_on_receipt: t('Due on receipt'),
+        };
+        const mapped = termsMap[billingInfo.payment_terms];
+        if (mapped) return mapped;
+        return typeof billingInfo.payment_terms === 'string' ? billingInfo.payment_terms : '';
     })();
+
+    const notesText = typeof invoice?.notes === 'string' ? invoice.notes.trim() : '';
 
     return (
         <PageTemplate
@@ -329,14 +339,26 @@ export default function ShowInvoice() {
                                 <User className="text-muted-foreground h-5 w-5" />
                                 <h3 className="text-base font-semibold">{t('Bill To')}</h3>
                             </div>
-                            <p className="font-medium">{invoice?.client?.name || '-'}</p>
+                            <p className="inline-flex min-w-0 flex-row flex-wrap items-center gap-1.5 font-medium" dir="ltr">
+                                <span className="min-w-0 text-start">
+                                    {resolveClientName(invoice?.client?.name, currentLocale) || '-'}
+                                </span>
+                                {invoice?.client?.deleted_at ? (
+                                    <Badge variant="outline" className="shrink-0 font-normal text-muted-foreground" dir="auto">
+                                        {t('Deleted')}
+                                    </Badge>
+                                ) : null}
+                            </p>
                         </CardHeader>
                         <CardContent className="space-y-2 text-sm">
                             <p>
                                 <span className="text-muted-foreground font-medium">{t('Address')}:</span> {invoice?.client?.address || '-'}
                             </p>
                             <p>
-                                <span className="text-muted-foreground font-medium">{t('Phone Number')}:</span> {invoice?.client?.phone || '-'}
+                                <span className="text-muted-foreground font-medium">{t('Phone Number')}:</span>{' '}
+                                <span dir="ltr" className="inline-block tabular-nums">
+                                    {invoice?.client?.phone || '-'}
+                                </span>
                             </p>
                             <p>
                                 <span className="text-muted-foreground font-medium">{t('Email')}:</span> {invoice?.client?.email || '-'}
@@ -486,27 +508,45 @@ export default function ShowInvoice() {
                     </CardContent>
                 </Card>
 
-                {/* Terms & Notes */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <Card>
+                {typeof bankDetail === 'string' && bankDetail.trim() ? (
+                    <Card className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
                         <CardHeader className="pb-2">
-                            <h4 className="text-sm font-semibold">{t('Terms')}</h4>
+                            <div className="flex items-center gap-2">
+                                <Banknote className="text-muted-foreground h-5 w-5" />
+                                <h3 className="text-base font-semibold">{t('Bank Details')}</h3>
+                            </div>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-muted-foreground text-sm">{termsText}</p>
+                            <p className="text-muted-foreground whitespace-pre-wrap text-sm">{bankDetail}</p>
                         </CardContent>
                     </Card>
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <h4 className="text-sm font-semibold">{t('Notes')}</h4>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-muted-foreground text-sm">
-                                {invoice?.notes || t('Thank you for your business. Please remit payment by due date.')}
-                            </p>
-                        </CardContent>
-                    </Card>
-                </div>
+                ) : null}
+
+                {/* Terms & Notes — only when client billing terms or invoice notes exist */}
+                {(termsText || notesText) && (
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                        {termsText ? (
+                            <Card>
+                                <CardHeader className="pb-2">
+                                    <h4 className="text-sm font-semibold">{t('Terms')}</h4>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-muted-foreground text-sm">{termsText}</p>
+                                </CardContent>
+                            </Card>
+                        ) : null}
+                        {notesText ? (
+                            <Card>
+                                <CardHeader className="pb-2">
+                                    <h4 className="text-sm font-semibold">{t('Notes')}</h4>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-muted-foreground text-sm">{invoice.notes}</p>
+                                </CardContent>
+                            </Card>
+                        ) : null}
+                    </div>
+                )}
             </div>
 
             <CrudFormModal
@@ -522,7 +562,7 @@ export default function ShowInvoice() {
                             required: true,
                             disabled: true,
                             options: [
-                                { value: String(invoice.id), label: `${invoice.invoice_number || invoice.id} - ${invoice.client?.name || '-'}` },
+                                { value: String(invoice.id), label: `${invoice.invoice_number || invoice.id} - ${resolveClientName(invoice.client?.name, currentLocale) || '-'}` },
                             ],
                         },
                         {
