@@ -2,11 +2,26 @@
 
 namespace App\Providers;
 
+use App\Models\CaseDocument;
+use App\Models\CaseJudgment;
 use App\Models\CaseModel;
+use App\Models\CaseNote;
+use App\Models\CaseReferral;
+use App\Models\CaseTeamMember;
+use App\Models\Hearing;
 use App\Models\Plan;
+use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Observers\CaseDocumentCaseActivityObserver;
+use App\Observers\CaseJudgmentCaseActivityObserver;
+use App\Observers\CaseModelCaseActivityObserver;
+use App\Observers\CaseNoteCaseActivityObserver;
+use App\Observers\CaseReferralCaseActivityObserver;
+use App\Observers\CaseTeamMemberCaseActivityObserver;
+use App\Observers\HearingCaseActivityObserver;
 use App\Observers\PlanObserver;
+use App\Observers\TaskCaseActivityObserver;
 use App\Observers\UserObserver;
 use App\Policies\CasePolicy;
 use App\Providers\AssetServiceProvider;
@@ -75,6 +90,15 @@ class AppServiceProvider extends ServiceProvider
 
         // Register the PlanObserver
         Plan::observe(PlanObserver::class);
+
+        CaseModel::observe(CaseModelCaseActivityObserver::class);
+        CaseReferral::observe(CaseReferralCaseActivityObserver::class);
+        Hearing::observe(HearingCaseActivityObserver::class);
+        CaseJudgment::observe(CaseJudgmentCaseActivityObserver::class);
+        CaseDocument::observe(CaseDocumentCaseActivityObserver::class);
+        Task::observe(TaskCaseActivityObserver::class);
+        CaseTeamMember::observe(CaseTeamMemberCaseActivityObserver::class);
+        CaseNote::observe(CaseNoteCaseActivityObserver::class);
 
         // Register CasePolicy for CaseModel (Laravel would look for CaseModelPolicy by convention)
         Gate::policy(CaseModel::class, CasePolicy::class);

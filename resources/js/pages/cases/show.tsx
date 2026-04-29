@@ -26,6 +26,7 @@ import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AUTHORITY_COURT_TYPES, mergeAuthorityTypeDetails } from '@/lib/case-authority-type';
 import { AppealReminderDurationField } from '@/components/AppealReminderDurationField';
+import { CaseActivityTimeline, type CaseActivityRow, type TimelineCategory } from '@/components/cases/CaseActivityTimeline';
 import { CaseReferralsSection } from '@/components/cases/CaseReferralsSection';
 import GoogleCalendarModal from '@/components/GoogleCalendarModal';
 import TaskModal from '@/pages/tasks/TaskModal';
@@ -89,7 +90,7 @@ export default function CaseShow() {
         case: caseData,
         latestHearing,
         hearings,
-        timelines,
+        case_activity_logs,
         teamMembers,
         users,
         caseDocuments,
@@ -165,12 +166,9 @@ export default function CaseShow() {
     const [isGoogleCalendarModalOpen, setIsGoogleCalendarModalOpen] = useState(false);
     const [taskFormErrors, setTaskFormErrors] = useState<Record<string, string>>({});
 
-    // Timeline filters
-    const [timelineSearch, setTimelineSearch] = useState(filters.timeline_search || '');
-    const [timelineEventType, setTimelineEventType] = useState(filters.timeline_event_type || 'all');
-    const [timelineStatus, setTimelineStatus] = useState(filters.timeline_status || 'all');
-    const [timelineCompleted, setTimelineCompleted] = useState(filters.timeline_completed || 'all');
-    const [showTimelineFilters, setShowTimelineFilters] = useState(false);
+    const timelineCategory = (filters.timeline_category as TimelineCategory | undefined) || 'all';
+    const timelineSort =
+        filters.timeline_sort === 'oldest_first' ? ('oldest_first' as const) : ('newest_first' as const);
 
     // Team filters
     const [teamSearch, setTeamSearch] = useState(filters.team_search || '');
@@ -602,37 +600,14 @@ export default function CaseShow() {
         }
     };
 
-    // Timeline filter functions
-    const handleTimelineSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        applyTimelineFilters();
-    };
-
-    const applyTimelineFilters = () => {
+    const pushTimelineFeed = (overrides: { category?: TimelineCategory; sort?: 'newest_first' | 'oldest_first' }) => {
+        const cat = overrides.category ?? timelineCategory;
+        const sort = overrides.sort ?? timelineSort;
         router.get(
             route('cases.show', caseData.id),
             {
-                timeline_search: timelineSearch || undefined,
-                timeline_event_type: timelineEventType !== 'all' ? timelineEventType : undefined,
-                timeline_status: timelineStatus !== 'all' ? timelineStatus : undefined,
-                timeline_completed: timelineCompleted !== 'all' ? timelineCompleted : undefined,
-                timeline_per_page: filters.timeline_per_page,
-            },
-            { preserveState: true, preserveScroll: true },
-        );
-    };
-
-    const handleTimelineSort = (field: string) => {
-        const direction = filters.timeline_sort_field === field && filters.timeline_sort_direction === 'asc' ? 'desc' : 'asc';
-        router.get(
-            route('cases.show', caseData.id),
-            {
-                timeline_search: timelineSearch || undefined,
-                timeline_event_type: timelineEventType !== 'all' ? timelineEventType : undefined,
-                timeline_status: timelineStatus !== 'all' ? timelineStatus : undefined,
-                timeline_completed: timelineCompleted !== 'all' ? timelineCompleted : undefined,
-                timeline_sort_field: field,
-                timeline_sort_direction: direction,
+                timeline_category: cat !== 'all' ? cat : undefined,
+                timeline_sort: sort === 'oldest_first' ? 'oldest_first' : undefined,
                 timeline_per_page: filters.timeline_per_page,
             },
             { preserveState: true, preserveScroll: true },
@@ -946,84 +921,6 @@ export default function CaseShow() {
                 },
             ]
             : []),
-    ];
-
-    const timelineColumns = [
-        {
-            key: 'title',
-            label: t('Title'),
-            sortable: true,
-        },
-        {
-            key: 'event_type',
-            label: t('Event Type'),
-            render: (value: any, row: any) => {
-                // Handle eventType relationship object or fallback to event_type string
-                let displayName = '';
-                if (row.eventType) {
-                    // New: using eventType relationship
-                    const eventTypeName = row.eventType.name;
-                    if (typeof eventTypeName === 'object' && eventTypeName !== null) {
-                        displayName = eventTypeName[currentLocale] || eventTypeName.en || eventTypeName.ar || '';
-                    } else {
-                        displayName = eventTypeName || '';
-                    }
-                } else if (typeof value === 'string') {
-                    // Old: fallback to event_type string for backward compatibility
-                    displayName = value;
-                } else if (value && typeof value === 'object') {
-                    // Handle if value is the eventType object directly
-                    const eventTypeName = value.name;
-                    if (typeof eventTypeName === 'object' && eventTypeName !== null) {
-                        displayName = eventTypeName[currentLocale] || eventTypeName.en || eventTypeName.ar || '';
-                    } else {
-                        displayName = eventTypeName || '';
-                    }
-                }
-                return (
-                    <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
-                        {displayName || '-'}
-                    </span>
-                );
-            },
-        },
-        {
-            key: 'event_date',
-            label: t('Event Date'),
-            sortable: true,
-            type: 'date' as const,
-        },
-        {
-            key: 'event_time',
-            label: t('Event Time'),
-            render: (value: string) => (value ? (window.appSettings?.formatTime(`2000-01-01T${value}`) || value) : '-'),
-        },
-        {
-            key: 'is_completed',
-            label: t('Completed'),
-            render: (value: boolean) => (
-                <span
-                    className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'
-                        }`}
-                >
-                    {value ? t('Yes') : t('No')}
-                </span>
-            ),
-        },
-        {
-            key: 'status',
-            label: t('Status'),
-            render: (value: string) => (
-                <span
-                    className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'active'
-                        ? 'bg-green-50 text-green-700 ring-1 ring-green-600/20 ring-inset'
-                        : 'bg-red-50 text-red-700 ring-1 ring-red-600/20 ring-inset'
-                        }`}
-                >
-                    {value === 'active' ? t('Active') : t('Inactive')}
-                </span>
-            ),
-        },
     ];
 
     const teamColumns = [
@@ -1710,134 +1607,59 @@ export default function CaseShow() {
                     )}
                     {activeTab === 'timelines' && (
                         <div>
-                            <div className="mb-6 flex items-center justify-between">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('Timeline')}</h3>
-                                {hasPermission(permissions, 'create-case-timelines') && (
-                                    <button
-                                        onClick={() => handleTimelineAction('create')}
-                                        className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90"
-                                    >
-                                        <Plus className="h-4 w-4" />
-                                        {t('Add Event')}
-                                    </button>
-                                )}
-                            </div>
-
-                            <div className="mb-4">
-                                <SearchAndFilterBar
-                                    searchTerm={timelineSearch}
-                                    onSearchChange={setTimelineSearch}
-                                    onSearch={handleTimelineSearch}
-                                    filters={[
-                                        {
-                                            name: 'timeline_event_type',
-                                            label: t('Event Type'),
-                                            type: 'select',
-                                            value: timelineEventType,
-                                            onChange: setTimelineEventType,
-                                            options: [
-                                                { value: 'all', label: t('All Types') },
-                                                ...(eventTypes || []).map((type: any) => {
-                                                    // Handle translatable name
-                                                    let displayName = type.name;
-                                                    if (typeof type.name === 'object' && type.name !== null) {
-                                                        displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
-                                                    } else if (type.name_translations && typeof type.name_translations === 'object') {
-                                                        displayName =
-                                                            type.name_translations[currentLocale] ||
-                                                            type.name_translations.en ||
-                                                            type.name_translations.ar ||
-                                                            '';
-                                                    }
-                                                    return {
-                                                        value: type.id.toString(),
-                                                        label: displayName,
-                                                    };
-                                                }),
-                                            ],
-                                        },
-                                        {
-                                            name: 'timeline_completed',
-                                            label: t('Completed'),
-                                            type: 'select',
-                                            value: timelineCompleted,
-                                            onChange: setTimelineCompleted,
-                                            options: [
-                                                { value: 'all', label: t('All') },
-                                                { value: '1', label: t('Completed') },
-                                                { value: '0', label: t('Pending') },
-                                            ],
-                                        },
-                                        {
-                                            name: 'timeline_status',
-                                            label: t('Status'),
-                                            type: 'select',
-                                            value: timelineStatus,
-                                            onChange: setTimelineStatus,
-                                            options: [
-                                                { value: 'all', label: t('All Statuses') },
-                                                { value: 'active', label: t('Active') },
-                                                { value: 'inactive', label: t('Inactive') },
-                                            ],
-                                        },
-                                    ]}
-                                    showFilters={showTimelineFilters}
-                                    setShowFilters={setShowTimelineFilters}
-                                    hasActiveFilters={() =>
-                                        timelineSearch !== '' ||
-                                        timelineEventType !== 'all' ||
-                                        timelineStatus !== 'all' ||
-                                        timelineCompleted !== 'all'
+                            <CaseActivityTimeline
+                                t={t}
+                                totalCount={case_activity_logs?.total ?? 0}
+                                rows={(case_activity_logs?.data || []) as CaseActivityRow[]}
+                                timelineCategory={timelineCategory}
+                                onCategoryChange={(c) => pushTimelineFeed({ category: c })}
+                                timelineSort={timelineSort}
+                                onSortToggle={() =>
+                                    pushTimelineFeed({
+                                        sort: timelineSort === 'newest_first' ? 'oldest_first' : 'newest_first',
+                                    })
+                                }
+                                canCreate={hasPermission(permissions, 'create-case-timelines')}
+                                canEdit={hasPermission(permissions, 'edit-case-timelines')}
+                                canDelete={hasPermission(permissions, 'delete-case-timelines')}
+                                onAdd={() => handleTimelineAction('create')}
+                                onEdit={(row) => {
+                                    const tl = row.case_timeline as Record<string, unknown> | undefined;
+                                    if (tl && typeof tl === 'object') {
+                                        handleTimelineAction('edit', tl);
                                     }
-                                    activeFilterCount={() =>
-                                        (timelineSearch ? 1 : 0) +
-                                        (timelineEventType !== 'all' ? 1 : 0) +
-                                        (timelineStatus !== 'all' ? 1 : 0) +
-                                        (timelineCompleted !== 'all' ? 1 : 0)
-                                    }
-                                    onResetFilters={() => {
-                                        setTimelineSearch('');
-                                        setTimelineEventType('all');
-                                        setTimelineStatus('all');
-                                        setTimelineCompleted('all');
-                                        router.get(route('cases.show', caseData.id));
-                                    }}
-                                    onApplyFilters={applyTimelineFilters}
-                                    currentPerPage={filters.timeline_per_page?.toString() || '10'}
-                                    onPerPageChange={(value) => {
-                                        router.get(route('cases.show', caseData.id), {
-                                            ...filters,
-                                            timeline_per_page: parseInt(value),
-                                        });
-                                    }}
-                                />
-                            </div>
-
-                            <CrudTable
-                                columns={timelineColumns}
-                                actions={actions}
-                                data={timelines?.data || []}
-                                from={timelines?.from || 1}
-                                onAction={handleTimelineAction}
-                                sortField={filters.timeline_sort_field}
-                                sortDirection={filters.timeline_sort_direction}
-                                onSort={handleTimelineSort}
-                                permissions={permissions}
-                                entityPermissions={{
-                                    view: 'view-case-timelines',
-                                    create: 'create-case-timelines',
-                                    edit: 'edit-case-timelines',
-                                    delete: 'delete-case-timelines',
+                                }}
+                                onDelete={(row) => {
+                                    const tl = row.case_timeline as Record<string, unknown> | undefined;
+                                    handleTimelineAction(
+                                        'delete',
+                                        tl && typeof tl === 'object' ? tl : { id: row.case_timeline_id, title: row.title },
+                                    );
                                 }}
                             />
 
                             <Pagination
-                                from={timelines?.from || 0}
-                                to={timelines?.to || 0}
-                                total={timelines?.total || 0}
-                                links={timelines?.links}
+                                className="mt-4"
+                                from={case_activity_logs?.from || 0}
+                                to={case_activity_logs?.to || 0}
+                                total={case_activity_logs?.total || 0}
+                                links={case_activity_logs?.links}
                                 entityName={t('timeline events')}
                                 onPageChange={(url) => router.get(url)}
+                                currentPerPage={filters.timeline_per_page?.toString() || '15'}
+                                onPerPageChange={(value) =>
+                                    router.get(
+                                        route('cases.show', caseData.id),
+                                        {
+                                            timeline_category:
+                                                timelineCategory !== 'all' ? timelineCategory : undefined,
+                                            timeline_sort:
+                                                timelineSort === 'oldest_first' ? 'oldest_first' : undefined,
+                                            timeline_per_page: parseInt(value, 10),
+                                        },
+                                        { preserveState: true, preserveScroll: true },
+                                    )
+                                }
                             />
                         </div>
                     )}

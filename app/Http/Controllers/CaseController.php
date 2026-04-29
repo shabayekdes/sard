@@ -10,6 +10,7 @@ use App\Models\CaseModel;
 use App\Models\CaseReferral;
 use App\Models\CaseStatus;
 use App\Models\CaseTeamMember;
+use App\Models\CaseActivityLog;
 use App\Models\CaseTimeline;
 use App\Models\CaseType;
 use App\Models\CircleType;
@@ -31,6 +32,7 @@ use App\Services\GoogleCalendarService;
 use App\Support\CaseAuthorityType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
@@ -226,37 +228,37 @@ class CaseController extends BaseController
             'oppositeParties.nationality',
         ]);
 
-        // Timeline query with filters
-        $timelineQuery = CaseTimeline::withPermissionCheck()
-            ->with('eventType')
-            ->where('case_id', $case->id);
+        // Unified case activity timeline (automatic + manual lawyer events)
+        $timelineFeedQuery = CaseActivityLog::query()
+            ->where('case_id', $case->id)
+            ->where('tenant_id', $case->tenant_id);
 
         if ($request->has('timeline_search') && ! empty($request->timeline_search)) {
-            $timelineQuery->where(function ($q) use ($request) {
-                $q->where('title', 'like', '%'.$request->timeline_search.'%')
-                    ->orWhere('description', 'like', '%'.$request->timeline_search.'%');
+            $kw = $request->timeline_search;
+            $timelineFeedQuery->where(function ($q) use ($kw) {
+                $q->where('title', 'like', '%'.$kw.'%')
+                    ->orWhere('description', 'like', '%'.$kw.'%');
             });
         }
 
-        if ($request->has('timeline_event_type') && $request->timeline_event_type !== 'all') {
-            $timelineQuery->where('event_type_id', $request->timeline_event_type);
+        $timelineCategory = $request->get('timeline_category', 'all');
+        if ($timelineCategory === 'automatic') {
+            $timelineFeedQuery->where('source', 'automatic');
+        } elseif ($timelineCategory === 'manual') {
+            $timelineFeedQuery->where('source', 'manual');
+        } elseif ($timelineCategory !== 'all' && in_array($timelineCategory, [
+            'case', 'hearing', 'judgment', 'referral', 'document', 'task', 'note', 'assignee', 'timeline',
+        ], true)) {
+            $timelineFeedQuery->where('category', $timelineCategory);
         }
 
-        if ($request->has('timeline_status') && $request->timeline_status !== 'all') {
-            $timelineQuery->where('status', $request->timeline_status);
-        }
+        $timelineSort = $request->get('timeline_sort', 'newest_first');
+        $timelineFeedQuery->orderBy('occurred_at', $timelineSort === 'oldest_first' ? 'asc' : 'desc');
 
-        if ($request->has('timeline_completed') && $request->timeline_completed !== 'all') {
-            $timelineQuery->where('is_completed', $request->timeline_completed === '1');
-        }
-
-        if ($request->has('timeline_sort_field') && ! empty($request->timeline_sort_field)) {
-            $timelineQuery->orderBy($request->timeline_sort_field, $request->timeline_sort_direction ?? 'asc');
-        } else {
-            $timelineQuery->orderBy('event_date', 'desc');
-        }
-
-        $timelines = $timelineQuery->paginate($request->timeline_per_page ?? 10, ['*'], 'timeline_page');
+        $caseActivityLogs = $timelineFeedQuery
+            ->with(['caseTimeline.eventType'])
+            ->paginate($request->timeline_per_page ?? 15, ['*'], 'timeline_page')
+            ->withQueryString();
 
         // Team members query with filters
         $teamQuery = CaseTeamMember::with('user')
@@ -484,7 +486,7 @@ class CaseController extends BaseController
             'case' => $case,
             'latestHearing' => $latestHearing,
             'hearings' => $hearings,
-            'timelines' => $timelines,
+            'case_activity_logs' => $caseActivityLogs,
             'teamMembers' => $teamMembers,
             'caseDocuments' => $caseDocuments,
             'caseNotes' => $caseNotes,
@@ -505,8 +507,7 @@ class CaseController extends BaseController
             'hearingTypes' => $hearingTypes,
             'googleCalendarEnabled' => $googleCalendarEnabled,
             'filters' => $request->all([
-                'timeline_search', 'timeline_event_type', 'timeline_status', 'timeline_completed',
-                'timeline_sort_field', 'timeline_sort_direction', 'timeline_per_page',
+                'timeline_search', 'timeline_category', 'timeline_sort', 'timeline_per_page',
                 'team_search', 'team_role', 'team_status',
                 'team_sort_field', 'team_sort_direction', 'team_per_page',
                 'doc_search', 'doc_type', 'doc_confidentiality', 'doc_status',
@@ -803,6 +804,7 @@ class CaseController extends BaseController
             }
 
             return [
+                'id' => $doc->id,
                 'document_name' => $doc->document_name,
                 'document_type_id' => (string) $doc->document_type_id,
                 'confidentiality' => $doc->confidentiality ?? 'public',
@@ -1058,6 +1060,11 @@ class CaseController extends BaseController
             'opposite_parties.*.email' => 'nullable|email|max:255',
             'opposite_parties.*.address' => 'nullable|string',
             'documents' => 'nullable|array',
+            'documents.*.id' => [
+                'nullable',
+                'integer',
+                Rule::exists('case_documents', 'id')->where(fn ($q) => $q->where('case_id', $case->id)->where('tenant_id', createdBy())),
+            ],
             'documents.*.document_name' => 'required_with:documents|string|max:255',
             'documents.*.document_type_id' => 'required_with:documents|exists:document_types,id',
             'documents.*.confidentiality' => 'required_with:documents|in:public,confidential,privileged',
@@ -1102,24 +1109,7 @@ class CaseController extends BaseController
             }
         }
 
-        // Replace case documents: delete existing, create from form
-        CaseDocument::where('case_id', $case->id)->delete();
-        if (! empty($documents)) {
-            foreach ($documents as $doc) {
-                $filePath = $this->convertToRelativePath($doc['file'] ?? '');
-                if ($filePath) {
-                    CaseDocument::create([
-                        'case_id' => $case->id,
-                        'document_name' => $doc['document_name'],
-                        'document_type_id' => $doc['document_type_id'],
-                        'confidentiality' => $doc['confidentiality'],
-                        'file_path' => $filePath,
-                        'status' => 'active',
-                        'tenant_id' => createdBy(),
-                    ]);
-                }
-            }
-        }
+        DB::transaction(fn () => $this->syncCaseDocumentsForUpdate($case, $documents));
 
         return redirect()->route('cases.show', $case->id)->with('success', __(':model updated successfully', ['model' => __('Case')]));
     }
@@ -1139,6 +1129,67 @@ class CaseController extends BaseController
         $case->save();
 
         return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Case')]));
+    }
+
+    /**
+     * Upsert case documents from the case edit form: update rows that include a valid id,
+     * create rows without id, then delete DB rows for this case that were removed from the form.
+     *
+     * @param  array<int, array<string, mixed>>  $documents
+     */
+    private function syncCaseDocumentsForUpdate(CaseModel $case, array $documents): void
+    {
+        $keptIds = [];
+
+        foreach ($documents as $doc) {
+            $filePath = $this->convertToRelativePath($doc['file'] ?? '');
+            $existingId = isset($doc['id']) ? (int) $doc['id'] : 0;
+
+            if ($existingId > 0) {
+                $record = CaseDocument::query()
+                    ->where('case_id', $case->id)
+                    ->where('id', $existingId)
+                    ->first();
+
+                if (! $record) {
+                    continue;
+                }
+
+                $record->fill([
+                    'document_name' => $doc['document_name'],
+                    'document_type_id' => $doc['document_type_id'],
+                    'confidentiality' => $doc['confidentiality'],
+                ]);
+                if ($filePath !== '') {
+                    $record->file_path = $filePath;
+                }
+                $record->save();
+                $keptIds[] = $record->id;
+
+                continue;
+            }
+
+            if ($filePath === '') {
+                continue;
+            }
+
+            $created = CaseDocument::create([
+                'case_id' => $case->id,
+                'document_name' => $doc['document_name'],
+                'document_type_id' => $doc['document_type_id'],
+                'confidentiality' => $doc['confidentiality'],
+                'file_path' => $filePath,
+                'status' => 'active',
+                'tenant_id' => createdBy(),
+            ]);
+            $keptIds[] = $created->id;
+        }
+
+        $remove = CaseDocument::query()->where('case_id', $case->id);
+        if ($keptIds !== []) {
+            $remove->whereNotIn('id', $keptIds);
+        }
+        $remove->delete();
     }
 
     private function convertToRelativePath(string $url): string

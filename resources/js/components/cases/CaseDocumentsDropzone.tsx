@@ -17,6 +17,8 @@ const MAX_BYTES = 10 * 1024 * 1024;
 const ACCEPT = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
 
 export type CaseFormDocumentRow = {
+    /** Present for existing DB rows on case edit; omitted for newly added rows */
+    id?: number;
     document_name: string;
     document_type_id: string;
     confidentiality: string;
@@ -117,7 +119,7 @@ export function CaseDocumentsDropzone({ documents, onChange, documentTypeOptions
                     document_type_id: '',
                     confidentiality: 'public',
                     file: item.url,
-                });
+                } satisfies CaseFormDocumentRow);
             }
             onChange(next);
             toast.success(t('{{count}} file(s) added.', { count: uploaded.length }));
@@ -216,7 +218,7 @@ export function CaseDocumentsDropzone({ documents, onChange, documentTypeOptions
             <div className="space-y-3">
                 {documents.map((row, index) => (
                     <div
-                        key={`doc_${index}`}
+                        key={row.id != null ? `doc_${row.id}` : `doc_new_${index}`}
                         className="space-y-3 rounded-lg border border-slate-200 bg-white p-4 dark:border-gray-800 dark:bg-slate-950/20"
                     >
                         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">

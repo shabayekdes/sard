@@ -6,6 +6,7 @@ use App\Enum\EmailTemplateName;
 use App\Facades\Settings;
 use App\Models\CaseTimeline;
 use App\Models\CaseModel;
+use App\Services\CaseActivityLogger;
 use App\Models\Setting;
 use App\Services\GoogleCalendarService;
 use App\Services\EmailTemplateService;
@@ -112,6 +113,8 @@ class CaseTimelineController extends Controller
             $this->sendMeetingLinkNotification($case, $timeline, $meetingLink);
         }
 
+        CaseActivityLogger::syncManualTimeline($timeline->fresh());
+
         return redirect()->back()->with('success', 'Timeline event created successfully.');
     }
 
@@ -160,6 +163,8 @@ class CaseTimelineController extends Controller
             }
         }
 
+        CaseActivityLogger::syncManualTimeline($timeline->fresh());
+
         return redirect()->back()->with('success', 'Timeline event updated successfully.');
     }
 
@@ -177,6 +182,8 @@ class CaseTimelineController extends Controller
             $calendarService->deleteEvent($timeline->google_calendar_event_id, createdBy());
         }
 
+        CaseActivityLogger::deleteManualTimeline((int) $timelineId);
+
         $timeline->delete();
 
         return redirect()->back()->with('success', 'Timeline event deleted successfully.');
@@ -192,6 +199,8 @@ class CaseTimelineController extends Controller
 
         $timeline->status = $timeline->status === 'active' ? 'inactive' : 'active';
         $timeline->save();
+
+        CaseActivityLogger::syncManualTimeline($timeline->fresh());
 
         return redirect()->back()->with('success', 'Timeline event status updated successfully.');
     }
