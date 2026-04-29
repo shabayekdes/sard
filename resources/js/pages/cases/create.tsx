@@ -5,7 +5,7 @@ import { CaseDocumentsDropzone } from '@/components/cases/CaseDocumentsDropzone'
 import { htmlPlainTextLength } from '@/lib/htmlPlainTextLength';
 import { toast } from '@/components/custom-toast';
 import { GregorianHijriDateField } from '@/components/GregorianHijriDateField';
-import { CrudFormModal } from '@/components/CrudFormModal';
+import { QuickCourtFormModal } from '@/components/QuickCourtFormModal';
 import DependentDropdown from '@/components/DependentDropdown';
 import { QuickClientModal } from '@/components/quick-client-modal';
 import { PageTemplate } from '@/components/page-template';
@@ -123,61 +123,6 @@ export default function CreateCase() {
         return displayName || '';
     };
 
-    const quickCourtFormConfig = useMemo(() => {
-        const typeOptions = (courtTypes || []).map((type: any) => {
-            let displayName = type.name;
-            if (typeof type.name === 'object' && type.name !== null) {
-                displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
-            } else if (type.name_translations && typeof type.name_translations === 'object') {
-                displayName =
-                    type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
-            }
-            return { value: type.id.toString(), label: displayName };
-        });
-        const circleOptions = (circleTypes || []).map((type: any) => {
-            let displayName = type.name;
-            if (typeof type.name === 'object' && type.name !== null) {
-                displayName = type.name[currentLocale] || type.name.en || type.name.ar || '';
-            } else if (type.name_translations && typeof type.name_translations === 'object') {
-                displayName =
-                    type.name_translations[currentLocale] || type.name_translations.en || type.name_translations.ar || '';
-            }
-            return { value: type.id.toString(), label: displayName };
-        });
-        return {
-            fields: [
-                { name: 'name', label: t('Court Name'), type: 'text', required: true },
-                {
-                    name: 'court_type_id',
-                    label: t('Court Type'),
-                    type: 'select',
-                    required: true,
-                    options: typeOptions,
-                },
-                {
-                    name: 'circle_type_id',
-                    label: t('Circle Type'),
-                    type: 'select',
-                    required: true,
-                    options: circleOptions,
-                },
-                { name: 'address', label: t('Address'), type: 'textarea' },
-                { name: 'notes', label: t('Notes'), type: 'textarea' },
-                {
-                    name: 'status',
-                    label: t('Status'),
-                    type: 'select',
-                    options: [
-                        { value: 'active', label: t('Active') },
-                        { value: 'inactive', label: t('Inactive') },
-                    ],
-                    defaultValue: 'active',
-                },
-            ],
-            modalSize: 'xl' as const,
-        };
-    }, [courtTypes, circleTypes, currentLocale, t]);
-
     const categorySubcategoryTypeFields = useMemo(
         () => [
             {
@@ -233,43 +178,6 @@ export default function CreateCase() {
             const next = { ...prev };
             delete next.authority_type_details;
             return next;
-        });
-    };
-
-    const handleQuickCourtSubmit = (courtForm: Record<string, unknown>) => {
-        router.post(route('courts.store'), courtForm, {
-            preserveState: true,
-            preserveScroll: true,
-            onSuccess: (page) => {
-                setCourtModalOpen(false);
-                toast.dismiss();
-                const flash = (page as any)?.props?.flash;
-                if (flash?.created_court_id != null) {
-                    updateField('court_id', String(flash.created_court_id));
-                }
-                if (flash?.success) {
-                    toast.success(flash.success);
-                }
-                if (flash?.warning) {
-                    toast.message(flash.warning);
-                }
-                if (flash?.error) {
-                    toast.error(flash.error);
-                }
-            },
-            onError: (formErrors) => {
-                toast.dismiss();
-                if (typeof formErrors === 'string') {
-                    toast.error(formErrors);
-                } else if (Object.values(formErrors).length > 0) {
-                    toast.error(
-                        t('Failed to create {{model}}: {{errors}}', {
-                            model: t('Court'),
-                            errors: Object.values(formErrors).join(', '),
-                        }),
-                    );
-                }
-            },
         });
     };
 
@@ -700,14 +608,12 @@ export default function CreateCase() {
                 )}
 
                 {canQuickCreateCourt && (
-                    <CrudFormModal
-                        isOpen={courtModalOpen}
-                        onClose={() => setCourtModalOpen(false)}
-                        onSubmit={handleQuickCourtSubmit}
-                        formConfig={{ ...quickCourtFormConfig, columns: 2 }}
-                        initialData={{}}
-                        title={t('Add New Court')}
-                        mode="create"
+                    <QuickCourtFormModal
+                        open={courtModalOpen}
+                        onOpenChange={setCourtModalOpen}
+                        courtTypes={courtTypes || []}
+                        circleTypes={circleTypes || []}
+                        onCreated={(id) => updateField('court_id', id)}
                     />
                 )}
 

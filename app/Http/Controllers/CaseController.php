@@ -7,6 +7,7 @@ use App\Models\CaseCategory;
 use App\Models\CaseDocument;
 use App\Models\CaseJudgment;
 use App\Models\CaseModel;
+use App\Models\CaseReferral;
 use App\Models\CaseStatus;
 use App\Models\CaseTeamMember;
 use App\Models\CaseTimeline;
@@ -343,6 +344,12 @@ class CaseController extends BaseController
             ->orderBy('id', 'desc')
             ->paginate($request->case_judgment_per_page ?? 10, ['*'], 'case_judgment_page');
 
+        $referrals = CaseReferral::withPermissionCheck()
+            ->where('case_id', $case->id)
+            ->orderBy('referral_date', 'desc')
+            ->orderBy('id', 'desc')
+            ->paginate($request->referral_per_page ?? 10, ['*'], 'referral_page');
+
         // Get research projects for this case with their notes and citations
         $researchProjects = ResearchProject::withPermissionCheck()
             ->with(['researchType', 'notes', 'citations.source'])
@@ -482,6 +489,7 @@ class CaseController extends BaseController
             'caseDocuments' => $caseDocuments,
             'caseNotes' => $caseNotes,
             'caseJudgments' => $caseJudgments,
+            'referrals' => $referrals,
             'researchProjects' => $researchProjects,
             'tasks' => $tasks,
             'users' => $users,
@@ -508,6 +516,7 @@ class CaseController extends BaseController
                 'hearing_search', 'hearing_status', 'hearing_court_id', 'hearing_court_type_id',
                 'hearing_circle_type_id', 'hearing_sort_field', 'hearing_sort_direction', 'hearing_per_page',
                 'case_judgment_per_page',
+                'referral_per_page',
             ]),
         ]);
     }

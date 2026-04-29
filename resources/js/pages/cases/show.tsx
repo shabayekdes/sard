@@ -26,6 +26,7 @@ import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AUTHORITY_COURT_TYPES, mergeAuthorityTypeDetails } from '@/lib/case-authority-type';
 import { AppealReminderDurationField } from '@/components/AppealReminderDurationField';
+import { CaseReferralsSection } from '@/components/cases/CaseReferralsSection';
 import GoogleCalendarModal from '@/components/GoogleCalendarModal';
 import TaskModal from '@/pages/tasks/TaskModal';
 import type { FormField } from '@/types/crud';
@@ -94,6 +95,7 @@ export default function CaseShow() {
         caseDocuments,
         caseNotes,
         caseJudgments,
+        referrals,
         documentTypes,
         eventTypes,
         roles,
@@ -1358,6 +1360,23 @@ export default function CaseShow() {
                                 </div>
                             </button>
                         )}
+                        {hasPermission(permissions, 'manage-cases') && (
+                            <button
+                                onClick={() => {
+                                    setActiveTab('referrals');
+                                    router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
+                                }}
+                                className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'referrals'
+                                    ? 'border-primary text-primary dark:text-primary'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                                    }`}
+                            >
+                                <div className="flex items-center space-x-2">
+                                    <FileText className="h-4 w-4" />
+                                    <span>الإحالات</span>
+                                </div>
+                            </button>
+                        )}
                         {hasPermission(permissions, 'view-case-timelines') && (
                             <button
                                 onClick={() => {
@@ -2390,6 +2409,17 @@ export default function CaseShow() {
                                 onPageChange={(url) => router.get(url)}
                             />
                         </div>
+                    )}
+
+                    {activeTab === 'referrals' && (
+                        <CaseReferralsSection
+                            caseId={caseData.id}
+                            referrals={referrals}
+                            courts={courts || []}
+                            courtTypes={courtTypes || []}
+                            circleTypes={circleTypes || []}
+                            permissions={permissions}
+                        />
                     )}
 
                     {activeTab === 'tasks' && (

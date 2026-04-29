@@ -121,6 +121,11 @@ class CaseModel extends BaseModel
         return $this->hasMany(CaseJudgment::class, 'case_id');
     }
 
+    public function referrals()
+    {
+        return $this->hasMany(CaseReferral::class, 'case_id');
+    }
+
     public function oppositeParties()
     {
         return $this->hasMany(OppositeParty::class, 'case_id');

@@ -569,6 +569,14 @@ Route::middleware([
                 Route::put('cases/case-timelines/{timeline}/toggle-status', [Controllers\CaseTimelineController::class, 'toggleStatus'])->middleware('permission:edit-case-timelines')->name('cases.case-timelines.toggle-status');
             });
 
+            Route::middleware('permission:manage-cases')->group(function () {
+                Route::get('cases/{case}/referrals', [Controllers\CaseReferralController::class, 'index'])->name('cases.referrals.index');
+                Route::post('cases/{case}/referrals', [Controllers\CaseReferralController::class, 'store'])->name('cases.referrals.store');
+                Route::get('cases/{case}/referrals/{referral}', [Controllers\CaseReferralController::class, 'show'])->name('cases.referrals.show');
+                Route::put('cases/{case}/referrals/{referral}', [Controllers\CaseReferralController::class, 'update'])->name('cases.referrals.update');
+                Route::delete('cases/{case}/referrals/{referral}', [Controllers\CaseReferralController::class, 'destroy'])->name('cases.referrals.destroy');
+            });
+
             // Case Team Members routes
             Route::middleware('permission:manage-case-team-members')->group(function () {
                 Route::get('cases/case-team-members', [Controllers\CaseTeamMemberController::class, 'index'])->name('cases.case-team-members.index');

@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { CrudFormModal } from '@/components/CrudFormModal';
+import { QuickCourtFormModal } from '@/components/QuickCourtFormModal';
 import { GregorianHijriDateField } from '@/components/GregorianHijriDateField';
 import MediaPicker from '@/components/MediaPicker';
 import { toast } from '@/components/custom-toast';
@@ -321,59 +321,6 @@ export default function HearingForm() {
     ],
     [t, reminderPresetOptions, errors.reminder_minutes],
   );
-
-  const quickCourtFormConfig = useMemo(() => {
-    const typeOptions = (courtTypes || []).map((type: any) => ({
-      value: type.id.toString(),
-      label: getTranslatedValue(type.name),
-    }));
-    const circleOptions = (circleTypes || []).map((type: any) => ({
-      value: type.id.toString(),
-      label: getTranslatedValue(type.name),
-    }));
-    return {
-      fields: [
-        { name: 'name', label: t('Court Name'), type: 'text' as const, required: true },
-        { name: 'court_type_id', label: t('Court Type'), type: 'select' as const, required: true, options: typeOptions },
-        { name: 'circle_type_id', label: t('Circle Type'), type: 'select' as const, required: true, options: circleOptions },
-        { name: 'address', label: t('Address'), type: 'textarea' as const },
-        { name: 'notes', label: t('Notes'), type: 'textarea' as const },
-        {
-          name: 'status',
-          label: t('Status'),
-          type: 'select' as const,
-          options: [
-            { value: 'active', label: t('Active') },
-            { value: 'inactive', label: t('Inactive') },
-          ],
-          defaultValue: 'active',
-        },
-      ],
-      modalSize: 'xl' as const,
-    };
-  }, [courtTypes, circleTypes, t, currentLocale]);
-
-  const handleQuickCourtSubmit = (courtData: Record<string, unknown>) => {
-    router.post(route('courts.store'), courtData as any, {
-      preserveState: true,
-      preserveScroll: true,
-      onSuccess: (p) => {
-        setCourtModalOpen(false);
-        const flash = (p as any)?.props?.flash;
-        const newId = flash?.created_court_id;
-        if (newId != null) {
-          setForm((prev) => ({ ...prev, court_id: String(newId) }));
-        }
-        if (flash?.success) {
-          toast.success(flash.success);
-        }
-        router.reload({ only: ['courts'] });
-      },
-      onError: (e) => {
-        toast.error(Object.values(e).join(', ') || t('Failed to save'));
-      },
-    });
-  };
 
   const buildPayload = () => {
     const caseId = form.case_id;
@@ -839,15 +786,17 @@ export default function HearingForm() {
         </div>
       </form>
 
-      <CrudFormModal
-        isOpen={courtModalOpen}
-        onClose={() => setCourtModalOpen(false)}
-        onSubmit={handleQuickCourtSubmit}
-        formConfig={quickCourtFormConfig as any}
-        initialData={null}
-        title={t('Add New Court')}
-        mode="create"
-      />
+      {canQuickCreateCourt && (
+        <QuickCourtFormModal
+          open={courtModalOpen}
+          onOpenChange={setCourtModalOpen}
+          courtTypes={courtTypes || []}
+          circleTypes={circleTypes || []}
+          onCreated={(id) => setForm((prev) => ({ ...prev, court_id: String(id) }))}
+          reloadOnly={['courts']}
+          title={t('Add New Court')}
+        />
+      )}
     </PageTemplate>
   );
 }

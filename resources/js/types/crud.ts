@@ -130,6 +130,7 @@ export interface FormField {
     width?: string; // CSS width value (e.g., '50%', '200px')
     row?: number; // Optional row number for grouping fields
     render?: (field: FormField, formData: any, onChange: (name: string, value: any) => void) => React.ReactNode;
+    onChange?: (value: any, formData: any, onChange: (name: string, value: any) => void) => void;
     conditional?: (mode: string, formData: any) => boolean;
     dependentConfig?: Array<{
         name: string;

@@ -627,6 +627,9 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                         return;
                     }
                     handleChange(field.name, actualValue);
+                    if (field.onChange) {
+                        field.onChange(actualValue, { ...formData, [field.name]: actualValue }, handleChange);
+                    }
                 };
 
                 return (
