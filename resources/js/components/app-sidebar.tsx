@@ -247,17 +247,17 @@ export function AppSidebar() {
                 icon: FileSearch,
             });
         }
-        // if (
-        //     !hasPermission(permissions, 'view-setup') &&
-        //     (hasPermission(permissions, 'view-integrations') ||
-        //         hasPermission(permissions, 'manage-google-calendar-integration'))
-        // ) {
-        //     items.push({
-        //         title: t('Electronic Integrations'),
-        //         href: route('integrations.index'),
-        //         icon: Plug,
-        //     });
-        // }
+        if (
+            !hasPermission(permissions, 'view-setup') &&
+            (hasPermission(permissions, 'view-integrations') ||
+                hasPermission(permissions, 'manage-google-calendar-integration'))
+        ) {
+            items.push({
+                title: t('Electronic Integrations'),
+                href: route('integrations.index'),
+                icon: Plug,
+            });
+        }
 
         // 5. Messages
         if (
