@@ -20,6 +20,12 @@ import {
 } from 'lucide-react';
 import type { TFunction } from 'i18next';
 
+export type CaseActivityCreator = {
+    id: number;
+    name: string;
+    avatar?: string | null;
+};
+
 export type CaseActivityRow = {
     id: number;
     source: 'automatic' | 'manual';
@@ -30,7 +36,8 @@ export type CaseActivityRow = {
     occurred_at: string;
     case_timeline_id?: number | null;
     case_timeline?: Record<string, unknown> | null;
-    /** Optional initials for avatar chip (same screen design) */
+    created_by?: number | null;
+    creator?: CaseActivityCreator | null;
     meta?: { actor_initials?: string; [key: string]: unknown } | null;
 };
 
@@ -47,6 +54,16 @@ export type TimelineCategory =
     | 'note'
     | 'assignee'
     | 'timeline';
+
+function initialsFromName(name: string): string {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+        const a = parts[0]?.[0] ?? '';
+        const b = parts[parts.length - 1]?.[0] ?? '';
+        return (a + b).toUpperCase().slice(0, 3);
+    }
+    return name.trim().slice(0, 3).toUpperCase();
+}
 
 function iconFor(category: string, eventKey: string) {
     if (category === 'hearing') return Gavel;
@@ -154,9 +171,13 @@ export function CaseActivityTimeline({
                 {/* Physical order: primary Add on browser-left, Sort beside it — force LTR row for the pair */}
                 <div className="flex flex-row flex-wrap items-center gap-2" dir="ltr">
                     {canCreate && (
-                        <Button type="button" size="sm" className="gap-1 bg-emerald-600 hover:bg-emerald-700" onClick={onAdd}>
-                            <Plus className="h-4 w-4" />
+                        <Button
+                            type="button"
+                            className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90"
+                            onClick={onAdd}
+                        >
                             {t('Timeline add event')}
+                            <Plus className="h-4 w-4" />
                         </Button>
                     )}
                     <Button
@@ -203,11 +224,6 @@ export function CaseActivityTimeline({
                         const isFirst = index === 0;
                         const isLast = index === rows.length - 1;
                         const onlyOne = isFirst && isLast;
-                        const initials =
-                            typeof row.meta?.actor_initials === 'string' && row.meta.actor_initials.trim()
-                                ? row.meta.actor_initials.trim().slice(0, 3)
-                                : null;
-
                         const spine =
                             !onlyOne && (
                                 <div
@@ -221,9 +237,22 @@ export function CaseActivityTimeline({
                                 />
                             );
 
-                        const avatarChip = initials ? (
-                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-200 text-[10px] font-semibold text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                                {initials}
+                        const creator = row.creator;
+                        const avatarUrl = creator?.avatar?.trim() ? creator.avatar.trim() : null;
+                        const nameInitials = creator?.name?.trim() ? initialsFromName(creator.name) : '';
+
+                        const avatarChip = avatarUrl ? (
+                            <img
+                                src={avatarUrl}
+                                alt={creator?.name ?? ''}
+                                className="h-7 w-7 shrink-0 rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-600"
+                            />
+                        ) : nameInitials ? (
+                            <span
+                                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-200 text-[10px] font-semibold text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                                title={creator?.name}
+                            >
+                                {nameInitials}
                             </span>
                         ) : (
                             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500">
@@ -251,7 +280,8 @@ export function CaseActivityTimeline({
                                 <div className="flex min-w-[5.5rem] max-w-[11rem] shrink-0 flex-col items-center justify-center bg-gray-50/40 px-2 py-3 dark:bg-gray-900/40">
                                     <Datetime
                                         value={row.occurred_at}
-                                        variant="date"
+                                        variant="datetime"
+                                        showInlineTime
                                         showIcons={false}
                                         emptyLabel=""
                                         className="text-balance text-center text-xs leading-snug text-gray-400 dark:text-gray-500 ltr:font-sans"
@@ -271,42 +301,14 @@ export function CaseActivityTimeline({
                                     </div>
                                 </div>
 
-                                {/* 3 — Story (visual end; text dir follows locale, aligned toward rail) */}
+                                {/* 3 — Story; actions share bottom row with avatar + entity (always visible for manual) */}
                                 <div
                                     className={cn(
-                                        'relative min-w-0 flex-1 px-4 py-3 border-b border-gray-100',
+                                        'min-h-0 min-w-0 flex-1 px-4 py-3 border-b border-gray-100',
                                         isRtl && 'text-start',
                                     )}
                                     dir={isRtl ? 'rtl' : 'ltr'}
                                 >
-                                    {showActions ? (
-                                        <div
-                                            className="absolute end-3 top-2 z-20 flex gap-0.5 rounded-md bg-white/95 p-0.5 opacity-0 shadow-sm ring-1 ring-gray-100 transition-opacity group-hover/row:opacity-100 dark:bg-gray-900/95 dark:ring-gray-700"
-                                            dir="ltr"
-                                        >
-                                            {canEdit && row.case_timeline ? (
-                                                <button
-                                                    type="button"
-                                                    className="rounded p-1 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
-                                                    aria-label={t('Edit')}
-                                                    onClick={() => onEdit(row)}
-                                                >
-                                                    <Pencil className="h-4 w-4" />
-                                                </button>
-                                            ) : null}
-                                            {canDelete ? (
-                                                <button
-                                                    type="button"
-                                                    className="rounded p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                                    aria-label={t('Delete')}
-                                                    onClick={() => onDelete(row)}
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
-                                            ) : null}
-                                        </div>
-                                    ) : null}
-
                                     <div className="flex flex-wrap items-center justify-start gap-2">
                                         <span className="text-base font-bold leading-snug text-gray-900 dark:text-white">{row.title}</span>
                                         <span className={cn('shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium', badgeClass(row.source))}>
@@ -320,9 +322,41 @@ export function CaseActivityTimeline({
                                         </p>
                                     ) : null}
 
-                                    <div className="mt-2 flex flex-wrap items-center justify-start gap-2">
-                                        {avatarChip}
-                                        {entityChip}
+                                    <div
+                                        className={cn(
+                                            'mt-2 flex min-w-0 flex-wrap items-center gap-2',
+                                            showActions ? 'justify-between' : 'justify-start',
+                                        )}
+                                        dir={showActions ? 'ltr' : undefined}
+                                    >
+                                        {showActions ? (
+                                            <div className="flex shrink-0 gap-0.5 rounded-md bg-white/95 p-0.5 shadow-sm ring-1 ring-gray-100 dark:bg-gray-900/95 dark:ring-gray-700">
+                                                {canEdit && row.case_timeline ? (
+                                                    <button
+                                                        type="button"
+                                                        className="rounded p-1 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                                                        aria-label={t('Edit')}
+                                                        onClick={() => onEdit(row)}
+                                                    >
+                                                        <Pencil className="h-4 w-4" />
+                                                    </button>
+                                                ) : null}
+                                                {canDelete ? (
+                                                    <button
+                                                        type="button"
+                                                        className="rounded p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                        aria-label={t('Delete')}
+                                                        onClick={() => onDelete(row)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                ) : null}
+                                            </div>
+                                        ) : null}
+                                        <div className="flex min-w-0 flex-wrap items-center gap-2">
+                                            {avatarChip}
+                                            {entityChip}
+                                        </div>
                                     </div>
                                 </div>
                             </div>

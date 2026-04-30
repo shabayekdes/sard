@@ -48,13 +48,39 @@ export function formatAppTimeDisplay(time: string | Date | number): string {
             ? `2000-01-01T${t}`
             : t;
 
+    const isArabicUi =
+        typeof document !== 'undefined' &&
+        ((document.documentElement.lang || '').toLowerCase().startsWith('ar') || document.documentElement.dir === 'rtl');
+    const amLabel = isArabicUi ? 'ص' : 'AM';
+    const pmLabel = isArabicUi ? 'م' : 'PM';
+    const localizeMeridiem = (value: string): string => {
+        if (!isArabicUi) return value;
+        return value.replace(/\bAM\b/gi, amLabel).replace(/\bPM\b/gi, pmLabel);
+    };
+
+    const withMeridiem = (base: string, date: Date): string => {
+        if (/\b(am|pm)\b/i.test(base) || /[صم]/.test(base)) return localizeMeridiem(base);
+        return `${base} ${date.getHours() >= 12 ? pmLabel : amLabel}`;
+    };
+
     if (typeof window !== 'undefined' && window.appSettings?.formatTime) {
         const s = window.appSettings.formatTime(toParse);
-        if (s) return s;
+        if (s) {
+            const dt = typeof toParse === 'string' ? new Date(toParse) : toParse;
+            if (!Number.isNaN(dt.getTime())) return withMeridiem(String(s), dt);
+            return localizeMeridiem(String(s));
+        }
     }
 
     const d = typeof toParse === 'string' ? new Date(toParse) : toParse;
-    return Number.isNaN(d.getTime()) ? String(t) : d.toLocaleTimeString();
+    if (Number.isNaN(d.getTime())) return String(t);
+    return localizeMeridiem(
+        d.toLocaleTimeString('en-US', {
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true,
+          }),
+    );
 }
 
 /**

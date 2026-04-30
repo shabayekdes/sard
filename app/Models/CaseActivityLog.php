@@ -13,6 +13,7 @@ class CaseActivityLog extends Model
     protected $fillable = [
         'case_id',
         'tenant_id',
+        'created_by',
         'occurred_at',
         'source',
         'category',
@@ -30,17 +31,22 @@ class CaseActivityLog extends Model
         'meta' => 'array',
     ];
 
-    public function case (): BelongsTo
+    public function case(): BelongsTo
     {
         return $this->belongsTo(CaseModel::class, 'case_id');
     }
 
-    public function caseTimeline (): BelongsTo
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function caseTimeline(): BelongsTo
     {
         return $this->belongsTo(CaseTimeline::class, 'case_timeline_id');
     }
 
-    public function subject (): \Illuminate\Database\Eloquent\Relations\MorphTo
+    public function subject(): \Illuminate\Database\Eloquent\Relations\MorphTo
     {
         return $this->morphTo();
     }

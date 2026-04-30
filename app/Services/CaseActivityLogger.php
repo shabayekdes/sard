@@ -3,22 +3,49 @@
 namespace App\Services;
 
 use App\Models\CaseActivityLog;
+use App\Models\CaseDocument;
 use App\Models\CaseJudgment;
 use App\Models\CaseModel;
-use App\Models\CaseReferral;
-use App\Models\CaseTimeline;
-use App\Models\CaseDocument;
-use App\Models\CaseTeamMember;
 use App\Models\CaseNote;
+use App\Models\CaseReferral;
 use App\Models\CaseStatus;
+use App\Models\CaseTeamMember;
+use App\Models\CaseTimeline;
 use App\Models\Hearing;
 use App\Models\Task;
 use App\Models\TaskStatus;
+use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 class CaseActivityLogger
 {
+    /**
+     * User id stored on case_activity_logs.created_by (required). Prefers the authenticated user;
+     * otherwise the first active user in the tenant (e.g. Artisan without a session).
+     */
+    protected static function actorUserId(string $tenantId): int
+    {
+        $authId = auth()->id();
+        if ($authId !== null) {
+            return (int) $authId;
+        }
+
+        $fallback = User::query()
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->orderBy('id')
+            ->value('id');
+
+        if ($fallback !== null) {
+            return (int) $fallback;
+        }
+
+        throw new \LogicException(
+            'Cannot create case_activity_logs row: no authenticated user and no active user found for tenant.'
+        );
+    }
+
     public static function referralStageLabel(string $stage): string
     {
         $key = 'case_activity.referral_stage.'.$stage;
@@ -30,22 +57,28 @@ class CaseActivityLogger
     {
         $occurredAt = self::timelineOccurredAt($timeline);
 
-        CaseActivityLog::updateOrCreate(
-            ['case_timeline_id' => $timeline->id],
-            [
-                'case_id' => $timeline->case_id,
-                'tenant_id' => $timeline->tenant_id,
-                'occurred_at' => $occurredAt,
-                'source' => 'manual',
-                'category' => 'timeline',
-                'event_key' => 'manual_timeline',
-                'title' => $timeline->title,
-                'description' => $timeline->description ? Str::limit(strip_tags($timeline->description), 240) : null,
-                'meta' => null,
-                'subject_type' => CaseTimeline::class,
-                'subject_id' => $timeline->id,
-            ]
-        );
+        $log = CaseActivityLog::firstOrNew(['case_timeline_id' => $timeline->id]);
+
+        $attributes = [
+            'case_id' => $timeline->case_id,
+            'tenant_id' => $timeline->tenant_id,
+            'occurred_at' => $occurredAt,
+            'source' => 'manual',
+            'category' => 'timeline',
+            'event_key' => 'manual_timeline',
+            'title' => $timeline->title,
+            'description' => $timeline->description ? Str::limit(strip_tags($timeline->description), 240) : null,
+            'meta' => null,
+            'subject_type' => CaseTimeline::class,
+            'subject_id' => $timeline->id,
+        ];
+
+        if (! $log->exists) {
+            $attributes['created_by'] = self::actorUserId((string) $timeline->tenant_id);
+        }
+
+        $log->fill($attributes);
+        $log->save();
     }
 
     public static function deleteManualTimeline(int $timelineId): void
@@ -91,6 +124,7 @@ class CaseActivityLogger
         return CaseActivityLog::create([
             'case_id' => $caseId,
             'tenant_id' => $tenantId,
+            'created_by' => self::actorUserId($tenantId),
             'occurred_at' => $occurredAt,
             'source' => 'automatic',
             'category' => $category,

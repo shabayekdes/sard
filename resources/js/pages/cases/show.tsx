@@ -19,7 +19,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { router, usePage } from '@inertiajs/react';
 import type { Task } from '@/types';
 import { AlertTriangle, ArrowLeft, Bell, Clock, FileText, Gavel, Pencil, Plus, Search, Users, CheckSquare, Calendar } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
@@ -35,6 +35,22 @@ import type { FormField } from '@/types/crud';
 /** Same sentinels/transform as tasks/index CrudFormModal (Radix Select disallows empty string values). */
 const TASK_FORM_NO_CASE = '__no_case__';
 const TASK_FORM_UNASSIGNED = '__unassigned__';
+const CASE_SHOW_TABS = [
+    'details',
+    'hearings',
+    'tasks',
+    'documents',
+    'team',
+    'notes',
+    'judgments',
+    'referrals',
+    'timelines',
+    'research-projects',
+] as const;
+
+function resolveCaseShowTab(value: string | null | undefined): (typeof CASE_SHOW_TABS)[number] {
+    return value && (CASE_SHOW_TABS as readonly string[]).includes(value) ? (value as (typeof CASE_SHOW_TABS)[number]) : 'details';
+}
 
 function PleadingCollapsible({ title, html }: { title: string; html: string }) {
     const { isRtl } = useLayout();
@@ -148,7 +164,11 @@ export default function CaseShow() {
             ? (typeof window !== 'undefined' && (window as any).appSettings?.formatDate?.(v)) || String(v).slice(0, 10)
             : '-';
 
-    const [activeTab, setActiveTab] = useState('details');
+    const [activeTab, setActiveTab] = useState<(typeof CASE_SHOW_TABS)[number]>(() => {
+        if (typeof window === 'undefined') return 'details';
+        const fromUrl = new URL(window.location.href).searchParams.get('tab');
+        return resolveCaseShowTab(fromUrl);
+    });
     const [selectedProject, setSelectedProject] = useState<any>(null);
     const [projectSubTab, setProjectSubTab] = useState('details');
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -165,6 +185,23 @@ export default function CaseShow() {
     const [selectedViewTask, setSelectedViewTask] = useState<Task | null>(null);
     const [isGoogleCalendarModalOpen, setIsGoogleCalendarModalOpen] = useState(false);
     const [taskFormErrors, setTaskFormErrors] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', activeTab);
+        window.history.replaceState(window.history.state, '', url.toString());
+    }, [activeTab]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const onPopState = () => {
+            const fromUrl = new URL(window.location.href).searchParams.get('tab');
+            setActiveTab(resolveCaseShowTab(fromUrl));
+        };
+        window.addEventListener('popstate', onPopState);
+        return () => window.removeEventListener('popstate', onPopState);
+    }, []);
 
     const timelineCategory = (filters.timeline_category as TimelineCategory | undefined) || 'all';
     const timelineSort =
@@ -603,15 +640,18 @@ export default function CaseShow() {
     const pushTimelineFeed = (overrides: { category?: TimelineCategory; sort?: 'newest_first' | 'oldest_first' }) => {
         const cat = overrides.category ?? timelineCategory;
         const sort = overrides.sort ?? timelineSort;
-        router.get(
-            route('cases.show', caseData.id),
-            {
+        router.reload({
+            data: {
                 timeline_category: cat !== 'all' ? cat : undefined,
                 timeline_sort: sort === 'oldest_first' ? 'oldest_first' : undefined,
                 timeline_per_page: filters.timeline_per_page,
+                timeline_page: 1,
             },
-            { preserveState: true, preserveScroll: true },
-        );
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+            only: ['case_activity_logs', 'filters'],
+        });
     };
 
     // Team filter functions
@@ -1143,7 +1183,6 @@ export default function CaseShow() {
                         <button
                             onClick={() => {
                                 setActiveTab('details');
-                                router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                             }}
                             className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'details'
                                 ? 'border-primary text-primary dark:text-primary'
@@ -1159,7 +1198,6 @@ export default function CaseShow() {
                             <button
                                 onClick={() => {
                                     setActiveTab('hearings');
-                                    router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'hearings'
                                     ? 'border-primary text-primary dark:text-primary'
@@ -1176,7 +1214,6 @@ export default function CaseShow() {
                             <button
                                 onClick={() => {
                                     setActiveTab('tasks');
-                                    router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'tasks'
                                     ? 'border-primary text-primary dark:text-primary'
@@ -1193,7 +1230,6 @@ export default function CaseShow() {
                             <button
                                 onClick={() => {
                                     setActiveTab('documents');
-                                    router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'documents'
                                     ? 'border-primary text-primary dark:text-primary'
@@ -1210,7 +1246,6 @@ export default function CaseShow() {
                             <button
                                 onClick={() => {
                                     setActiveTab('team');
-                                    router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'team'
                                     ? 'border-primary text-primary dark:text-primary'
@@ -1227,7 +1262,6 @@ export default function CaseShow() {
                             <button
                                 onClick={() => {
                                     setActiveTab('notes');
-                                    router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'notes'
                                     ? 'border-primary text-primary dark:text-primary'
@@ -1244,7 +1278,6 @@ export default function CaseShow() {
                             <button
                                 onClick={() => {
                                     setActiveTab('judgments');
-                                    router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'judgments'
                                     ? 'border-primary text-primary dark:text-primary'
@@ -1261,7 +1294,6 @@ export default function CaseShow() {
                             <button
                                 onClick={() => {
                                     setActiveTab('referrals');
-                                    router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'referrals'
                                     ? 'border-primary text-primary dark:text-primary'
@@ -1278,7 +1310,6 @@ export default function CaseShow() {
                             <button
                                 onClick={() => {
                                     setActiveTab('timelines');
-                                    router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'timelines'
                                     ? 'border-primary text-primary dark:text-primary'
@@ -1295,7 +1326,6 @@ export default function CaseShow() {
                             <button
                                 onClick={() => {
                                     setActiveTab('research-projects');
-                                    router.get(route('cases.show', caseData.id), {}, { preserveState: true, preserveScroll: true });
                                 }}
                                 className={`flex-shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'research-projects'
                                     ? 'border-primary text-primary dark:text-primary'
@@ -1645,7 +1675,18 @@ export default function CaseShow() {
                                 total={case_activity_logs?.total || 0}
                                 links={case_activity_logs?.links}
                                 entityName={t('timeline events')}
-                                onPageChange={(url) => router.get(url)}
+                                onPageChange={(url) =>
+                                    router.get(
+                                        url,
+                                        {},
+                                        {
+                                            preserveState: true,
+                                            preserveScroll: true,
+                                            replace: true,
+                                            only: ['case_activity_logs', 'filters'],
+                                        },
+                                    )
+                                }
                                 currentPerPage={filters.timeline_per_page?.toString() || '15'}
                                 onPerPageChange={(value) =>
                                     router.get(
@@ -1657,7 +1698,12 @@ export default function CaseShow() {
                                                 timelineSort === 'oldest_first' ? 'oldest_first' : undefined,
                                             timeline_per_page: parseInt(value, 10),
                                         },
-                                        { preserveState: true, preserveScroll: true },
+                                        {
+                                            preserveState: true,
+                                            preserveScroll: true,
+                                            replace: true,
+                                            only: ['case_activity_logs', 'filters'],
+                                        },
                                     )
                                 }
                             />

@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('case_id')->constrained('cases')->cascadeOnDelete();
             $table->foreignUuid('tenant_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('created_by')->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
             $table->timestampTz('occurred_at');
             $table->string('source', 16); // automatic | manual
             $table->string('category', 32); // case, hearing, judgment, referral, document, task, note, assignee, timeline

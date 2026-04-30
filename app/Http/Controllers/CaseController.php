@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Facades\Settings;
+use App\Models\CaseActivityLog;
 use App\Models\CaseCategory;
 use App\Models\CaseDocument;
 use App\Models\CaseJudgment;
@@ -10,8 +11,6 @@ use App\Models\CaseModel;
 use App\Models\CaseReferral;
 use App\Models\CaseStatus;
 use App\Models\CaseTeamMember;
-use App\Models\CaseActivityLog;
-use App\Models\CaseTimeline;
 use App\Models\CaseType;
 use App\Models\CircleType;
 use App\Models\Client;
@@ -256,9 +255,11 @@ class CaseController extends BaseController
         $timelineFeedQuery->orderBy('occurred_at', $timelineSort === 'oldest_first' ? 'asc' : 'desc');
 
         $caseActivityLogs = $timelineFeedQuery
-            ->with(['caseTimeline.eventType'])
+            ->with(['caseTimeline.eventType', 'creator:id,name,avatar'])
             ->paginate($request->timeline_per_page ?? 15, ['*'], 'timeline_page')
             ->withQueryString();
+
+        $this->transformCaseActivityLogsForInertia($caseActivityLogs);
 
         // Team members query with filters
         $teamQuery = CaseTeamMember::with('user')
@@ -507,6 +508,7 @@ class CaseController extends BaseController
             'hearingTypes' => $hearingTypes,
             'googleCalendarEnabled' => $googleCalendarEnabled,
             'filters' => $request->all([
+                'tab',
                 'timeline_search', 'timeline_category', 'timeline_sort', 'timeline_per_page',
                 'team_search', 'team_role', 'team_status',
                 'team_sort_field', 'team_sort_direction', 'team_per_page',
@@ -1190,6 +1192,35 @@ class CaseController extends BaseController
             $remove->whereNotIn('id', $keptIds);
         }
         $remove->delete();
+    }
+
+    /**
+     * Narrow `creator` to id, name, and absolute avatar URL for the timeline UI.
+     */
+    private function transformCaseActivityLogsForInertia(\Illuminate\Pagination\LengthAwarePaginator $paginator): void
+    {
+        $paginator->getCollection()->transform(function (CaseActivityLog $log) {
+            $arr = $log->toArray();
+            $creator = $log->creator;
+            if ($creator) {
+                $raw = $creator->avatar;
+                $avatarUrl = null;
+                if ($raw) {
+                    $avatarUrl = str_starts_with((string) $raw, 'http')
+                        ? (string) $raw
+                        : url(\Illuminate\Support\Facades\Storage::url($raw));
+                }
+                $arr['creator'] = [
+                    'id' => $creator->id,
+                    'name' => $creator->name,
+                    'avatar' => $avatarUrl,
+                ];
+            } else {
+                $arr['creator'] = null;
+            }
+
+            return $arr;
+        });
     }
 
     private function convertToRelativePath(string $url): string
