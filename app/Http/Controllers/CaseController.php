@@ -60,7 +60,20 @@ class CaseController extends BaseController
     public function index(Request $request)
     {
         $query = CaseModel::withPermissionCheck()
-            ->with(['client', 'caseType', 'caseStatus', 'court', 'creator', 'oppositeParties.nationality']);
+            ->with([
+                'client',
+                'caseType',
+                'caseStatus',
+                'court.courtType',
+                'court.circleType',
+                'creator',
+                'oppositeParties.nationality',
+                'teamMembers' => function ($query) {
+                    $query->with(['user' => function ($q) {
+                        $q->select('id', 'name', 'avatar');
+                    }]);
+                },
+            ]);
 
         if ($keyword = $request->get('search')) {
             $query->where(function ($q) use ($keyword) {
@@ -115,6 +128,8 @@ class CaseController extends BaseController
         $caseStatuses = CaseStatus::where('tenant_id', createdBy())->where('status', 'active')->get(['id', 'name']);
         $clients = Client::where('tenant_id', createdBy())->where('status', 'active')->get(['id', 'name']);
         $courts = Court::where('tenant_id', createdBy())->where('status', 'active')->get(['id', 'name']);
+        $courtTypes = CourtType::where('tenant_id', createdBy())->where('status', 'active')->orderBy('name')->get(['id', 'name']);
+        $circleTypes = CircleType::where('tenant_id', createdBy())->where('status', 'active')->orderBy('name')->get(['id', 'name']);
 
         // Get countries for nationality dropdown - ordered by nationality_name
         $locale = app()->getLocale();
@@ -198,6 +213,15 @@ class CaseController extends BaseController
                 ->count(),
         ];
 
+        $teamMemberAssignUsers = User::query()
+            ->where('status', 'active')
+            ->where('type', 'team_member')
+            ->where(function ($q) {
+                $q->where('tenant_id', createdBy())->orWhere('id', createdBy());
+            })
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
         return Inertia::render('cases/index', [
             'cases' => $cases,
             'caseTypes' => $caseTypes,
@@ -205,10 +229,13 @@ class CaseController extends BaseController
             'caseStatuses' => $caseStatuses,
             'clients' => $clients,
             'courts' => $courts,
+            'courtTypes' => $courtTypes,
+            'circleTypes' => $circleTypes,
             'countries' => $countries,
             'googleCalendarEnabled' => $googleCalendarEnabled,
             'planLimits' => $planLimits,
             'caseIndexStats' => $caseIndexStats,
+            'teamMemberAssignUsers' => $teamMemberAssignUsers,
             'filters' => $request->all(['search', 'case_type_id', 'case_status_id', 'priority', 'status', 'court_id', 'sort_field', 'sort_direction', 'per_page']),
         ]);
     }
@@ -1131,6 +1158,19 @@ class CaseController extends BaseController
         $case->save();
 
         return redirect()->back()->with('success', __(':model status updated successfully', ['model' => __('Case')]));
+    }
+
+    public function updateCaseStatus(Request $request, CaseModel $case)
+    {
+        $this->authorize('update', $case);
+
+        $validated = $request->validate([
+            'case_status_id' => ['required', Rule::exists('case_statuses', 'id')->where('tenant_id', createdBy())],
+        ]);
+
+        $case->update(['case_status_id' => $validated['case_status_id']]);
+
+        return redirect()->back()->with('success', __('Case status updated successfully.'));
     }
 
     /**

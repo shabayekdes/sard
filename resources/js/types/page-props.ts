@@ -9,6 +9,12 @@ export type FlashProps = {
     error?: string | null;
 };
 
+/** Shared from Laravel (`CaseReferralStage::definitions()`). */
+export type CaseReferralStageDef = {
+    key: string;
+    badgeClass: string;
+};
+
 export type PageProps = {
     name: string;
     base_url: string;
@@ -31,6 +37,9 @@ export type PageProps = {
 
     ziggy: any;
     quote?: { message: string; author: string };
+
+    /** Referral stage keys + Tailwind badge classes (see `App\Enums\CaseReferralStage`). */
+    caseReferralStageDefs: CaseReferralStageDef[];
 
     /** Tenant integrations page */
     googleCalendarEnabled?: boolean;

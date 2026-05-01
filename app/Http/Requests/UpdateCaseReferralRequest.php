@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\CaseReferralStage;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -15,7 +16,7 @@ class UpdateCaseReferralRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'stage' => ['sometimes', Rule::in($this->stageKeys())],
+            'stage' => ['sometimes', Rule::in(CaseReferralStage::values())],
             'referral_date' => ['sometimes', 'date'],
             'referral_date_is_hijri' => ['nullable', 'boolean'],
             'reminder_enabled' => ['nullable', 'boolean'],
@@ -35,18 +36,6 @@ class UpdateCaseReferralRequest extends FormRequest
                 'nullable',
                 Rule::exists('courts', 'id')->where('tenant_id', createdBy()),
             ],
-        ];
-    }
-
-    private function stageKeys(): array
-    {
-        return [
-            'amicable_settlement',
-            'reconciliation',
-            'first_instance',
-            'appeal',
-            'supreme_court',
-            'execution',
         ];
     }
 }

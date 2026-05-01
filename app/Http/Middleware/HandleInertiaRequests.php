@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\CaseReferralStage;
 use App\Facades\Settings;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
@@ -160,6 +161,7 @@ class HandleInertiaRequests extends Middleware
             'globalSettings' => $globalSettings,
             'storageSettings' => $storageSettings,
             'is_demo' => false, // config('app.is_demo')
+            'caseReferralStageDefs' => CaseReferralStage::definitions(),
         ];
     }
 }

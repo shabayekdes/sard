@@ -644,7 +644,11 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                 ? options.map((option: any, index: number) => {
                                     const uniqueValue = `${valuePrefix}${option[field.relation!.valueField]}_idx${index}`;
                                     return (
-                                        <SelectItem key={`${field.name}_${option[field.relation!.valueField]}_${index}`} value={uniqueValue}>
+                                        <SelectItem
+                                            key={`${field.name}_${option[field.relation!.valueField]}_${index}`}
+                                            value={uniqueValue}
+                                            disabled={Boolean(option.disabled)}
+                                        >
                                             {resolveDisplayValue(option[field.relation!.labelField], locale)}
                                         </SelectItem>
                                     );
@@ -652,7 +656,11 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                 : options.map((option, index) => {
                                     const uniqueValue = `${valuePrefix}${option.value}_idx${index}`;
                                     return (
-                                        <SelectItem key={`${field.name}_${option.value}_${index}`} value={uniqueValue}>
+                                        <SelectItem
+                                            key={`${field.name}_${option.value}_${index}`}
+                                            value={uniqueValue}
+                                            disabled={Boolean(option.disabled)}
+                                        >
                                             {resolveDisplayValue(option.label, locale)}
                                         </SelectItem>
                                     );
@@ -729,7 +737,11 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                 ? filteredOptions.map((option: any, index: number) => {
                                     const uniqueValue = `${comboValuePrefix}${option[field.relation!.valueField]}_idx${index}`;
                                     return (
-                                        <SelectItem key={`${field.name}_combo_${option[field.relation!.valueField]}_${index}`} value={uniqueValue}>
+                                        <SelectItem
+                                            key={`${field.name}_combo_${option[field.relation!.valueField]}_${index}`}
+                                            value={uniqueValue}
+                                            disabled={Boolean(option.disabled)}
+                                        >
                                             {resolveDisplayValue(option[field.relation!.labelField], locale)}
                                         </SelectItem>
                                     );
@@ -737,7 +749,11 @@ export function CrudFormModal({ isOpen, onClose, onSubmit, formConfig, initialDa
                                 : filteredOptions.map((option, index) => {
                                     const uniqueValue = `${comboValuePrefix}${option.value}_idx${index}`;
                                     return (
-                                        <SelectItem key={`${field.name}_combo_${option.value}_${index}`} value={uniqueValue}>
+                                        <SelectItem
+                                            key={`${field.name}_combo_${option.value}_${index}`}
+                                            value={uniqueValue}
+                                            disabled={Boolean(option.disabled)}
+                                        >
                                             {resolveDisplayValue(option.label, locale)}
                                         </SelectItem>
                                     );

@@ -14,11 +14,12 @@ use Google_Service_Calendar_EventDateTime;
 class GoogleCalendarService
 {
     private $client;
+
     private $service;
 
     public function __construct()
     {
-        $this->client = new Google_Client();
+        $this->client = new Google_Client;
         $this->service = new Google_Service_Calendar($this->client);
     }
 
@@ -28,8 +29,9 @@ class GoogleCalendarService
         $globalEnabled = Settings::boolean(SettingKey::GoogleCalendarEnabled->value);
         \Log::info('Google Calendar enabled check', [
             'user_id' => $userId,
-            'enabled' => $globalEnabled
+            'enabled' => $globalEnabled,
         ]);
+
         return $globalEnabled;
     }
 
@@ -38,7 +40,7 @@ class GoogleCalendarService
      */
     private function setupClient($tenantId): void
     {
-        $this->client = new Google_Client();
+        $this->client = new Google_Client;
         $this->service = new Google_Service_Calendar($this->client);
         $this->refreshGoogleClientWithStoredTokens($this->client, (string) $tenantId);
     }
@@ -48,7 +50,7 @@ class GoogleCalendarService
      */
     public function createRefreshedOAuthClient(string $tenantId): Google_Client
     {
-        $client = new Google_Client();
+        $client = new Google_Client;
         $this->refreshGoogleClientWithStoredTokens($client, $tenantId);
 
         return $client;
@@ -210,7 +212,7 @@ class GoogleCalendarService
             $startTime = $item->event_date instanceof \Carbon\Carbon
                 ? $item->event_date->copy()
                 : \Carbon\Carbon::parse($item->event_date);
-            if (!empty($item->event_time)) {
+            if (! empty($item->event_time)) {
                 $timeString = $item->event_time;
                 if (strpos($timeString, ' ') !== false) {
                     $timeString = explode(' ', $timeString)[1];
@@ -234,8 +236,9 @@ class GoogleCalendarService
 
     public function createEvent($item, $userId, $type = 'hearing', $createMeetingLink = false)
     {
-        if (!$this->isEnabled($userId)) {
+        if (! $this->isEnabled($userId)) {
             \Log::info('Google Calendar not enabled for user', ['user_id' => $userId]);
+
             return null;
         }
 
@@ -253,7 +256,7 @@ class GoogleCalendarService
             $description = $this->googleCalendarEventDescription($item, $type);
 
             $shouldCreateMeetingLink = (bool) $createMeetingLink;
-            
+
             $event = new Google_Service_Calendar_Event([
                 'summary' => $summary,
                 'description' => $description,
@@ -262,9 +265,9 @@ class GoogleCalendarService
                     'private' => [
                         'app_type' => $type,
                         'app_id' => $item->id,
-                        'app_user_id' => $userId
-                    ]
-                ]
+                        'app_user_id' => $userId,
+                    ],
+                ],
             ]);
 
             $window = $this->resolveGoogleEventStartEnd($item, $type);
@@ -273,18 +276,18 @@ class GoogleCalendarService
             }
             [$startTime, $endTime] = $window;
 
-            $start = new Google_Service_Calendar_EventDateTime();
+            $start = new Google_Service_Calendar_EventDateTime;
             $start->setDateTime($startTime->format('c'));
             $event->setStart($start);
 
-            $end = new Google_Service_Calendar_EventDateTime();
+            $end = new Google_Service_Calendar_EventDateTime;
             $end->setDateTime($endTime->format('c'));
             $event->setEnd($end);
 
             // Add conference data (Google Meet) if requested
             if ($shouldCreateMeetingLink) {
-                $conferenceData = new \Google_Service_Calendar_ConferenceData();
-                $conferenceRequest = new \Google_Service_Calendar_CreateConferenceRequest();
+                $conferenceData = new \Google_Service_Calendar_ConferenceData;
+                $conferenceRequest = new \Google_Service_Calendar_CreateConferenceRequest;
                 $conferenceRequest->setRequestId(uniqid());
                 $conferenceData->setCreateRequest($conferenceRequest);
                 $event->setConferenceData($conferenceData);
@@ -296,10 +299,10 @@ class GoogleCalendarService
                 ->value('value') ?: 'primary';
 
             $calendarEvent = $this->service->events->insert($calendarId, $event, [
-                'conferenceDataVersion' => $shouldCreateMeetingLink ? 1 : 0
+                'conferenceDataVersion' => $shouldCreateMeetingLink ? 1 : 0,
             ]);
             $eventId = $calendarEvent->getId();
-            
+
             // Extract meeting link if conference was created
             $meetingLink = null;
             if ($shouldCreateMeetingLink && $calendarEvent->getConferenceData()) {
@@ -318,6 +321,7 @@ class GoogleCalendarService
             if ($meetingLink) {
                 return ['event_id' => $eventId, 'meeting_link' => $meetingLink];
             }
+
             return $eventId;
         } catch (\Exception $e) {
             \Log::error('Google Calendar event creation failed', [
@@ -325,15 +329,16 @@ class GoogleCalendarService
                 'user_id' => $userId,
                 'type' => $type,
                 'item_id' => $item->id ?? 'unknown',
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return null;
         }
     }
 
     public function updateEvent($eventId, $item, $userId, $type = 'hearing')
     {
-        if (!$this->isEnabled($userId) || !$eventId) {
+        if (! $this->isEnabled($userId) || ! $eventId) {
             return false;
         }
 
@@ -365,25 +370,27 @@ class GoogleCalendarService
             }
             [$startTime, $endTime] = $window;
 
-            $start = new Google_Service_Calendar_EventDateTime();
+            $start = new Google_Service_Calendar_EventDateTime;
             $start->setDateTime($startTime->format('c'));
             $event->setStart($start);
 
-            $end = new Google_Service_Calendar_EventDateTime();
+            $end = new Google_Service_Calendar_EventDateTime;
             $end->setDateTime($endTime->format('c'));
             $event->setEnd($end);
 
             $this->service->events->update($calendarId, $eventId, $event);
+
             return true;
         } catch (\Exception $e) {
-            \Log::error('Google Calendar event update failed: ' . $e->getMessage());
+            \Log::error('Google Calendar event update failed: '.$e->getMessage());
+
             return false;
         }
     }
 
     public function deleteEvent($eventId, $userId)
     {
-        if (!$this->isEnabled($userId) || !$eventId) {
+        if (! $this->isEnabled($userId) || ! $eventId) {
             return false;
         }
 
@@ -395,9 +402,11 @@ class GoogleCalendarService
                 ->value('value') ?: 'primary';
 
             $this->service->events->delete($calendarId, $eventId);
+
             return true;
         } catch (\Exception $e) {
-            \Log::error('Google Calendar event deletion failed: ' . $e->getMessage());
+            \Log::error('Google Calendar event deletion failed: '.$e->getMessage());
+
             return false;
         }
     }
@@ -406,14 +415,14 @@ class GoogleCalendarService
     {
         // Use createdBy() for settings but keep userId for filtering
         $settingsUserId = createdBy();
-        
-        if (!$this->isEnabled($settingsUserId)) {
+
+        if (! $this->isEnabled($settingsUserId)) {
             return [];
         }
 
         try {
             $this->setupClient($settingsUserId);
-            
+
             // Get calendar ID from settings (UPPERCASE or camelCase)
             $calendarId = Setting::where('tenant_id', $settingsUserId)
                 ->whereIn('key', [SettingKey::GoogleCalendarId->value, 'googleCalendarId'])
@@ -425,49 +434,49 @@ class GoogleCalendarService
                 'singleEvents' => true,
                 'timeMin' => $timeMin ?: date('c', strtotime('-1 month')),
             ];
-            
+
             if ($timeMax) {
                 $optParams['timeMax'] = $timeMax;
             }
-            
+
             $results = $this->service->events->listEvents($calendarId, $optParams);
             $events = $results->getItems();
-            
+
             // Get current user for filtering
             $currentUser = \App\Models\User::find($userId);
-            
-            $filteredEvents = array_filter(array_map(function($event) use ($userId, $currentUser, $settingsUserId) {
+
+            $filteredEvents = array_filter(array_map(function ($event) use ($userId, $currentUser, $settingsUserId) {
                 $start = $event->getStart()->getDateTime() ?: $event->getStart()->getDate();
                 $end = $event->getEnd()->getDateTime() ?: $event->getEnd()->getDate();
                 $title = $event->getSummary() ?: 'Untitled Event';
                 $description = $event->getDescription() ?: '';
-                
+
                 // Extract metadata from extended properties to get original record info
                 $originalData = $this->extractOriginalData($event, $settingsUserId);
-                
+
                 \Log::info('Google Calendar event processing', [
                     'event_title' => $title,
                     'user_id' => $userId,
                     'settings_user_id' => $settingsUserId,
-                    'has_original_data' => !is_null($originalData)
+                    'has_original_data' => ! is_null($originalData),
                 ]);
-                
+
                 // Filter for team members: only show events for cases they are assigned to
                 if ($currentUser && $currentUser->type === 'team_member') {
                     if ($originalData) {
                         $type = $originalData['type'] ?? null;
                         $recordId = $originalData['record_id'] ?? null;
-                        
+
                         // For team_member events, only show if it's their own assignment
                         if ($type === 'team_member') {
                             $teamMember = \App\Models\CaseTeamMember::find($recordId);
-                            if (!$teamMember || $teamMember->user_id != $userId) {
+                            if (! $teamMember || $teamMember->user_id != $userId) {
                                 return null;
                             }
                         } else {
                             // For other event types, check case assignment
                             $caseId = $this->getCaseIdFromEvent($originalData);
-                            if (!$caseId || !$this->isUserAssignedToCase($userId, $caseId)) {
+                            if (! $caseId || ! $this->isUserAssignedToCase($userId, $caseId)) {
                                 return null;
                             }
                         }
@@ -475,7 +484,7 @@ class GoogleCalendarService
                         return null; // Hide non-case events for team members
                     }
                 }
-                
+
                 if ($originalData) {
                     // Use data from original database record
                     $type = $originalData['type'];
@@ -487,10 +496,10 @@ class GoogleCalendarService
                     $type = 'google';
                     $color = '#4285f4';
                     $caseTitle = 'Google Calendar';
-                    
+
                     $titleLower = strtolower($title);
                     $descLower = strtolower($description);
-                    
+
                     if (strpos($titleLower, 'hearing') !== false || strpos($descLower, 'hearing') !== false) {
                         $type = 'hearing';
                         $color = '#3b82f6';
@@ -508,16 +517,16 @@ class GoogleCalendarService
                         $color = '#8b5cf6';
                         $caseTitle = 'Team Event';
                     }
-                    
+
                     $details = [
                         'description' => $description,
                         'location' => $event->getLocation() ?: '',
-                        'calendar_source' => 'Google Calendar'
+                        'calendar_source' => 'Google Calendar',
                     ];
                 }
-                
+
                 return [
-                    'id' => 'google_' . $event->getId(),
+                    'id' => 'google_'.$event->getId(),
                     'title' => $title,
                     'description' => $originalData ? $originalData['clean_description'] : $description,
                     'date' => substr($start, 0, 10),
@@ -535,13 +544,13 @@ class GoogleCalendarService
                     'location' => $originalData['location'] ?? $event->getLocation(),
                     'status' => $originalData['status'] ?? 'active',
                     'source' => 'google',
-                    'details' => $details
+                    'details' => $details,
                 ];
             }, $events));
-            
+
             return array_values($filteredEvents);
         } catch (\Exception $e) {
-            \Log::error('Google Calendar events fetch failed: ' . $e->getMessage());
+            \Log::error('Google Calendar events fetch failed: '.$e->getMessage());
             throw $e;
         }
     }
@@ -565,10 +574,10 @@ class GoogleCalendarService
             $type = $privateProps['app_type'] ?? null;
             $recordId = $privateProps['app_id'] ?? null;
             $originalUserId = $privateProps['app_user_id'] ?? null;
-            
+
             if ($type && $recordId) {
                 $description = $event->getDescription() ?: '';
-                
+
                 try {
                     $data = null;
                     switch ($type) {
@@ -588,29 +597,29 @@ class GoogleCalendarService
                             $data = $this->getTeamMemberData($recordId, $description);
                             break;
                     }
-                    
+
                     if ($data) {
                         $data['type'] = $type;
                         $data['record_id'] = $recordId;
                     }
-                    
+
                     return $data;
                 } catch (\Exception $e) {
-                    \Log::error('Failed to fetch original data: ' . $e->getMessage());
+                    \Log::error('Failed to fetch original data: '.$e->getMessage());
                 }
             }
         }
-        
+
         // Fallback to description parsing for existing events
         $description = $event->getDescription() ?: '';
         if (preg_match('/\[METADATA: type=([^,]+), id=([^,]+), user_id=([^\]]+)\]/', $description, $matches)) {
             $type = $matches[1];
             $recordId = $matches[2];
             $originalUserId = $matches[3];
-            
+
             // Clean description by removing metadata
             $cleanDescription = preg_replace('/\n\n\[METADATA:.*?\]/', '', $description);
-            
+
             try {
                 $data = null;
                 switch ($type) {
@@ -630,19 +639,19 @@ class GoogleCalendarService
                         $data = $this->getTeamMemberData($recordId, $cleanDescription);
                         break;
                 }
-                
+
                 if ($data) {
                     $data['type'] = $type;
                     $data['record_id'] = $recordId;
                 }
-                
+
                 return $data;
             } catch (\Exception $e) {
-                \Log::error('Failed to fetch original data: ' . $e->getMessage());
-                
+                \Log::error('Failed to fetch original data: '.$e->getMessage());
+
             }
         }
-        
+
         return null;
     }
 
@@ -650,26 +659,32 @@ class GoogleCalendarService
     {
         $type = $originalData['type'] ?? null;
         $recordId = $originalData['record_id'] ?? null;
-        
-        if (!$recordId) return null;
-        
+
+        if (! $recordId) {
+            return null;
+        }
+
         switch ($type) {
             case 'case':
                 return $recordId;
             case 'task':
                 $task = \App\Models\Task::find($recordId);
+
                 return $task ? $task->case_id : null;
             case 'hearing':
                 $hearing = \App\Models\Hearing::find($recordId);
+
                 return $hearing ? $hearing->case_id : null;
             case 'timeline':
                 $timeline = \App\Models\CaseTimeline::find($recordId);
+
                 return $timeline ? $timeline->case_id : null;
             case 'team_member':
                 $teamMember = \App\Models\CaseTeamMember::find($recordId);
+
                 return $teamMember ? $teamMember->case_id : null;
         }
-        
+
         return null;
     }
 
@@ -680,12 +695,14 @@ class GoogleCalendarService
             ->where('status', 'active')
             ->exists();
     }
-    
+
     private function getHearingData($id, $cleanDescription)
     {
         $hearing = \App\Models\Hearing::with(['case.client', 'court'])->find($id);
-        if (!$hearing) return null;
-        
+        if (! $hearing) {
+            return null;
+        }
+
         return [
             'type' => 'hearing',
             'color' => '#3b82f6',
@@ -706,16 +723,18 @@ class GoogleCalendarService
                 'client_details' => [
                     'name' => $hearing->case->client->name ?? '',
                     'email' => $hearing->case->client->email ?? '',
-                    'phone' => $hearing->case->client->phone ?? ''
-                ]
-            ]
+                    'phone' => $hearing->case->client->phone ?? '',
+                ],
+            ],
         ];
     }
-    
+
     private function getTaskData($id, $cleanDescription)
     {
         $task = \App\Models\Task::with(['case.client', 'assignedUser', 'taskStatus'])->find($id);
-        if (!$task) return null;
+        if (! $task) {
+            return null;
+        }
 
         $statusLabel = $task->taskStatus ? (string) $task->taskStatus->name : '';
 
@@ -739,17 +758,19 @@ class GoogleCalendarService
                 'client_details' => [
                     'name' => $task->case->client->name ?? '',
                     'email' => $task->case->client->email ?? '',
-                    'phone' => $task->case->client->phone ?? ''
-                ]
-            ]
+                    'phone' => $task->case->client->phone ?? '',
+                ],
+            ],
         ];
     }
-    
+
     private function getTimelineData($id, $cleanDescription)
     {
         $timeline = \App\Models\CaseTimeline::with(['case.client', 'eventType'])->find($id);
-        if (!$timeline) return null;
-        
+        if (! $timeline) {
+            return null;
+        }
+
         return [
             'type' => 'timeline',
             'color' => $timeline->is_completed ? '#10b981' : '#f59e0b',
@@ -769,17 +790,19 @@ class GoogleCalendarService
                 'client_details' => [
                     'name' => $timeline->case->client->name ?? '',
                     'email' => $timeline->case->client->email ?? '',
-                    'phone' => $timeline->case->client->phone ?? ''
-                ]
-            ]
+                    'phone' => $timeline->case->client->phone ?? '',
+                ],
+            ],
         ];
     }
-    
+
     private function getCaseData($id, $cleanDescription)
     {
         $case = \App\Models\CaseModel::with(['client', 'caseType', 'caseStatus'])->find($id);
-        if (!$case) return null;
-        
+        if (! $case) {
+            return null;
+        }
+
         return [
             'type' => 'case',
             'color' => '#6366f1',
@@ -797,17 +820,19 @@ class GoogleCalendarService
                     'name' => $case->client->name ?? '',
                     'email' => $case->client->email ?? '',
                     'phone' => $case->client->phone ?? '',
-                    'address' => $case->client->address ?? ''
-                ]
-            ]
+                    'address' => $case->client->address ?? '',
+                ],
+            ],
         ];
     }
-    
+
     private function getTeamMemberData($id, $cleanDescription)
     {
         $teamMember = \App\Models\CaseTeamMember::with(['case.client', 'user'])->find($id);
-        if (!$teamMember) return null;
-        
+        if (! $teamMember) {
+            return null;
+        }
+
         return [
             'type' => 'team_member',
             'color' => '#8b5cf6',
@@ -826,19 +851,19 @@ class GoogleCalendarService
                 'client_details' => [
                     'name' => $teamMember->case->client->name ?? '',
                     'email' => $teamMember->case->client->email ?? '',
-                    'phone' => $teamMember->case->client->phone ?? ''
-                ]
-            ]
+                    'phone' => $teamMember->case->client->phone ?? '',
+                ],
+            ],
         ];
     }
-    
+
     private function getTaskColorForTask(\App\Models\Task $task): string
     {
         if ($task->relationLoaded('taskStatus') && $task->taskStatus) {
             if ($task->taskStatus->is_completed) {
                 return '#10b981';
             }
-            if (!empty($task->taskStatus->color)) {
+            if (! empty($task->taskStatus->color)) {
                 return $task->taskStatus->color;
             }
         }
@@ -857,32 +882,34 @@ class GoogleCalendarService
 
     private function calculateDuration($start, $end)
     {
-        if (!$start || !$end) return null;
-        
+        if (! $start || ! $end) {
+            return null;
+        }
+
         try {
             $startTime = new \DateTime($start);
             $endTime = new \DateTime($end);
             $diff = $startTime->diff($endTime);
-            
+
             $minutes = ($diff->h * 60) + $diff->i;
+
             return $minutes > 0 ? $minutes : 60; // Default to 60 minutes if no duration
         } catch (\Exception $e) {
             return 60; // Default duration
         }
     }
 
-
-
     public function getAuthorizationUrl($userId)
     {
         try {
-            $client = new Google_Client();
+            $client = new Google_Client;
             $this->configureOAuthClient($client, (string) $userId);
             $client->setPrompt('select_account consent');
 
             return $client->createAuthUrl();
         } catch (\Exception $e) {
-            \Log::error('Failed to generate Google Calendar authorization URL: ' . $e->getMessage());
+            \Log::error('Failed to generate Google Calendar authorization URL: '.$e->getMessage());
+
             return null;
         }
     }

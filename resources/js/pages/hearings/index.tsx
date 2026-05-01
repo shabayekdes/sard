@@ -344,7 +344,7 @@ export default function Hearings() {
     },
     {
       key: 'team_members',
-      label: t('Team Members'),
+      label: t('Assigns'),
       render: (_value: unknown, row: any) => {
         const members = Array.isArray(row?.team_members) ? row.team_members : [];
         if (members.length === 0) {

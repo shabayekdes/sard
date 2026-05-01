@@ -3,6 +3,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { TableAction, TableColumn } from '@/types/crud';
 import { hasPermission } from '@/utils/authorization';
@@ -24,7 +30,9 @@ import {
     Edit,
     Eye,
     FileSpreadsheet,
+    Gavel,
     Globe,
+    History,
     Info,
     Key,
     KeyRound,
@@ -32,9 +40,13 @@ import {
     Lock,
     RotateCcw,
     Send,
+    Share2,
+    Tags,
     Trash2,
     ToggleLeft,
+    UserPlus,
     Unlock,
+    MoreVertical,
     X,
     XCircle,
 } from 'lucide-react';
@@ -51,7 +63,9 @@ const CRUD_ICONS: Record<string, React.ComponentType<{ size?: number }>> = {
     Edit,
     Eye,
     FileSpreadsheet,
+    Gavel,
     Globe,
+    History,
     Info,
     Key,
     KeyRound,
@@ -59,8 +73,11 @@ const CRUD_ICONS: Record<string, React.ComponentType<{ size?: number }>> = {
     Lock,
     RotateCcw,
     Send,
+    Share2,
+    Tags,
     Trash2,
     ToggleLeft,
+    UserPlus,
     Unlock,
     X,
     XCircle,
@@ -129,115 +146,180 @@ export function CrudTable({
         onSort(column.key);
     };
 
-    // Check if any actions have permissions
-    const hasAnyActionPermission = actions.some((action) => {
-        const permissionKey =
-            action.requiredPermission ||
-            (entityPermissions &&
-                (action.action === 'view'
-                    ? entityPermissions.view
-                    : action.action === 'edit'
-                        ? entityPermissions.edit
-                        : action.action === 'delete'
-                            ? entityPermissions.delete
-                            : action.permission));
+    const permissionKeyForAction = (action: TableAction) =>
+        action.requiredPermission ||
+        (entityPermissions &&
+            (action.action === 'view'
+                ? entityPermissions.view
+                : action.action === 'edit'
+                    ? entityPermissions.edit
+                    : action.action === 'delete'
+                        ? entityPermissions.delete
+                        : action.permission));
 
+    const hasAnyActionPermission = actions.some((action) => {
+        const permissionKey = permissionKeyForAction(action);
         return !permissionKey || hasPermission(permissions, permissionKey);
     });
 
+    const resolveActionPresentation = (action: TableAction, row: any) => {
+        const iconName =
+            action.action === 'toggle-status'
+                ? getStatusIcon(row.status)
+                : typeof action.icon === 'function'
+                    ? action.icon(row)
+                    : action.icon;
+        const actionLabel =
+            action.action === 'toggle-status'
+                ? getStatusLabel(row.status, t)
+                : typeof action.label === 'function'
+                    ? action.label(row)
+                    : action.label;
+        const IconComponent = CRUD_ICONS[iconName] ?? Eye;
+        const labelText = resolveTranslatable(actionLabel, locale);
+        return { IconComponent, labelText };
+    };
+
     const renderActionButtons = (row: any, rowIndex: number) => {
-        // Stable key per row+action so React reconciles table action buttons correctly
         const rowKey = row?.id ?? row?.email ?? `row-${rowIndex}`;
-        return (
-            <div
-                className={cn(
-                    'flex items-center',
-                    isRtl ? 'justify-start space-x-reverse space-x-2' : 'justify-end space-x-2'
-                )}
-            >
-                {actions.map((action) => {
-                    // Skip if user doesn't have permission
-                    const permissionKey =
-                        action.requiredPermission ||
-                        (entityPermissions &&
-                            (action.action === 'view'
-                                ? entityPermissions.view
-                                : action.action === 'edit'
-                                    ? entityPermissions.edit
-                                    : action.action === 'delete'
-                                        ? entityPermissions.delete
-                                        : action.permission));
 
-                    if (permissionKey && !hasPermission(permissions, permissionKey)) {
-                        return null;
-                    }
+        const visibleActions = actions.filter((action) => {
+            const permissionKey = permissionKeyForAction(action);
+            if (permissionKey && !hasPermission(permissions, permissionKey)) {
+                return false;
+            }
+            if (action.condition && !action.condition(row)) {
+                return false;
+            }
+            return true;
+        });
 
-                    // Skip if condition function returns false
-                    if (action.condition && !action.condition(row)) {
-                        return null;
-                    }
+        const primaryActions = visibleActions.filter((a) => a.action === 'view' || a.action === 'edit');
+        const overflowActions = visibleActions.filter((a) => a.action !== 'view' && a.action !== 'edit');
+        const hasPrimary = primaryActions.length > 0;
+        const hasOverflow = overflowActions.length > 0;
 
-                    // Handle dynamic icon and label for toggle-status actions
-                    const iconName =
-                        action.action === 'toggle-status'
-                            ? getStatusIcon(row.status)
-                            : typeof action.icon === 'function'
-                                ? action.icon(row)
-                                : action.icon;
-                    const actionLabel =
-                        action.action === 'toggle-status'
-                            ? getStatusLabel(row.status, t)
-                            : typeof action.label === 'function'
-                                ? action.label(row)
-                                : action.label;
-                    const IconComponent = CRUD_ICONS[iconName] ?? Eye;
-                    const actionKey = `${rowKey}-${action.action}`;
+        const renderPrimaryIconButton = (action: TableAction) => {
+            const { IconComponent, labelText } = resolveActionPresentation(action, row);
+            const actionKey = `${rowKey}-${action.action ?? 'primary'}`;
 
-                    const labelText = resolveTranslatable(actionLabel, locale);
-
-                    // Handle link actions (use native <a> so the request is a full page load — avoids CORS when the server redirects to another origin, e.g. impersonation)
-                    if (action.href) {
-                        const href = typeof action.href === 'function' ? action.href(row) : action.href.replace(':id', row.id);
-
-                        return (
-                            <Button
-                                key={actionKey}
-                                variant="ghost"
-                                size="icon"
-                                className={cn('h-8 w-8', action.className)}
-                                title={labelText}
-                                asChild
-                            >
-                                <a
-                                    href={href}
-                                    target={action.openInNewTab ? '_blank' : undefined}
-                                    rel={action.openInNewTab ? 'noopener noreferrer' : undefined}
-                                    title={labelText}
-                                >
-                                    <IconComponent size={16} />
-                                </a>
-                            </Button>
-                        );
-                    }
-
-                    // Handle regular action buttons (use native title to avoid Radix Portal removeChild errors in table cells)
-                    return (
-                        <Button
-                            key={actionKey}
-                            variant="ghost"
-                            size="icon"
-                            className={cn('h-8 w-8', action.className)}
+            if (action.href) {
+                const href = typeof action.href === 'function' ? action.href(row) : action.href.replace(':id', row.id);
+                return (
+                    <Button
+                        key={actionKey}
+                        variant="ghost"
+                        size="icon"
+                        className={cn('h-8 w-8', action.className)}
+                        title={labelText}
+                        asChild
+                    >
+                        <a
+                            href={href}
+                            target={action.openInNewTab ? '_blank' : undefined}
+                            rel={action.openInNewTab ? 'noopener noreferrer' : undefined}
                             title={labelText}
-                            onClick={() => {
-                                if (action.action) {
-                                    onAction(action.action, row);
-                                }
-                            }}
                         >
                             <IconComponent size={16} />
-                        </Button>
-                    );
-                })}
+                        </a>
+                    </Button>
+                );
+            }
+
+            return (
+                <Button
+                    key={actionKey}
+                    variant="ghost"
+                    size="icon"
+                    className={cn('h-8 w-8', action.className)}
+                    title={labelText}
+                    onClick={() => {
+                        if (action.action) {
+                            onAction(action.action, row);
+                        }
+                    }}
+                >
+                    <IconComponent size={16} />
+                </Button>
+            );
+        };
+
+        const renderOverflowItem = (action: TableAction) => {
+            const { IconComponent, labelText } = resolveActionPresentation(action, row);
+            const actionKey = `${rowKey}-more-${action.action ?? 'link'}`;
+
+            if (action.href) {
+                const href = typeof action.href === 'function' ? action.href(row) : action.href.replace(':id', row.id);
+                return (
+                    <DropdownMenuItem key={actionKey} asChild>
+                        <a
+                            href={href}
+                            target={action.openInNewTab ? '_blank' : undefined}
+                            rel={action.openInNewTab ? 'noopener noreferrer' : undefined}
+                            className={cn('flex cursor-pointer items-center gap-2', action.className)}
+                        >
+                            <IconComponent size={16} />
+                            <span className="flex-1">{labelText}</span>
+                        </a>
+                    </DropdownMenuItem>
+                );
+            }
+
+            return (
+                <DropdownMenuItem
+                    key={actionKey}
+                    variant={action.action === 'delete' ? 'destructive' : 'default'}
+                    className={cn('gap-2', action.className)}
+                    onSelect={() => {
+                        if (action.action) {
+                            onAction(action.action, row);
+                        }
+                    }}
+                >
+                    <IconComponent size={16} />
+                    <span className="flex-1">{labelText}</span>
+                </DropdownMenuItem>
+            );
+        };
+
+        const actionsRowClass = cn(
+            'flex w-full min-w-0 items-center gap-2',
+            hasPrimary && hasOverflow
+                ? 'justify-between'
+                : isRtl
+                  ? 'justify-start flex-row-reverse'
+                  : 'justify-end'
+        );
+
+        return (
+            <div className={actionsRowClass}>
+                {hasPrimary ? (
+                    <div className="flex items-center gap-1">{primaryActions.map(renderPrimaryIconButton)}</div>
+                ) : null}
+                {hasOverflow ? (
+                    <div className="flex shrink-0 items-center">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
+                                    title={t('More actions')}
+                                    aria-label={t('More actions')}
+                                >
+                                    <MoreVertical size={16} />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                                align={isRtl ? 'start' : 'end'}
+                                className="z-[60000] min-w-[12rem]"
+                            >
+                                {overflowActions.map(renderOverflowItem)}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                ) : null}
             </div>
         );
     };
@@ -381,7 +463,7 @@ export function CrudTable({
                             </TableHead>
                         ))}
                         {showActions && hasAnyActionPermission && (
-                            <TableHead className="w-24 px-4 py-3 text-sm font-semibold text-slate-400 dark:text-gray-400">
+                            <TableHead className="min-w-[9rem] px-4 py-3 text-sm font-semibold text-slate-400 dark:text-gray-400">
                                 <div className={cn('flex items-center', isRtl ? 'justify-start text-left' : 'justify-end text-right')}>
                                     {t('Actions')}
                                 </div>

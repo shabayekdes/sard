@@ -558,6 +558,7 @@ Route::middleware([
                 Route::put('cases/{case}', [Controllers\CaseController::class, 'update'])->middleware('permission:edit-cases')->name('cases.update');
                 Route::delete('cases/{case}', [Controllers\CaseController::class, 'destroy'])->middleware('permission:delete-cases')->name('cases.destroy');
                 Route::put('cases/{case}/toggle-status', [Controllers\CaseController::class, 'toggleStatus'])->middleware('permission:edit-cases')->name('cases.toggle-status');
+                Route::put('cases/{case}/case-status', [Controllers\CaseController::class, 'updateCaseStatus'])->middleware('permission:edit-cases')->name('cases.update-case-status');
             });
 
             // Case Timelines routes

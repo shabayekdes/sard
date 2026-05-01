@@ -1,16 +1,27 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
 import { CrudDeleteModal } from '@/components/CrudDeleteModal';
+import { CrudFormModal } from '@/components/CrudFormModal';
 import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { ClientTableCell } from '@/components/client-table-cell';
 import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useInitials } from '@/hooks/use-initials';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { useLayout } from '@/contexts/LayoutContext';
+import { CaseReferralFormModal } from '@/components/cases/CaseReferralFormModal';
+import { AppealReminderDurationField } from '@/components/AppealReminderDurationField';
+import type { FormField } from '@/types/crud';
 
 function resolveTranslatable(val: unknown, locale: string): string {
   if (val == null) return '';
@@ -32,14 +43,20 @@ export default function Cases() {
     caseStatuses,
     clients,
     courts,
+    courtTypes = [],
+    circleTypes = [],
     countries,
     googleCalendarEnabled,
     planLimits,
     caseIndexStats = { total: 0, active: 0, hearings_this_week: 0, struck_off: 0 },
+    teamMemberAssignUsers = [],
     filters: pageFilters = {},
   } = usePage().props as any;
   const permissions = auth?.permissions || [];
   const currentLocale = i18n.language || 'en';
+  const getInitials = useInitials();
+  const { isRtl } = useLayout();
+  const selectDir = isRtl ? 'rtl' : 'ltr';
 
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
   const [selectedCaseType, setSelectedCaseType] = useState(pageFilters.case_type_id || 'all');
@@ -50,6 +67,15 @@ export default function Cases() {
   const [showFilters, setShowFilters] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<any>(null);
+  const [isCaseStatusModalOpen, setIsCaseStatusModalOpen] = useState(false);
+  const [caseForStatusChange, setCaseForStatusChange] = useState<any>(null);
+  const [pendingCaseStatusId, setPendingCaseStatusId] = useState<string>('');
+  const [isAssignTeamMemberModalOpen, setIsAssignTeamMemberModalOpen] = useState(false);
+  const [assignTeamMemberCase, setAssignTeamMemberCase] = useState<any>(null);
+  const [referralModalCase, setReferralModalCase] = useState<any>(null);
+  const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
+  const [judgmentModalCase, setJudgmentModalCase] = useState<any>(null);
+  const [isJudgmentModalOpen, setIsJudgmentModalOpen] = useState(false);
 
   const hasActiveFilters = () => {
     return searchTerm !== '' || selectedCaseType !== 'all' || selectedCaseStatus !== 'all' ||
@@ -104,6 +130,9 @@ export default function Cases() {
       case 'view':
         router.get(route('cases.show', item.id));
         break;
+      case 'view-timeline':
+        router.get(route('cases.show', item.id), { tab: 'timelines' });
+        break;
       case 'edit':
         router.get(route('cases.edit', item.id));
         break;
@@ -112,6 +141,23 @@ export default function Cases() {
         break;
       case 'toggle-status':
         handleToggleStatus(item);
+        break;
+      case 'change-case-status':
+        setCaseForStatusChange(item);
+        setPendingCaseStatusId(item.case_status_id != null ? String(item.case_status_id) : '');
+        setIsCaseStatusModalOpen(true);
+        break;
+      case 'assign-team-members':
+        setAssignTeamMemberCase(item);
+        setIsAssignTeamMemberModalOpen(true);
+        break;
+      case 'add-referral':
+        setReferralModalCase(item);
+        setIsReferralModalOpen(true);
+        break;
+      case 'add-judgment':
+        setJudgmentModalCase(item);
+        setIsJudgmentModalOpen(true);
         break;
     }
   };
@@ -140,6 +186,41 @@ export default function Cases() {
         }
       }
     });
+  };
+
+  const handleCaseStatusSave = () => {
+    if (!caseForStatusChange?.id || !pendingCaseStatusId) return;
+    router.put(
+      route('cases.update-case-status', caseForStatusChange.id),
+      { case_status_id: pendingCaseStatusId },
+      {
+        preserveScroll: true,
+        onSuccess: (page) => {
+          toast.dismiss();
+          setIsCaseStatusModalOpen(false);
+          setCaseForStatusChange(null);
+          const flash = (page as any)?.props?.flash;
+          if (flash?.success) {
+            toast.success(flash.success);
+          } else if (flash?.error) {
+            toast.error(flash.error);
+          }
+        },
+        onError: (errors) => {
+          toast.dismiss();
+          if (typeof errors === 'string') {
+            toast.error(errors);
+          } else {
+            toast.error(
+              t('Failed to update {{model}} status: {{errors}}', {
+                model: t('Case'),
+                errors: Object.values(errors).join(', '),
+              }),
+            );
+          }
+        },
+      },
+    );
   };
 
   const handleToggleStatus = (caseItem: any) => {
@@ -197,6 +278,214 @@ export default function Cases() {
     { title: t('Cases') }
   ];
 
+  const assignTeamMemberInitialData = useMemo(() => {
+    if (!assignTeamMemberCase) {
+      return {};
+    }
+    return {
+      case_id: String(assignTeamMemberCase.id),
+      user_id: '',
+      assigned_date: new Date().toISOString().split('T')[0],
+      status: 'active',
+    };
+  }, [assignTeamMemberCase]);
+
+  const assignTeamMemberFormConfig = useMemo(() => {
+    const assignedUserIds = new Set<number>(
+      (assignTeamMemberCase?.team_members ?? [])
+        .map((tm: { user_id?: number; user?: { id?: number } }) =>
+          Number(tm.user_id ?? tm.user?.id ?? NaN),
+        )
+        .filter((id: number) => !Number.isNaN(id)),
+    );
+
+    return {
+      fields: [
+        {
+          name: 'case_id',
+          label: t('Case'),
+          type: 'select' as const,
+          required: true,
+          disabled: true,
+          options: assignTeamMemberCase
+            ? [
+                {
+                  value: String(assignTeamMemberCase.id),
+                  label:
+                    `${assignTeamMemberCase.case_id ?? ''} — ${assignTeamMemberCase.title ?? ''}`.trim() ||
+                    String(assignTeamMemberCase.id),
+                },
+              ]
+            : [],
+        },
+        {
+          name: 'user_id',
+          label: t('Team Member'),
+          type: 'select' as const,
+          required: true,
+          options: (teamMemberAssignUsers as { id: number; name: string }[]).map((u) => {
+            const id = Number(u.id);
+            const already = assignedUserIds.has(id);
+            return {
+              value: String(u.id),
+              label: already ? `${u.name} (${t('Already assigned')})` : u.name,
+              disabled: already,
+            };
+          }),
+        },
+        {
+          name: 'assigned_date',
+          label: t('Assigned Date'),
+          type: 'date' as const,
+          required: true,
+          defaultValue: new Date().toISOString().split('T')[0],
+        },
+        {
+          name: 'status',
+          label: t('Status'),
+          type: 'select' as const,
+          options: [
+            { value: 'active', label: t('Active') },
+            { value: 'inactive', label: t('Inactive') },
+          ],
+          defaultValue: 'active',
+        },
+      ],
+      modalSize: 'lg' as const,
+    };
+  }, [assignTeamMemberCase, teamMemberAssignUsers, t]);
+
+  const handleJudgmentModalSubmit = (formData: Record<string, unknown>) => {
+    if (!judgmentModalCase?.id) return;
+    router.post(
+      route('advocate.case-judgments.store'),
+      { ...formData, case_id: judgmentModalCase.id },
+      {
+        preserveScroll: true,
+        onSuccess: () => {
+          setIsJudgmentModalOpen(false);
+          setJudgmentModalCase(null);
+          toast.dismiss();
+          toast.success(t('Judgment record created'));
+        },
+        onError: () => {
+          toast.dismiss();
+          toast.error(t('Failed to save judgment'));
+        },
+      },
+    );
+  };
+
+  const judgmentModalFormConfig = useMemo(
+    () => ({
+      fields: [
+        { name: 'judgment_number', label: t('Judgment number'), type: 'text' as const, required: true },
+        { name: 'judgment_date', label: t('Judgment date'), type: 'date' as const, required: true },
+        { name: 'receipt_date', label: t('Judgment receipt date'), type: 'date' as const },
+        { name: 'appeal_deadline_date', label: t('Appeal deadline date'), type: 'date' as const },
+        {
+          name: 'appeal_reminder_enabled',
+          label: t('Enable appeal deadline reminder'),
+          type: 'switch' as const,
+          defaultValue: false,
+        },
+        {
+          name: 'appeal_reminder_duration',
+          label: '',
+          type: 'custom' as const,
+          required: true,
+          defaultValue: 'one_day_before',
+          conditional: (_mode: string, formData: Record<string, unknown>) => Boolean(formData.appeal_reminder_enabled),
+          render: (
+            _field: FormField,
+            formData: Record<string, unknown>,
+            handleChange: (name: string, value: unknown) => void,
+          ) => (
+            <AppealReminderDurationField
+              value={(formData.appeal_reminder_duration as string) || 'one_day_before'}
+              onChange={(v) => handleChange('appeal_reminder_duration', v)}
+              disabled={false}
+            />
+          ),
+        },
+        {
+          name: 'appeal_reminder_custom_days',
+          label: t('Appeal reminder custom days label'),
+          type: 'number' as const,
+          min: 1,
+          max: 366,
+          step: 1,
+          required: true,
+          placeholder: t('Appeal reminder custom days placeholder'),
+          conditional: (_mode: string, formData: Record<string, unknown>) =>
+            Boolean(formData.appeal_reminder_enabled) && formData.appeal_reminder_duration === 'custom',
+        },
+        {
+          name: 'status',
+          label: t('Judgment status'),
+          type: 'select' as const,
+          required: true,
+          selectAllowEmpty: false,
+          defaultValue: 'pending_issuance',
+          options: [
+            { value: 'pending_issuance', label: t('Judgment status pending issuance') },
+            { value: 'issued', label: t('Judgment status issued') },
+            { value: 'appealed', label: t('Judgment status appealed') },
+            { value: 'final', label: t('Judgment status final') },
+            { value: 'executed', label: t('Judgment status executed') },
+          ],
+        },
+        {
+          name: 'attachments',
+          label: t('Upload judgment files'),
+          type: 'media-picker' as const,
+          multiple: true,
+          placeholder: t('Upload judgment files'),
+        },
+        {
+          name: 'grounds',
+          label: t('Grounds'),
+          type: 'textarea' as const,
+          placeholder: t('Placeholders grounds'),
+        },
+        {
+          name: 'summary',
+          label: t('Judgment summary'),
+          type: 'textarea' as const,
+          placeholder: t('Placeholders judgment summary'),
+        },
+      ],
+      modalSize: 'xl' as const,
+    }),
+    [t],
+  );
+
+  const handleAssignTeamMemberSubmit = (formData: Record<string, unknown>) => {
+    toast.loading(t('Assigning team member...'));
+    router.post(route('cases.case-team-members.store'), formData as Record<string, string>, {
+      preserveScroll: true,
+      onSuccess: (page) => {
+        setIsAssignTeamMemberModalOpen(false);
+        setAssignTeamMemberCase(null);
+        toast.dismiss();
+        const flash = (page as any)?.props?.flash;
+        if (flash?.success) {
+          toast.success(flash.success);
+        } else if (flash?.error) {
+          toast.error(flash.error);
+        }
+      },
+      onError: (errors) => {
+        toast.dismiss();
+        if (typeof errors === 'string') {
+          toast.error(errors);
+        } else {
+          toast.error(`Failed to assign team member: ${Object.values(errors as Record<string, string>).join(', ')}`);
+        }
+      },
+    });
+  };
+
   const columns = [
     {
       key: 'title',
@@ -223,6 +512,25 @@ export default function Cases() {
       key: 'client',
       label: t('Client'),
       render: (_value: any, row: any) => <ClientTableCell client={row.client} locale={currentLocale} />,
+    },
+    {
+      key: 'court_id',
+      label: t('Court'),
+      render: (_value: any, row: any) => {
+        const court = row.court;
+        if (!court) return <span className="text-muted-foreground">—</span>;
+        const courtName = resolveTranslatable(court.name, currentLocale) || court.name || '-';
+        const courtType = court.court_type
+          ? resolveTranslatable(court.court_type.name, currentLocale)
+          : '';
+        const circleType = court.circle_type
+          ? resolveTranslatable(court.circle_type.name, currentLocale)
+          : '';
+        const parts = [courtName];
+        if (courtType) parts.push(courtType);
+        if (circleType) parts.push(circleType);
+        return <span className="text-foreground break-words">{parts.join(' + ')}</span>;
+      },
     },
     {
       key: 'case_type_id',
@@ -277,6 +585,48 @@ export default function Cases() {
       }
     },
     {
+      key: 'team_members',
+      label: t('Assigns'),
+      render: (_value: unknown, row: any) => {
+        const rows = Array.isArray(row?.team_members) ? row.team_members : [];
+        const members = rows
+          .filter((tm: { status?: string; user?: { id?: number } }) => tm.user && tm.status === 'active')
+          .map((tm: { user: { id: number; name?: string; avatar?: string | null } }) => tm.user);
+        if (members.length === 0) {
+          return <span className="text-muted-foreground">-</span>;
+        }
+        const maxShown = 4;
+        const shown = members.slice(0, maxShown);
+        const extra = members.length - shown.length;
+        return (
+          <div className="flex items-center">
+            <div className="flex -space-x-2">
+              {shown.map((u: { id: number; name?: string; avatar?: string | null }) => (
+                <Avatar
+                  key={u.id}
+                  className="h-8 w-8 border-2 border-background ring-0"
+                  title={u.name || ''}
+                >
+                  <AvatarImage src={u.avatar || undefined} alt={u.name || ''} />
+                  <AvatarFallback className="text-xs font-medium">
+                    {getInitials(u.name || '?')}
+                  </AvatarFallback>
+                </Avatar>
+              ))}
+            </div>
+            {extra > 0 ? (
+              <span
+                className="ml-2 text-xs text-muted-foreground"
+                title={members.slice(maxShown).map((u: { name?: string }) => u.name).filter(Boolean).join(', ')}
+              >
+                +{extra}
+              </span>
+            ) : null}
+          </div>
+        );
+      },
+    },
+    {
       key: 'filing_date',
       label: t('Filing Date'),
       sortable: true,
@@ -300,11 +650,46 @@ export default function Cases() {
       requiredPermission: 'view-cases'
     },
     {
+      label: t('View case timeline'),
+      icon: 'History',
+      action: 'view-timeline',
+      className: 'text-sky-600',
+      requiredPermission: 'view-cases'
+    },
+    {
       label: t('Edit'),
       icon: 'Edit',
       action: 'edit',
       className: 'text-amber-500',
       requiredPermission: 'edit-cases'
+    },
+    {
+      label: t('Change case status'),
+      icon: 'Tags',
+      action: 'change-case-status',
+      className: 'text-violet-600',
+      requiredPermission: 'edit-cases'
+    },
+    {
+      label: t('Assign team members'),
+      icon: 'UserPlus',
+      action: 'assign-team-members',
+      className: 'text-emerald-600',
+      requiredPermission: 'create-case-team-members',
+    },
+    {
+      label: t('Add referral'),
+      icon: 'Share2',
+      action: 'add-referral',
+      className: 'text-orange-600',
+      requiredPermission: 'manage-cases',
+    },
+    {
+      label: t('Add court judgment'),
+      icon: 'Gavel',
+      action: 'add-judgment',
+      className: 'text-indigo-600',
+      requiredPermission: 'create-case-judgments',
     },
     {
       label: t('Delete'),
@@ -478,6 +863,124 @@ export default function Cases() {
           }}
         />
       </div>
+
+      <Dialog
+        open={isCaseStatusModalOpen}
+        onOpenChange={(open) => {
+          setIsCaseStatusModalOpen(open);
+          if (!open) {
+            setCaseForStatusChange(null);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('Change case status')}</DialogTitle>
+            <DialogDescription>
+              {caseForStatusChange?.title
+                ? t('Select a new status for "{{title}}".', { title: caseForStatusChange.title })
+                : t('Select a new case status.')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-2 py-2">
+            <Label htmlFor="case-status-select">{t('Case Status')}</Label>
+            <Select
+              dir={selectDir}
+              value={pendingCaseStatusId}
+              onValueChange={setPendingCaseStatusId}
+            >
+              <SelectTrigger id="case-status-select" dir={selectDir}>
+                <SelectValue placeholder={t('Case Status')} />
+              </SelectTrigger>
+              <SelectContent dir={selectDir}>
+                {(caseStatuses || []).map((status: any) => (
+                  <SelectItem key={status.id} value={String(status.id)}>
+                    {resolveTranslatable(status.name, currentLocale)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter className="sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setIsCaseStatusModalOpen(false);
+                setCaseForStatusChange(null);
+              }}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              type="button"
+              onClick={handleCaseStatusSave}
+              disabled={
+                !pendingCaseStatusId ||
+                (caseForStatusChange &&
+                  String(caseForStatusChange.case_status_id ?? '') === pendingCaseStatusId)
+              }
+            >
+              {t('Save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {referralModalCase ? (
+        <CaseReferralFormModal
+          key={`referral-${referralModalCase.id}`}
+          caseId={referralModalCase.id}
+          open={isReferralModalOpen}
+          onClose={() => {
+            setIsReferralModalOpen(false);
+            setReferralModalCase(null);
+          }}
+          mode="create"
+          editRow={null}
+          courts={courts || []}
+          courtTypes={courtTypes}
+          circleTypes={circleTypes}
+          permissions={permissions}
+        />
+      ) : null}
+
+      {judgmentModalCase ? (
+        <CrudFormModal
+          key={`judgment-${judgmentModalCase.id}`}
+          isOpen={isJudgmentModalOpen}
+          onClose={() => {
+            setIsJudgmentModalOpen(false);
+            setJudgmentModalCase(null);
+          }}
+          onSubmit={handleJudgmentModalSubmit}
+          formConfig={judgmentModalFormConfig}
+          initialData={{
+            status: 'pending_issuance',
+            appeal_reminder_enabled: false,
+            appeal_reminder_duration: 'one_day_before',
+            appeal_reminder_custom_days: '',
+          }}
+          title={t('Add Judgment')}
+          mode="create"
+        />
+      ) : null}
+
+      {assignTeamMemberCase ? (
+        <CrudFormModal
+          key={assignTeamMemberCase.id}
+          isOpen={isAssignTeamMemberModalOpen}
+          onClose={() => {
+            setIsAssignTeamMemberModalOpen(false);
+            setAssignTeamMemberCase(null);
+          }}
+          onSubmit={handleAssignTeamMemberSubmit}
+          formConfig={assignTeamMemberFormConfig}
+          initialData={assignTeamMemberInitialData}
+          title={t('Assign Team Member')}
+          mode="create"
+        />
+      ) : null}
 
       <CrudDeleteModal
         isOpen={isDeleteModalOpen}

@@ -55,6 +55,8 @@ export interface TableConfig {
 export interface FilterOption {
     value: string;
     label: string;
+    /** When true, option is shown but not selectable (e.g. Radix SelectItem disabled). */
+    disabled?: boolean;
 }
 
 export interface FilterField {
